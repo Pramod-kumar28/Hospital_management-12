@@ -1,0 +1,114 @@
+import React, { useState } from 'react'
+import Header from '../../../components/common/Header/Header'
+import Sidebar from '../../../components/common/Sidebar/Sidebar'
+import SuperAdminOverview from './pages/SuperAdminOverview'
+import HospitalManagement from './pages/HospitalManagement'
+import SubscriptionsBilling from './pages/SubscriptionsBilling'
+import UserManagement from './pages/UserAccounts'
+import SystemSettings from './pages/PlatformSettings'
+import ReportsAnalytics from './pages/ReportsAnalytics'
+import AuditLogs from './pages/AuditLogs'
+// import SuperAdminProfile from './pages/SuperAdminProfile'
+
+const SuperAdminDashboard = () => {
+  const [activePage, setActivePage] = useState('dashboard')
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+  const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(false)
+
+  const renderPage = () => {
+    switch (activePage) {
+      case 'dashboard':
+        return <SuperAdminOverview />
+      case 'hospitals':
+        return <HospitalManagement />
+      case 'subscriptions':
+        return <SubscriptionsBilling />
+      case 'users':
+        return <UserManagement />
+      case 'settings':
+        return <SystemSettings />
+      case 'reports':
+        return <ReportsAnalytics />
+      case 'audit':
+        return <AuditLogs />
+      
+      // case 'profile':
+      //   return <SuperAdminProfile />
+      default:
+        return <SuperAdminOverview />
+    }
+  }
+
+  const handleMobileMenuToggle = () => {
+    setIsMobileSidebarOpen(true)
+  }
+
+  const handleMobileSidebarClose = () => {
+    setIsMobileSidebarOpen(false)
+  }
+
+  const handleDesktopSidebarToggle = () => {
+    setIsDesktopSidebarOpen(!isDesktopSidebarOpen)
+  }
+
+
+   return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Fixed Header */}
+      <div className="fixed top-0 left-0 right-0 z-50">
+        <Header 
+          onMenuToggle={handleMobileMenuToggle}
+          onSidebarToggle={handleDesktopSidebarToggle}
+          isSidebarOpen={isDesktopSidebarOpen}
+        />
+      </div>
+     
+      {/* Main Layout */}
+      <div className="flex pt-16 min-h-screen">
+        {/* Desktop Sidebar - Fixed position */}
+        <div className={`hidden md:block fixed top-16 left-0 bottom-0 z-40 transition-transform duration-300 ${
+          isDesktopSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}>
+          <Sidebar
+            activePage={activePage}
+            onPageChange={setActivePage}
+            isOpen={isDesktopSidebarOpen}
+            onClose={() => setIsDesktopSidebarOpen(false)}
+          />
+        </div>
+        
+        {/* Mobile Sidebar - Fixed position */}
+        <div className={`md:hidden fixed top-0 left-0 bottom-0 z-40 transition-transform duration-300 ${
+          isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}>
+          <Sidebar
+            activePage={activePage}
+            onPageChange={setActivePage}
+            isOpen={isMobileSidebarOpen}
+            onClose={handleMobileSidebarClose}
+          />
+        </div>
+       
+        {/* Main Content */}
+        <main className={`flex-1 min-h-[calc(100vh-4rem)] overflow-auto transition-all duration-300 ${
+          isDesktopSidebarOpen ? 'md:ml-64' : 'md:ml-0'
+        }`}>
+          <div className="p-2 w-full">
+            {renderPage()}
+          </div>
+        </main>
+      </div>
+     
+      {/* Mobile Overlay */}
+      {isMobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
+          onClick={handleMobileSidebarClose}
+        />
+      )}
+    </div>
+  )
+}
+
+export default SuperAdminDashboard

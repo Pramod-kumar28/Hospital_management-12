@@ -1,0 +1,371 @@
+import React, { useState } from 'react';
+
+const AssignedPatients = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [showTests, setShowTests] = useState({});
+  const [showAddPatientModal, setShowAddPatientModal] = useState(false);
+  const [newPatient, setNewPatient] = useState({
+    name: '',
+    gender: 'Male',
+    age: '',
+    condition: '',
+    doctor: 'Dr. Meena Rao'
+  });
+
+  const patients = [
+    {
+      id: 1,
+      name: 'Leanne Graham',
+      gender: 'Female',
+      room: '101',
+      condition: 'Fever',
+      treatment: 'Antibiotics',
+      status: 'Stable',
+      lastVital: new Date().toLocaleTimeString(),
+      avatar: 'https://i.pravatar.cc/60?img=11'
+    },
+    {
+      id: 2,
+      name: 'Ervin Howell',
+      gender: 'Male',
+      room: '102',
+      condition: 'Diabetes',
+      treatment: 'IV Fluids',
+      status: 'Critical',
+      lastVital: new Date().toLocaleTimeString(),
+      avatar: 'https://i.pravatar.cc/60?img=12'
+    },
+    {
+      id: 3,
+      name: 'Clementine Bauch',
+      gender: 'Female',
+      room: '103',
+      condition: 'Fracture',
+      treatment: 'Rest',
+      status: 'Improving',
+      lastVital: new Date().toLocaleTimeString(),
+      avatar: 'https://i.pravatar.cc/60?img=13'
+    },
+    {
+      id: 4,
+      name: 'Patricia Lebsack',
+      gender: 'Female',
+      room: '104',
+      condition: 'Migraine',
+      treatment: 'Physiotherapy',
+      status: 'Stable',
+      lastVital: new Date().toLocaleTimeString(),
+      avatar: 'https://i.pravatar.cc/60?img=14'
+    }
+  ];
+
+  const conditions = [
+    'Fever', 'Diabetes', 'Hypertension', 'Cardiac Care', 
+    'Fracture', 'Migraine', 'Infection', 'Post-op Recovery',
+    'Pneumonia', 'Asthma', 'Arthritis', 'Other'
+  ];
+
+  const filteredPatients = patients.filter(patient => {
+    const matchesSearch = patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         patient.condition.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         patient.room.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = !statusFilter || patient.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Critical': return 'bg-red-100 text-red-800 border-red-200';
+      case 'Stable': return 'bg-green-100 text-green-800 border-green-200';
+      case 'Improving': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const toggleTests = (patientId) => {
+    setShowTests(prev => ({
+      ...prev,
+      [patientId]: !prev[patientId]
+    }));
+  };
+
+  const handleFileUpload = (e, patientId, testType) => {
+    const file = e.target.files[0];
+    if (file) {
+      alert(`✅ ${file.name} uploaded successfully to Doctor for Patient ${patientId}`);
+    }
+  };
+
+  const handleAddPatient = (e) => {
+    e.preventDefault();
+    if (newPatient.name && newPatient.age && newPatient.condition) {
+      alert(`Patient ${newPatient.name} added successfully!`);
+      setShowAddPatientModal(false);
+      setNewPatient({
+        name: '',
+        gender: 'Male',
+        age: '',
+        condition: '',
+        doctor: 'Dr. Meena Rao'
+      });
+    } else {
+      alert('Please fill all required fields');
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewPatient(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center mb-3">
+        <h2 className="text-2xl font-semibold text-gray-700">Assigned Patients</h2>
+        <button 
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center transition-colors"
+          onClick={() => setShowAddPatientModal(true)}
+        >
+          <i className="fas fa-plus mr-2"></i> Add Patient
+        </button>
+      </div>
+
+      {/* Search and Filter */}
+      <div className="bg-white p-4 rounded-lg card-shadow border border-gray-200">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1">
+            <input
+              type="text"
+              placeholder="Search patients by name, condition, or room..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <select 
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="">All Status</option>
+            <option value="Stable">Stable</option>
+            <option value="Critical">Critical</option>
+            <option value="Improving">Improving</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Add Patient Modal */}
+      {showAddPatientModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Add New Patient</h3>
+              <button 
+                className="text-gray-500 hover:text-gray-700 text-xl"
+                onClick={() => setShowAddPatientModal(false)}
+              >
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+            <form onSubmit={handleAddPatient} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                <input 
+                  type="text" 
+                  name="name"
+                  value={newPatient.name}
+                  onChange={handleInputChange}
+                  className="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                  required 
+                  placeholder="Enter patient's full name"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                  <select 
+                    name="gender"
+                    value={newPatient.gender}
+                    onChange={handleInputChange}
+                    className="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Age *</label>
+                  <input 
+                    type="number" 
+                    name="age"
+                    value={newPatient.age}
+                    onChange={handleInputChange}
+                    className="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                    min="0" 
+                    max="120" 
+                    required 
+                    placeholder="Age"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Condition *</label>
+                <select 
+                  name="condition"
+                  value={newPatient.condition}
+                  onChange={handleInputChange}
+                  className="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                >
+                  <option value="">Select Condition</option>
+                  {conditions.map(condition => (
+                    <option key={condition} value={condition}>{condition}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Assigned Doctor</label>
+                <select 
+                  name="doctor"
+                  value={newPatient.doctor}
+                  onChange={handleInputChange}
+                  className="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="Dr. Meena Rao">Dr. Meena Rao</option>
+                  <option value="Dr. Rajesh Kumar">Dr. Rajesh Kumar</option>
+                  <option value="Dr. Priya Sharma">Dr. Priya Sharma</option>
+                </select>
+              </div>
+              <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-200">
+                <button 
+                  type="button" 
+                  className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100 transition-colors"
+                  onClick={() => setShowAddPatientModal(false)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                >
+                  Add Patient
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Patients Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredPatients.map((patient) => (
+          <div key={patient.id} className="bg-white border border-gray-200 rounded-lg p-4 card-shadow hover:shadow-md transition-shadow fade-in">
+            <div className="flex items-center gap-3 mb-3">
+              <img src={patient.avatar} className="w-12 h-12 rounded-full" alt={patient.name} />
+              <div className="flex-1 min-w-0">
+                <div className="flex justify-between items-start">
+                  <h3 className="font-semibold text-blue-700 truncate">{patient.name}</h3>
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(patient.status)} whitespace-nowrap ml-2`}>
+                    {patient.status}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 truncate">{patient.gender} | Bed {patient.room}</p>
+              </div>
+            </div>
+            
+            <div className="text-sm text-gray-600 space-y-2 mb-3">
+              <div>
+                <span className="font-medium">Doctor:</span> Dr. Meena Rao
+              </div>
+              <div>
+                <span className="font-medium">Condition:</span> {patient.condition}
+              </div>
+              <div>
+                <span className="font-medium">Treatment:</span> {patient.treatment}
+              </div>
+              <div>
+                <span className="font-medium">Last Vitals:</span> {patient.lastVital}
+              </div>
+            </div>
+            
+            <div className="flex gap-2 mt-4 pt-3 border-t border-gray-200">
+              <button 
+                className="flex-1 bg-blue-50 text-blue-700 py-2 px-2 rounded text-sm hover:bg-blue-100 transition-colors flex items-center justify-center"
+                onClick={() => toggleTests(patient.id)}
+              >
+                <i className="fas fa-flask mr-1 text-xs"></i>Tests
+              </button>
+              <button className="flex-1 bg-green-50 text-green-700 py-2 px-2 rounded text-sm hover:bg-green-100 transition-colors flex items-center justify-center">
+                <i className="fas fa-notes-medical mr-1 text-xs"></i>Notes
+              </button>
+              <button className="flex-1 bg-purple-50 text-purple-700 py-2 px-2 rounded text-sm hover:bg-purple-100 transition-colors flex items-center justify-center">
+                <i className="fas fa-pills mr-1 text-xs"></i>Meds
+              </button>
+            </div>
+            
+            {/* Tests Section */}
+            <div className={`mt-3 bg-gray-50 rounded-lg p-3 text-sm ${showTests[patient.id] ? 'block' : 'hidden'}`}>
+              <div className="border-b border-gray-200 pb-2 mb-2">
+                <p><strong>Test:</strong> Blood Test</p>
+                <p><strong>Status:</strong> Completed</p>
+                <label className="block text-blue-600 mt-2 text-sm cursor-pointer hover:text-blue-800 transition-colors">
+                  <i className="fas fa-upload mr-1"></i>Upload Report (PDF)
+                  <input 
+                    type="file" 
+                    className="hidden" 
+                    accept=".pdf"
+                    onChange={(e) => handleFileUpload(e, patient.id, 'Blood')}
+                  />
+                </label>
+              </div>
+              <div className="border-b border-gray-200 pb-2 mb-2">
+                <p><strong>Test:</strong> Urine Test</p>
+                <p><strong>Status:</strong> Pending</p>
+                <label className="block text-blue-600 mt-2 text-sm cursor-pointer hover:text-blue-800 transition-colors">
+                  <i className="fas fa-upload mr-1"></i>Upload Report (PDF)
+                  <input 
+                    type="file" 
+                    className="hidden" 
+                    accept=".pdf"
+                    onChange={(e) => handleFileUpload(e, patient.id, 'Urine')}
+                  />
+                </label>
+              </div>
+              <div className="pb-1">
+                <p><strong>Test:</strong> X-Ray</p>
+                <p><strong>Status:</strong> Pending</p>
+                <label className="block text-blue-600 mt-2 text-sm cursor-pointer hover:text-blue-800 transition-colors">
+                  <i className="fas fa-upload mr-1"></i>Upload Report (PDF)
+                  <input 
+                    type="file" 
+                    className="hidden" 
+                    accept=".pdf"
+                    onChange={(e) => handleFileUpload(e, patient.id, 'X-Ray')}
+                  />
+                </label>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {filteredPatients.length === 0 && (
+        <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
+          <div className="text-6xl mb-4">👥</div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">No patients found</h3>
+          <p className="text-gray-600">Try adjusting your search criteria</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default AssignedPatients;

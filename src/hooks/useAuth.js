@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux'
-import { loginStart, loginSuccess, loginFailure } from '../redux/slices/authSlice'
+import { loginStart, loginSuccess, loginFailure, logout } from '../redux/slices/authSlice'
 
 const USERS = [
   { email: "admin@dcm.demo", password: "admin123", role: "ADMIN", name: "Admin" },
@@ -44,9 +44,20 @@ export const useAuth = () => {
     }
   }
 
-  const logout = () => {
-    dispatch(logout())
-  }
+  // In the useAuth hook, change the logout function to:
+const logoutUser = () => {
+  dispatch(logout())
+}
+
+// And in the return statement, change to:
+return {
+  login,
+  logout: logoutUser,  // Keep external name as 'logout'
+  isAuthenticated,
+  user,
+  loading,
+  error
+}
 
   return {
     login,

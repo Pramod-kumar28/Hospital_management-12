@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import LoadingSpinner from '../../../../components/common/LoadingSpinner/LoadingSpinner'
 import DataTable from '../../../../components/ui/Tables/DataTable'
+import Modal from '../../../../components/common/Modal/Modal'
 
 const LabResults = () => {
   const [loading, setLoading] = useState(true)
   const [labResults, setLabResults] = useState([])
+  const [selectedLab, setSelectedLab] = useState(null)
+  const [modalType, setModalType] = useState(null)
 
   useEffect(() => {
     loadLabResults()
@@ -21,6 +24,119 @@ const LabResults = () => {
       ])
       setLoading(false)
     }, 1000)
+  }
+
+  const handleAction = (lab, action) => {
+    setSelectedLab(lab)
+    setModalType(action)
+  }
+
+  const closeModal = () => {
+    setSelectedLab(null)
+    setModalType(null)
+  }
+
+  const handleDownload = () => {
+    // Simulate download
+    console.log(`Downloading ${selectedLab.test} for ${selectedLab.patient}`)
+    alert(`Downloading ${selectedLab.test} report for ${selectedLab.patient}`)
+    closeModal()
+  }
+
+  const handleReview = () => {
+    // Simulate review action
+    console.log(`Reviewing ${selectedLab.test} for ${selectedLab.patient}`)
+    alert(`Opening detailed review for ${selectedLab.test}`)
+    closeModal()
+  }
+
+  const handleMarkReviewed = () => {
+    // Update lab result status
+    setLabResults(prev => prev.map(lab => 
+      lab.id === selectedLab.id ? { ...lab, status: 'Reviewed' } : lab
+    ))
+    alert(`Marked ${selectedLab.test} as reviewed`)
+    closeModal()
+  }
+
+  const renderModalContent = () => {
+    if (!selectedLab) return null
+
+    switch (modalType) {
+      case 'download':
+        return (
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Download Lab Report</h3>
+            <p className="mb-4">Are you sure you want to download the {selectedLab.test} report for {selectedLab.patient}?</p>
+            <div className="flex gap-2 justify-end">
+              <button 
+                onClick={closeModal}
+                className="px-4 py-2 text-gray-600 border rounded hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleDownload}
+                className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+              >
+                Download
+              </button>
+            </div>
+          </div>
+        )
+      
+      case 'review':
+        return (
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Review Lab Result</h3>
+            <div className="space-y-3 mb-4">
+              <p><strong>Patient:</strong> {selectedLab.patient}</p>
+              <p><strong>Test:</strong> {selectedLab.test}</p>
+              <p><strong>Result:</strong> {selectedLab.result}</p>
+              <p><strong>Date:</strong> {selectedLab.date}</p>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <button 
+                onClick={closeModal}
+                className="px-4 py-2 text-gray-600 border rounded hover:bg-gray-50"
+              >
+                Close
+              </button>
+              <button 
+                onClick={handleReview}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                View Details
+              </button>
+            </div>
+          </div>
+        )
+      
+      case 'markReviewed':
+        return (
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Mark as Reviewed</h3>
+            <p className="mb-4">Mark {selectedLab.test} for {selectedLab.patient} as reviewed?</p>
+            <div className="flex gap-2 justify-end">
+              <button 
+                onClick={closeModal}
+                className="px-4 py-2 text-gray-600 border rounded hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleMarkReviewed}
+                className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
+              >
+                Mark Reviewed
+              </button>
+            </div>
+          </div>
+        )
+      
+      default:
+        return null
+    }
   }
 
   if (loading) return <LoadingSpinner />
@@ -44,14 +160,23 @@ const LabResults = () => {
             <p className="text-sm text-gray-600"><strong>Date:</strong> {lab.date}</p>
             <p className="text-sm text-gray-600 mb-2"><strong>Result:</strong> {lab.result}</p>
             <div className="flex gap-2">
-              <button className="bg-green-500 text-white px-3 py-1 text-xs rounded hover:bg-green-600 flex items-center">
+              <button 
+                onClick={() => handleAction(lab, 'download')}
+                className="bg-green-500 text-white px-3 py-1 text-xs rounded hover:bg-green-600 flex items-center"
+              >
                 <i className="fas fa-download mr-1"></i> Download
               </button>
-              <button className="bg-blue-500 text-white px-3 py-1 text-xs rounded hover:bg-blue-600 flex items-center">
+              <button 
+                onClick={() => handleAction(lab, 'review')}
+                className="bg-blue-500 text-white px-3 py-1 text-xs rounded hover:bg-blue-600 flex items-center"
+              >
                 <i className="fas fa-eye mr-1"></i> Review
               </button>
               {lab.status !== 'Reviewed' && (
-                <button className="bg-purple-500 text-white px-3 py-1 text-xs rounded hover:bg-purple-600 flex items-center">
+                <button 
+                  onClick={() => handleAction(lab, 'markReviewed')}
+                  className="bg-purple-500 text-white px-3 py-1 text-xs rounded hover:bg-purple-600 flex items-center"
+                >
                   <i className="fas fa-check mr-1"></i> Mark Reviewed
                 </button>
               )}
@@ -84,10 +209,16 @@ const LabResults = () => {
               title: 'Actions',
               render: (_, row) => (
                 <div className="flex gap-2">
-                  <button className="text-blue-500 hover:text-blue-700">
+                  <button 
+                    onClick={() => handleAction(row, 'review')}
+                    className="text-blue-500 hover:text-blue-700"
+                  >
                     <i className="fas fa-eye"></i>
                   </button>
-                  <button className="text-green-500 hover:text-green-700">
+                  <button 
+                    onClick={() => handleAction(row, 'markReviewed')}
+                    className="text-green-500 hover:text-green-700"
+                  >
                     <i className="fas fa-check"></i>
                   </button>
                 </div>
@@ -97,6 +228,15 @@ const LabResults = () => {
           data={labResults.filter(lab => lab.status !== 'Reviewed')}
         />
       </div>
+
+      {/* Modal */}
+      <Modal
+        isOpen={!!modalType}
+        onClose={closeModal}
+        title={`${selectedLab?.test} - ${selectedLab?.patient}`}
+      >
+        {renderModalContent()}
+      </Modal>
     </div>
   )
 }

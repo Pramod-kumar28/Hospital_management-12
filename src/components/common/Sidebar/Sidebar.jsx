@@ -179,7 +179,7 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
     { id: 'profile', label: 'Hospital Profile', icon: '🏢' },
     { id: 'doctors', label: 'Doctor Management', icon: '👨‍⚕️' },
     { id: 'staff', label: 'Staff Management', icon: '👥' },
-    { id: 'departments', label: 'Department Management', icon: '🏗️' },
+    { id: 'departments', label: 'Department Management', icon: '🏬' },
     { id: 'appointments', label: 'Appointment Management', icon: '📋' },
     { id: 'billing', label: 'Billing & Finance', icon: '💰' },
     { id: 'inpatient', label: 'Inpatient Management', icon: '🛏️' },

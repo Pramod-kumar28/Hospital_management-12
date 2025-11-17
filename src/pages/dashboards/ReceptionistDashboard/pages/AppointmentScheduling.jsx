@@ -53,7 +53,7 @@ const AppointmentScheduling = () => {
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-        <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-700 text-responsive">Appointment Scheduling</h2>
+        <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-700 text-responsive">📅 Appointment Scheduling</h2>
         <button 
           onClick={() => setShowForm(true)}
           className="btn btn-primary btn-mobile-full sm:w-auto flex items-center justify-center"

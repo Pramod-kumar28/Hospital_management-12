@@ -127,7 +127,7 @@ const HospitalProfile = () => {
   return (
     <div className="animate-fade-in">
       <h2 className="text-2xl font-semibold text-gray-700 mb-6">
-        <i className="fas fa-hospital text-blue-500 mr-2"></i>Hospital Profile
+       🏢 Hospital Profile
       </h2>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

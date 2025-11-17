@@ -159,7 +159,7 @@ const InpatientManagement = () => {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold text-gray-700">
-          <i className="fas fa-procedures text-blue-500 mr-2"></i>Inpatient Management
+          🛏️ Inpatient Management
         </h2>
         <button 
           onClick={() => openModal('add')}

@@ -79,7 +79,7 @@ const NurseOverview = () => {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold text-gray-700 mb-6">
-        <i className="fas fa-tachometer-alt text-blue-500 mr-2"></i>Dashboard Overview
+        📊 Dashboard Overview
       </h2>
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

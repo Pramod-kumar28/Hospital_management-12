@@ -124,7 +124,7 @@ const HospitalManagement = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-semibold text-gray-700">
-          <i className="fas fa-hospital text-blue-500 mr-2"></i>Hospital Management
+          🏥 Hospital Management
         </h2>
         <button 
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"

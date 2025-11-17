@@ -127,7 +127,7 @@ const AssignedPatients = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center mb-3">
-        <h2 className="text-2xl font-semibold text-gray-700">Assigned Patients</h2>
+        <h2 className="text-2xl font-semibold text-gray-700">👥 Assigned Patients</h2>
         <button 
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center transition-colors"
           onClick={() => setShowAddPatientModal(true)}

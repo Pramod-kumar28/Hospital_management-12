@@ -154,7 +154,7 @@ const UserAccounts = () => {
           {/* <h1 className="text-2xl font-bold text-gray-900">Admin</h1> */}
           <div className="flex items-center gap-2 mt-1">
             <h2 className="text-2xl font-semibold text-gray-700">
-              <i className="fas fa-users text-blue-500 mr-2"></i>User Accounts
+              👥 User Accounts
             </h2>
           </div>
         </div>

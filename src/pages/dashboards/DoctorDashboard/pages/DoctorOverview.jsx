@@ -63,7 +63,7 @@ const DoctorOverview = ({ onPageChange }) => {
   return (
     <div className="space-y-6 animate-fade-in">
       <h2 className="text-2xl font-semibold text-gray-700 mb-3">
-        <i className='fas fa-tachometer-alt text-blue-500 mr-2'></i>Doctor Dashboard
+        📊 Doctor Dashboard
       </h2>
       
       {/* Stats Cards */}

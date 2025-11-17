@@ -134,7 +134,7 @@ const VitalsMonitoring = () => {
     <div className="space-y-6">
       {/* Vitals Table - Mobile Optimized */}
       <div>
-        <h2 className="text-2xl font-semibold text-gray-700 mb-3">Vitals Monitoring</h2>
+        <h2 className="text-2xl font-semibold text-gray-700 mb-3">❤️ Vitals Monitoring</h2>
         <div className="bg-white border rounded card-shadow overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-100 text-gray-600">

@@ -85,7 +85,7 @@ const SubscriptionsBilling = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <h2 className="text-xl sm:text-2xl font-semibold text-gray-700">
-          <i className="fas fa-credit-card text-blue-500 mr-2"></i>Subscriptions & Billing
+          💳 Subscriptions & Billing
         </h2>
         
         {/* Mobile Search */}

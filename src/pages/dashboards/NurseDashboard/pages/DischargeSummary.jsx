@@ -135,7 +135,7 @@ const DischargeSummary = () => {
   return (
     <div className="space-y-6 overflow-x-hidden">
       {/* Header */}
-      <h2 className="text-2xl font-semibold text-gray-700 mb-3">Discharge Summary Support</h2>
+      <h2 className="text-2xl font-semibold text-gray-700 mb-3">📄 Discharge Summary Support</h2>
 
       {/* Patients Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

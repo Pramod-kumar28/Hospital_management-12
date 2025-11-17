@@ -39,7 +39,7 @@ const AdminOverview = () => {
   return (
     <div className="space-y-6 animate-fade-in">
       <h2 className="text-2xl font-semibold text-gray-700 mb-6">
-        <i className="fas fa-tachometer-alt text-blue-500 mr-2"></i>Admin Dashboard Overview
+        📊 Admin Dashboard Overview
       </h2>
       
       {/* Metrics Cards */}
@@ -53,7 +53,7 @@ const AdminOverview = () => {
               <div className="text-xs text-green-500 mt-1">+5 from yesterday</div>
             </div>
             <div className="bg-blue-100 p-3 rounded-lg">
-              <i className="fas fa-user-injured text-blue-500 text-xl"></i>
+              <i className="fas fa-user-injured text-blue-500 text-xl"></i> 
             </div>
           </div>
         </div>

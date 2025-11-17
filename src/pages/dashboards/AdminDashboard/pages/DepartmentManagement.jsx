@@ -533,7 +533,7 @@ const DepartmentManagement = () => {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold text-gray-700">
-          <i className="fas fa-sitemap text-blue-500 mr-2"></i>Department Management
+          🏬 Department Management
         </h2>
         <button 
           onClick={() => openModal('add')}

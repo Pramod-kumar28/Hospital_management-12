@@ -40,7 +40,7 @@ const ReceptionOverview = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <h2 className="text-2xl font-semibold text-gray-700">Reception Dashboard</h2>
+      <h2 className="text-2xl font-semibold text-gray-700">📊 Reception Dashboard</h2>
       
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

@@ -140,7 +140,7 @@ const BedManagement = () => {
     <div className="space-y-4 md:space-y-6">
       {/* Header - Mobile Optimized */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-        <h2 className="text-xl sm:text-2xl font-semibold text-gray-700">Bed/Room Management</h2>
+        <h2 className="text-xl sm:text-2xl font-semibold text-gray-700">🛏️ Bed/Room Management</h2>
         <div className="flex gap-2">
           {/* Mobile Filter Toggle */}
           <button 

@@ -134,7 +134,7 @@ const MedicationSchedule = () => {
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <h2 className="text-2xl font-semibold text-gray-700">Medication Schedule</h2>
+          <h2 className="text-2xl font-semibold text-gray-700">💊 Medication Schedule</h2>
           <button 
             onClick={() => setIsModalOpen(true)}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center transition-colors duration-200 w-full sm:w-auto justify-center"

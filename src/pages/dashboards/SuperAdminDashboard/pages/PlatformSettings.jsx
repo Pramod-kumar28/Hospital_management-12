@@ -222,7 +222,7 @@ const PlatformSettings = () => {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold text-gray-700">
-        <i className="fas fa-cogs text-blue-500 mr-2"></i>Platform Settings
+        ⚙️ Platform Settings
       </h2>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -110,7 +110,7 @@ export default function Header(){
             {/* Mobile CTA Buttons */}
             <div className="flex gap-3 pt-4 border-t border-gray-200">
               <Link 
-                to="/signin" 
+                to="/login" 
                 className="flex-1 px-4 py-3 text-center text-base font-medium text-gray-700 rounded-lg bg-gray-50 hover:bg-gray-100 transition-all duration-200 border border-gray-200"
                 onClick={() => setOpen(false)}
               >

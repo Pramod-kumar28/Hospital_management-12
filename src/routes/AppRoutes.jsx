@@ -254,7 +254,7 @@ import Features from '../landing/pages/Features.jsx'
 import Solutions from '../landing/pages/Solutions.jsx'
 import Pricing from '../landing/pages/Pricing.jsx'
 import Contact from '../landing/pages/Contact.jsx'
-import Signin from '../landing/pages/Signin.jsx'
+// import Signin from '../landing/pages/Signin.jsx'
 import Signup from '../landing/pages/Signup.jsx'
 import LabDashboard from '../pages/dashboards/LabDashboard/LabDashboard.jsx'
 

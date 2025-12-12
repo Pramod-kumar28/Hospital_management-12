@@ -157,67 +157,541 @@
 
 
 
+// import React from 'react'
+// import { useAuth } from '../../../hooks/useAuth'
+
+// const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
+//   const { user } = useAuth()
+
+//   const doctorMenu = [
+//     { id: 'dashboard', label: 'Dashboard Overview', icon: '📊' },
+//     { id: 'appointments', label: 'Appointments', icon: '📅' },
+//     { id: 'patients', label: 'Patient Records', icon: '👨‍⚕️' },
+//     { id: 'prescriptions', label: 'Prescriptions', icon: '💊' },
+//     { id: 'labs', label: 'Lab Results', icon: '🧪' },
+//     { id: 'inpatient', label: 'Inpatient Visits', icon: '🏥' },
+//     { id: 'messages', label: 'Messaging', icon: '💬' },
+//     { id: 'profile', label: 'My Profile', icon: '👨‍💼' }
+//   ]
+
+//   const adminMenu = [
+//     { id: 'dashboard', label: 'Dashboard Overview', icon: '📊' },
+//     { id: 'profile', label: 'Hospital Profile', icon: '🏢' },
+//     { id: 'doctors', label: 'Doctor Management', icon: '👨‍⚕️' },
+//     { id: 'staff', label: 'Staff Management', icon: '👥' },
+//     { id: 'departments', label: 'Department Management', icon: '🏬' },
+//     { id: 'appointments', label: 'Appointment Management', icon: '📋' },
+//     { id: 'billing', label: 'Billing & Finance', icon: '💰' },
+//     { id: 'inpatient', label: 'Inpatient Management', icon: '🛏️' },
+//     { id: 'pharmacy', label: 'Pharmacy Management', icon: '💊' },
+//     { id: 'lab', label: 'Lab Management', icon: '🔬' },
+//     { id: 'reports', label: 'Reports', icon: '📈' },
+//     { id: 'settings', label: 'Settings', icon: '⚙️' }
+//   ]
+
+//   const nurseMenu = [
+//     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+//     { id: 'patients', label: 'Assigned Patients', icon: '👥' },
+//     { id: 'vitals', label: 'Vitals Monitoring', icon: '❤️' },
+//     { id: 'medications', label: 'Medication Schedule', icon: '💊' },
+//     { id: 'wards', label: 'Bed Management', icon: '🛏️' },
+//     { id: 'labs', label: 'Lab Tests & Upload', icon: '🧪' },
+//     { id: 'notes', label: 'Nursing Notes', icon: '📝' },
+//     { id: 'discharge', label: 'Discharge Summary', icon: '📄' },
+//     { id: 'profile', label: 'My Profile', icon: '👩‍⚕️' }
+//   ]
+
+//   const receptionistMenu = [
+//     { id: 'dashboard', label: 'Dashboard Overview', icon: '📊' },
+//     { id: 'registration', label: 'Patient Registration', icon: '👤' },
+//     { id: 'appointments', label: 'Appointment Scheduling', icon: '📅' },
+//     { id: 'billing', label: 'Billing', icon: '💰' },
+//     { id: 'records', label: 'Patient Records', icon: '📁' },
+//     { id: 'profile', label: 'My Profile', icon: '💁' }
+//   ]
+
+//   const superAdminMenu = [
+//     { id: 'dashboard', label: 'Dashboard Overview', icon: '📊' },
+//     { id: 'hospitals', label: 'Hospital Management', icon: '🏥' },
+//     { id: 'subscriptions', label: 'Subscriptions & Billing', icon: '💳' },
+//     { id: 'users', label: 'User Accounts', icon: '👥' },
+//     { id: 'settings', label: 'Platform Settings', icon: '⚙️' },
+//     { id: 'reports', label: 'Reports & Analytics', icon: '📈' },
+//     { id: 'audit', label: 'Audit Logs', icon: '📋' },
+//   ]
+
+//   const getMenuItems = () => {
+//     switch (user?.role) {
+//       case 'ADMIN': return adminMenu
+//       case 'NURSE': return nurseMenu
+//       case 'RECEPTIONIST': return receptionistMenu
+//       case 'SUPER_ADMIN': return superAdminMenu
+//       default: return doctorMenu
+//     }
+//   }
+
+//   const menuItems = getMenuItems()
+
+//   const handleItemClick = (itemId) => {
+//     onPageChange(itemId)
+//     onClose?.()
+//   }
+
+//   return (
+//     <>
+//       {/* Mobile Sidebar */}
+//       <aside
+//         className={`fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-white border-r transform transition-transform duration-300 z-40 md:hidden ${
+//           isOpen ? 'translate-x-0' : '-translate-x-full'
+//         }`}
+//       >
+//         <div className="h-full flex flex-col">
+//           {/* Header */}
+//           <div className="flex-shrink-0 p-4 border-b">
+//             <div className="flex justify-between items-center">
+//               <h2 className="text-gray-700 font-semibold text-lg">Navigation</h2>
+//               <button
+//                 onClick={onClose}
+//                 className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+//                 aria-label="Close menu"
+//               >
+//                 <i className="fas fa-times text-gray-600 text-lg"></i>
+//               </button>
+//             </div>
+//           </div>
+          
+//           {/* Scrollable Navigation */}
+//           <nav className="flex-1 overflow-y-auto py-2">
+//             <div className="space-y-1 px-2">
+//               {menuItems.map(item => (
+//                 <button
+//                   key={item.id}
+//                   onClick={() => handleItemClick(item.id)}
+//                   className={`w-full text-left p-3 rounded-lg flex items-center transition-all duration-200 ${
+//                     activePage === item.id
+//                       ? 'bg-blue-100 text-blue-700 font-semibold border-l-4 border-l-blue-500'
+//                       : 'hover:bg-gray-50 text-gray-700'
+//                   }`}
+//                 >
+//                   <span className="text-lg mr-3 w-6 text-center">{item.icon}</span>
+//                   <span className="text-sm">{item.label}</span>
+//                 </button>
+//               ))}
+//             </div>
+//           </nav>
+//         </div>
+//       </aside>
+
+//       {/* Desktop Sidebar */}
+//       <aside className="hidden md:block w-64 bg-white border-r h-[calc(100vh-4rem)] sticky top-16">
+//         <div className="h-full flex flex-col">
+//           {/* Header */}
+//           <div className="flex-shrink-0 p-4 border-b">
+//             <div className="flex justify-between items-center">
+//               <h2 className="text-gray-700 font-semibold text-lg">Navigation</h2>
+//               <button
+//                 onClick={onClose}
+//                 className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+//                 aria-label="Close sidebar"
+//               >
+//                 <i className="fas fa-times text-gray-600 text-lg"></i>
+//               </button>
+//             </div>
+//           </div>
+          
+//           {/* Scrollable Navigation */}
+//           <nav className="flex-1 overflow-y-auto py-2">
+//             <div className="space-y-1 px-2">
+//               {menuItems.map(item => (
+//                 <button
+//                   key={item.id}
+//                   onClick={() => onPageChange(item.id)}
+//                   className={`w-full text-left p-3 rounded-lg flex items-center transition-all duration-200 ${
+//                     activePage === item.id
+//                       ? 'bg-blue-100 text-blue-700 font-semibold border-l-4 border-l-blue-500'
+//                       : 'hover:bg-gray-50 text-gray-700'
+//                   }`}
+//                 >
+//                   <span className="text-lg mr-3 w-6 text-center">{item.icon}</span>
+//                   <span className="text-sm">{item.label}</span>
+//                 </button>
+//               ))}
+//             </div>
+//           </nav>
+//         </div>
+//       </aside>
+
+//       {/* Mobile Overlay */}
+//       {isOpen && (
+//         <div 
+//           className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden" 
+//           onClick={onClose} 
+//         />
+//       )}
+//     </>
+//   )
+// }
+
+// export default Sidebar
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import React from 'react'
+// import { useAuth } from '../../../hooks/useAuth'
+
+// const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
+//   const { user } = useAuth()
+
+//   // Get role-based title
+//   const getSidebarTitle = () => {
+//     switch (user?.role) {
+//       case 'DOCTOR': return 'Doctor Portal'
+//       case 'ADMIN': return 'Hospital Admin'
+//       case 'NURSE': return 'Nurse Dashboard'
+//       case 'RECEPTIONIST': return 'Reception Desk'
+//       case 'SUPER_ADMIN': return 'Super Admin'
+//       default: return 'Dashboard'
+//     }
+//   }
+
+//   const sidebarTitle = getSidebarTitle()
+
+//   const doctorMenu = [
+//     { id: 'dashboard', label: 'Dashboard Overview', icon: 'fa-chart-line' },
+//     { id: 'appointments', label: 'Appointments', icon: 'fa-calendar-alt' },
+//     { id: 'patients', label: 'Patient Records', icon: 'fa-user-injured' },
+//     { id: 'prescriptions', label: 'Prescriptions', icon: 'fa-prescription-bottle-medical' },
+//     { id: 'labs', label: 'Lab Results', icon: 'fa-flask' },
+//     { id: 'inpatient', label: 'Inpatient Visits', icon: 'fa-procedures' },
+//     { id: 'messages', label: 'Messaging', icon: 'fa-comments' },
+//     { id: 'profile', label: 'My Profile', icon: 'fa-user-md' }
+//   ]
+
+//   const adminMenu = [
+//     { id: 'dashboard', label: 'Dashboard Overview', icon: 'fa-chart-line' },
+//     { id: 'profile', label: 'Hospital Profile', icon: 'fa-hospital' },
+//     { id: 'doctors', label: 'Doctor Management', icon: 'fa-user-md' },
+//     { id: 'staff', label: 'Staff Management', icon: 'fa-users' },
+//     { id: 'departments', label: 'Department Management', icon: 'fa-building' },
+//     { id: 'appointments', label: 'Appointment Management', icon: 'fa-clipboard-list' },
+//     { id: 'billing', label: 'Billing & Finance', icon: 'fa-money-bill-wave' },
+//     { id: 'inpatient', label: 'Inpatient Management', icon: 'fa-bed' },
+//     { id: 'pharmacy', label: 'Pharmacy Management', icon: 'fa-prescription-bottle-alt' },
+//     { id: 'lab', label: 'Lab Management', icon: 'fa-microscope' },
+//     { id: 'reports', label: 'Reports', icon: 'fa-chart-bar' },
+//     { id: 'settings', label: 'Settings', icon: 'fa-cog' }
+//   ]
+
+//   const nurseMenu = [
+//     { id: 'dashboard', label: 'Dashboard', icon: 'fa-chart-line' },
+//     { id: 'patients', label: 'Assigned Patients', icon: 'fa-users' },
+//     { id: 'vitals', label: 'Vitals Monitoring', icon: 'fa-heartbeat' },
+//     { id: 'medications', label: 'Medication Schedule', icon: 'fa-pills' },
+//     { id: 'wards', label: 'Bed Management', icon: 'fa-bed' },
+//     { id: 'labs', label: 'Lab Tests & Upload', icon: 'fa-vial' },
+//     { id: 'notes', label: 'Nursing Notes', icon: 'fa-notes-medical' },
+//     { id: 'discharge', label: 'Discharge Summary', icon: 'fa-file-medical' },
+//     { id: 'profile', label: 'My Profile', icon: 'fa-user-nurse' }
+//   ]
+
+//   const receptionistMenu = [
+//     { id: 'dashboard', label: 'Dashboard Overview', icon: 'fa-chart-line' },
+//     { id: 'registration', label: 'Patient Registration', icon: 'fa-user-plus' },
+//     { id: 'appointments', label: 'Appointment Scheduling', icon: 'fa-calendar-check' },
+//     { id: 'records', label: 'Patient Records', icon: 'fa-folder' },
+//     { id: 'opd', label: 'OPD Management', icon: 'fas fa-stethoscope' },
+//     { id: 'ipd', label: 'IPD Management', icon: 'fas fa-procedures' },
+//     { id: 'documents', label: 'Document Management', icon: 'fas fa-file-upload' },
+//     { id: 'billing', label: 'Billing', icon: 'fa-receipt' },
+//     { id: 'discharge', label: 'Discharge Summary', icon: 'fas fa-file-contract' },
+//     { id: 'profile', label: 'My Profile', icon: 'fa-user-tie' }
+//   ]
+
+//   const superAdminMenu = [
+//     { id: 'dashboard', label: 'Dashboard Overview', icon: 'fa-chart-line' },
+//     { id: 'hospitals', label: 'Hospital Management', icon: 'fa-hospital-alt' },
+//     { id: 'subscriptions', label: 'Subscriptions & Billing', icon: 'fa-credit-card' },
+//     { id: 'users', label: 'User Accounts', icon: 'fa-user-cog' },
+//     { id: 'settings', label: 'Platform Settings', icon: 'fa-sliders-h' },
+//     { id: 'reports', label: 'Reports & Analytics', icon: 'fa-chart-pie' },
+//     { id: 'audit', label: 'Audit Logs', icon: 'fa-clipboard-check' },
+//   ]
+
+//   const getMenuItems = () => {
+//     switch (user?.role) {
+//       case 'ADMIN': return adminMenu
+//       case 'NURSE': return nurseMenu
+//       case 'RECEPTIONIST': return receptionistMenu
+//       case 'SUPER_ADMIN': return superAdminMenu
+//       default: return doctorMenu
+//     }
+//   }
+
+//   const menuItems = getMenuItems()
+
+//   const handleItemClick = (itemId) => {
+//     onPageChange(itemId)
+//     onClose?.()
+//   }
+
+//   return (
+//     <>
+//       {/* Mobile Sidebar */}
+//       <aside
+//         className={`fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-white border-r transform transition-transform duration-300 z-40 md:hidden ${
+//           isOpen ? 'translate-x-0' : '-translate-x-full'
+//         }`}
+//       >
+//         <div className="h-full flex flex-col">
+//           {/* Header */}
+//           <div className="flex-shrink-0 p-4 border-b">
+//             <div className="flex justify-between items-center">
+//               <h2 className="text-gray-700 font-semibold text-lg">{sidebarTitle}</h2>
+//               <button
+//                 onClick={onClose}
+//                 className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+//                 aria-label="Close menu"
+//               >
+//                 <i className="fas fa-times text-gray-600 text-lg"></i>
+//               </button>
+//             </div>
+//           </div>
+          
+//           {/* Scrollable Navigation */}
+//           <nav className="flex-1 overflow-y-auto py-2">
+//             <div className="space-y-1 px-2">
+//               {menuItems.map(item => (
+//                 <button
+//                   key={item.id}
+//                   onClick={() => handleItemClick(item.id)}
+//                   className={`w-full text-left p-3 rounded-lg flex items-center transition-all duration-200 ${
+//                     activePage === item.id
+//                       ? 'bg-blue-100 text-blue-700 font-semibold border-l-4 border-l-blue-500'
+//                       : 'hover:bg-gray-50 text-gray-700'
+//                   }`}
+//                 >
+//                   <span className={`text-lg mr-3 w-6 text-center ${
+//                     activePage === item.id ? 'text-blue-600' : 'text-blue-500'
+//                   }`}>
+//                     <i className={`fas ${item.icon}`}></i>
+//                   </span>
+//                   <span className="text-sm">{item.label}</span>
+//                 </button>
+//               ))}
+//             </div>
+//           </nav>
+//         </div>
+//       </aside>
+
+//       {/* Desktop Sidebar */}
+//       <aside className="hidden md:block w-64 bg-white border-r h-[calc(100vh-4rem)] sticky top-16">
+//         <div className="h-full flex flex-col">
+//           {/* Header */}
+//           <div className="flex-shrink-0 p-4 border-b">
+//             <div className="flex justify-between items-center">
+//               <h2 className="text-gray-700 font-semibold text-lg">{sidebarTitle}</h2>
+//               <button
+//                 onClick={onClose}
+//                 className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+//                 aria-label="Close sidebar"
+//               >
+//                 <i className="fas fa-times text-gray-600 text-lg"></i>
+//               </button>
+//             </div>
+//           </div>
+          
+//           {/* Scrollable Navigation */}
+//           <nav className="flex-1 overflow-y-auto py-2">
+//             <div className="space-y-1 px-2">
+//               {menuItems.map(item => (
+//                 <button
+//                   key={item.id}
+//                   onClick={() => onPageChange(item.id)}
+//                   className={`w-full text-left p-3 rounded-lg flex items-center transition-all duration-200 ${
+//                     activePage === item.id
+//                       ? 'bg-blue-100 text-blue-700 font-semibold border-l-4 border-l-blue-500'
+//                       : 'hover:bg-gray-50 text-gray-700'
+//                   }`}
+//                 >
+//                   <span className={`text-lg mr-3 w-6 text-center ${
+//                     activePage === item.id ? 'text-blue-600' : 'text-blue-500'
+//                   }`}>
+//                     <i className={`fas ${item.icon}`}></i>
+//                   </span>
+//                   <span className="text-sm">{item.label}</span>
+//                 </button>
+//               ))}
+//             </div>
+//           </nav>
+//         </div>
+//       </aside>
+
+//       {/* Mobile Overlay */}
+//       {isOpen && (
+//         <div 
+//           className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden" 
+//           onClick={onClose} 
+//         />
+//       )}
+//     </>
+//   )
+// }
+
+// export default Sidebar
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import React from 'react'
 import { useAuth } from '../../../hooks/useAuth'
 
 const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
   const { user } = useAuth()
 
+  // Get role-based title
+  const getSidebarTitle = () => {
+    switch (user?.role) {
+      case 'DOCTOR': return 'Doctor Portal'
+      case 'ADMIN': return 'Hospital Admin'
+      case 'NURSE': return 'Nurse Dashboard'
+      case 'RECEPTIONIST': return 'Reception Desk'
+      case 'SUPER_ADMIN': return 'Super Admin'
+      case 'PATIENT': return 'Patient Portal'
+      case 'LAB': return 'Laboratory Portal'
+      default: return 'Dashboard'
+    }
+  }
+
+  const sidebarTitle = getSidebarTitle()
+
+  const labMenu = [
+    { id: 'lab-dashboard', label: 'Lab Dashboard', icon: 'fas fa-flask' },
+    { id: 'test-registration', label: 'Test Registration', icon: 'fas fa-vial' },
+    { id: 'sample-tracking', label: 'Sample Tracking', icon: 'fas fa-qrcode' },
+    { id: 'report-generation', label: 'Report Generation', icon: 'fas fa-file-medical' },
+    { id: 'result-access', label: 'Result Access', icon: 'fas fa-shield-alt' },
+    { id: 'test-catalogue', label: 'Test Catalogue', icon: 'fas fa-book-medical' },
+    { id: 'equipment-tracking', label: 'Equipment Tracking', icon: 'fas fa-microscope' },
+    { id: 'quality-control', label: 'Quality Control', icon: 'fas fa-chart-line' },
+    { id: 'profile', label: 'Lab Profile', icon: 'fas fa-user-md' }
+  ]
+
   const doctorMenu = [
-    { id: 'dashboard', label: 'Dashboard Overview', icon: '📊' },
-    { id: 'appointments', label: 'Appointments', icon: '📅' },
-    { id: 'patients', label: 'Patient Records', icon: '👨‍⚕️' },
-    { id: 'prescriptions', label: 'Prescriptions', icon: '💊' },
-    { id: 'labs', label: 'Lab Results', icon: '🧪' },
-    { id: 'inpatient', label: 'Inpatient Visits', icon: '🏥' },
-    { id: 'messages', label: 'Messaging', icon: '💬' },
-    { id: 'profile', label: 'My Profile', icon: '👨‍💼' }
+    { id: 'dashboard', label: 'Dashboard Overview', icon: 'fa-chart-line' },
+    { id: 'appointments', label: 'Appointments', icon: 'fa-calendar-alt' },
+    { id: 'patients', label: 'Patient Records', icon: 'fa-user-injured' },
+    { id: 'prescriptions', label: 'Prescriptions', icon: 'fa-prescription-bottle-medical' },
+    { id: 'labs', label: 'Lab Results', icon: 'fa-flask' },
+    { id: 'inpatient', label: 'Inpatient Visits', icon: 'fa-procedures' },
+    { id: 'messages', label: 'Messaging', icon: 'fa-comments' },
+    { id: 'profile', label: 'My Profile', icon: 'fa-user-md' }
   ]
 
   const adminMenu = [
-    { id: 'dashboard', label: 'Dashboard Overview', icon: '📊' },
-    { id: 'profile', label: 'Hospital Profile', icon: '🏢' },
-    { id: 'doctors', label: 'Doctor Management', icon: '👨‍⚕️' },
-    { id: 'staff', label: 'Staff Management', icon: '👥' },
-    { id: 'departments', label: 'Department Management', icon: '🏬' },
-    { id: 'appointments', label: 'Appointment Management', icon: '📋' },
-    { id: 'billing', label: 'Billing & Finance', icon: '💰' },
-    { id: 'inpatient', label: 'Inpatient Management', icon: '🛏️' },
-    { id: 'pharmacy', label: 'Pharmacy Management', icon: '💊' },
-    { id: 'lab', label: 'Lab Management', icon: '🔬' },
-    { id: 'reports', label: 'Reports', icon: '📈' },
-    { id: 'settings', label: 'Settings', icon: '⚙️' }
+    { id: 'dashboard', label: 'Dashboard Overview', icon: 'fa-chart-line' },
+    { id: 'profile', label: 'Hospital Profile', icon: 'fa-hospital' },
+    { id: 'doctors', label: 'Doctor Management', icon: 'fa-user-md' },
+    { id: 'staff', label: 'Staff Management', icon: 'fa-users' },
+    { id: 'departments', label: 'Department Management', icon: 'fa-building' },
+    { id: 'appointments', label: 'Appointment Management', icon: 'fa-clipboard-list' },
+    { id: 'billing', label: 'Billing & Finance', icon: 'fa-money-bill-wave' },
+    { id: 'inpatient', label: 'Inpatient Management', icon: 'fa-bed' },
+    { id: 'pharmacy', label: 'Pharmacy Management', icon: 'fa-prescription-bottle-alt' },
+    { id: 'lab', label: 'Lab Management', icon: 'fa-microscope' },
+    { id: 'reports', label: 'Reports', icon: 'fa-chart-bar' },
+    { id: 'settings', label: 'Settings', icon: 'fa-cog' }
   ]
 
   const nurseMenu = [
-    { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-    { id: 'patients', label: 'Assigned Patients', icon: '👥' },
-    { id: 'vitals', label: 'Vitals Monitoring', icon: '❤️' },
-    { id: 'medications', label: 'Medication Schedule', icon: '💊' },
-    { id: 'wards', label: 'Bed Management', icon: '🛏️' },
-    { id: 'labs', label: 'Lab Tests & Upload', icon: '🧪' },
-    { id: 'notes', label: 'Nursing Notes', icon: '📝' },
-    { id: 'discharge', label: 'Discharge Summary', icon: '📄' },
-    { id: 'profile', label: 'My Profile', icon: '👩‍⚕️' }
+    { id: 'dashboard', label: 'Dashboard', icon: 'fa-chart-line' },
+    { id: 'patients', label: 'Assigned Patients', icon: 'fa-users' },
+    { id: 'vitals', label: 'Vitals Monitoring', icon: 'fa-heartbeat' },
+    { id: 'medications', label: 'Medication Schedule', icon: 'fa-pills' },
+    { id: 'wards', label: 'Bed Management', icon: 'fa-bed' },
+    { id: 'labs', label: 'Lab Tests & Upload', icon: 'fa-vial' },
+    { id: 'notes', label: 'Nursing Notes', icon: 'fa-notes-medical' },
+    { id: 'discharge', label: 'Discharge Summary', icon: 'fa-file-medical' },
+    { id: 'profile', label: 'My Profile', icon: 'fa-user-nurse' }
   ]
 
   const receptionistMenu = [
-    { id: 'dashboard', label: 'Dashboard Overview', icon: '📊' },
-    { id: 'registration', label: 'Patient Registration', icon: '👤' },
-    { id: 'appointments', label: 'Appointment Scheduling', icon: '📅' },
-    { id: 'billing', label: 'Billing', icon: '💰' },
-    { id: 'records', label: 'Patient Records', icon: '📁' },
-    { id: 'profile', label: 'My Profile', icon: '💁' }
+    { id: 'dashboard', label: 'Dashboard Overview', icon: 'fa-chart-line' },
+    { id: 'registration', label: 'Patient Registration', icon: 'fa-user-plus' },
+    { id: 'appointments', label: 'Appointment Scheduling', icon: 'fa-calendar-check' },
+    { id: 'records', label: 'Patient Records', icon: 'fa-folder' },
+    { id: 'opd', label: 'OPD Management', icon: 'fas fa-stethoscope' },
+    { id: 'ipd', label: 'IPD Management', icon: 'fas fa-procedures' },
+    { id: 'documents', label: 'Document Management', icon: 'fas fa-file-upload' },
+    { id: 'billing', label: 'Billing', icon: 'fa-receipt' },
+    { id: 'discharge', label: 'Discharge Summary', icon: 'fas fa-file-contract' },
+    { id: 'profile', label: 'My Profile', icon: 'fa-user-tie' }
   ]
 
   const superAdminMenu = [
-    { id: 'dashboard', label: 'Dashboard Overview', icon: '📊' },
-    { id: 'hospitals', label: 'Hospital Management', icon: '🏥' },
-    { id: 'subscriptions', label: 'Subscriptions & Billing', icon: '💳' },
-    { id: 'users', label: 'User Accounts', icon: '👥' },
-    { id: 'settings', label: 'Platform Settings', icon: '⚙️' },
-    { id: 'reports', label: 'Reports & Analytics', icon: '📈' },
-    { id: 'audit', label: 'Audit Logs', icon: '📋' },
+    { id: 'dashboard', label: 'Dashboard Overview', icon: 'fa-chart-line' },
+    { id: 'hospitals', label: 'Hospital Management', icon: 'fa-hospital-alt' },
+    { id: 'subscriptions', label: 'Subscriptions & Billing', icon: 'fa-credit-card' },
+    { id: 'users', label: 'User Accounts', icon: 'fa-user-cog' },
+    { id: 'settings', label: 'Platform Settings', icon: 'fa-sliders-h' },
+    { id: 'reports', label: 'Reports & Analytics', icon: 'fa-chart-pie' },
+    { id: 'audit', label: 'Audit Logs', icon: 'fa-clipboard-check' },
+  ]
+
+  // NEW: Patient Menu
+  const patientMenu = [
+    { id: 'dashboard', label: 'Dashboard Overview', icon: 'fa-chart-line' },
+    { id: 'appointments', label: 'My Appointments', icon: 'fa-calendar-check' },
+    { id: 'records', label: 'Medical Records', icon: 'fa-file-medical' },
+    { id: 'prescriptions', label: 'Prescriptions', icon: 'fa-prescription-bottle-alt' },
+    { id: 'tests', label: 'Test Results', icon: 'fa-flask' },
+    { id: 'billing', label: 'Billing & Payments', icon: 'fa-credit-card' },
+    { id: 'messages', label: 'Messages', icon: 'fa-comments' },
+    { id: 'profile', label: 'My Profile', icon: 'fa-user' }
   ]
 
   const getMenuItems = () => {
@@ -226,6 +700,8 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
       case 'NURSE': return nurseMenu
       case 'RECEPTIONIST': return receptionistMenu
       case 'SUPER_ADMIN': return superAdminMenu
+      case 'PATIENT': return patientMenu
+      case 'LAB': return labMenu
       default: return doctorMenu
     }
   }
@@ -249,7 +725,7 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
           {/* Header */}
           <div className="flex-shrink-0 p-4 border-b">
             <div className="flex justify-between items-center">
-              <h2 className="text-gray-700 font-semibold text-lg">Navigation</h2>
+              <h2 className="text-gray-700 font-semibold text-lg">{sidebarTitle}</h2>
               <button
                 onClick={onClose}
                 className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
@@ -273,7 +749,11 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
                       : 'hover:bg-gray-50 text-gray-700'
                   }`}
                 >
-                  <span className="text-lg mr-3 w-6 text-center">{item.icon}</span>
+                  <span className={`text-lg mr-3 w-6 text-center ${
+                    activePage === item.id ? 'text-blue-600' : 'text-blue-500'
+                  }`}>
+                    <i className={`fas ${item.icon}`}></i>
+                  </span>
                   <span className="text-sm">{item.label}</span>
                 </button>
               ))}
@@ -288,7 +768,7 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
           {/* Header */}
           <div className="flex-shrink-0 p-4 border-b">
             <div className="flex justify-between items-center">
-              <h2 className="text-gray-700 font-semibold text-lg">Navigation</h2>
+              <h2 className="text-gray-700 font-semibold text-lg">{sidebarTitle}</h2>
               <button
                 onClick={onClose}
                 className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
@@ -312,7 +792,11 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
                       : 'hover:bg-gray-50 text-gray-700'
                   }`}
                 >
-                  <span className="text-lg mr-3 w-6 text-center">{item.icon}</span>
+                  <span className={`text-lg mr-3 w-6 text-center ${
+                    activePage === item.id ? 'text-blue-600' : 'text-blue-500'
+                  }`}>
+                    <i className={`fas ${item.icon}`}></i>
+                  </span>
                   <span className="text-sm">{item.label}</span>
                 </button>
               ))}

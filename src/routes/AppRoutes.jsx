@@ -237,7 +237,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import ProtectedRoute from '../components/auth/ProtectedRoute/ProtectedRoute'
 import Dashboard from '../pages/Dashboard/Dashboard'
-import LoginPage from '../pages/Login/Loginpage'
+import LoginPage from '../pages/Login/LoginPage'
 
 // Import dashboard components
 import DoctorDashboard from '../pages/dashboards/DoctorDashboard/DoctorDashboard'

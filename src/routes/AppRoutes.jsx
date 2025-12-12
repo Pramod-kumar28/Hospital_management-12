@@ -290,10 +290,10 @@ const AppRoutes = () => {
       </Route>
       
       {/* App Authentication Routes */}
-      <Route 
+      {/* <Route 
         path="/login" 
         element={!isAuthenticated ? <LoginPage /> : <Navigate to={getDefaultRoute()} replace />} 
-      />
+      /> */}
       
       {/* Protected Routes */}
       <Route path="/dashboard" element={

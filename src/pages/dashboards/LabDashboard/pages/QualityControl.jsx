@@ -264,7 +264,8 @@ const QualityControl = () => {
   if (loading) return <LoadingSpinner />
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <>
+        <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -582,6 +583,53 @@ const QualityControl = () => {
         />
       </div>
 
+      {/* QC Workflow Actions */}
+      <div className="bg-white p-6 rounded border card-shadow">
+        <h3 className="text-lg font-semibold mb-4">QC Workflow Actions</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="p-4 border rounded-lg hover:bg-blue-50 transition-colors">
+            <div className="flex items-center mb-3">
+              <div className="p-2 bg-blue-100 rounded-lg mr-3">
+                <i className="fas fa-chart-bar text-blue-600"></i>
+              </div>
+              <h4 className="font-semibold">Levey-Jennings Chart</h4>
+            </div>
+            <p className="text-sm text-gray-600">Generate QC charts for trend analysis</p>
+            <button className="mt-3 text-blue-600 hover:text-blue-800 text-sm">
+              View Charts →
+            </button>
+          </div>
+          
+          <div className="p-4 border rounded-lg hover:bg-green-50 transition-colors">
+            <div className="flex items-center mb-3">
+              <div className="p-2 bg-green-100 rounded-lg mr-3">
+                <i className="fas fa-clipboard-check text-green-600"></i>
+              </div>
+              <h4 className="font-semibold">QC Compliance Report</h4>
+            </div>
+            <p className="text-sm text-gray-600">Generate compliance reports for audits</p>
+            <button className="mt-3 text-green-600 hover:text-green-800 text-sm">
+              Generate Report →
+            </button>
+          </div>
+          
+          <div className="p-4 border rounded-lg hover:bg-purple-50 transition-colors">
+            <div className="flex items-center mb-3">
+              <div className="p-2 bg-purple-100 rounded-lg mr-3">
+                <i className="fas fa-bell text-purple-600"></i>
+              </div>
+              <h4 className="font-semibold">QC Alerts</h4>
+            </div>
+            <p className="text-sm text-gray-600">Configure alerts for QC violations</p>
+            <button className="mt-3 text-purple-600 hover:text-purple-800 text-sm">
+              Configure Alerts →
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+          
+          
       {/* New QC Run Modal */}
       <Modal
         isOpen={showNewRunModal}
@@ -704,52 +752,7 @@ const QualityControl = () => {
           </div>
         </div>
       </Modal>
-
-      {/* QC Workflow Actions */}
-      <div className="bg-white p-6 rounded border card-shadow">
-        <h3 className="text-lg font-semibold mb-4">QC Workflow Actions</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 border rounded-lg hover:bg-blue-50 transition-colors">
-            <div className="flex items-center mb-3">
-              <div className="p-2 bg-blue-100 rounded-lg mr-3">
-                <i className="fas fa-chart-bar text-blue-600"></i>
-              </div>
-              <h4 className="font-semibold">Levey-Jennings Chart</h4>
-            </div>
-            <p className="text-sm text-gray-600">Generate QC charts for trend analysis</p>
-            <button className="mt-3 text-blue-600 hover:text-blue-800 text-sm">
-              View Charts →
-            </button>
-          </div>
-          
-          <div className="p-4 border rounded-lg hover:bg-green-50 transition-colors">
-            <div className="flex items-center mb-3">
-              <div className="p-2 bg-green-100 rounded-lg mr-3">
-                <i className="fas fa-clipboard-check text-green-600"></i>
-              </div>
-              <h4 className="font-semibold">QC Compliance Report</h4>
-            </div>
-            <p className="text-sm text-gray-600">Generate compliance reports for audits</p>
-            <button className="mt-3 text-green-600 hover:text-green-800 text-sm">
-              Generate Report →
-            </button>
-          </div>
-          
-          <div className="p-4 border rounded-lg hover:bg-purple-50 transition-colors">
-            <div className="flex items-center mb-3">
-              <div className="p-2 bg-purple-100 rounded-lg mr-3">
-                <i className="fas fa-bell text-purple-600"></i>
-              </div>
-              <h4 className="font-semibold">QC Alerts</h4>
-            </div>
-            <p className="text-sm text-gray-600">Configure alerts for QC violations</p>
-            <button className="mt-3 text-purple-600 hover:text-purple-800 text-sm">
-              Configure Alerts →
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    </>
   )
 }
 

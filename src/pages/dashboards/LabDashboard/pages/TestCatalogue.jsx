@@ -233,7 +233,8 @@ const TestCatalogue = () => {
   if (loading) return <LoadingSpinner />
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <>
+        <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -385,7 +386,27 @@ const TestCatalogue = () => {
         />
       </div>
 
-      {/* Add Test Modal */}
+      {/* Bulk Actions */}
+      <div className="bg-white p-4 rounded border card-shadow">
+        <h3 className="text-lg font-semibold mb-3">Bulk Actions</h3>
+        <div className="flex flex-wrap gap-3">
+          <Button variant="outline" icon="fas fa-file-import">
+            Import Tests
+          </Button>
+          <Button variant="outline" icon="fas fa-file-export">
+            Export Catalogue
+          </Button>
+          <Button variant="outline" icon="fas fa-sync-alt">
+            Sync with LIS
+          </Button>
+          <Button variant="outline" icon="fas fa-print">
+            Print Catalogue
+          </Button>
+        </div>
+      </div>
+    </div>
+          
+                {/* Add Test Modal */}
       <Modal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
@@ -740,26 +761,7 @@ const TestCatalogue = () => {
           </div>
         </div>
       </Modal>
-
-      {/* Bulk Actions */}
-      <div className="bg-white p-4 rounded border card-shadow">
-        <h3 className="text-lg font-semibold mb-3">Bulk Actions</h3>
-        <div className="flex flex-wrap gap-3">
-          <Button variant="outline" icon="fas fa-file-import">
-            Import Tests
-          </Button>
-          <Button variant="outline" icon="fas fa-file-export">
-            Export Catalogue
-          </Button>
-          <Button variant="outline" icon="fas fa-sync-alt">
-            Sync with LIS
-          </Button>
-          <Button variant="outline" icon="fas fa-print">
-            Print Catalogue
-          </Button>
-        </div>
-      </div>
-    </div>
+    </>
   )
 }
 

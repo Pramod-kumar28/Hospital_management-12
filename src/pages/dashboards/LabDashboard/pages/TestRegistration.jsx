@@ -145,6 +145,7 @@ const TestRegistration = () => {
   if (loading) return <LoadingSpinner />
 
   return (
+    <>
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -269,7 +270,59 @@ const TestRegistration = () => {
         />
       </div>
 
-      {/* Registration Modal */}
+      {/* Quick Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white p-4 rounded border card-shadow">
+          <div className="flex items-center">
+            <div className="p-3 bg-blue-100 rounded-lg mr-4">
+              <i className="fas fa-vial text-blue-600 text-xl"></i>
+            </div>
+            <div>
+              <p className="text-gray-500 text-sm">Total Tests Today</p>
+              <p className="text-2xl font-bold text-blue-600 mt-1">{tests.filter(t => t.registeredDate === new Date().toISOString().split('T')[0]).length}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white p-4 rounded border card-shadow">
+          <div className="flex items-center">
+            <div className="p-3 bg-green-100 rounded-lg mr-4">
+              <i className="fas fa-check-circle text-green-600 text-xl"></i>
+            </div>
+            <div>
+              <p className="text-gray-500 text-sm">Completed Tests</p>
+              <p className="text-2xl font-bold text-green-600 mt-1">{tests.filter(t => t.status === 'Completed').length}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white p-4 rounded border card-shadow">
+          <div className="flex items-center">
+            <div className="p-3 bg-yellow-100 rounded-lg mr-4">
+              <i className="fas fa-clock text-yellow-600 text-xl"></i>
+            </div>
+            <div>
+              <p className="text-gray-500 text-sm">In Progress</p>
+              <p className="text-2xl font-bold text-yellow-600 mt-1">{tests.filter(t => t.status === 'In Progress').length}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white p-4 rounded border card-shadow">
+          <div className="flex items-center">
+            <div className="p-3 bg-red-100 rounded-lg mr-4">
+              <i className="fas fa-exclamation-circle text-red-600 text-xl"></i>
+            </div>
+            <div>
+              <p className="text-gray-500 text-sm">Urgent Tests</p>
+              <p className="text-2xl font-bold text-red-600 mt-1">{tests.filter(t => t.priority === 'urgent').length}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+        {/* Registration Modal */}
       <Modal
         isOpen={showRegistrationModal}
         onClose={() => setShowRegistrationModal(false)}
@@ -400,58 +453,7 @@ const TestRegistration = () => {
           </div>
         </div>
       </Modal>
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded border card-shadow">
-          <div className="flex items-center">
-            <div className="p-3 bg-blue-100 rounded-lg mr-4">
-              <i className="fas fa-vial text-blue-600 text-xl"></i>
-            </div>
-            <div>
-              <p className="text-gray-500 text-sm">Total Tests Today</p>
-              <p className="text-2xl font-bold text-blue-600 mt-1">{tests.filter(t => t.registeredDate === new Date().toISOString().split('T')[0]).length}</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white p-4 rounded border card-shadow">
-          <div className="flex items-center">
-            <div className="p-3 bg-green-100 rounded-lg mr-4">
-              <i className="fas fa-check-circle text-green-600 text-xl"></i>
-            </div>
-            <div>
-              <p className="text-gray-500 text-sm">Completed Tests</p>
-              <p className="text-2xl font-bold text-green-600 mt-1">{tests.filter(t => t.status === 'Completed').length}</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white p-4 rounded border card-shadow">
-          <div className="flex items-center">
-            <div className="p-3 bg-yellow-100 rounded-lg mr-4">
-              <i className="fas fa-clock text-yellow-600 text-xl"></i>
-            </div>
-            <div>
-              <p className="text-gray-500 text-sm">In Progress</p>
-              <p className="text-2xl font-bold text-yellow-600 mt-1">{tests.filter(t => t.status === 'In Progress').length}</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white p-4 rounded border card-shadow">
-          <div className="flex items-center">
-            <div className="p-3 bg-red-100 rounded-lg mr-4">
-              <i className="fas fa-exclamation-circle text-red-600 text-xl"></i>
-            </div>
-            <div>
-              <p className="text-gray-500 text-sm">Urgent Tests</p>
-              <p className="text-2xl font-bold text-red-600 mt-1">{tests.filter(t => t.priority === 'urgent').length}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    </>
   )
 }
 

@@ -167,7 +167,8 @@ const LabProfile = () => {
   if (loading) return <LoadingSpinner fullScreen text="Loading lab profile..." />
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <>
+        <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -605,8 +606,9 @@ const LabProfile = () => {
           Help & Support
         </Button>
       </div>
-
-      {/* Edit Profile Modal */}
+    </div>
+              
+        {/* Edit Profile Modal */}
       <Modal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
@@ -909,7 +911,7 @@ const LabProfile = () => {
           </div>
         </div>
       </Modal>
-    </div>
+    </>
   )
 }
 

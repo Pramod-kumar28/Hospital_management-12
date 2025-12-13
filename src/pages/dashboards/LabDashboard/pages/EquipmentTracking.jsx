@@ -275,7 +275,8 @@ const EquipmentTracking = () => {
   if (loading) return <LoadingSpinner />
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <>
+        <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -517,7 +518,54 @@ const EquipmentTracking = () => {
         />
       </div>
 
-      {/* Add Equipment Modal */}
+      {/* Quick Actions */}
+      <div className="bg-white p-4 rounded border card-shadow">
+        <h3 className="text-lg font-semibold mb-3">Quick Equipment Actions</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <button 
+            className="p-4 border rounded-lg hover:bg-blue-50 transition-colors text-center group"
+            onClick={() => alert('Generate QR codes for all equipment')}
+          >
+            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-blue-200">
+              <i className="fas fa-qrcode text-blue-600 text-xl"></i>
+            </div>
+            <p className="font-medium">Bulk QR Codes</p>
+          </button>
+          
+          <button 
+            className="p-4 border rounded-lg hover:bg-green-50 transition-colors text-center group"
+            onClick={() => alert('Generate maintenance schedule report')}
+          >
+            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-green-200">
+              <i className="fas fa-calendar-alt text-green-600 text-xl"></i>
+            </div>
+            <p className="font-medium">Maintenance Schedule</p>
+          </button>
+          
+          <button 
+            className="p-4 border rounded-lg hover:bg-yellow-50 transition-colors text-center group"
+            onClick={() => alert('Generate calibration due report')}
+          >
+            <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-yellow-200">
+              <i className="fas fa-clipboard-check text-yellow-600 text-xl"></i>
+            </div>
+            <p className="font-medium">Calibration Report</p>
+          </button>
+          
+          <button 
+            className="p-4 border rounded-lg hover:bg-purple-50 transition-colors text-center group"
+            onClick={() => alert('Export equipment inventory')}
+          >
+            <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-purple-200">
+              <i className="fas fa-file-export text-purple-600 text-xl"></i>
+            </div>
+            <p className="font-medium">Export Inventory</p>
+          </button>
+        </div>
+      </div>
+    </div>
+          
+                {/* Add Equipment Modal */}
       <Modal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
@@ -808,53 +856,7 @@ const EquipmentTracking = () => {
           </div>
         )}
       </Modal>
-
-      {/* Quick Actions */}
-      <div className="bg-white p-4 rounded border card-shadow">
-        <h3 className="text-lg font-semibold mb-3">Quick Equipment Actions</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <button 
-            className="p-4 border rounded-lg hover:bg-blue-50 transition-colors text-center group"
-            onClick={() => alert('Generate QR codes for all equipment')}
-          >
-            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-blue-200">
-              <i className="fas fa-qrcode text-blue-600 text-xl"></i>
-            </div>
-            <p className="font-medium">Bulk QR Codes</p>
-          </button>
-          
-          <button 
-            className="p-4 border rounded-lg hover:bg-green-50 transition-colors text-center group"
-            onClick={() => alert('Generate maintenance schedule report')}
-          >
-            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-green-200">
-              <i className="fas fa-calendar-alt text-green-600 text-xl"></i>
-            </div>
-            <p className="font-medium">Maintenance Schedule</p>
-          </button>
-          
-          <button 
-            className="p-4 border rounded-lg hover:bg-yellow-50 transition-colors text-center group"
-            onClick={() => alert('Generate calibration due report')}
-          >
-            <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-yellow-200">
-              <i className="fas fa-clipboard-check text-yellow-600 text-xl"></i>
-            </div>
-            <p className="font-medium">Calibration Report</p>
-          </button>
-          
-          <button 
-            className="p-4 border rounded-lg hover:bg-purple-50 transition-colors text-center group"
-            onClick={() => alert('Export equipment inventory')}
-          >
-            <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-purple-200">
-              <i className="fas fa-file-export text-purple-600 text-xl"></i>
-            </div>
-            <p className="font-medium">Export Inventory</p>
-          </button>
-        </div>
-      </div>
-    </div>
+    </>
   )
 }
 

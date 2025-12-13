@@ -177,7 +177,8 @@ const ResultAccess = () => {
   if (loading) return <LoadingSpinner />
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <>
+        <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -357,7 +358,44 @@ const ResultAccess = () => {
         />
       </div>
 
-      {/* Access Grant Modal */}
+      {/* Security Features */}
+      <div className="bg-white p-6 rounded border card-shadow">
+        <h3 className="text-lg font-semibold mb-4">Security Features</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="p-4 border rounded-lg">
+            <div className="flex items-center mb-3">
+              <div className="p-2 bg-blue-100 rounded-lg mr-3">
+                <i className="fas fa-shield-alt text-blue-600"></i>
+              </div>
+              <h4 className="font-semibold">Encrypted Links</h4>
+            </div>
+            <p className="text-sm text-gray-600">All shared links are encrypted and time-limited</p>
+          </div>
+          
+          <div className="p-4 border rounded-lg">
+            <div className="flex items-center mb-3">
+              <div className="p-2 bg-green-100 rounded-lg mr-3">
+                <i className="fas fa-eye-slash text-green-600"></i>
+              </div>
+              <h4 className="font-semibold">Access Control</h4>
+            </div>
+            <p className="text-sm text-gray-600">Granular permissions for viewing, downloading, or sharing</p>
+          </div>
+          
+          <div className="p-4 border rounded-lg">
+            <div className="flex items-center mb-3">
+              <div className="p-2 bg-purple-100 rounded-lg mr-3">
+                <i className="fas fa-history text-purple-600"></i>
+              </div>
+              <h4 className="font-semibold">Audit Trail</h4>
+            </div>
+            <p className="text-sm text-gray-600">Complete logs of all access and sharing activities</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+                {/* Access Grant Modal */}
       <Modal
         isOpen={showAccessModal}
         onClose={() => setShowAccessModal(false)}
@@ -533,43 +571,7 @@ const ResultAccess = () => {
           </div>
         )}
       </Modal>
-
-      {/* Security Features */}
-      <div className="bg-white p-6 rounded border card-shadow">
-        <h3 className="text-lg font-semibold mb-4">Security Features</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 border rounded-lg">
-            <div className="flex items-center mb-3">
-              <div className="p-2 bg-blue-100 rounded-lg mr-3">
-                <i className="fas fa-shield-alt text-blue-600"></i>
-              </div>
-              <h4 className="font-semibold">Encrypted Links</h4>
-            </div>
-            <p className="text-sm text-gray-600">All shared links are encrypted and time-limited</p>
-          </div>
-          
-          <div className="p-4 border rounded-lg">
-            <div className="flex items-center mb-3">
-              <div className="p-2 bg-green-100 rounded-lg mr-3">
-                <i className="fas fa-eye-slash text-green-600"></i>
-              </div>
-              <h4 className="font-semibold">Access Control</h4>
-            </div>
-            <p className="text-sm text-gray-600">Granular permissions for viewing, downloading, or sharing</p>
-          </div>
-          
-          <div className="p-4 border rounded-lg">
-            <div className="flex items-center mb-3">
-              <div className="p-2 bg-purple-100 rounded-lg mr-3">
-                <i className="fas fa-history text-purple-600"></i>
-              </div>
-              <h4 className="font-semibold">Audit Trail</h4>
-            </div>
-            <p className="text-sm text-gray-600">Complete logs of all access and sharing activities</p>
-          </div>
-        </div>
-      </div>
-    </div>
+    </>
   )
 }
 

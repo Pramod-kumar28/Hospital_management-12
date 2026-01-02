@@ -112,7 +112,7 @@ const ProtectedRoute = ({ children, requiredRole }) => {
       case 'RECEPTIONIST': return <Navigate to="/receptionist" replace />
       case 'SUPER_ADMIN': return <Navigate to="/super-admin" replace />
       case 'LAB': return <Navigate to="/lab" replace />  // NEW
-      default: return <Navigate to="/dashboard" replace />
+      default: return <Navigate to="/login" replace />
     }
   }
 

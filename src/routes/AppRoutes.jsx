@@ -236,7 +236,7 @@ import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import ProtectedRoute from '../components/auth/ProtectedRoute/ProtectedRoute'
-import Dashboard from '../pages/Dashboard/Dashboard'
+// import Dashboard from '../pages/Dashboard/Dashboard'
 import LoginPage from '../pages/Login/LoginPage'
 
 // Import dashboard components
@@ -257,6 +257,7 @@ import Contact from '../landing/pages/Contact.jsx'
 // import Signin from '../landing/pages/Signin.jsx'
 import Signup from '../landing/pages/Signup.jsx'
 import LabDashboard from '../pages/dashboards/LabDashboard/LabDashboard.jsx'
+import ForgotPassword from '../landing/pages/Forgotpassword.jsx'
 
 const AppRoutes = () => {
   const { isAuthenticated, user } = useSelector(state => state.auth)
@@ -272,7 +273,7 @@ const AppRoutes = () => {
       case 'SUPER_ADMIN': return '/super-admin'
       // case 'PATIENT': return '/patient' // NEW: Patient route
       case 'LAB': return '/lab'
-      default: return '/dashboard'
+      default: return '/login'
     }
   }
 
@@ -287,6 +288,7 @@ const AppRoutes = () => {
         <Route path="/contact" element={<Contact />} />
         <Route path="/login" element={!isAuthenticated ? <LoginPage /> : <Navigate to={getDefaultRoute()} replace />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path='/forgot-password' element={<ForgotPassword />} />
       </Route>
       
       {/* App Authentication Routes */}
@@ -296,11 +298,11 @@ const AppRoutes = () => {
       /> */}
       
       {/* Protected Routes */}
-      <Route path="/dashboard" element={
+      {/* <Route path="/dashboard" element={
         <ProtectedRoute>
           <Dashboard />
         </ProtectedRoute>
-      } />
+      } /> */}
       
       {/* Role-based Dashboards */}
       <Route path="/doctor/*" element={

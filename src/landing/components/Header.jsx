@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { NavLink, Link } from 'react-router-dom'
-import { Activity, Menu } from 'lucide-react'
+import { Menu } from 'lucide-react'
 
 export default function Header(){
   const [open, setOpen] = useState(false)
@@ -13,15 +13,16 @@ export default function Header(){
       {/* Main Navigation Container */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo Section */}
+          {/* Logo Section - UPDATED WITH LARGER IMAGE LOGO */}
           <div className="flex-shrink-0">
             <Link to="/" className="inline-flex items-center gap-3 font-bold text-gray-900 group">
-              <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 text-white grid place-items-center shadow-lg group-hover:shadow-xl transition-all duration-300">
-                <Activity size={20} />
-              </span>
-              <div className="flex flex-col leading-tight">
-                <span className="text-lg tracking-tight">DCM Hospital</span>
-                <span className="text-xs text-gray-500 font-normal hidden sm:block">Management System</span>
+              {/* LOGO IMAGE - LARGER SIZE */}
+              <div className="w-16 h-16 md:w-20 md:h-20">
+                <img 
+                  src="./assets/images/DCM-Logo.png" 
+                  alt="DCM Hospital Logo" 
+                  className="h-16 md:h-20 w-auto object-contain"
+                /> 
               </div>
             </Link>
           </div>
@@ -43,7 +44,7 @@ export default function Header(){
               Sign In
             </Link>
             <Link to="/contact" className="px-6 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 border border-blue-600">
-              Request Demo
+              Download App
             </Link>
           </div>
 
@@ -110,7 +111,7 @@ export default function Header(){
             {/* Mobile CTA Buttons */}
             <div className="flex gap-3 pt-4 border-t border-gray-200">
               <Link 
-                to="/login" 
+                to="/signin" 
                 className="flex-1 px-4 py-3 text-center text-base font-medium text-gray-700 rounded-lg bg-gray-50 hover:bg-gray-100 transition-all duration-200 border border-gray-200"
                 onClick={() => setOpen(false)}
               >
@@ -121,7 +122,7 @@ export default function Header(){
                 className="flex-1 px-4 py-3 text-center text-base font-medium text-white rounded-lg bg-blue-600 hover:bg-blue-700 transition-all duration-200 shadow-lg"
                 onClick={() => setOpen(false)}
               >
-                Request Demo
+                Download App
               </Link>
             </div>
           </div>

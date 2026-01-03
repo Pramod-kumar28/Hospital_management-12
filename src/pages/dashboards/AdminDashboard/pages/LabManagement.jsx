@@ -198,7 +198,7 @@ const LabManagement = () => {
       </div>
 
       {/* Lab Statistics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white p-4 rounded-lg card-shadow border text-center">
           <div className="text-2xl font-bold text-blue-600">{labTests.length}</div>
           <div className="text-sm text-gray-500">Total Tests</div>
@@ -215,7 +215,81 @@ const LabManagement = () => {
           <div className="text-2xl font-bold text-red-600">{labTests.filter(t => t.status === 'Pending').length}</div>
           <div className="text-sm text-gray-500">Pending</div>
         </div>
+      </div> */}
+
+      {/* Lab Statistics - Compact Cards */}
+<div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+  {[
+    { 
+      value: labTests.length, 
+      label: 'Total Tests', 
+      color: 'blue', 
+      icon: 'fas fa-flask',
+      bg: 'bg-blue-50',
+      text: 'text-blue-600',
+      iconBg: 'bg-blue-100'
+    },
+    { 
+      value: labTests.filter(t => t.status === 'Completed').length, 
+      label: 'Completed', 
+      color: 'green', 
+      icon: 'fas fa-check-circle',
+      bg: 'bg-green-50',
+      text: 'text-green-600',
+      iconBg: 'bg-green-100'
+    },
+    { 
+      value: labTests.filter(t => t.status === 'Processing').length, 
+      label: 'Processing', 
+      color: 'yellow', 
+      icon: 'fas fa-spinner',
+      bg: 'bg-yellow-50',
+      text: 'text-yellow-600',
+      iconBg: 'bg-yellow-100'
+    },
+    { 
+      value: labTests.filter(t => t.status === 'Pending').length, 
+      label: 'Pending', 
+      color: 'red', 
+      icon: 'fas fa-clock',
+      bg: 'bg-red-50',
+      text: 'text-red-600',
+      iconBg: 'bg-red-100'
+    }
+  ].map((stat, index) => {
+    const percentage = (stat.value / labTests.length * 100) || 0
+    
+    return (
+      <div 
+        key={index} 
+        className={`${stat.bg} border border-gray-200 p-5 rounded-xl hover:shadow-md transition-all duration-300`}
+      >
+        <div className="flex items-center justify-between mb-3">
+          <div className={`${stat.iconBg} p-3 rounded-lg`}>
+            <i className={`${stat.icon} ${stat.text} text-lg`}></i>
+          </div>
+          <div className="text-right">
+            <div className={`text-2xl font-bold ${stat.text}`}>{stat.value}</div>
+            <div className="text-gray-800 font-medium text-sm">{stat.label}</div>
+          </div>
+        </div>
+        
+        <div className="text-xs text-gray-500">
+          <div className="flex justify-between mb-1">
+            <span>Progress</span>
+            <span>{percentage.toFixed(0)}%</span>
+          </div>
+          <div className="h-1 w-full bg-gray-200 rounded-full overflow-hidden">
+            <div 
+              className={`h-full ${stat.iconBg} rounded-full`}
+              style={{ width: `${percentage}%` }}
+            ></div>
+          </div>
+        </div>
       </div>
+    )
+  })}
+</div>
 
       {/* Lab Tests Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

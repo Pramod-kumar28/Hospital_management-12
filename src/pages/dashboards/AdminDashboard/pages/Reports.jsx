@@ -388,7 +388,7 @@ const Reports = () => {
       id: 'bed-occupancy', 
       name: 'Bed Occupancy', 
       icon: 'bed', 
-      color: 'violet', 
+      color: 'purple', 
       description: 'Daily occupancy and utilization',
       stats: '89 reports',
       trend: '+5%'

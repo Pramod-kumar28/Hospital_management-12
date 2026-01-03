@@ -193,14 +193,68 @@ const InpatientManagement = () => {
       </div>
 
       {/* Bed Occupancy */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         {stats.map(({ label, value, color }) => (
           <div key={label} className="bg-white p-6 rounded-xl card-shadow border text-center">
             <div className={`text-2xl font-bold text-${color}-600`}>{value}</div>
             <div className="text-sm text-gray-500">{label}</div>
           </div>
         ))}
+      </div> */}
+
+      {/* Statistics - Compact 3 Column Cards */}
+<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+  {stats.map(({ label, value, color }) => {
+    const colorConfigs = {
+      blue: { 
+        bg: 'bg-blue-500/5',
+        text: 'text-blue-600',
+        iconBg: 'bg-blue-100',
+        iconColor: 'text-blue-500',
+        icon: 'fas fa-chart-line'
+      },
+      green: { 
+        bg: 'bg-green-500/5',
+        text: 'text-green-600',
+        iconBg: 'bg-green-100',
+        iconColor: 'text-green-500',
+        icon: 'fas fa-check-circle'
+      },
+      purple: { 
+        bg: 'bg-purple-500/5',
+        text: 'text-purple-600',
+        iconBg: 'bg-purple-100',
+        iconColor: 'text-purple-500',
+        icon: 'fas fa-chart-pie'
+      }
+    }
+    
+    const config = colorConfigs[color] || colorConfigs.blue
+
+    return (
+      <div 
+        key={label} 
+        className={`${config.bg} border border-gray-200 p-5 rounded-xl hover:shadow-md transition-all duration-300`}
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-sm text-gray-500 mb-1">{label}</div>
+            <div className={`text-2xl font-bold ${config.text}`}>{value}</div>
+          </div>
+          <div className={`${config.iconBg} p-3 rounded-lg`}>
+            <i className={`${config.icon} ${config.iconColor} text-lg`}></i>
+          </div>
+        </div>
+        <div className="mt-3 pt-3 border-t border-gray-100">
+          <div className="flex items-center text-xs text-gray-500">
+            <i className="fas fa-history mr-1"></i>
+            <span>Updated just now</span>
+          </div>
+        </div>
       </div>
+    )
+  })}
+</div>
 
       {/* Inpatients Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

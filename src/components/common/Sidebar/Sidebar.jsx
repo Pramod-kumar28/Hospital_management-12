@@ -763,7 +763,7 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
       </aside>
 
       {/* Desktop Sidebar */}
-      <aside className="hidden md:block w-64 bg-white border-r h-[calc(100vh-4rem)] sticky top-16">
+      <aside className="hidden md:block w-[270px] bg-white border-r h-[calc(100vh-4rem)] sticky top-16">
         <div className="h-full flex flex-col">
           {/* Header */}
           <div className="flex-shrink-0 p-4 border-b">

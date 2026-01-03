@@ -147,7 +147,7 @@ const HospitalManagement = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">

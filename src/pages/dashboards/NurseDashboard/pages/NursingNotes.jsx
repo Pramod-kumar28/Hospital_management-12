@@ -96,7 +96,7 @@ const NursingNotes = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <h2 className="text-2xl font-semibold text-gray-700 mb-3">📝 Nursing Notes & Observations</h2>
+      <h2 className="text-2xl font-semibold text-gray-700 mb-3">Nursing Notes & Observations</h2>
 
       {/* Notes List */}
       <div className="bg-white p-4 border rounded card-shadow space-y-3">

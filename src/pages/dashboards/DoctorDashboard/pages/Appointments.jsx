@@ -137,7 +137,7 @@ const Appointments = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         
         <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-700 text-responsive">
-          📅 Appointments
+          Appointments
         </h2>
         <button
           onClick={() => setIsScheduleModalOpen(true)}

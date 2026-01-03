@@ -35,7 +35,7 @@ const Billing = () => {
   return (
     <div className="animate-fade-in">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold text-gray-700">💰 Billing & Invoices</h2>
+        <h2 className="text-2xl font-semibold text-gray-700">Billing & Invoices</h2>
         <button 
           onClick={generateBill}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center"

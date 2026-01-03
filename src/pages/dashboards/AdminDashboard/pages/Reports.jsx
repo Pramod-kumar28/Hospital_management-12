@@ -505,7 +505,7 @@ const Reports = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-800">📈 Reports</h2>
+          <h2 className="text-2xl font-semibold text-gray-800">Reports</h2>
         </div>
         <div className="mt-4 md:mt-0">
           <div className="flex items-center space-x-4">

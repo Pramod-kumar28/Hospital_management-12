@@ -256,7 +256,7 @@ const InpatientVisits = () => {
 
   return (
     <div className="animate-fade-in">
-      <h2 className="text-2xl font-semibold text-gray-700 mb-6">🛌 Inpatient Visits</h2>
+      <h2 className="text-2xl font-semibold text-gray-700 mb-6">Inpatient Visits</h2>
       
       {/* Patient Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">

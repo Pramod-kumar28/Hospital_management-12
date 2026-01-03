@@ -1057,16 +1057,9 @@ const LabOverview = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-2xl font-semibold text-gray-700">
-            🧪 Laboratory Dashboard
+           Laboratory Dashboard
           </h2>
-          <p className="text-gray-500 text-sm mt-1">
-            Laboratory Operations • {new Date().toLocaleDateString('en-IN', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            })}
-          </p>
+          
         </div>
         <div className="flex gap-2">
           <button
@@ -1126,14 +1119,13 @@ const LabOverview = () => {
               <p className="text-xs text-gray-400 mt-1">tests processed today</p>
             </div>
             
-            {/* Test tube visualization with liquid level */}
-            <div className="relative h-14 w-12">
-              <div className="absolute bottom-0 w-8 h-12 bg-gray-200 rounded-t-lg"></div>
-              <div 
-                className="absolute bottom-0 w-8 bg-blue-400 rounded-t-lg transition-all duration-500"
-                style={{ height: `${(dashboardData.stats.totalTests / 200) * 48}px` }}
-              ></div>
-              <div className="absolute -top-1 w-10 h-3 bg-blue-300 rounded-full"></div>
+            {/* mini bars */}
+            <div className="flex items-end gap-1 h-14">
+              <div className="w-1.5 h-7 bg-indigo-400 rounded"></div>
+              <div className="w-1.5 h-10 bg-indigo-300 rounded"></div>
+              <div className="w-1.5 h-8 bg-indigo-500 rounded"></div>
+              <div className="w-1.5 h-12 bg-indigo-400 rounded"></div>
+              <div className="w-1.5 h-9 bg-indigo-300 rounded"></div>
             </div>
           </div>
         </div>
@@ -1348,7 +1340,7 @@ const LabOverview = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Pending Tests */}
         <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 pointer-events-none" />
           
           <div className="relative">
             <div className="flex justify-between items-center mb-3">
@@ -1393,7 +1385,7 @@ const LabOverview = () => {
         
         {/* Critical Results */}
         <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 pointer-events-none" />
           
           <div className="relative">
             <div className="flex justify-between items-center mb-3">
@@ -1439,7 +1431,7 @@ const LabOverview = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Equipment Status */}
         <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 pointer-events-none" />
           
           <div className="relative">
             <div className="flex justify-between items-center mb-3">
@@ -1485,7 +1477,7 @@ const LabOverview = () => {
         
         {/* QC Status */}
         <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-yellow-50 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 pointer-events-none" />
           
           <div className="relative">
             <div className="flex justify-between items-center mb-3">

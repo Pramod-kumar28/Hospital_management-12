@@ -96,7 +96,7 @@ const SuperAdminOverview = () => {
   return (
     <div className="space-y-6 animate-fade-in">
       <h2 className="text-2xl font-semibold text-gray-700 mb-6">
-        <i className="fas fa-chart-line text-blue-500 mr-2"></i> Dashboard Overview
+         Dashboard Overview
       </h2>
 
       {/* Metrics Cards */}

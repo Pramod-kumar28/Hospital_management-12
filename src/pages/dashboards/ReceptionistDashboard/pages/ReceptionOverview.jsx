@@ -595,16 +595,9 @@ const ReceptionOverview = ({ setActivePage }) => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-2xl font-semibold text-gray-700">
-            🏥 Reception Dashboard
+           Reception Dashboard
           </h2>
-          <p className="text-gray-500 text-sm mt-1">
-            Good morning, Receptionist • {new Date().toLocaleDateString('en-IN', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            })}
-          </p>
+          
         </div>
         <div className="flex gap-2">
           <button

@@ -134,9 +134,7 @@ const UserAccounts = () => {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <div className="p-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-lg">
-              <i className="fas fa-users text-white text-lg"></i>
-            </div>
+           
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
               User Accounts
             </h2>

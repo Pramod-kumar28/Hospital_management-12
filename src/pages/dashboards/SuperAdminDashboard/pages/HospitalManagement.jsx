@@ -151,9 +151,7 @@ const HospitalManagement = () => {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-lg">
-            <i className="fas fa-hospital text-white text-xl"></i>
-          </div>
+          
           <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 to-blue-800 bg-clip-text text-transparent">
             Hospital Management
           </h1>

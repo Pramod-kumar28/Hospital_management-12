@@ -682,7 +682,7 @@ const StaffManagement = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
           <div>
             <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
-              👥 Staff Management
+              Staff Management
             </h2>
             <p className="text-gray-500 mt-1">Manage and organize hospital staff members</p>
           </div>

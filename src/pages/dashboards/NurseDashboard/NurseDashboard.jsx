@@ -260,7 +260,7 @@ const NurseDashboard = () => {
         <main className={`flex-1 min-h-[calc(100vh-4rem)] overflow-auto transition-all duration-300 ${
           isDesktopSidebarOpen ? 'md:ml-[270px]' : 'md:ml-0'
         }`}>
-          <div className="p-2 w-full">
+          <div className="p-2 pt-5 w-full">
             {renderPage()}
           </div>
         </main>

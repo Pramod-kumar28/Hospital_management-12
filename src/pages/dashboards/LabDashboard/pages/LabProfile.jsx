@@ -172,7 +172,7 @@ const LabProfile = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-700">🏢 Lab Profile</h2>
+          <h2 className="text-2xl font-semibold text-gray-700">Lab Profile</h2>
           <p className="text-gray-500">Manage laboratory information, settings, and user profile</p>
         </div>
         <div className="flex gap-3">

@@ -1327,7 +1327,7 @@ export default function Home() {
       </section>
 
       {/* Partners */}
-      <section className="py-16 md:py-20 bg-gradient-to-br from-gray-50 to-white">
+      {/* <section className="py-16 md:py-20 bg-gradient-to-br from-gray-50 to-white">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Our Healthcare Partners</h2>
@@ -1361,7 +1361,7 @@ export default function Home() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Enhanced CTA */}
       <section className="py-16 md:py-20 bg-gradient-to-br from-blue-600 to-blue-700 text-white relative overflow-hidden">

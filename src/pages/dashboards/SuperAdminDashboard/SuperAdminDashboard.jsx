@@ -14,7 +14,7 @@ const SuperAdminDashboard = () => {
   const [activePage, setActivePage] = useState('dashboard')
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
-  const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(false)
+  const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true)
 
   const renderPage = () => {
     switch (activePage) {
@@ -65,7 +65,7 @@ const SuperAdminDashboard = () => {
       </div>
      
       {/* Main Layout */}
-      <div className="flex pt-16 min-h-screen">
+      <div className="flex pt-16 min-h-screen mt-4">
         {/* Desktop Sidebar - Fixed position */}
         <div className={`hidden md:block fixed top-16 left-0 bottom-0 z-40 transition-transform duration-300 ${
           isDesktopSidebarOpen ? 'translate-x-0' : '-translate-x-full'

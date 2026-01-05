@@ -917,7 +917,7 @@ export default function Home() {
       </section>
 
       {/* Stats */}
-      <section className="py-16 bg-white">
+      <section className="py-10 bg-white">
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
             <div className="text-center transform hover:scale-105 transition-transform duration-300">
@@ -964,7 +964,7 @@ export default function Home() {
       </section>
 
       {/* Features Preview with Health Animations - Only 3 Cards */}
-      <section className="py-16 md:py-20 bg-gradient-to-br from-blue-50 to-cyan-50 relative overflow-hidden" id="features-preview">
+      <section className="py-12 md:py-10 bg-gradient-to-br from-blue-50 to-cyan-50 relative overflow-hidden" id="features-preview">
         {/* Enhanced Medical Background Animations */}
         <div className="absolute top-10 left-5% opacity-5 animate-pulse">
           <Heart className="w-8 h-8 md:w-12 md:h-12 text-red-400" />
@@ -1045,7 +1045,7 @@ export default function Home() {
       </section>
 
       {/* Why Healthcare Facilities Choose DCM - Updated with Carousel */}
-      <section className="py-20 bg-white">
+      <section className="py-10 bg-white">
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             {/* Image on Left */}
@@ -1126,7 +1126,7 @@ export default function Home() {
       </section>
 
       {/* Comparison Section */}
-      <section className="py-16 md:py-20 bg-white">
+      <section className="py-12 md:py-10 bg-white">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
@@ -1214,7 +1214,7 @@ export default function Home() {
       </section>
 
       {/* Working Testimonials Carousel - 1 Card on Mobile, 3 Cards on Desktop with Auto Slide */}
-      <section className="py-16 md:py-20 bg-gray-50 relative overflow-hidden">
+      <section className="py-12 md:py-10 bg-gray-50 relative overflow-hidden">
         {/* Medical Icons in Background */}
         <div className="absolute top-10 left-5% opacity-5 animate-pulse">
           <Heart className="w-10 h-10 md:w-16 md:h-16 text-red-400" />
@@ -1364,7 +1364,7 @@ export default function Home() {
       </section> */}
 
       {/* Enhanced CTA */}
-      <section className="py-16 md:py-20 bg-gradient-to-br from-blue-600 to-blue-700 text-white relative overflow-hidden">
+      <section className="py-12 md:py-10 bg-gradient-to-br from-blue-600 to-blue-700 text-white relative overflow-hidden">
         {/* Enhanced Health-themed Animated Background Elements */}
         <div className="absolute top-4 md:top-10 left-4 md:left-10 opacity-20 animate-pulse">
           <Heart className="w-8 h-8 md:w-12 md:h-12 text-white" />
@@ -1405,7 +1405,7 @@ export default function Home() {
       </section>
 
       {/* Benefits Section with White Background and Blue Cards */}
-      <section className="py-16 md:py-20 bg-white">
+      <section className="py-12 md:py-10 bg-white">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">

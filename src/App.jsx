@@ -1,12 +1,14 @@
 import React from 'react'
 import { BrowserRouter as Router } from 'react-router-dom'
 import AppRoutes from './routes/AppRoutes'
+import ScrollToTop from './landing/pages/ScrollToTop'
 
 
 function App() {
   return (
     <Router>
       <div className="min-h-screen bg-gray-50">
+        <ScrollToTop />
         <AppRoutes />
       </div>
     </Router>

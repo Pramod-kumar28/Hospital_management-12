@@ -415,7 +415,7 @@ const Reports = () => {
       id: 'financial', 
       name: 'Financial', 
       icon: 'file-invoice-dollar', 
-      color: 'rose', 
+      color: 'yellow', 
       description: 'Comprehensive financial overview',
       stats: '31 reports',
       trend: '+18%'

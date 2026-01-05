@@ -130,7 +130,7 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 mt-16">
       {/* Header */}
       <div className="border-b border-gray-200 bg-white">
       </div>

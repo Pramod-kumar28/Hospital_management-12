@@ -361,7 +361,7 @@ const LoginPage = () => {
   return (
     <>
       {/* Header Section */}
-      <section className="py-12 bg-gradient-to-br from-blue-50 to-cyan-50 border-b border-gray-200">
+      <section className="py-12 bg-gradient-to-br from-blue-50 to-cyan-50 border-b border-gray-200 mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-3xl md:text-4xl font-bold mb-2 text-gray-900 text-center">Sign In to Your Account</h1>
           <p className="text-gray-600 text-center max-w-2xl mx-auto">

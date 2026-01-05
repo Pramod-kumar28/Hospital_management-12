@@ -1198,56 +1198,84 @@ const EquipmentTracking = () => {
           </div>
         </div>
 
-        {/* Equipment Stats - Improved responsive grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          <div className="bg-white p-3 md:p-4 rounded-lg border card-shadow">
-            <div className="flex items-center">
-              <div className="p-2 md:p-3 bg-blue-100 rounded-lg mr-3 md:mr-4">
-                <i className="fas fa-microscope text-blue-600 text-lg md:text-xl"></i>
-              </div>
-              <div>
-                <p className="text-xs md:text-sm text-gray-500">Total Equipment</p>
-                <p className="text-lg md:text-2xl font-bold text-blue-600 mt-0.5">{equipment.length}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white p-3 md:p-4 rounded-lg border card-shadow">
-            <div className="flex items-center">
-              <div className="p-2 md:p-3 bg-green-100 rounded-lg mr-3 md:mr-4">
-                <i className="fas fa-check-circle text-green-600 text-lg md:text-xl"></i>
-              </div>
-              <div>
-                <p className="text-xs md:text-sm text-gray-500">Operational</p>
-                <p className="text-lg md:text-2xl font-bold text-green-600 mt-0.5">{equipment.filter(e => e.status === 'operational').length}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white p-3 md:p-4 rounded-lg border card-shadow">
-            <div className="flex items-center">
-              <div className="p-2 md:p-3 bg-yellow-100 rounded-lg mr-3 md:mr-4">
-                <i className="fas fa-tools text-yellow-600 text-lg md:text-xl"></i>
-              </div>
-              <div>
-                <p className="text-xs md:text-sm text-gray-500">Maintenance</p>
-                <p className="text-lg md:text-2xl font-bold text-yellow-600 mt-0.5">{equipment.filter(e => e.status === 'maintenance').length}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white p-3 md:p-4 rounded-lg border card-shadow">
-            <div className="flex items-center">
-              <div className="p-2 md:p-3 bg-red-100 rounded-lg mr-3 md:mr-4">
-                <i className="fas fa-exclamation-triangle text-red-600 text-lg md:text-xl"></i>
-              </div>
-              <div>
-                <p className="text-xs md:text-sm text-gray-500">Calibration Due</p>
-                <p className="text-lg md:text-2xl font-bold text-red-600 mt-0.5">{equipment.filter(e => e.status === 'calibration_due').length}</p>
-              </div>
-            </div>
-          </div>
-        </div>
+{/* Equipment Stats - Glass Morphism Design */}
+<div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+  {/* Total Equipment Card */}
+  <div className="relative bg-gradient-to-br from-white to-blue-50 p-5 rounded-2xl border border-blue-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+    <div className="absolute top-0 right-0 w-20 h-20 bg-blue-200 rounded-full -translate-y-8 translate-x-8 opacity-20"></div>
+    <div className="absolute bottom-0 left-0 w-16 h-16 bg-blue-300 rounded-full translate-y-8 -translate-x-8 opacity-10"></div>
+
+    <div className="relative flex items-center justify-between">
+      <div>
+        <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider">Total Equipment</p>
+        <p className="text-2xl font-bold text-gray-900 mt-1">{equipment.length}</p>
+      </div>
+      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
+        <i className="fas fa-microscope text-white text-lg"></i>
+      </div>
+    </div>
+    <div className="relative mt-4 pt-3 border-t border-blue-100">
+      <p className="text-xs text-blue-700 font-medium">All equipment items</p>
+    </div>
+  </div>
+
+  {/* Operational Card */}
+  <div className="relative bg-gradient-to-br from-white to-emerald-50 p-5 rounded-2xl border border-emerald-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+    <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-200 rounded-full -translate-y-8 translate-x-8 opacity-20"></div>
+    <div className="absolute bottom-0 left-0 w-16 h-16 bg-emerald-300 rounded-full translate-y-8 -translate-x-8 opacity-10"></div>
+
+    <div className="relative flex items-center justify-between">
+      <div>
+        <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Operational</p>
+        <p className="text-2xl font-bold text-gray-900 mt-1">{equipment.filter(e => e.status === 'operational').length}</p>
+      </div>
+      <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-md">
+        <i className="fas fa-check-circle text-white text-lg"></i>
+      </div>
+    </div>
+    <div className="relative mt-4 pt-3 border-t border-emerald-100">
+      <p className="text-xs text-emerald-700 font-medium">Fully functional</p>
+    </div>
+  </div>
+
+  {/* Maintenance Card */}
+  <div className="relative bg-gradient-to-br from-white to-yellow-50 p-5 rounded-2xl border border-yellow-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+    <div className="absolute top-0 right-0 w-20 h-20 bg-yellow-200 rounded-full -translate-y-8 translate-x-8 opacity-20"></div>
+    <div className="absolute bottom-0 left-0 w-16 h-16 bg-yellow-300 rounded-full translate-y-8 -translate-x-8 opacity-10"></div>
+
+    <div className="relative flex items-center justify-between">
+      <div>
+        <p className="text-xs font-semibold text-yellow-600 uppercase tracking-wider">Maintenance</p>
+        <p className="text-2xl font-bold text-gray-900 mt-1">{equipment.filter(e => e.status === 'maintenance').length}</p>
+      </div>
+      <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl flex items-center justify-center shadow-md">
+        <i className="fas fa-tools text-white text-lg"></i>
+      </div>
+    </div>
+    <div className="relative mt-4 pt-3 border-t border-yellow-100">
+      <p className="text-xs text-yellow-700 font-medium">Under maintenance</p>
+    </div>
+  </div>
+
+  {/* Calibration Due Card */}
+  <div className="relative bg-gradient-to-br from-white to-red-50 p-5 rounded-2xl border border-red-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+    <div className="absolute top-0 right-0 w-20 h-20 bg-red-200 rounded-full -translate-y-8 translate-x-8 opacity-20"></div>
+    <div className="absolute bottom-0 left-0 w-16 h-16 bg-red-300 rounded-full translate-y-8 -translate-x-8 opacity-10"></div>
+
+    <div className="relative flex items-center justify-between">
+      <div>
+        <p className="text-xs font-semibold text-red-600 uppercase tracking-wider">Calibration Due</p>
+        <p className="text-2xl font-bold text-gray-900 mt-1">{equipment.filter(e => e.status === 'calibration_due').length}</p>
+      </div>
+      <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-md">
+        <i className="fas fa-exclamation-triangle text-white text-lg"></i>
+      </div>
+    </div>
+    <div className="relative mt-4 pt-3 border-t border-red-100">
+      <p className="text-xs text-red-700 font-medium">Requires calibration</p>
+    </div>
+  </div>
+</div>
 
         {/* Search and Filters - Improved responsive layout */}
         <div className="bg-white p-3 md:p-4 rounded-lg border card-shadow">

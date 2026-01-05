@@ -196,56 +196,84 @@ const ResultAccess = () => {
         </div>
       </div>
 
-      {/* Access Controls Summary */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded border card-shadow">
-          <div className="flex items-center">
-            <div className="p-3 bg-blue-100 rounded-lg mr-4">
-              <i className="fas fa-user-shield text-blue-600 text-xl"></i>
-            </div>
-            <div>
-              <p className="text-gray-500 text-sm">Active Access</p>
-              <p className="text-2xl font-bold text-blue-600 mt-1">{patients.length}</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white p-4 rounded border card-shadow">
-          <div className="flex items-center">
-            <div className="p-3 bg-green-100 rounded-lg mr-4">
-              <i className="fas fa-user-md text-green-600 text-xl"></i>
-            </div>
-            <div>
-              <p className="text-gray-500 text-sm">Doctor Access</p>
-              <p className="text-2xl font-bold text-green-600 mt-1">12</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white p-4 rounded border card-shadow">
-          <div className="flex items-center">
-            <div className="p-3 bg-yellow-100 rounded-lg mr-4">
-              <i className="fas fa-history text-yellow-600 text-xl"></i>
-            </div>
-            <div>
-              <p className="text-gray-500 text-sm">Today's Accesses</p>
-              <p className="text-2xl font-bold text-yellow-600 mt-1">{accessLogs.filter(log => log.accessTime.includes('2024-01-15')).length}</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white p-4 rounded border card-shadow">
-          <div className="flex items-center">
-            <div className="p-3 bg-purple-100 rounded-lg mr-4">
-              <i className="fas fa-mobile-alt text-purple-600 text-xl"></i>
-            </div>
-            <div>
-              <p className="text-gray-500 text-sm">Mobile Accesses</p>
-              <p className="text-2xl font-bold text-purple-600 mt-1">8</p>
-            </div>
-          </div>
-        </div>
+{/* User Statistics Cards - Glass Morphism Design */}
+<div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+  {/* Active Access Card */}
+  <div className="relative bg-gradient-to-br from-white to-blue-50 p-5 rounded-2xl border border-blue-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+    <div className="absolute top-0 right-0 w-20 h-20 bg-blue-200 rounded-full -translate-y-8 translate-x-8 opacity-20"></div>
+    <div className="absolute bottom-0 left-0 w-16 h-16 bg-blue-300 rounded-full translate-y-8 -translate-x-8 opacity-10"></div>
+
+    <div className="relative flex items-center justify-between">
+      <div>
+        <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider">Active Access</p>
+        <p className="text-2xl font-bold text-gray-900 mt-1">{patients.length}</p>
       </div>
+      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
+        <i className="fas fa-user-shield text-white text-lg"></i>
+      </div>
+    </div>
+    <div className="relative mt-4 pt-3 border-t border-blue-100">
+      <p className="text-xs text-blue-700 font-medium">Current active patients</p>
+    </div>
+  </div>
+
+  {/* Doctor Access Card */}
+  <div className="relative bg-gradient-to-br from-white to-emerald-50 p-5 rounded-2xl border border-emerald-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+    <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-200 rounded-full -translate-y-8 translate-x-8 opacity-20"></div>
+    <div className="absolute bottom-0 left-0 w-16 h-16 bg-emerald-300 rounded-full translate-y-8 -translate-x-8 opacity-10"></div>
+
+    <div className="relative flex items-center justify-between">
+      <div>
+        <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Doctor Access</p>
+        <p className="text-2xl font-bold text-gray-900 mt-1">12</p>
+      </div>
+      <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-md">
+        <i className="fas fa-user-md text-white text-lg"></i>
+      </div>
+    </div>
+    <div className="relative mt-4 pt-3 border-t border-emerald-100">
+      <p className="text-xs text-emerald-700 font-medium">Authorized doctors</p>
+    </div>
+  </div>
+
+  {/* Today's Accesses Card */}
+  <div className="relative bg-gradient-to-br from-white to-yellow-50 p-5 rounded-2xl border border-yellow-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+    <div className="absolute top-0 right-0 w-20 h-20 bg-yellow-200 rounded-full -translate-y-8 translate-x-8 opacity-20"></div>
+    <div className="absolute bottom-0 left-0 w-16 h-16 bg-yellow-300 rounded-full translate-y-8 -translate-x-8 opacity-10"></div>
+
+    <div className="relative flex items-center justify-between">
+      <div>
+        <p className="text-xs font-semibold text-yellow-600 uppercase tracking-wider">Today's Accesses</p>
+        <p className="text-2xl font-bold text-gray-900 mt-1">{accessLogs.filter(log => log.accessTime.includes('2024-01-15')).length}</p>
+      </div>
+      <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl flex items-center justify-center shadow-md">
+        <i className="fas fa-history text-white text-lg"></i>
+      </div>
+    </div>
+    <div className="relative mt-4 pt-3 border-t border-yellow-100">
+      <p className="text-xs text-yellow-700 font-medium">Access logs today</p>
+    </div>
+  </div>
+
+  {/* Mobile Accesses Card */}
+  <div className="relative bg-gradient-to-br from-white to-purple-50 p-5 rounded-2xl border border-purple-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+    <div className="absolute top-0 right-0 w-20 h-20 bg-purple-200 rounded-full -translate-y-8 translate-x-8 opacity-20"></div>
+    <div className="absolute bottom-0 left-0 w-16 h-16 bg-purple-300 rounded-full translate-y-8 -translate-x-8 opacity-10"></div>
+
+    <div className="relative flex items-center justify-between">
+      <div>
+        <p className="text-xs font-semibold text-purple-600 uppercase tracking-wider">Mobile Accesses</p>
+        <p className="text-2xl font-bold text-gray-900 mt-1">8</p>
+      </div>
+      <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md">
+        <i className="fas fa-mobile-alt text-white text-lg"></i>
+      </div>
+    </div>
+    <div className="relative mt-4 pt-3 border-t border-purple-100">
+      <p className="text-xs text-purple-700 font-medium">Via mobile app</p>
+    </div>
+  </div>
+</div>
 
       {/* Search and Filters */}
       <div className="bg-white p-4 rounded border card-shadow">

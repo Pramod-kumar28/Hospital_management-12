@@ -1044,9 +1044,7 @@ export default function Home() {
         </div>
       </section>
 
-
-      {/* Why Choose DCM Section */}
-      <section className="py-20 bg-white">
+<section className="py-20 bg-white">
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             {/* Image on Left */}
@@ -1056,7 +1054,7 @@ export default function Home() {
                 className="w-full rounded-2xl shadow-2xl border-4 border-white/20 transform hover:scale-105 transition-transform duration-500"
                 src="https://images.unsplash.com/photo-1586773860418-d37222d8fce3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
               />
-
+              
             </div>
 
             {/* Content on Right */}
@@ -1071,16 +1069,16 @@ export default function Home() {
 
               {/* Why Choose Carousel */}
               <div className="relative">
-
+               
                 {/* Scrollable Container */}
-                <div
+                <div 
                   ref={whyChooseScrollRef}
                   className="flex overflow-x-auto pb-8 snap-x snap-mandatory scrollbar-hide space-x-6"
                   style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                 >
                   {whyChooseItems.map((item, idx) => (
-                    <div
-                      key={idx}
+                    <div 
+                      key={idx} 
                       className="flex-shrink-0 w-full snap-center p-8 rounded-2xl cursor-pointer hover:border-blue-300 transition-all duration-300 group"
                     >
                       <div className="relative z-10 text-center">
@@ -1100,16 +1098,17 @@ export default function Home() {
                     <button
                       key={idx}
                       onClick={() => handleWhyChooseDotClick(idx)}
-                      className={`w-3 h-3 rounded-full transition-all duration-300 ${idx === currentWhyChoose
-                          ? 'bg-blue-600 w-8'
+                      className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                        idx === currentWhyChoose 
+                          ? 'bg-blue-600 w-8' 
                           : 'bg-blue-300 hover:bg-blue-400'
-                        }`}
+                      }`}
                     />
                   ))}
                 </div>
               </div>
 
-
+             
             </div>
           </div>
         </div>

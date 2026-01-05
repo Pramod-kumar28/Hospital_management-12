@@ -922,6 +922,7 @@ import {
   Smartphone, Globe, Lock, Award, Clock, TrendingUp, Key,
   ClipboardCheck, Smartphone as Mobile, Users as UserCheck
 } from "lucide-react";
+import ChatBot from './ChatBot';
 
 export default function Features() {
   const [hoveredCard, setHoveredCard] = useState(null);
@@ -1185,6 +1186,7 @@ export default function Features() {
           </div>
         </div>
       </section>
+      <ChatBot/>
     </div>
   );
 }
@@ -1194,33 +1196,31 @@ const featuresData = [
   {
     icon: Users,
     title: "Patient Management",
-    description: "Complete patient registration, medical history, and intelligent appointment scheduling",
+    description: "Complete patient registration, medical history, and intelligent appointment scheduling with comprehensive OPD/IPD management and digital discharge processes.",
     color: "from-blue-500 to-cyan-500",
     stats: "40% Faster Registration",
     additionalPoints: [
       "OPD/IPD management system",
       "Digital discharge and therapy",
-      "Medical history tracking",
-      "Intelligent conflict resolution"
+      "Medical history tracking"
     ]
   },
   {
     icon: Stethoscope,
     title: "Doctor Portal",
-    description: "Secure dashboard with digital prescriptions and comprehensive patient records",
+    description: "Secure dashboard with digital prescriptions and comprehensive patient records, enabling efficient patient management and clinical decision-making.",
     color: "from-green-500 to-emerald-500",
     stats: "30% Time Savings",
     additionalPoints: [
       "Secure doctor credentials",
       "Appointment dashboard",
-      "Digital prescription system",
-      "Test result documentation"
+      "Digital prescription system"
     ]
   },
   {
     icon: CreditCard,
     title: "Billing & Accounts",
-    description: "Automated billing, insurance claims, and financial reporting system",
+    description: "Automated billing, insurance claims, and financial reporting system with integrated payment gateways and revenue tracking capabilities.",
     color: "from-purple-500 to-pink-500",
     stats: "40% Faster Claims",
     additionalPoints: [
@@ -1233,7 +1233,7 @@ const featuresData = [
   {
     icon: Pill,
     title: "Pharmacy Management",
-    description: "Inventory control, prescription tracking, and automated purchase orders",
+    description: "Inventory control, prescription tracking, and automated purchase orders with real-time stock alerts and expiry management.",
     color: "from-orange-500 to-red-500",
     stats: "99% Accuracy",
     additionalPoints: [
@@ -1246,7 +1246,7 @@ const featuresData = [
   {
     icon: FlaskConical,
     title: "Laboratory (LIMS)",
-    description: "Streamlined lab operations with test registration and secure result access",
+    description: "Streamlined lab operations with test registration and secure result access, including quality control workflows and sample tracking.",
     color: "from-indigo-500 to-blue-500",
     stats: "50% Faster Results",
     additionalPoints: [
@@ -1259,7 +1259,7 @@ const featuresData = [
   {
     icon: Video,
     title: "Telemedicine",
-    description: "Secure video consultations and remote patient monitoring",
+    description: "Secure video consultations and remote patient monitoring with appointment scheduling integration and secure communication channels.",
     color: "from-teal-500 to-green-500",
     stats: "24/7 Access",
     additionalPoints: [
@@ -1272,7 +1272,7 @@ const featuresData = [
   {
     icon: BarChart3,
     title: "Analytics & Reports",
-    description: "Real-time dashboards, performance metrics, and comprehensive reporting",
+    description: "Real-time dashboards, performance metrics, and comprehensive reporting with AI-powered insights for data-driven decision making.",
     color: "from-cyan-500 to-blue-500",
     stats: "AI-Powered Insights",
     additionalPoints: [
@@ -1285,7 +1285,7 @@ const featuresData = [
   {
     icon: Building2,
     title: "Hospital Admin",
-    description: "Centralized dashboard for departments, staff, and performance metrics",
+    description: "Centralized dashboard for departments, staff, and performance metrics with equipment tracking and audit trail management.",
     color: "from-gray-600 to-gray-800",
     stats: "Complete Control",
     additionalPoints: [
@@ -1298,7 +1298,7 @@ const featuresData = [
   {
     icon: Mobile,
     title: "Mobile Access",
-    description: "Full platform access on iOS & Android mobile applications",
+    description: "Full platform access on iOS & Android mobile applications with offline functionality and push notifications.",
     color: "from-purple-600 to-pink-600",
     stats: "Mobile First",
     additionalPoints: [
@@ -1368,55 +1368,77 @@ const techStackData = [
 function AnimatedFeatureCard({ feature, index, isHovered, onHover, onLeave }) {
   const IconComponent = feature.icon;
 
-  return (
-    <div 
-      className="group relative bg-white rounded-xl shadow-lg border border-blue-100 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1 cursor-pointer overflow-hidden"
-      onMouseEnter={onHover}
-      onMouseLeave={onLeave}
-    >
-      {/* Static Background */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-5 transition-opacity duration-500`}></div>
+return (
+  <div 
+    className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer overflow-hidden"
+    onMouseEnter={onHover}
+    onMouseLeave={onLeave}
+  >
+    {/* Elegant Gradient Overlay */}
+    <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-[0.03] transition-opacity duration-700`}></div>
+    
+    {/* Floating Particle Animation */}
+    <div className="absolute inset-0 overflow-hidden rounded-2xl">
+      <div className={`absolute -top-10 -right-10 w-20 h-20 rounded-full bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-10 blur-xl transition-all duration-700 group-hover:translate-x-8 group-hover:translate-y-8`}></div>
+    </div>
 
-      <div className="relative z-10 p-4 md:p-5">
-        {/* Icon with Static Gradient */}
-        <div className="relative mb-3 transform group-hover:scale-110 transition-transform duration-300">
-          <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${feature.color} text-white flex items-center justify-center shadow-lg`}>
-            <IconComponent size={20} />
-          </div>
+    <div className="relative p-6">
+      {/* Icon with Floating Effect */}
+      <div className="relative mb-5">
+        <div className={`relative w-14 h-14 rounded-2xl bg-gradient-to-br ${feature.color} text-white flex items-center justify-center shadow-lg transition-all duration-500 group-hover:translate-y-[-5px] group-hover:shadow-xl`}>
+          <IconComponent size={24} />
         </div>
+        
+      </div>
 
-        {/* Content */}
-        <h3 className="font-bold text-gray-900 text-sm md:text-base mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
+      {/* Content with Elegant Typography */}
+      <div className="space-y-4">
+        <h3 className="font-bold text-gray-900 text-lg group-hover:text-blue-700 transition-colors duration-400">
           {feature.title}
         </h3>
-        <p className="text-gray-600 text-xs md:text-sm leading-relaxed mb-3 line-clamp-2">
+        
+        <p className="text-gray-600 leading-relaxed text-sm">
           {feature.description}
         </p>
-
-        {/* Additional Points from SOW */}
-        <div className="mt-2 space-y-1 mb-3">
+        
+        {/* Features List with Staggered Animation */}
+        <div className="space-y-2.5 mt-4">
           {feature.additionalPoints && feature.additionalPoints.slice(0, 4).map((point, idx) => (
-            <div key={idx} className="flex items-start text-xs text-gray-500">
-              <div className="w-1 h-1 rounded-full bg-blue-400 mt-1.5 mr-2 flex-shrink-0"></div>
-              <span className="line-clamp-1">{point}</span>
+            <div 
+              key={idx} 
+              className="flex items-center gap-3 opacity-70 group-hover:opacity-100 transition-opacity duration-500"
+              style={{transitionDelay: `${idx * 100}ms`}}
+            >
+              <div className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0 group-hover:scale-125 transition-transform duration-300"></div>
+              <span className="text-sm text-gray-700">{point}</span>
             </div>
           ))}
         </div>
-
-        {/* Stats Badge */}
-        <div className="inline-flex items-center gap-1 bg-blue-50 text-blue-600 px-2 py-1 rounded-full text-xs font-medium">
-          <TrendingUp className="w-3 h-3" />
-          {feature.stats}
-        </div>
-
-        {/* Hover Line */}
-        <div className="absolute bottom-0 left-0 w-0 h-1 bg-gradient-to-r from-blue-500 to-cyan-500 group-hover:w-full transition-all duration-500 rounded-b-xl"></div>
       </div>
 
-      {/* Static Shimmer Effect */}
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+      {/* Elegant Divider */}
+      <div className="my-6 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent group-hover:via-blue-200 transition-all duration-500"></div>
+
+      {/* Stats with Elegant Badge */}
+      <div className="flex items-center justify-between">
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-full group-hover:from-blue-100 group-hover:to-cyan-100 transition-all duration-400">
+          <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${feature.color} text-white flex items-center justify-center`}>
+            <TrendingUp size={14} />
+          </div>
+          <span className="font-semibold text-blue-700 text-sm">{feature.stats}</span>
+        </div>
+        
+        {/* Elegant Arrow */}
+        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-50 to-cyan-50 flex items-center justify-center opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0 transition-all duration-500">
+          <ChevronRight className="w-5 h-5 text-blue-500 group-hover:text-blue-600" />
+        </div>
+      </div>
     </div>
-  );
+
+    {/* Shimmer Effect */}
+    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+  </div>
+);
 }
 
 // Enhanced Feature Detail Section

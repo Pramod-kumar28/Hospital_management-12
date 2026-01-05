@@ -502,6 +502,1681 @@
 
 
 
+// import React, { useEffect, useMemo, useRef, useState } from "react";
+// import {
+//   Activity, Menu, Zap, ArrowRight, CheckCircle2, Building2, Users, Heart, Calendar,
+//   Stethoscope, CreditCard, Pill, FlaskConical, Video, Shield, Globe, Lock,
+//   Quote, Star, MapPin, Facebook, Twitter, Linkedin, Instagram, Youtube, X,
+//   Award, TrendingUp, Clock, Smartphone, Database, Cloud, Server, ChevronLeft, ChevronRight
+// } from "lucide-react";
+
+// export default function Home() {
+//   const [isVisible, setIsVisible] = useState(false);
+  
+//   useEffect(() => {
+//     setIsVisible(true);
+//   }, []);
+
+//   // ----- Animated Stats -----
+//   const statDefs = useMemo(
+//     () => ([
+//       { id: "hospitals", label: "Hospitals Powered", target: 50 },
+//       { id: "professionals", label: "Healthcare Professionals", target: 2000 },
+//       { id: "patients", label: "Patients Served", target: 100000 },
+//       { id: "appointments", label: "Appointments Daily", target: 5000 },
+//     ]),
+//     []
+//   );
+//   const [stats, setStats] = useState({
+//     hospitals: 0,
+//     professionals: 0,
+//     patients: 0,
+//     appointments: 0,
+//   });
+
+//   useEffect(() => {
+//     const duration = 2000;
+//     const start = performance.now();
+//     let rafId;
+
+//     const step = (now) => {
+//       const t = Math.min(1, (now - start) / duration);
+//       setStats({
+//         hospitals: Math.floor(t * statDefs[0].target),
+//         professionals: Math.floor(t * statDefs[1].target),
+//         patients: Math.floor(t * statDefs[2].target),
+//         appointments: Math.floor(t * statDefs[3].target),
+//       });
+//       if (t < 1) rafId = requestAnimationFrame(step);
+//     };
+//     rafId = requestAnimationFrame(step);
+//     return () => cancelAnimationFrame(rafId);
+//   }, [statDefs]);
+
+//   // ----- Enhanced Testimonials with More Reviews -----
+//   const testimonials = [
+//     {
+//       name: "Dr. Rajesh Kumar",
+//       role: "Chief Medical Officer",
+//       hospital: "Apollo Hospitals, Hyderabad",
+//       avatar: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=100&h=100&fit=crop&crop=face",
+//       text: "DCM Hospital Management has transformed our operations in Hyderabad. Patient management is now seamless, and our doctors love the digital prescription feature.",
+//     },
+//     {
+//       name: "Ms. Priya Sharma",
+//       role: "Hospital Administrator",
+//       hospital: "Yashoda Hospitals, Hyderabad",
+//       avatar: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&h=100&fit=crop&crop=face",
+//       text: "The billing and accounts module has reduced our revenue leakage by 40% across our Hyderabad branches. Highly recommended for healthcare facilities in Telangana!",
+//     },
+//     {
+//       name: "Dr. Amit Patel",
+//       role: "Medical Director",
+//       hospital: "Continental Hospitals, Hyderabad",
+//       avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop&crop=face",
+//       text: "As a multi-specialty hospital in Hyderabad, DCM's centralized reporting gave us complete visibility. The ROI was evident within 3 months of implementation.",
+//     },
+//     {
+//       name: "Dr. Anjali Mehta",
+//       role: "Head of Pediatrics",
+//       hospital: "KIMS Hospitals, Hyderabad",
+//       avatar: "https://images.unsplash.com/photo-1594824947933-d0501ba2fe65?w=100&h=100&fit=crop&crop=face",
+//       text: "The patient portal has significantly improved our communication with Hyderabad patients. Parents can now access medical records and vaccination schedules anytime.",
+//     },
+//     {
+//       name: "Mr. Rohan Verma",
+//       role: "IT Director",
+//       hospital: "Care Hospitals, Hyderabad",
+//       avatar: "https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=100&h=100&fit=crop&crop=face",
+//       text: "Implementation across our Hyderabad facilities was smooth. We've seen a 30% improvement in operational efficiency since switching to DCM.",
+//     },
+//     {
+//       name: "Dr. Sanjay Gupta",
+//       role: "Medical Superintendent",
+//       hospital: "Global Hospitals, Hyderabad",
+//       avatar: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=100&h=100&fit=crop&crop=face",
+//       text: "The real-time analytics and reporting features have revolutionized our decision-making process at our Hyderabad campus.",
+//     },
+//     {
+//       name: "Ms. Neha Singh",
+//       role: "Nursing Director",
+//       hospital: "Omega Hospitals, Hyderabad",
+//       avatar: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&h=100&fit=crop&crop=face",
+//       text: "Nursing workflow optimization has improved patient care delivery by 45% in our Hyderabad facility. The mobile app is perfect for our busy staff.",
+//     },
+//     {
+//       name: "Dr. Vikram Reddy",
+//       role: "Cardiology Head",
+//       hospital: "Medicover Hospitals, Hyderabad",
+//       avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop&crop=face",
+//       text: "Excellent cardiology module integration at our Hyderabad center. Patient monitoring and follow-up have never been easier.",
+//     },
+//     {
+//       name: "Dr. Arjun Malhotra",
+//       role: "Orthopedics Head",
+//       hospital: "Sunrise Hospitals, Hyderabad",
+//       avatar: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=100&h=100&fit=crop&crop=face",
+//       text: "The surgery scheduling module has reduced OT conflicts by 60%. Perfect for busy orthopedic departments in Hyderabad.",
+//     },
+//     {
+//       name: "Dr. Sneha Reddy",
+//       role: "Emergency Medicine",
+//       hospital: "AIG Hospitals, Hyderabad",
+//       avatar: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&h=100&fit=crop&crop=face",
+//       text: "Emergency department efficiency improved by 50% with real-time bed management and patient tracking features.",
+//     },
+//     {
+//       name: "Mr. Karthik Rao",
+//       role: "Finance Manager",
+//       hospital: "SLG Hospitals, Hyderabad",
+//       avatar: "https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=100&h=100&fit=crop&crop=face",
+//       text: "Automated billing reduced our accounting errors by 80% and improved cash flow management significantly.",
+//     },
+//     {
+//       name: "Dr. Priya Nair",
+//       role: "Radiology Head",
+//       hospital: "Basavatarakam Hospitals, Hyderabad",
+//       avatar: "https://images.unsplash.com/photo-1594824947933-d0501ba2fe65?w=100&h=100&fit=crop&crop=face",
+//       text: "Integrated PACS system with DCM has streamlined our radiology workflow and reduced report turnaround time by 40%.",
+//     },
+//   ];
+
+//   // ----- Carousel State -----
+//   const [currentSlide, setCurrentSlide] = useState(0);
+//   const [slidesToShow, setSlidesToShow] = useState(3); // Default for desktop
+  
+//   // Update slidesToShow based on screen size
+//   useEffect(() => {
+//     const handleResize = () => {
+//       if (window.innerWidth < 768) {
+//         setSlidesToShow(1); // 1 card on mobile
+//       } else {
+//         setSlidesToShow(3); // 3 cards on desktop
+//       }
+//     };
+    
+//     // Set initial value
+//     handleResize();
+    
+//     window.addEventListener('resize', handleResize);
+//     return () => window.removeEventListener('resize', handleResize);
+//   }, []);
+
+//   const totalSlides = Math.ceil(testimonials.length / slidesToShow);
+//   const carouselRef = useRef(null);
+
+//   // Auto-slide every 2 seconds
+//   useEffect(() => {
+//     const interval = setInterval(() => {
+//       setCurrentSlide((prev) => (prev + 1) % totalSlides);
+//     }, 2000);
+    
+//     return () => clearInterval(interval);
+//   }, [totalSlides]);
+
+//   // Manual navigation
+//   const nextSlide = () => {
+//     setCurrentSlide((prev) => (prev + 1) % totalSlides);
+//   };
+
+//   const prevSlide = () => {
+//     setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides);
+//   };
+
+//   // ----- Partners -----
+//   const partners = [
+//     {
+//       name: "Apollo Hospitals",
+//       location: "Hyderabad, Telangana",
+//       img: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+//       quote: '"DCM\'s patient management system has reduced our administrative workload by 40% across Hyderabad branches."',
+//       author: "- Dr. Rajesh Kumar, Chief Medical Officer",
+//     },
+//     {
+//       name: "Yashoda Hospitals",
+//       location: "Hyderabad, Telangana",
+//       img: "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+//       quote: '"The pharmacy management module has optimized our inventory, reducing medication waste by 25% in Hyderabad."',
+//       author: "- Ms. Priya Sharma, Hospital Administrator",
+//     },
+//     {
+//       name: "KIMS Hospitals",
+//       location: "Hyderabad, Telangana",
+//       img: "https://images.unsplash.com/photo-1551601651-2a8555f1a136?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+//       quote: '"As a multi-location hospital in Hyderabad, DCM\'s centralized reporting gives us complete real-time visibility."',
+//       author: "- Dr. Amit Patel, Medical Director",
+//     },
+//   ];
+
+//   // ----- Comparison Data -----
+//   const comparisonData = [
+//     {
+//       feature: "Cloud-Based Architecture",
+//       dcm: { status: "yes", text: "Multi-tenant SaaS" },
+//       others: { status: "no", text: "On-premise only" }
+//     },
+//     {
+//       feature: "Real-time Analytics",
+//       dcm: { status: "yes", text: "Live dashboards" },
+//       others: { status: "partial", text: "Basic reports only" }
+//     },
+//     {
+//       feature: "Mobile App Access",
+//       dcm: { status: "yes", text: "iOS & Android" },
+//       others: { status: "partial", text: "Web only" }
+//     },
+//     {
+//       feature: "Telemedicine Integration",
+//       dcm: { status: "yes", text: "Built-in video calls" },
+//       others: { status: "no", text: "Third-party needed" }
+//     },
+//     {
+//       feature: "AI-Powered Insights",
+//       dcm: { status: "yes", text: "Predictive analytics" },
+//       others: { status: "no", text: "Not available" }
+//     },
+//     {
+//       feature: "Multi-branch Support",
+//       dcm: { status: "yes", text: "Unlimited branches" },
+//       others: { status: "limited", text: "Extra cost" }
+//     },
+//     {
+//       feature: "24/7 Support",
+//       dcm: { status: "yes", text: "Dedicated team" },
+//       others: { status: "limited", text: "Business hours" }
+//     },
+//     {
+//       feature: "HIPAA Compliance",
+//       dcm: { status: "yes", text: "Fully certified" },
+//       others: { status: "partial", text: "Basic security" }
+//     }
+//   ];
+
+//   // ----- Why Choose DCM Carousel -----
+//   const whyChooseScrollRef = useRef(null);
+//   const [currentWhyChoose, setCurrentWhyChoose] = useState(0);
+
+//   const whyChooseItems = [
+//     {
+//       icon: Shield,
+//       title: "Enterprise-Grade Security",
+//       sub: "HIPAA & GDPR compliant with end-to-end encryption and multi-layer security protocols"
+//     },
+//     {
+//       icon: Zap,
+//       title: "Lightning Fast Performance",
+//       sub: "Cloud-based infrastructure ensures 99.9% uptime with real-time data processing"
+//     },
+//     {
+//       icon: Globe,
+//       title: "Multi-Platform Access",
+//       sub: "Web, iOS, and Android apps for seamless access from any device, anywhere"
+//     },
+//     {
+//       icon: Lock,
+//       title: "Data Privacy First",
+//       sub: "Your data stays secure with role-based access control and comprehensive audit trails"
+//     },
+//     {
+//       icon: Building2,
+//       title: "Scalable Infrastructure",
+//       sub: "Grow from single clinic to multi-hospital chain without system changes"
+//     },
+//     {
+//       icon: Users,
+//       title: "Dedicated Support",
+//       sub: "24/7 customer support with dedicated account managers for each facility"
+//     }
+//   ];
+
+//   const handleWhyChooseDotClick = (index) => {
+//     setCurrentWhyChoose(index);
+//     if (whyChooseScrollRef.current) {
+//       const scrollAmount = whyChooseScrollRef.current.clientWidth * index;
+//       whyChooseScrollRef.current.scrollTo({
+//         left: scrollAmount,
+//         behavior: 'smooth'
+//       });
+//     }
+//   };
+
+//   const nextWhyChoose = () => {
+//     const nextIndex = (currentWhyChoose + 1) % whyChooseItems.length;
+//     handleWhyChooseDotClick(nextIndex);
+//   };
+
+//   const prevWhyChoose = () => {
+//     const prevIndex = (currentWhyChoose - 1 + whyChooseItems.length) % whyChooseItems.length;
+//     handleWhyChooseDotClick(prevIndex);
+//   };
+
+//   // Auto-rotate carousel
+//   useEffect(() => {
+//     const interval = setInterval(() => {
+//       nextWhyChoose();
+//     }, 4000);
+//     return () => clearInterval(interval);
+//   }, [currentWhyChoose]);
+
+//   // Small helper
+//   const prettyNum = (n) =>
+//     n >= 1000 ? `${n.toLocaleString()}+` : n.toLocaleString();
+
+//   return (
+//     <>
+//       {/* Hero Section with Health-themed Animations */}
+//       <section className="bg-gradient-to-br from-blue-50 via-white to-cyan-50 relative overflow-hidden">
+//         {/* Enhanced Health-themed Animated Background Elements */}
+//         <div className="absolute top-20 left-4 md:left-10 opacity-10 animate-pulse">
+//           <Heart className="w-12 h-12 md:w-16 md:h-16 text-red-400" />
+//         </div>
+//         <div className="absolute bottom-20 right-4 md:right-10 opacity-10 animate-bounce">
+//           <Stethoscope className="w-12 h-12 md:w-16 md:h-16 text-blue-400" />
+//         </div>
+//         <div className="absolute top-1/3 left-1/4 opacity-5 animate-pulse delay-1000">
+//           <Pill className="w-8 h-8 md:w-12 md:h-12 text-green-400" />
+//         </div>
+//         <div className="absolute top-1/2 right-1/4 opacity-5 animate-bounce delay-500">
+//           <Heart className="w-10 h-10 md:w-14 md:h-14 text-pink-400" />
+//         </div>
+//         {/* Additional Medical Icons */}
+//         <div className="absolute top-10 right-1/3 opacity-5 animate-pulse delay-700">
+//           <Activity className="w-8 h-8 md:w-12 md:h-12 text-purple-400" />
+//         </div>
+//         <div className="absolute bottom-40 left-1/4 opacity-5 animate-bounce delay-1200">
+//           <FlaskConical className="w-10 h-10 md:w-14 md:h-14 text-orange-400" />
+//         </div>
+
+//         <div className="max-w-6xl mx-auto px-4 py-20 md:py-24 relative z-10">
+//           <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
+//             <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'}`}>
+//               <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full px-4 py-2 mb-6 animate-pulse shadow-lg">
+//                 <Zap size={16} className="animate-bounce" />
+//                 <span className="font-semibold text-sm">Multi-Tenant SaaS Platform</span>
+//               </div>
+
+//               {/* Reduced Heading Size */}
+//               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-gray-900 mb-4">
+//                 Modern Hospital{" "}
+//                 <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+//                   Management Made Simple
+//                 </span>
+//               </h1>
+
+//               <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+//                 Streamline operations, improve patient care, and boost efficiency with our comprehensive
+//                 hospital management system trusted by 50+ healthcare facilities.  Our platform integrates all hospital departments into one seamless workflow for optimal coordination and patient outcomes.
+//               </p>
+
+//               <div className="flex flex-wrap gap-3 mb-6">
+//                 <a 
+//                   href="/contact" 
+//                   className="group inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+//                 >
+//                   Request Demo
+//                   <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+//                 </a>
+//                 <a 
+//                   href="/features" 
+//                   className="group inline-flex items-center px-6 py-3 rounded-xl border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300 transform hover:scale-105"
+//                 >
+//                   View Features
+//                 </a>
+//               </div>
+
+//               <div className="flex flex-col sm:flex-row gap-4 text-gray-600">
+//                 <div className="flex items-center gap-2">
+//                   <CheckCircle2 className="text-green-500 animate-pulse" size={20} />
+//                   <span className="font-medium">14-day free trial</span>
+//                 </div>
+//                 <div className="flex items-center gap-2">
+//                   <CheckCircle2 className="text-green-500 animate-pulse" size={20} />
+//                   <span className="font-medium">No credit card required</span>
+//                 </div>
+//               </div>
+//             </div>
+
+//             <div className={`relative transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
+//               <img
+//                 className="w-full rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-500"
+//                 alt="Modern Hospital Management"
+//                 src="https://images.unsplash.com/photo-1758691461888-b74515208d7a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBob3NwaXRhbCUyMGhlYWx0aGNhcmUlMjB0ZWNobm9sb2d5fGVufDB8fHx8MTc2MjMzMzEzMXww&ixlib=rb-4.1.0&q=85"
+//               />
+//               <div className="absolute left-4 bottom-4 bg-white rounded-xl shadow-2xl p-4 flex items-center gap-3 transform hover:scale-105 transition-transform duration-300">
+//                 <span className="w-12 h-12 rounded-lg bg-green-500 text-white flex items-center justify-center animate-pulse">
+//                   <Heart className="w-6 h-6" />
+//                 </span>
+//                 <div>
+//                   <p className="font-semibold text-sm text-gray-900">99.9% Uptime</p>
+//                   <p className="text-xs text-gray-500">Guaranteed Reliability</p>
+//                 </div>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+//       </section>
+
+//       {/* Stats */}
+//       <section className="py-10 bg-white">
+//         <div className="max-w-6xl mx-auto px-4">
+//           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+//             <div className="text-center transform hover:scale-105 transition-transform duration-300">
+//               <div className="mx-auto w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white flex items-center justify-center mb-3 shadow-lg">
+//                 <Building2 size={20} className="md:w-6 md:h-6" />
+//               </div>
+//               <p className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
+//                 {prettyNum(stats.hospitals)}
+//               </p>
+//               <p className="text-gray-600 text-sm md:text-base">Hospitals Powered</p>
+//             </div>
+
+//             <div className="text-center transform hover:scale-105 transition-transform duration-300">
+//               <div className="mx-auto w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white flex items-center justify-center mb-3 shadow-lg">
+//                 <Users size={20} className="md:w-6 md:h-6" />
+//               </div>
+//               <p className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
+//                 {prettyNum(stats.professionals)}
+//               </p>
+//               <p className="text-gray-600 text-sm md:text-base">Healthcare Professionals</p>
+//             </div>
+
+//             <div className="text-center transform hover:scale-105 transition-transform duration-300">
+//               <div className="mx-auto w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white flex items-center justify-center mb-3 shadow-lg">
+//                 <Heart size={20} className="md:w-6 md:h-6" />
+//               </div>
+//               <p className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
+//                 {prettyNum(stats.patients)}
+//               </p>
+//               <p className="text-gray-600 text-sm md:text-base">Patients Served</p>
+//             </div>
+
+//             <div className="text-center transform hover:scale-105 transition-transform duration-300">
+//               <div className="mx-auto w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white flex items-center justify-center mb-3 shadow-lg">
+//                 <Calendar size={20} className="md:w-6 md:h-6" />
+//               </div>
+//               <p className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
+//                 {prettyNum(stats.appointments)}
+//               </p>
+//               <p className="text-gray-600 text-sm md:text-base">Appointments Daily</p>
+//             </div>
+//           </div>
+//         </div>
+//       </section>
+
+//       {/* Features Preview with Health Animations - Only 3 Cards */}
+//       <section className="py-12 md:py-10 bg-gradient-to-br from-blue-50 to-cyan-50 relative overflow-hidden" id="features-preview">
+//         {/* Enhanced Medical Background Animations */}
+//         <div className="absolute top-10 left-5% opacity-5 animate-pulse">
+//           <Heart className="w-8 h-8 md:w-12 md:h-12 text-red-400" />
+//         </div>
+//         <div className="absolute bottom-10 right-5% opacity-5 animate-bounce delay-500">
+//           <Stethoscope className="w-10 h-10 md:w-14 md:h-14 text-blue-400" />
+//         </div>
+//         <div className="absolute top-1/2 left-10% opacity-5 animate-pulse delay-1000">
+//           <Activity className="w-6 h-6 md:w-10 md:h-10 text-green-400" />
+//         </div>
+//         <div className="absolute bottom-1/3 right-15% opacity-5 animate-bounce delay-700">
+//           <Pill className="w-8 h-8 md:w-12 md:h-12 text-purple-400" />
+//         </div>
+
+//         <div className="max-w-6xl mx-auto px-4 relative z-10">
+//           <div className="text-center max-w-2xl mx-auto mb-12">
+//             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+//               Complete Hospital Management Suite
+//             </h2>
+//             <p className="text-gray-600 text-base md:text-lg">
+//               Everything you need to run a modern healthcare facility efficiently.
+//               Our comprehensive platform integrates all hospital operations for seamless workflow.
+//             </p>
+//           </div>
+
+//           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+//             {[
+//               { 
+//                 icon: Users, 
+//                 title: "Patient Management", 
+//                 desc: "Comprehensive patient registration, medical history, and appointment scheduling.",
+//                 delay: "0"
+//               },
+//               { 
+//                 icon: Stethoscope, 
+//                 title: "Doctor Portal", 
+//                 desc: "Secure doctor dashboard with digital prescriptions and patient records access.",
+//                 delay: "100"
+//               },
+//               { 
+//                 icon: CreditCard, 
+//                 title: "Billing & Accounts", 
+//                 desc: "Complete financial management with insurance claims and revenue reconciliation.",
+//                 delay: "200"
+//               },
+//             ].map(({ icon: Icon, title, desc, delay }) => (
+//               <div 
+//                 key={title} 
+//                 className="group bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-blue-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 transform hover:scale-105 relative overflow-hidden"
+//               >
+//                 {/* Animated Health Background Effect */}
+//                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-cyan-500 opacity-0 group-hover:opacity-5 transition-opacity duration-500"></div>
+                
+//                 {/* Pulse Animation Effect */}
+//                 <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-blue-200 group-hover:animate-pulse transition-all duration-300"></div>
+                
+//                 <span className="inline-flex items-center justify-center w-14 h-14 md:w-16 md:h-16 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white mb-4 group-hover:scale-110 transition-transform duration-300 relative z-10 shadow-lg">
+//                   <Icon size={24} className="md:w-7 md:h-7" />
+//                 </span>
+//                 <h3 className="text-xl md:text-2xl font-bold mb-3 text-gray-900 relative z-10">{title}</h3>
+//                 <p className="text-gray-600 text-base md:text-lg leading-relaxed relative z-10">{desc}</p>
+                
+//                 {/* Hover Animation Line */}
+//                 <div className="absolute bottom-0 left-0 w-0 h-1 bg-gradient-to-r from-blue-500 to-cyan-500 group-hover:w-full transition-all duration-500"></div>
+//               </div>
+//             ))}
+//           </div>
+
+//           <div className="text-center mt-10">
+//             <a 
+//               href="/features" 
+//               className="group inline-flex items-center justify-center rounded-xl px-8 py-4 text-base font-semibold bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+//             >
+//               View All Features
+//               <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
+//             </a>
+//           </div>
+//         </div>
+//       </section>
+
+// <section className="py-20 bg-white">
+//         <div className="max-w-6xl mx-auto px-4">
+//           <div className="grid md:grid-cols-2 gap-16 items-center">
+//             {/* Image on Left */}
+//             <div className="relative">
+//               <img
+//                 alt="Healthcare Technology"
+//                 className="w-full rounded-2xl shadow-2xl border-4 border-white/20 transform hover:scale-105 transition-transform duration-500"
+//                 src="https://images.unsplash.com/photo-1586773860418-d37222d8fce3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+//               />
+              
+//             </div>
+
+//             {/* Content on Right */}
+//             <div>
+//               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+//                 Why Healthcare Facilities <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-800">Choose DCM</span>
+//               </h2>
+//               <p className="text-lg text-gray-600 mb-8">
+//                 Built with modern technology and healthcare expertise to deliver the best experience for hospitals,
+//                 doctors, and patients across India.
+//               </p>
+
+//               {/* Why Choose Carousel */}
+//               <div className="relative">
+               
+//                 {/* Scrollable Container */}
+//                 <div 
+//                   ref={whyChooseScrollRef}
+//                   className="flex overflow-x-auto pb-8 snap-x snap-mandatory scrollbar-hide space-x-6"
+//                   style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+//                 >
+//                   {whyChooseItems.map((item, idx) => (
+//                     <div 
+//                       key={idx} 
+//                       className="flex-shrink-0 w-full snap-center p-8 rounded-2xl cursor-pointer hover:border-blue-300 transition-all duration-300 group"
+//                     >
+//                       <div className="relative z-10 text-center">
+//                         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center mb-6 shadow-lg mx-auto group-hover:scale-110 transition-transform duration-300">
+//                           <item.icon size={32} />
+//                         </div>
+//                         <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors duration-300">{item.title}</h3>
+//                         <p className="text-gray-600 text-lg leading-relaxed">{item.sub}</p>
+//                       </div>
+//                     </div>
+//                   ))}
+//                 </div>
+
+//                 {/* Navigation Dots */}
+//                 <div className="flex justify-center gap-3 mt-6">
+//                   {whyChooseItems.map((_, idx) => (
+//                     <button
+//                       key={idx}
+//                       onClick={() => handleWhyChooseDotClick(idx)}
+//                       className={`w-3 h-3 rounded-full transition-all duration-300 ${
+//                         idx === currentWhyChoose 
+//                           ? 'bg-blue-600 w-8' 
+//                           : 'bg-blue-300 hover:bg-blue-400'
+//                       }`}
+//                     />
+//                   ))}
+//                 </div>
+//               </div>
+
+             
+//             </div>
+//           </div>
+//         </div>
+
+//         <style jsx>{`
+//           .scrollbar-hide {
+//             -ms-overflow-style: none;
+//             scrollbar-width: none;
+//           }
+//           .scrollbar-hide::-webkit-scrollbar {
+//             display: none;
+//           }
+//         `}</style>
+//       </section>
+
+
+
+// {/* Comparison Section */}
+// <section className="py-12 md:py-10 bg-white">
+//   <div className="max-w-6xl mx-auto px-4">
+//     <div className="text-center max-w-2xl mx-auto mb-12">
+//       <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+//         Why DCM Outperforms Traditional Systems
+//       </h2>
+//       <p className="text-gray-600 text-base md:text-lg">
+//         See how DCM Hospital Management System compares to legacy solutions
+//       </p>
+//     </div>
+
+//     {/* MOBILE SCROLL WRAPPER */}
+//     <div className="overflow-x-auto">
+//       <div className="min-w-[640px] bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+        
+//         {/* Header */}
+//         <div className="grid grid-cols-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-4 md:p-6">
+//           <div className="text-left">
+//             <h3 className="font-bold text-lg md:text-xl">Features</h3>
+//           </div>
+//           <div className="text-center">
+//             <h3 className="font-bold text-lg md:text-xl">DCM Hospital Management</h3>
+//             <p className="text-blue-100 text-sm">Modern Cloud Solution</p>
+//           </div>
+//           <div className="text-center">
+//             <h3 className="font-bold text-lg md:text-xl">Traditional Systems</h3>
+//             <p className="text-blue-100 text-sm">Legacy On-premise</p>
+//           </div>
+//         </div>
+
+//         {/* Comparison Rows */}
+//         <div className="divide-y divide-gray-100">
+//           {comparisonData.map((item, index) => (
+//             <div
+//               key={index}
+//               className="grid grid-cols-3 p-4 md:p-6 hover:bg-blue-50 transition-colors duration-200"
+//             >
+//               {/* Feature */}
+//               <div className="text-left">
+//                 <span className="font-semibold text-gray-900 text-sm md:text-base">
+//                   {item.feature}
+//                 </span>
+//               </div>
+
+//               {/* DCM */}
+//               <div className="text-center">
+//                 {item.dcm.status === "yes" && (
+//                   <div className="flex items-center justify-center gap-2 text-green-600">
+//                     <CheckCircle2 className="w-5 h-5" />
+//                     <span className="font-medium text-sm md:text-base">
+//                       {item.dcm.text}
+//                     </span>
+//                   </div>
+//                 )}
+//               </div>
+
+//               {/* Others */}
+//               <div className="text-center">
+//                 {item.others.status === "no" && (
+//                   <div className="flex items-center justify-center gap-2 text-red-600">
+//                     <X className="w-5 h-5" />
+//                     <span className="font-medium text-sm md:text-base">
+//                       {item.others.text}
+//                     </span>
+//                   </div>
+//                 )}
+
+//                 {item.others.status === "partial" && (
+//                   <div className="flex items-center justify-center gap-2 text-yellow-600">
+//                     <Clock className="w-5 h-5" />
+//                     <span className="font-medium text-sm md:text-base">
+//                       {item.others.text}
+//                     </span>
+//                   </div>
+//                 )}
+
+//                 {item.others.status === "limited" && (
+//                   <div className="flex items-center justify-center gap-2 text-orange-600">
+//                     <TrendingUp className="w-5 h-5" />
+//                     <span className="font-medium text-sm md:text-base">
+//                       {item.others.text}
+//                     </span>
+//                   </div>
+//                 )}
+//               </div>
+//             </div>
+//           ))}
+//         </div>
+
+//         {/* Footer CTA */}
+//         <div className="bg-gray-50 p-6 text-center border-t border-gray-200">
+//           <p className="text-gray-600 mb-4 text-sm md:text-base">
+//             Ready to upgrade to modern hospital management?
+//           </p>
+//           <a
+//             href="/contact"
+//             className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
+//           >
+//             Start Free Trial
+//             <ArrowRight size={20} />
+//           </a>
+//         </div>
+//       </div>
+//     </div>
+//   </div>
+// </section>
+
+
+
+// {/* Mobile Application Section */}
+// <section className="py-12 md:py-10 bg-gradient-to-br from-blue-50 to-cyan-50 relative overflow-hidden">
+//   {/* Background Medical Icons */}
+//   <div className="absolute top-10 left-5% opacity-5 animate-pulse">
+//     <Smartphone className="w-12 h-12 md:w-16 md:h-16 text-blue-400" />
+//   </div>
+//   <div className="absolute bottom-10 right-10% opacity-5 animate-bounce delay-300">
+//     <Activity className="w-10 h-10 md:w-14 md:h-14 text-green-400" />
+//   </div>
+
+//   <div className="max-w-6xl mx-auto px-4 relative z-10">
+//     <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
+//       {/* Content */}
+//       <div>
+        
+//         <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+//           Complete Hospital Management <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-600">On Your Mobile</span>
+//         </h2>
+
+//         <p className="text-gray-600 text-base md:text-lg mb-6 leading-relaxed">
+//           Access all hospital management features on iOS and Android devices. 
+//           <span className="font-semibold text-blue-600"> Free for all subscribers</span> with no additional cost.
+//           All platform features are available on mobile, including telemedicine, lab results, and real-time analytics.
+//           Push notifications keep you updated about appointments, lab results, and important alerts instantly.
+//         </p>
+
+//         <div className="space-y-4 mb-8">
+//           <div className="flex items-start gap-3">
+//             <CheckCircle2 className="text-green-500 mt-2 flex-shrink-0" size={20} />
+//             <div>
+//               <h4 className="font-semibold text-gray-900">Real-time Patient Management</h4>
+//               <p className="text-gray-600 text-sm">Access patient records, schedule appointments, and update medical history on the go. View live patient vitals and treatment progress from anywhere.</p>
+//             </div>
+//           </div>
+
+//           <div className="flex items-start gap-3">
+//             <CheckCircle2 className="text-green-500 mt-2 flex-shrink-0" size={20} />
+//             <div>
+//               <h4 className="font-semibold text-gray-900">Doctor Portal Access</h4>
+//               <p className="text-gray-600 text-sm">Doctors can view schedules, write prescriptions, and consult patients from anywhere. Access medical references and drug databases for accurate treatment decisions.</p>
+//             </div>
+//           </div>
+
+//           <div className="flex items-start gap-3">
+//             <CheckCircle2 className="text-green-500 mt-2 flex-shrink-0" size={20} />
+//             <div>
+//               <h4 className="font-semibold text-gray-900">Billing & Payments</h4>
+//               <p className="text-gray-600 text-sm">Process bills, accept payments, and manage accounts directly from mobile. Generate invoices, track payments, and send payment reminders to patients instantly.</p>
+//             </div>
+//           </div>
+
+//           <div className="flex items-start gap-3">
+//             <CheckCircle2 className="text-green-500 mt-2 flex-shrink-0" size={20} />
+//             <div>
+//               <h4 className="font-semibold text-gray-900">White Label & Customization</h4>
+//               <p className="text-gray-600 text-sm">Customize the platform with your hospital's branding, logo, and colors. Offer patients a seamless experience under your own brand identity. Choose from multiple themes and customize the interface to match your hospital's style.</p>
+//             </div>
+//           </div>
+//         </div>
+
+//         <div className="flex flex-col sm:flex-row gap-3">
+//           <a 
+//             href="/features" 
+//             className="group inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 shadow-lg hover:shadow-xl transition-all duration-300"
+//           >
+//             View All Features
+//             <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+//           </a>
+//           <a 
+//             href="/contact" 
+//             className="group inline-flex items-center px-6 py-3 rounded-xl border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300"
+//           >
+//             Download App Now
+//           </a>
+//         </div>
+
+//       </div>
+
+//       {/* Mobile App Mockup */}
+//       <div className="relative">
+//         <div className="relative mx-auto max-w-sm md:max-w-lg">
+//           <img
+//             src="https://images.unsplash.com/photo-1551650975-87deedd944c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+//             alt="Hospital Management Mobile App"
+//             className="rounded-3xl shadow-2xl border-8 border-white"
+//           />
+//           <div className="absolute -bottom-1 -right-1 bg-white rounded-2xl p-2 shadow-2xl">
+//             <div className="flex items-center gap-3">
+//               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+//                 <Smartphone className="text-white w-6 h-6" />
+//               </div>
+//               <div>
+//                 <p className="font-bold text-gray-900 text-sm">Free for Subscribers</p>
+//                 <p className="text-sm text-gray-600">Available on App Store & Play Store</p>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   </div>
+// </section>
+
+
+//       {/* Benefits Section with White Background and Blue Cards */}
+//       <section className="py-12 md:py-10 bg-white">
+//         <div className="max-w-6xl mx-auto px-4">
+//           <div className="text-center max-w-2xl mx-auto mb-12">
+//             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+//               Transform Your Hospital Operations
+//             </h2>
+//             <p className="text-gray-600 text-base md:text-lg">
+//               Experience measurable improvements across all departments.
+//               Our platform enhances patient care quality while optimizing resource utilization and operational workflows for maximum efficiency.
+//             </p>
+//           </div>
+
+//           <div className="grid md:grid-cols-3 gap-6 md:gap-8">
+//             {[
+//               { 
+//                 icon: TrendingUp, 
+//                 title: "45% Faster Operations", 
+//                 desc: "Reduce administrative time and focus on patient care with automated workflows and streamlined processes.",
+//                 gradient: "from-blue-500 to-blue-600"
+//               },
+//               { 
+//                 icon: Award, 
+//                 title: "99.9% System Uptime", 
+//                 desc: "Reliable cloud infrastructure with zero downtime ensures uninterrupted hospital operations 24/7.",
+//                 gradient: "from-blue-600 to-cyan-500"
+//               },
+//               { 
+//                 icon: Clock, 
+//                 title: "60% Time Savings", 
+//                 desc: "Automate routine tasks and streamline workflows to free up staff for critical patient care activities.",
+//                 gradient: "from-cyan-500 to-blue-500"
+//               },
+//             ].map(({ icon: Icon, title, desc, gradient }) => (
+//               <div 
+//                 key={title} 
+//                 className="group bg-gradient-to-r p-6 rounded-2xl text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 relative overflow-hidden"
+//               >
+//                 {/* Animated Background Effect */}
+//                 <div className={`absolute inset-0 bg-gradient-to-r ${gradient} opacity-100 group-hover:opacity-90 transition-opacity duration-300`}></div>
+                
+//                 {/* Shine Effect on Hover */}
+//                 <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                
+//                 <div className="relative z-10">
+//                   <Icon className="w-12 h-12 mx-auto mb-4 text-white" />
+//                   <h3 className="text-xl font-bold mb-2 text-white">{title}</h3>
+//                   <p className="text-blue-100">{desc}</p>
+//                 </div>
+//               </div>
+//             ))}
+//           </div>
+
+//           {/* Additional Stats Row */}
+//           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mt-12">
+//             {[
+//               { number: "40%", label: "Revenue Increase" },
+//               { number: "75%", label: "Patient Satisfaction" },
+//               { number: "50%", label: "Staff Efficiency" },
+//               { number: "30%", label: "Cost Reduction" },
+//             ].map((stat, index) => (
+//               <div 
+//                 key={stat.label} 
+//                 className="bg-gradient-to-br from-blue-50 to-cyan-50 p-4 rounded-xl text-center border border-blue-100 transform hover:scale-105 transition-all duration-300"
+//               >
+//                 <p className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">{stat.number}</p>
+//                 <p className="text-gray-600 text-sm md:text-base">{stat.label}</p>
+//               </div>
+//             ))}
+//           </div>
+//         </div>
+//       </section>
+
+//       {/* Toast */}
+//       <div id="toast" className="fixed bottom-8 right-8 bg-gray-900 text-white px-4 py-3 rounded-lg shadow-lg opacity-0 translate-y-6 pointer-events-none">
+//         <div className="font-semibold">Message Sent!</div>
+//         <div className="text-sm text-gray-300">Thank you for contacting us. We will get back to you within 24 hours.</div>
+//       </div>
+//     </>
+//   );
+// }
+
+// /* ---------- Small footer helpers ---------- */
+// function FooterCol({ title, links }) {
+//   return (
+//     <div>
+//       <h3 className="text-white font-semibold mb-4">{title}</h3>
+//       <ul className="space-y-2 text-sm">
+//         {links.map(([label, href]) => (
+//           <li key={label}>
+//             <a className="text-blue-200 hover:text-white transition-colors" href={href}>{label}</a>
+//           </li>
+//         ))}
+//       </ul>
+//     </div>
+//   );
+// }
+
+// function Social({ href, children }) {
+//   return (
+//     <a
+//       href={href}
+//       target="_blank"
+//       rel="noopener"
+//       className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-blue-500 text-white hover:bg-white hover:text-blue-600 flex items-center justify-center transition-all duration-300 transform hover:scale-110 shadow-lg"
+//     >
+//       {children}
+//     </a>
+//   );
+// }
+
+// function MailIcon(props) { 
+//   return (
+//     <svg {...props} viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor">
+//       <path d="M4 4h16v16H4z"/>
+//       <path d="m22 6-10 7L2 6"/>
+//     </svg>
+//   ); 
+// }
+
+// function PhoneIcon(props) { 
+//   return (
+//     <svg {...props} viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor">
+//       <path d="M22 16.92V21a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2 4.18 2 2 0 0 1 4 2h4.09a2 2 0 0 1 2 1.72l.57 3.42a2 2 0 0 1-.5 1.74L8.09 10.91a16 16 0 0 0 6 6l2-2.06a2 2 0 0 1 1.74-.5l3.42.57A2 2 0 0 1 22 16.92z"/>
+//     </svg>
+//   ); 
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import React, { useEffect, useMemo, useRef, useState } from "react";
+// import {
+//   Activity, Zap, ArrowRight, CheckCircle2, Building2, Users, Heart, Calendar,
+//   Stethoscope, CreditCard, Pill, FlaskConical, Shield, Globe, Lock,
+//   Award, TrendingUp, Clock, Smartphone, X, ChevronLeft, ChevronRight
+// } from "lucide-react";
+
+// export default function Home() {
+//   const [isVisible, setIsVisible] = useState(false);
+  
+//   useEffect(() => {
+//     setIsVisible(true);
+//   }, []);
+
+//   // ----- Animated Stats -----
+//   const statDefs = useMemo(
+//     () => ([
+//       { id: "hospitals", label: "Hospitals Powered", target: 50 },
+//       { id: "professionals", label: "Healthcare Professionals", target: 2000 },
+//       { id: "patients", label: "Patients Served", target: 100000 },
+//       { id: "appointments", label: "Appointments Daily", target: 5000 },
+//     ]),
+//     []
+//   );
+//   const [stats, setStats] = useState({
+//     hospitals: 0,
+//     professionals: 0,
+//     patients: 0,
+//     appointments: 0,
+//   });
+
+//   useEffect(() => {
+//     const duration = 2000;
+//     const start = performance.now();
+//     let rafId;
+
+//     const step = (now) => {
+//       const t = Math.min(1, (now - start) / duration);
+//       setStats({
+//         hospitals: Math.floor(t * statDefs[0].target),
+//         professionals: Math.floor(t * statDefs[1].target),
+//         patients: Math.floor(t * statDefs[2].target),
+//         appointments: Math.floor(t * statDefs[3].target),
+//       });
+//       if (t < 1) rafId = requestAnimationFrame(step);
+//     };
+//     rafId = requestAnimationFrame(step);
+//     return () => cancelAnimationFrame(rafId);
+//   }, [statDefs]);
+
+//   // ----- Comparison Data -----
+//   const comparisonData = [
+//     {
+//       feature: "Cloud-Based Architecture",
+//       dcm: { status: "yes", text: "Multi-tenant SaaS" },
+//       others: { status: "no", text: "On-premise only" }
+//     },
+//     {
+//       feature: "Real-time Analytics",
+//       dcm: { status: "yes", text: "Live dashboards" },
+//       others: { status: "partial", text: "Basic reports only" }
+//     },
+//     {
+//       feature: "Mobile App Access",
+//       dcm: { status: "yes", text: "iOS & Android" },
+//       others: { status: "partial", text: "Web only" }
+//     },
+//     {
+//       feature: "Telemedicine Integration",
+//       dcm: { status: "yes", text: "Built-in video calls" },
+//       others: { status: "no", text: "Third-party needed" }
+//     },
+//     {
+//       feature: "AI-Powered Insights",
+//       dcm: { status: "yes", text: "Predictive analytics" },
+//       others: { status: "no", text: "Not available" }
+//     },
+//     {
+//       feature: "Multi-branch Support",
+//       dcm: { status: "yes", text: "Unlimited branches" },
+//       others: { status: "limited", text: "Extra cost" }
+//     },
+//     {
+//       feature: "24/7 Support",
+//       dcm: { status: "yes", text: "Dedicated team" },
+//       others: { status: "limited", text: "Business hours" }
+//     },
+//     {
+//       feature: "HIPAA Compliance",
+//       dcm: { status: "yes", text: "Fully certified" },
+//       others: { status: "partial", text: "Basic security" }
+//     }
+//   ];
+
+//   // ----- Why Choose DCM Items -----
+//   const whyChooseItems = [
+//     {
+//       icon: Shield,
+//       title: "Enterprise-Grade Security",
+//       sub: "HIPAA & GDPR compliant with end-to-end encryption"
+//     },
+//     {
+//       icon: Zap,
+//       title: "Lightning Fast Performance",
+//       sub: "Cloud-based infrastructure ensures 99.9% uptime"
+//     },
+//     {
+//       icon: Globe,
+//       title: "Multi-Platform Access",
+//       sub: "Web, iOS, and Android apps for seamless access"
+//     },
+//     {
+//       icon: Lock,
+//       title: "Data Privacy First",
+//       sub: "Your data stays secure with role-based access control"
+//     },
+//     {
+//       icon: Building2,
+//       title: "Scalable Infrastructure",
+//       sub: "Grow from single clinic to multi-hospital chain"
+//     },
+//     {
+//       icon: Users,
+//       title: "Dedicated Support",
+//       sub: "24/7 customer support with dedicated account managers"
+//     }
+//   ];
+
+//   // Small helper
+//   const prettyNum = (n) =>
+//     n >= 1000 ? `${n.toLocaleString()}+` : n.toLocaleString();
+
+//   return (
+//     <>
+//       {/* Hero Section - Mobile Optimized */}
+//       <section className="bg-gradient-to-br from-blue-50 via-white to-cyan-50 relative overflow-hidden pt-16 md:pt-0">
+//         <div className="absolute top-4 left-4 opacity-10 animate-pulse md:top-10 md:left-10">
+//           <Heart className="w-8 h-8 md:w-12 md:h-12 text-red-400" />
+//         </div>
+//         <div className="absolute bottom-4 right-4 opacity-10 animate-bounce md:bottom-20 md:right-10">
+//           <Stethoscope className="w-8 h-8 md:w-12 md:h-12 text-blue-400" />
+//         </div>
+
+//         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-24 relative z-10">
+//           <div className="grid lg:grid-cols-2 gap-8 md:gap-16 items-center">
+//             {/* Left Content */}
+//             <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'}`}>
+//               <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full px-4 py-2 mb-6 animate-pulse shadow-lg">
+//                 <Zap size={16} className="animate-bounce" />
+//                 <span className="font-semibold text-sm">Multi-Tenant SaaS Platform</span>
+//               </div>
+
+//               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight text-gray-900 mb-4">
+//                 Modern Hospital{" "}
+//                 <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+//                   Management Made Simple
+//                 </span>
+//               </h1>
+
+//               <p className="text-base sm:text-lg text-gray-600 mb-6 leading-relaxed">
+//                 Streamline operations, improve patient care, and boost efficiency with our comprehensive
+//                 hospital management system trusted by 50+ healthcare facilities. Our platform integrates all hospital departments into one seamless workflow for optimal coordination and patient outcomes.
+//               </p>
+
+//               <div className="flex flex-col sm:flex-row gap-3 mb-6">
+//                 <a 
+//                   href="/contact" 
+//                   className="group inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 text-sm sm:text-base"
+//                 >
+//                   Request Demo
+//                   <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+//                 </a>
+//                 <a 
+//                   href="/features" 
+//                   className="group inline-flex items-center justify-center px-6 py-3 rounded-xl border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300 transform hover:scale-105 text-sm sm:text-base"
+//                 >
+//                   View Features
+//                 </a>
+//               </div>
+
+//               <div className="flex flex-col sm:flex-row gap-4 text-gray-600">
+//                 <div className="flex items-center gap-2">
+//                   <CheckCircle2 className="text-green-500 animate-pulse" size={20} />
+//                   <span className="font-medium text-sm sm:text-base">14-day free trial</span>
+//                 </div>
+//                 <div className="flex items-center gap-2">
+//                   <CheckCircle2 className="text-green-500 animate-pulse" size={20} />
+//                   <span className="font-medium text-sm sm:text-base">No credit card required</span>
+//                 </div>
+//               </div>
+//             </div>
+
+//             {/* Right Image */}
+//             <div className={`relative transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
+//               <img
+//                 className="w-full rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-500"
+//                 alt="Modern Hospital Management"
+//                 src="https://images.unsplash.com/photo-1758691461888-b74515208d7a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBob3NwaXRhbCUyMGhlYWx0aGNhcmUlMjB0ZWNobm9sb2d5fGVufDB8fHx8MTc2MjMzMzEzMXww&ixlib=rb-4.1.0&q=85"
+//               />
+//               <div className="absolute left-2 bottom-2 sm:left-4 sm:bottom-4 bg-white rounded-xl shadow-2xl p-3 sm:p-4 flex items-center gap-3 transform hover:scale-105 transition-transform duration-300">
+//                 <span className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-green-500 text-white flex items-center justify-center animate-pulse">
+//                   <Heart className="w-5 h-5 sm:w-6 sm:h-6" />
+//                 </span>
+//                 <div>
+//                   <p className="font-semibold text-xs sm:text-sm text-gray-900">99.9% Uptime</p>
+//                   <p className="text-xs text-gray-500">Guaranteed Reliability</p>
+//                 </div>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+//       </section>
+
+//       {/* Stats - Mobile Optimized */}
+//       <section className="py-8 md:py-10 bg-white">
+//         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+//           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+//             {statDefs.map((stat, index) => {
+//               const Icon = [Building2, Users, Heart, Calendar][index];
+//               return (
+//                 <div key={stat.id} className="text-center transform hover:scale-105 transition-transform duration-300">
+//                   <div className="mx-auto w-10 h-10 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white flex items-center justify-center mb-2 md:mb-3 shadow-lg">
+//                     <Icon size={20} className="md:w-6 md:h-6" />
+//                   </div>
+//                   <p className="text-xl md:text-3xl font-bold text-gray-900 mb-1">
+//                     {prettyNum(stats[stat.id])}
+//                   </p>
+//                   <p className="text-gray-600 text-xs md:text-base">{stat.label}</p>
+//                 </div>
+//               );
+//             })}
+//           </div>
+//         </div>
+//       </section>
+
+//       {/* Features Preview - Mobile Optimized */}
+//       <section className="py-8 md:py-10 bg-gradient-to-br from-blue-50 to-cyan-50 relative overflow-hidden" id="features-preview">
+//         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+//           <div className="text-center max-w-2xl mx-auto mb-8 md:mb-12">
+//             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
+//               Complete Hospital Management Suite
+//             </h2>
+//             <p className="text-gray-600 text-sm md:text-base lg:text-lg">
+//               Everything you need to run a modern healthcare facility efficiently.
+//               Our comprehensive platform integrates all hospital operations for seamless workflow.
+//             </p>
+//           </div>
+
+//           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
+//             {[
+//               { 
+//                 icon: Users, 
+//                 title: "Patient Management", 
+//                 desc: "Comprehensive patient registration, medical history, and appointment scheduling."
+//               },
+//               { 
+//                 icon: Stethoscope, 
+//                 title: "Doctor Portal", 
+//                 desc: "Secure doctor dashboard with digital prescriptions and patient records access."
+//               },
+//               { 
+//                 icon: CreditCard, 
+//                 title: "Billing & Accounts", 
+//                 desc: "Complete financial management with insurance claims and revenue reconciliation."
+//               },
+//             ].map(({ icon: Icon, title, desc }) => (
+//               <div 
+//                 key={title} 
+//                 className="group bg-white p-4 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-lg border border-blue-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+//               >
+//                 <span className="inline-flex items-center justify-center w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white mb-3 md:mb-4 group-hover:scale-110 transition-transform duration-300">
+//                   <Icon size={20} className="md:w-6 md:h-6 lg:w-7 lg:h-7" />
+//                 </span>
+//                 <h3 className="text-lg md:text-xl lg:text-2xl font-bold mb-2 md:mb-3 text-gray-900">{title}</h3>
+//                 <p className="text-gray-600 text-sm md:text-base lg:text-lg leading-relaxed">{desc}</p>
+//               </div>
+//             ))}
+//           </div>
+
+//           <div className="text-center mt-6 md:mt-10">
+//             <a 
+//               href="/features" 
+//               className="group inline-flex items-center justify-center rounded-xl px-6 py-3 md:px-8 md:py-4 text-sm md:text-base font-semibold bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+//             >
+//               View All Features
+//               <ArrowRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />
+//             </a>
+//           </div>
+//         </div>
+//       </section>
+
+//       {/* Why Choose DCM - Mobile Optimized */}
+//       <section className="py-8 md:py-20 bg-white">
+//         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+//           <div className="grid lg:grid-cols-2 gap-8 md:gap-16 items-center">
+//             {/* Image */}
+//             <div className="order-2 lg:order-1">
+//               <img
+//                 alt="Healthcare Technology"
+//                 className="w-full rounded-xl md:rounded-2xl shadow-lg border-4 border-white/20 transform hover:scale-105 transition-transform duration-500"
+//                 src="https://images.unsplash.com/photo-1586773860418-d37222d8fce3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+//               />
+//             </div>
+
+//             {/* Content */}
+//             <div className="order-1 lg:order-2">
+//               <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 md:mb-6">
+//                 Why Healthcare Facilities <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-800">Choose DCM</span>
+//               </h2>
+//               <p className="text-gray-600 text-base md:text-lg mb-6 md:mb-8">
+//                 Built with modern technology and healthcare expertise to deliver the best experience for hospitals,
+//                 doctors, and patients across India.
+//               </p>
+
+//               {/* Grid of features instead of carousel for better mobile UX */}
+//               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+//                 {whyChooseItems.slice(0, 4).map((item, idx) => (
+//                   <div 
+//                     key={idx} 
+//                     className="bg-gradient-to-br from-blue-50 to-white p-4 rounded-xl border border-blue-100 hover:border-blue-300 transition-all duration-300 group"
+//                   >
+//                     <div className="flex items-start gap-3">
+//                       <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+//                         <item.icon size={20} />
+//                       </div>
+//                       <div>
+//                         <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors duration-300">{item.title}</h3>
+//                         <p className="text-gray-600 text-xs md:text-sm">{item.sub}</p>
+//                       </div>
+//                     </div>
+//                   </div>
+//                 ))}
+//               </div>
+
+//               {/* Show more button for mobile */}
+//               <div className="mt-6 flex lg:hidden">
+//                 <a 
+//                   href="/why-choose-us" 
+//                   className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+//                 >
+//                   View all benefits
+//                   <ArrowRight size={16} />
+//                 </a>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+//       </section>
+
+//       {/* Mobile Application Section - Mobile Optimized */}
+//       <section className="py-8 md:py-20 bg-gradient-to-br from-blue-50 to-cyan-50 relative overflow-hidden">
+//         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+//           <div className="grid lg:grid-cols-2 gap-8 md:gap-16 items-center">
+//             {/* Content */}
+//             <div>
+//               <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full px-3 py-1 md:px-4 md:py-2 mb-4 md:mb-6">
+//                 <Smartphone size={14} className="md:w-4 md:h-4" />
+//                 <span className="font-semibold text-xs md:text-sm">Free Mobile App Included</span>
+//               </div>
+
+//               <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
+//                 Complete Hospital Management{" "}
+//                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-600">
+//                   On Your Mobile
+//                 </span>
+//               </h2>
+
+//               <p className="text-gray-600 text-sm md:text-base lg:text-lg mb-4 md:mb-6 leading-relaxed">
+//                 Access all hospital management features on iOS and Android devices.{" "}
+//                 <span className="font-semibold text-blue-600">Free for all subscribers</span> with no additional cost.
+//               </p>
+
+//               <div className="space-y-3 md:space-y-4 mb-6 md:mb-8">
+//                 {[
+//                   "Real-time Patient Management & Records Access",
+//                   "Doctor Portal with Digital Prescriptions",
+//                   "Billing, Payments & Insurance Processing",
+//                   "Telemedicine & Video Consultations",
+//                   "Lab Results & Medical Reports",
+//                   "Push Notifications & Appointment Reminders"
+//                 ].map((feature, index) => (
+//                   <div key={index} className="flex items-start gap-2 md:gap-3">
+//                     <CheckCircle2 className="text-green-500 mt-0.5 flex-shrink-0 md:w-5 md:h-5" size={16} />
+//                     <span className="text-gray-700 text-sm md:text-base">{feature}</span>
+//                   </div>
+//                 ))}
+//               </div>
+
+//               <div className="flex flex-col sm:flex-row gap-3">
+//                 <a 
+//                   href="/mobile-features" 
+//                   className="group inline-flex items-center justify-center gap-2 px-5 py-3 md:px-6 md:py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 shadow-lg hover:shadow-xl transition-all duration-300 text-sm md:text-base"
+//                 >
+//                   View Mobile Features
+//                   <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+//                 </a>
+//                 <a 
+//                   href="/download" 
+//                   className="group inline-flex items-center justify-center px-5 py-3 md:px-6 md:py-3 rounded-xl border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300 text-sm md:text-base"
+//                 >
+//                   Download App
+//                 </a>
+//               </div>
+//             </div>
+
+//             {/* Mobile Mockup */}
+//             <div className="relative">
+//               <div className="relative mx-auto max-w-xs md:max-w-sm lg:max-w-md">
+//                 <img
+//                   src="https://images.unsplash.com/photo-1551650975-87deedd944c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+//                   alt="Hospital Management Mobile App"
+//                   className="rounded-2xl md:rounded-3xl shadow-xl md:shadow-2xl border-4 md:border-8 border-white"
+//                 />
+//                 <div className="absolute -bottom-2 -right-2 md:-bottom-4 md:-right-4 bg-white rounded-lg md:rounded-xl p-2 md:p-4 shadow-xl">
+//                   <div className="flex items-center gap-2 md:gap-3">
+//                     <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+//                       <Smartphone className="text-white w-4 h-4 md:w-5 md:h-5" />
+//                     </div>
+//                     <div>
+//                       <p className="font-bold text-gray-900 text-xs md:text-sm">Free for Subscribers</p>
+//                       <p className="text-gray-600 text-xs">iOS & Android</p>
+//                     </div>
+//                   </div>
+//                 </div>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+//       </section>
+
+//       {/* Comparison Section - Mobile Optimized */}
+//       <section className="py-8 md:py-20 bg-white">
+//         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+//           <div className="text-center max-w-2xl mx-auto mb-6 md:mb-12">
+//             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
+//               Why DCM Outperforms Traditional Systems
+//             </h2>
+//             <p className="text-gray-600 text-sm md:text-base lg:text-lg">
+//               See how DCM Hospital Management System compares to legacy solutions
+//             </p>
+//           </div>
+
+//           {/* Mobile-friendly table */}
+//           <div className="bg-white rounded-xl md:rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+//             {/* Header */}
+//             <div className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-3 md:p-4 lg:p-6">
+//               <div className="grid grid-cols-3 gap-2 md:gap-4">
+//                 <div>
+//                   <h3 className="font-bold text-sm md:text-base lg:text-lg">Features</h3>
+//                 </div>
+//                 <div className="text-center">
+//                   <h3 className="font-bold text-sm md:text-base lg:text-lg">DCM</h3>
+//                   <p className="text-blue-100 text-xs md:text-sm">Modern Solution</p>
+//                 </div>
+//                 <div className="text-center">
+//                   <h3 className="font-bold text-sm md:text-base lg:text-lg">Traditional</h3>
+//                   <p className="text-blue-100 text-xs md:text-sm">Legacy Systems</p>
+//                 </div>
+//               </div>
+//             </div>
+
+//             {/* Rows */}
+//             <div className="divide-y divide-gray-100">
+//               {comparisonData.slice(0, 4).map((item, index) => (
+//                 <div
+//                   key={index}
+//                   className="grid grid-cols-3 p-3 md:p-4 lg:p-6 hover:bg-blue-50 transition-colors duration-200"
+//                 >
+//                   <div className="pr-2">
+//                     <span className="font-semibold text-gray-900 text-xs md:text-sm lg:text-base">
+//                       {item.feature}
+//                     </span>
+//                   </div>
+
+//                   <div className="text-center">
+//                     <div className="flex flex-col items-center justify-center gap-1">
+//                       <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5 text-green-600" />
+//                       <span className="text-green-700 font-medium text-xs md:text-sm">
+//                         {item.dcm.text}
+//                       </span>
+//                     </div>
+//                   </div>
+
+//                   <div className="text-center">
+//                     <div className="flex flex-col items-center justify-center gap-1">
+//                       {item.others.status === "no" && (
+//                         <>
+//                           <X className="w-4 h-4 md:w-5 md:h-5 text-red-600" />
+//                           <span className="text-red-700 font-medium text-xs md:text-sm">
+//                             {item.others.text}
+//                           </span>
+//                         </>
+//                       )}
+//                       {item.others.status === "partial" && (
+//                         <>
+//                           <Clock className="w-4 h-4 md:w-5 md:h-5 text-yellow-600" />
+//                           <span className="text-yellow-700 font-medium text-xs md:text-sm">
+//                             {item.others.text}
+//                           </span>
+//                         </>
+//                       )}
+//                       {item.others.status === "limited" && (
+//                         <>
+//                           <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-orange-600" />
+//                           <span className="text-orange-700 font-medium text-xs md:text-sm">
+//                             {item.others.text}
+//                           </span>
+//                         </>
+//                       )}
+//                     </div>
+//                   </div>
+//                 </div>
+//               ))}
+//             </div>
+
+//             {/* View More Button for Mobile */}
+//             <div className="lg:hidden p-4 text-center border-t border-gray-200">
+//               <a
+//                 href="/comparison"
+//                 className="text-blue-600 hover:text-blue-700 font-medium text-sm"
+//               >
+//                 View all comparisons →
+//               </a>
+//             </div>
+
+//             {/* Footer CTA */}
+//             <div className="bg-gray-50 p-4 md:p-6 text-center border-t border-gray-200">
+//               <p className="text-gray-600 mb-3 md:mb-4 text-sm md:text-base">
+//                 Ready to upgrade to modern hospital management?
+//               </p>
+//               <a
+//                 href="/contact"
+//                 className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-5 py-2 md:px-6 md:py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all duration-300 transform hover:scale-105 shadow-lg text-sm md:text-base"
+//               >
+//                 Start Free Trial
+//                 <ArrowRight size={18} />
+//               </a>
+//             </div>
+//           </div>
+//         </div>
+//       </section>
+
+//       {/* Benefits Section - Mobile Optimized */}
+//       <section className="py-8 md:py-20 bg-white">
+//         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+//           <div className="text-center max-w-2xl mx-auto mb-6 md:mb-12">
+//             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
+//               Transform Your Hospital Operations
+//             </h2>
+//             <p className="text-gray-600 text-sm md:text-base lg:text-lg">
+//               Experience measurable improvements across all departments
+//             </p>
+//           </div>
+
+//           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8 mb-8 md:mb-12">
+//             {[
+//               { 
+//                 icon: TrendingUp, 
+//                 title: "45% Faster Operations", 
+//                 desc: "Reduce administrative time and focus on patient care"
+//               },
+//               { 
+//                 icon: Award, 
+//                 title: "99.9% System Uptime", 
+//                 desc: "Reliable cloud infrastructure with zero downtime"
+//               },
+//               { 
+//                 icon: Clock, 
+//                 title: "60% Time Savings", 
+//                 desc: "Automate routine tasks and streamline workflows"
+//               },
+//             ].map(({ icon: Icon, title, desc }) => (
+//               <div 
+//                 key={title} 
+//                 className="group bg-gradient-to-r from-blue-500 to-cyan-500 p-4 md:p-6 rounded-xl md:rounded-2xl text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+//               >
+//                 <div className="relative z-10">
+//                   <Icon className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-3 md:mb-4 text-white" />
+//                   <h3 className="text-lg md:text-xl font-bold mb-2 text-white">{title}</h3>
+//                   <p className="text-blue-100 text-sm md:text-base">{desc}</p>
+//                 </div>
+//               </div>
+//             ))}
+//           </div>
+
+//           {/* Stats Grid */}
+//           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+//             {[
+//               { number: "40%", label: "Revenue Increase" },
+//               { number: "75%", label: "Patient Satisfaction" },
+//               { number: "50%", label: "Staff Efficiency" },
+//               { number: "30%", label: "Cost Reduction" },
+//             ].map((stat, index) => (
+//               <div 
+//                 key={stat.label} 
+//                 className="bg-gradient-to-br from-blue-50 to-cyan-50 p-3 md:p-4 rounded-lg md:rounded-xl text-center border border-blue-100 transform hover:scale-105 transition-all duration-300"
+//               >
+//                 <p className="text-xl md:text-2xl lg:text-3xl font-bold text-blue-600 mb-1">{stat.number}</p>
+//                 <p className="text-gray-600 text-xs md:text-sm lg:text-base">{stat.label}</p>
+//               </div>
+//             ))}
+//           </div>
+//         </div>
+//       </section>
+
+//       {/* Enhanced CTA - Mobile Optimized */}
+//       <section className="py-8 md:py-20 bg-gradient-to-br from-blue-600 to-blue-700 text-white relative overflow-hidden">
+//         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+//           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4">
+//             Ready to Transform Your Hospital Operations?
+//           </h2>
+//           <p className="text-white/90 text-sm md:text-base lg:text-lg mb-4 md:mb-6 lg:mb-8 max-w-2xl mx-auto">
+//             Join 50+ healthcare facilities already using DCM Hospital Management
+//           </p>
+//           <div className="flex flex-col sm:flex-row gap-3 justify-center">
+//             <a 
+//               href="/contact" 
+//               className="group inline-flex items-center justify-center gap-2 bg-white text-blue-700 px-5 py-3 md:px-6 md:py-3 rounded-xl font-medium hover:bg-gray-50 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 text-sm md:text-base"
+//             >
+//               Request Demo
+//               <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+//             </a>
+//             <a 
+//               href="/pricing" 
+//               className="group inline-flex items-center justify-center gap-2 border-2 border-white px-5 py-3 md:px-6 md:py-3 rounded-xl font-medium hover:bg-white hover:text-blue-700 transition-all duration-300 transform hover:scale-105 text-sm md:text-base"
+//             >
+//               View Pricing
+//             </a>
+//           </div>
+//         </div>
+//       </section>
+
+//       {/* Toast */}
+//       <div id="toast" className="fixed bottom-8 right-8 bg-gray-900 text-white px-4 py-3 rounded-lg shadow-lg opacity-0 translate-y-6 pointer-events-none">
+//         <div className="font-semibold">Message Sent!</div>
+//         <div className="text-sm text-gray-300">Thank you for contacting us. We will get back to you within 24 hours.</div>
+//       </div>
+//     </>
+//   );
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity, Menu, Zap, ArrowRight, CheckCircle2, Building2, Users, Heart, Calendar,
@@ -509,6 +2184,7 @@ import {
   Quote, Star, MapPin, Facebook, Twitter, Linkedin, Instagram, Youtube, X,
   Award, TrendingUp, Clock, Smartphone, Database, Cloud, Server, ChevronLeft, ChevronRight
 } from "lucide-react";
+import ChatBot from "./ChatBot";
 
 export default function Home() {
   const [isVisible, setIsVisible] = useState(false);
@@ -916,328 +2592,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="py-10 bg-white">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-            <div className="text-center transform hover:scale-105 transition-transform duration-300">
-              <div className="mx-auto w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white flex items-center justify-center mb-3 shadow-lg">
-                <Building2 size={20} className="md:w-6 md:h-6" />
-              </div>
-              <p className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
-                {prettyNum(stats.hospitals)}
-              </p>
-              <p className="text-gray-600 text-sm md:text-base">Hospitals Powered</p>
-            </div>
-
-            <div className="text-center transform hover:scale-105 transition-transform duration-300">
-              <div className="mx-auto w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white flex items-center justify-center mb-3 shadow-lg">
-                <Users size={20} className="md:w-6 md:h-6" />
-              </div>
-              <p className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
-                {prettyNum(stats.professionals)}
-              </p>
-              <p className="text-gray-600 text-sm md:text-base">Healthcare Professionals</p>
-            </div>
-
-            <div className="text-center transform hover:scale-105 transition-transform duration-300">
-              <div className="mx-auto w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white flex items-center justify-center mb-3 shadow-lg">
-                <Heart size={20} className="md:w-6 md:h-6" />
-              </div>
-              <p className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
-                {prettyNum(stats.patients)}
-              </p>
-              <p className="text-gray-600 text-sm md:text-base">Patients Served</p>
-            </div>
-
-            <div className="text-center transform hover:scale-105 transition-transform duration-300">
-              <div className="mx-auto w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white flex items-center justify-center mb-3 shadow-lg">
-                <Calendar size={20} className="md:w-6 md:h-6" />
-              </div>
-              <p className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
-                {prettyNum(stats.appointments)}
-              </p>
-              <p className="text-gray-600 text-sm md:text-base">Appointments Daily</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Preview with Health Animations - Only 3 Cards */}
-      <section className="py-12 md:py-10 bg-gradient-to-br from-blue-50 to-cyan-50 relative overflow-hidden" id="features-preview">
-        {/* Enhanced Medical Background Animations */}
-        <div className="absolute top-10 left-5% opacity-5 animate-pulse">
-          <Heart className="w-8 h-8 md:w-12 md:h-12 text-red-400" />
-        </div>
-        <div className="absolute bottom-10 right-5% opacity-5 animate-bounce delay-500">
-          <Stethoscope className="w-10 h-10 md:w-14 md:h-14 text-blue-400" />
-        </div>
-        <div className="absolute top-1/2 left-10% opacity-5 animate-pulse delay-1000">
-          <Activity className="w-6 h-6 md:w-10 md:h-10 text-green-400" />
-        </div>
-        <div className="absolute bottom-1/3 right-15% opacity-5 animate-bounce delay-700">
-          <Pill className="w-8 h-8 md:w-12 md:h-12 text-purple-400" />
-        </div>
-
-        <div className="max-w-6xl mx-auto px-4 relative z-10">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              Complete Hospital Management Suite
-            </h2>
-            <p className="text-gray-600 text-base md:text-lg">
-              Everything you need to run a modern healthcare facility efficiently.
-              Our comprehensive platform integrates all hospital operations for seamless workflow.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-            {[
-              { 
-                icon: Users, 
-                title: "Patient Management", 
-                desc: "Comprehensive patient registration, medical history, and appointment scheduling.",
-                delay: "0"
-              },
-              { 
-                icon: Stethoscope, 
-                title: "Doctor Portal", 
-                desc: "Secure doctor dashboard with digital prescriptions and patient records access.",
-                delay: "100"
-              },
-              { 
-                icon: CreditCard, 
-                title: "Billing & Accounts", 
-                desc: "Complete financial management with insurance claims and revenue reconciliation.",
-                delay: "200"
-              },
-            ].map(({ icon: Icon, title, desc, delay }) => (
-              <div 
-                key={title} 
-                className="group bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-blue-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 transform hover:scale-105 relative overflow-hidden"
-              >
-                {/* Animated Health Background Effect */}
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-cyan-500 opacity-0 group-hover:opacity-5 transition-opacity duration-500"></div>
-                
-                {/* Pulse Animation Effect */}
-                <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-blue-200 group-hover:animate-pulse transition-all duration-300"></div>
-                
-                <span className="inline-flex items-center justify-center w-14 h-14 md:w-16 md:h-16 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white mb-4 group-hover:scale-110 transition-transform duration-300 relative z-10 shadow-lg">
-                  <Icon size={24} className="md:w-7 md:h-7" />
-                </span>
-                <h3 className="text-xl md:text-2xl font-bold mb-3 text-gray-900 relative z-10">{title}</h3>
-                <p className="text-gray-600 text-base md:text-lg leading-relaxed relative z-10">{desc}</p>
-                
-                {/* Hover Animation Line */}
-                <div className="absolute bottom-0 left-0 w-0 h-1 bg-gradient-to-r from-blue-500 to-cyan-500 group-hover:w-full transition-all duration-500"></div>
-              </div>
-            ))}
-          </div>
-
-          <div className="text-center mt-10">
-            <a 
-              href="/features" 
-              className="group inline-flex items-center justify-center rounded-xl px-8 py-4 text-base font-semibold bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-            >
-              View All Features
-              <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
-            </a>
-          </div>
-        </div>
-      </section>
-
-<section className="py-20 bg-white">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="grid md:grid-cols-2 gap-16 items-center">
-            {/* Image on Left */}
-            <div className="relative">
-              <img
-                alt="Healthcare Technology"
-                className="w-full rounded-2xl shadow-2xl border-4 border-white/20 transform hover:scale-105 transition-transform duration-500"
-                src="https://images.unsplash.com/photo-1586773860418-d37222d8fce3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
-              />
-              
-            </div>
-
-            {/* Content on Right */}
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-                Why Healthcare Facilities <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-800">Choose DCM</span>
-              </h2>
-              <p className="text-lg text-gray-600 mb-8">
-                Built with modern technology and healthcare expertise to deliver the best experience for hospitals,
-                doctors, and patients across India.
-              </p>
-
-              {/* Why Choose Carousel */}
-              <div className="relative">
-               
-                {/* Scrollable Container */}
-                <div 
-                  ref={whyChooseScrollRef}
-                  className="flex overflow-x-auto pb-8 snap-x snap-mandatory scrollbar-hide space-x-6"
-                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                >
-                  {whyChooseItems.map((item, idx) => (
-                    <div 
-                      key={idx} 
-                      className="flex-shrink-0 w-full snap-center p-8 rounded-2xl cursor-pointer hover:border-blue-300 transition-all duration-300 group"
-                    >
-                      <div className="relative z-10 text-center">
-                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center mb-6 shadow-lg mx-auto group-hover:scale-110 transition-transform duration-300">
-                          <item.icon size={32} />
-                        </div>
-                        <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors duration-300">{item.title}</h3>
-                        <p className="text-gray-600 text-lg leading-relaxed">{item.sub}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Navigation Dots */}
-                <div className="flex justify-center gap-3 mt-6">
-                  {whyChooseItems.map((_, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => handleWhyChooseDotClick(idx)}
-                      className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                        idx === currentWhyChoose 
-                          ? 'bg-blue-600 w-8' 
-                          : 'bg-blue-300 hover:bg-blue-400'
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
-
-             
-            </div>
-          </div>
-        </div>
-
-        <style jsx>{`
-          .scrollbar-hide {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-          }
-          .scrollbar-hide::-webkit-scrollbar {
-            display: none;
-          }
-        `}</style>
-      </section>
-
-
-
-{/* Comparison Section */}
-<section className="py-12 md:py-10 bg-white">
-  <div className="max-w-6xl mx-auto px-4">
-    <div className="text-center max-w-2xl mx-auto mb-12">
-      <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-        Why DCM Outperforms Traditional Systems
-      </h2>
-      <p className="text-gray-600 text-base md:text-lg">
-        See how DCM Hospital Management System compares to legacy solutions
-      </p>
-    </div>
-
-    {/* MOBILE SCROLL WRAPPER */}
-    <div className="overflow-x-auto">
-      <div className="min-w-[640px] bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
-        
-        {/* Header */}
-        <div className="grid grid-cols-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-4 md:p-6">
-          <div className="text-left">
-            <h3 className="font-bold text-lg md:text-xl">Features</h3>
-          </div>
-          <div className="text-center">
-            <h3 className="font-bold text-lg md:text-xl">DCM Hospital Management</h3>
-            <p className="text-blue-100 text-sm">Modern Cloud Solution</p>
-          </div>
-          <div className="text-center">
-            <h3 className="font-bold text-lg md:text-xl">Traditional Systems</h3>
-            <p className="text-blue-100 text-sm">Legacy On-premise</p>
-          </div>
-        </div>
-
-        {/* Comparison Rows */}
-        <div className="divide-y divide-gray-100">
-          {comparisonData.map((item, index) => (
-            <div
-              key={index}
-              className="grid grid-cols-3 p-4 md:p-6 hover:bg-blue-50 transition-colors duration-200"
-            >
-              {/* Feature */}
-              <div className="text-left">
-                <span className="font-semibold text-gray-900 text-sm md:text-base">
-                  {item.feature}
-                </span>
-              </div>
-
-              {/* DCM */}
-              <div className="text-center">
-                {item.dcm.status === "yes" && (
-                  <div className="flex items-center justify-center gap-2 text-green-600">
-                    <CheckCircle2 className="w-5 h-5" />
-                    <span className="font-medium text-sm md:text-base">
-                      {item.dcm.text}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {/* Others */}
-              <div className="text-center">
-                {item.others.status === "no" && (
-                  <div className="flex items-center justify-center gap-2 text-red-600">
-                    <X className="w-5 h-5" />
-                    <span className="font-medium text-sm md:text-base">
-                      {item.others.text}
-                    </span>
-                  </div>
-                )}
-
-                {item.others.status === "partial" && (
-                  <div className="flex items-center justify-center gap-2 text-yellow-600">
-                    <Clock className="w-5 h-5" />
-                    <span className="font-medium text-sm md:text-base">
-                      {item.others.text}
-                    </span>
-                  </div>
-                )}
-
-                {item.others.status === "limited" && (
-                  <div className="flex items-center justify-center gap-2 text-orange-600">
-                    <TrendingUp className="w-5 h-5" />
-                    <span className="font-medium text-sm md:text-base">
-                      {item.others.text}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Footer CTA */}
-        <div className="bg-gray-50 p-6 text-center border-t border-gray-200">
-          <p className="text-gray-600 mb-4 text-sm md:text-base">
-            Ready to upgrade to modern hospital management?
-          </p>
-          <a
-            href="/contact"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
-          >
-            Start Free Trial
-            <ArrowRight size={20} />
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-
-{/* Mobile Application Section */}
+      {/* Mobile Application Section */}
 <section className="py-12 md:py-10 bg-gradient-to-br from-blue-50 to-cyan-50 relative overflow-hidden">
   {/* Background Medical Icons */}
   <div className="absolute top-10 left-5% opacity-5 animate-pulse">
@@ -1340,6 +2695,148 @@ export default function Home() {
   </div>
 </section>
 
+      {/* Features Preview with Health Animations - Only 3 Cards */}
+      <section className="py-12 md:py-10 bg-gradient-to-br from-blue-50 to-cyan-50 relative overflow-hidden" id="features-preview">
+        {/* Enhanced Medical Background Animations */}
+        <div className="absolute top-10 left-5% opacity-5 animate-pulse">
+          <Heart className="w-8 h-8 md:w-12 md:h-12 text-red-400" />
+        </div>
+        <div className="absolute bottom-10 right-5% opacity-5 animate-bounce delay-500">
+          <Stethoscope className="w-10 h-10 md:w-14 md:h-14 text-blue-400" />
+        </div>
+        <div className="absolute top-1/2 left-10% opacity-5 animate-pulse delay-1000">
+          <Activity className="w-6 h-6 md:w-10 md:h-10 text-green-400" />
+        </div>
+        <div className="absolute bottom-1/3 right-15% opacity-5 animate-bounce delay-700">
+          <Pill className="w-8 h-8 md:w-12 md:h-12 text-purple-400" />
+        </div>
+
+        <div className="max-w-6xl mx-auto px-4 relative z-10">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              Complete Hospital Management Suite
+            </h2>
+            <p className="text-gray-600 text-base md:text-lg">
+              Everything you need to run a modern healthcare facility efficiently.
+              Our comprehensive platform integrates all hospital operations for seamless workflow.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+            {[
+              { 
+                icon: Users, 
+                title: "Patient Management", 
+                desc: "Comprehensive patient registration, medical history, and appointment scheduling.",
+                delay: "0"
+              },
+              { 
+                icon: Stethoscope, 
+                title: "Doctor Portal", 
+                desc: "Secure doctor dashboard with digital prescriptions and patient records access.",
+                delay: "100"
+              },
+              { 
+                icon: CreditCard, 
+                title: "Billing & Accounts", 
+                desc: "Complete financial management with insurance claims and revenue reconciliation.",
+                delay: "200"
+              },
+            ].map(({ icon: Icon, title, desc, delay }) => (
+              <div 
+  key={title} 
+  className="group bg-white/80 backdrop-blur-sm p-6 md:p-8 rounded-2xl shadow-xl border border-white/20 hover:bg-white hover:shadow-2xl transition-all duration-500 relative overflow-hidden"
+>
+  {/* Glassmorphism Overlay */}
+  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+  
+  {/* Animated Background Pattern */}
+  <div className="absolute inset-0 opacity-5">
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,blue_1px,transparent_0)] bg-[length:40px_40px]"></div>
+  </div>
+  
+  <div className="relative z-10">
+    <span className="inline-flex items-center justify-center w-14 h-14 md:w-16 md:h-16 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white mb-4 group-hover:scale-110 group-hover:shadow-lg transition-all duration-500 shadow-md backdrop-blur-sm">
+      <Icon size={24} className="md:w-7 md:h-7" />
+    </span>
+    
+    <h3 className="text-xl md:text-2xl font-bold mb-3 text-gray-900 group-hover:text-blue-700 transition-colors duration-300">{title}</h3>
+    <p className="text-gray-600 text-base md:text-lg leading-relaxed group-hover:text-gray-800 transition-colors duration-300">{desc}</p>
+  </div>
+  
+  {/* Floating Particles */}
+  <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl blur opacity-0 group-hover:opacity-20 transition-opacity duration-500 -z-10"></div>
+</div>
+            ))}
+          </div>
+
+          <div className="text-center mt-10">
+            <a 
+              href="/features" 
+              className="group inline-flex items-center justify-center rounded-xl px-8 py-4 text-base font-semibold bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            >
+              View All Features
+              <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
+            </a>
+          </div>
+        </div>
+      </section>
+
+<section className="py-8 md:py-10 bg-white">
+         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+           <div className="grid lg:grid-cols-2 gap-8 md:gap-16 items-center">
+             {/* Image */}
+             <div className="order-2 lg:order-1">
+               <img
+                 alt="Healthcare Technology"
+                 className="w-full rounded-xl md:rounded-2xl shadow-lg border-4 border-white/20 transform hover:scale-105 transition-transform duration-500"
+                 src="https://images.unsplash.com/photo-1586773860418-d37222d8fce3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+               />
+            </div>
+             {/* Content */}
+             <div className="order-1 lg:order-2">
+               <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 md:mb-6">
+                 Why Healthcare Facilities <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-800">Choose DCM</span>
+               </h2>
+               <p className="text-gray-600 text-base md:text-lg mb-6 md:mb-8">
+                 Built with modern technology and healthcare expertise to deliver the best experience for hospitals,
+                 doctors, and patients across India.
+               </p>
+               {/* Grid of features instead of carousel for better mobile UX */}
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                 {whyChooseItems.slice(0, 4).map((item, idx) => (
+                   <div 
+                     key={idx} 
+                     className="bg-gradient-to-br from-blue-50 to-white p-4 rounded-xl border border-blue-100 hover:border-blue-300 transition-all duration-300 group"
+                   >
+                     <div className="flex items-start gap-3">
+                       <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+                         <item.icon size={20} />
+                       </div>
+                       <div>
+                         <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors duration-300">{item.title}</h3>
+                         <p className="text-gray-600 text-xs md:text-sm">{item.sub}</p>
+                       </div>
+                     </div>
+                   </div>
+                 ))}
+               </div>
+
+               {/* Show more button for mobile */}
+               <div className="mt-6 flex lg:hidden">
+                 <a 
+                   href="/why-choose-us" 
+                   className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+                 >
+                   View all benefits
+                   <ArrowRight size={16} />
+                 </a>
+               </div>
+             </div>
+           </div>
+         </div>
+       </section>
+
 
       {/* Benefits Section with White Background and Blue Cards */}
       <section className="py-12 md:py-10 bg-white">
@@ -1414,57 +2911,188 @@ export default function Home() {
         </div>
       </section>
 
+      
+      {/* Comparison Section - Fixed Responsive */}
+<section className="py-12 md:py-10 bg-white">
+  <div className="max-w-6xl mx-auto px-4">
+    <div className="text-center max-w-2xl mx-auto mb-12">
+      <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+        Why DCM Outperforms Traditional Systems
+      </h2>
+      <p className="text-gray-600 text-base md:text-lg">
+        See how DCM Hospital Management System compares to legacy solutions
+      </p>
+    </div>
+
+    {/* Desktop View (hidden on mobile) */}
+    <div className="hidden md:block">
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+        {/* Header */}
+        <div className="grid grid-cols-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-6">
+          <div className="text-left">
+            <h3 className="font-bold text-xl">Features</h3>
+          </div>
+          <div className="text-center">
+            <h3 className="font-bold text-xl">DCM Hospital Management</h3>
+            <p className="text-blue-100 text-sm">Modern Cloud Solution</p>
+          </div>
+          <div className="text-center">
+            <h3 className="font-bold text-xl">Traditional Systems</h3>
+            <p className="text-blue-100 text-sm">Legacy On-premise</p>
+          </div>
+        </div>
+
+        {/* Comparison Rows */}
+        <div className="divide-y divide-gray-100">
+          {comparisonData.map((item, index) => (
+            <div
+              key={index}
+              className="grid grid-cols-3 p-6 hover:bg-blue-50 transition-colors duration-200"
+            >
+              {/* Feature */}
+              <div className="text-left">
+                <span className="font-semibold text-gray-900 text-base">
+                  {item.feature}
+                </span>
+              </div>
+
+              {/* DCM */}
+              <div className="text-center">
+                {item.dcm.status === "yes" && (
+                  <div className="flex items-center justify-center gap-2 text-green-600">
+                    <CheckCircle2 className="w-5 h-5" />
+                    <span className="font-medium text-base">
+                      {item.dcm.text}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Others */}
+              <div className="text-center">
+                {item.others.status === "no" && (
+                  <div className="flex items-center justify-center gap-2 text-red-600">
+                    <X className="w-5 h-5" />
+                    <span className="font-medium text-base">
+                      {item.others.text}
+                    </span>
+                  </div>
+                )}
+
+                {item.others.status === "partial" && (
+                  <div className="flex items-center justify-center gap-2 text-yellow-600">
+                    <Clock className="w-5 h-5" />
+                    <span className="font-medium text-base">
+                      {item.others.text}
+                    </span>
+                  </div>
+                )}
+
+                {item.others.status === "limited" && (
+                  <div className="flex items-center justify-center gap-2 text-orange-600">
+                    <TrendingUp className="w-5 h-5" />
+                    <span className="font-medium text-base">
+                      {item.others.text}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer CTA */}
+        <div className="bg-gray-50 p-6 text-center border-t border-gray-200">
+          <p className="text-gray-600 mb-4 text-base">
+            Ready to upgrade to modern hospital management?
+          </p>
+          <a
+            href="/contact"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
+          >
+            Start Free Trial
+            <ArrowRight size={20} />
+          </a>
+        </div>
+      </div>
+    </div>
+
+    {/* Mobile View (visible only on mobile) */}
+    <div className="md:hidden">
+      <div className="space-y-4">
+        {comparisonData.map((item, index) => (
+          <div 
+            key={index} 
+            className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden"
+          >
+            {/* Feature Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-4">
+              <h3 className="font-bold text-base">{item.feature}</h3>
+            </div>
+            
+            {/* Comparison Content */}
+            <div className="p-4">
+              {/* DCM Row */}
+              <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-100">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  <span className="font-medium text-sm text-gray-700">DCM</span>
+                </div>
+                <span className="font-semibold text-green-700 text-sm">{item.dcm.text}</span>
+              </div>
+              
+              {/* Traditional Row */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {item.others.status === "no" && (
+                    <X className="w-5 h-5 text-red-600" />
+                  )}
+                  {item.others.status === "partial" && (
+                    <Clock className="w-5 h-5 text-yellow-600" />
+                  )}
+                  {item.others.status === "limited" && (
+                    <TrendingUp className="w-5 h-5 text-orange-600" />
+                  )}
+                  <span className="font-medium text-sm text-gray-700">Traditional</span>
+                </div>
+                <span className={`font-semibold text-sm ${
+                  item.others.status === "no" ? "text-red-700" :
+                  item.others.status === "partial" ? "text-yellow-700" :
+                  "text-orange-700"
+                }`}>
+                  {item.others.text}
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
+        
+        {/* Mobile CTA */}
+        <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-6 text-center border border-blue-100 mt-4">
+          <p className="text-gray-600 mb-4 text-sm">
+            Ready to upgrade to modern hospital management?
+          </p>
+          <a
+            href="/contact"
+            className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all duration-300 transform hover:scale-105 shadow-lg text-sm"
+          >
+            Start Free Trial
+            <ArrowRight size={18} />
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+      
+
       {/* Toast */}
       <div id="toast" className="fixed bottom-8 right-8 bg-gray-900 text-white px-4 py-3 rounded-lg shadow-lg opacity-0 translate-y-6 pointer-events-none">
         <div className="font-semibold">Message Sent!</div>
         <div className="text-sm text-gray-300">Thank you for contacting us. We will get back to you within 24 hours.</div>
       </div>
+
+      <ChatBot/>
     </>
   );
-}
-
-/* ---------- Small footer helpers ---------- */
-function FooterCol({ title, links }) {
-  return (
-    <div>
-      <h3 className="text-white font-semibold mb-4">{title}</h3>
-      <ul className="space-y-2 text-sm">
-        {links.map(([label, href]) => (
-          <li key={label}>
-            <a className="text-blue-200 hover:text-white transition-colors" href={href}>{label}</a>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function Social({ href, children }) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener"
-      className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-blue-500 text-white hover:bg-white hover:text-blue-600 flex items-center justify-center transition-all duration-300 transform hover:scale-110 shadow-lg"
-    >
-      {children}
-    </a>
-  );
-}
-
-function MailIcon(props) { 
-  return (
-    <svg {...props} viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor">
-      <path d="M4 4h16v16H4z"/>
-      <path d="m22 6-10 7L2 6"/>
-    </svg>
-  ); 
-}
-
-function PhoneIcon(props) { 
-  return (
-    <svg {...props} viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor">
-      <path d="M22 16.92V21a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2 4.18 2 2 0 0 1 4 2h4.09a2 2 0 0 1 2 1.72l.57 3.42a2 2 0 0 1-.5 1.74L8.09 10.91a16 16 0 0 0 6 6l2-2.06a2 2 0 0 1 1.74-.5l3.42.57A2 2 0 0 1 22 16.92z"/>
-    </svg>
-  ); 
 }

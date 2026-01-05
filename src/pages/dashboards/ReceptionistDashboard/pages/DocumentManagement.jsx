@@ -895,7 +895,7 @@ const DocumentManagement = () => {
     <div className="animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
-          <h2 className="text-xl md:text-2xl font-semibold text-gray-700"> Patient Document Management</h2>
+          <h2 className="text-xl md:text-2xl font-semibold text-gray-700">Patient Document Management</h2>
           <p className="text-gray-600 text-sm mt-1">Manage patient documents, lab reports, and medical records</p>
         </div>
         <div className="flex gap-2">

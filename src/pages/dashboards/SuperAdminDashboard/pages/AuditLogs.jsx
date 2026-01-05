@@ -38,7 +38,7 @@ const AuditLogs = () => {
 
       {/* HEADER */}
       <h2 className="text-2xl font-semibold text-gray-700 flex items-center gap-2">
-        <i className="fas fa-clipboard-list text-blue-600"></i>
+        
         Audit Logs
       </h2>
 

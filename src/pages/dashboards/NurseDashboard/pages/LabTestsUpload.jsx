@@ -123,7 +123,7 @@ const LabTestsUpload = () => {
       <div className="w-full mx-auto max-w-7xl px-3 sm:px-0 space-y-4 sm:space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center sticky top-0 z-10 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/40 py-2 sm:py-0">
-          <h2 className="text-lg sm:text-2xl font-semibold text-gray-700">🧪 Lab Tests & Upload Reports</h2>
+          <h2 className="text-lg sm:text-2xl font-semibold text-gray-700"> Lab Tests & Upload Reports</h2>
         </div>
 
         {/* Request New Lab Test Modal */}

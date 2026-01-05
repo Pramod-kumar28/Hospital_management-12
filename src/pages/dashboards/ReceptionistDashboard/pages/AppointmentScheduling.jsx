@@ -487,7 +487,7 @@ const AppointmentScheduling = () => {
       {/* ---------- MAIN PAGE WRAPPER ---------- */}
       <div className="space-y-6 animate-fade-in">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-          <h2 className="text-xl md:text-2xl lg:text-2xl font-semibold text-gray-700"> Appointment Scheduling</h2>
+          <h2 className="text-xl md:text-2xl lg:text-2xl font-semibold text-gray-700">📅 Appointment Scheduling</h2>
           <button 
             onClick={handleNewAppointment}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center justify-center"

@@ -140,7 +140,7 @@ const Header = ({ onMenuToggle = () => {}, onSidebarToggle = () => {}, isSidebar
             {/* Hospital Name for Desktop and Tablet */}
             <div className="hidden sm:block">
               <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent transition-all duration-300">
-                SmartMedi Hub
+                DCM
               </h1>
               <p className="text-xs text-gray-500 font-medium transition-all duration-300">
                 Hospital Management System

@@ -322,7 +322,7 @@ const PharmacyManagement = () => {
     <div className="animate-fade-in">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold text-gray-700">
-          💊 Pharmacy Management
+           Pharmacy Management
         </h2>
         <button 
           onClick={() => setIsAddModalOpen(true)}
@@ -333,7 +333,7 @@ const PharmacyManagement = () => {
       </div>
 
       {/* Pharmacy Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white p-4 rounded-lg card-shadow border text-center">
           <div className="text-2xl font-bold text-blue-600">{medicines.length}</div>
           <div className="text-sm text-gray-500">Total Medicines</div>
@@ -350,7 +350,64 @@ const PharmacyManagement = () => {
           <div className="text-2xl font-bold text-red-600">{outOfStockItems}</div>
           <div className="text-sm text-gray-500">Out of Stock</div>
         </div>
+      </div> */}
+
+      {/* Pharmacy Stats - Compact Cards */}
+<div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+  {[
+    { 
+      value: medicines.length, 
+      label: 'Total Medicines', 
+      color: 'blue', 
+      icon: 'fas fa-pills',
+      bg: 'bg-blue-50',
+      text: 'text-blue-600',
+      iconBg: 'bg-blue-100'
+    },
+    { 
+      value: medicines.filter(item => item.stock > 20).length, 
+      label: 'Good Stock', 
+      color: 'green', 
+      icon: 'fas fa-check-circle',
+      bg: 'bg-green-50',
+      text: 'text-green-600',
+      iconBg: 'bg-green-100'
+    },
+    { 
+      value: lowStockItems, 
+      label: 'Low Stock', 
+      color: 'yellow', 
+      icon: 'fas fa-exclamation-triangle',
+      bg: 'bg-yellow-50',
+      text: 'text-yellow-600',
+      iconBg: 'bg-yellow-100'
+    },
+    { 
+      value: outOfStockItems, 
+      label: 'Out of Stock', 
+      color: 'red', 
+      icon: 'fas fa-times-circle',
+      bg: 'bg-red-50',
+      text: 'text-red-600',
+      iconBg: 'bg-red-100'
+    }
+  ].map((stat, index) => (
+    <div 
+      key={index} 
+      className={`${stat.bg} border border-gray-200 p-5 rounded-xl hover:shadow-md transition-all duration-300`}
+    >
+      <div className="flex items-center gap-3">
+        <div className={`${stat.iconBg} p-3 rounded-lg`}>
+          <i className={`${stat.icon} ${stat.text} text-lg`}></i>
+        </div>
+        <div>
+          <div className={`text-2xl font-bold ${stat.text}`}>{stat.value}</div>
+          <div className="text-gray-800 font-medium text-sm">{stat.label}</div>
+        </div>
       </div>
+    </div>
+  ))}
+</div>
 
       {/* Medicines Table */}
       <div className="bg-white rounded-xl card-shadow border overflow-hidden">

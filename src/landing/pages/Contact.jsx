@@ -519,7 +519,7 @@ export default function Contact() {
   return (
     <div className="min-h-screen bg-white">
       {/* Page Hero */}
-      <section className="relative py-20 bg-white overflow-hidden">
+      <section className="relative py-10 mt-12 bg-white overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-[0.02]">
           <div className="absolute inset-0" style={{
@@ -585,7 +585,7 @@ export default function Contact() {
       </section>
 
       {/* Contact Form Section */}
-      <section className="relative py-20 bg-gray-50">
+      <section className="relative py-10 bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="relative bg-white rounded-3xl border border-gray-200 shadow-2xl overflow-hidden">
             {/* Form Background Pattern */}
@@ -747,7 +747,7 @@ export default function Contact() {
           </div> */}
 
           {/* Full Width Map */}
-          <div className="w-full h-96 lg:h-[500px] bg-gray-100 relative">
+          <div className="w-full h-96 lg:h-[400px] bg-gray-100 relative">
             <iframe
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3806.263734477665!2d78.39138831538457!3d17.447950588044688!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcb9158f2b8c67f%3A0xce2b9c64b93e8b3e!2sDesign%20Career%20Metrics%20Pvt%20Ltd!5e0!3m2!1sen!2sin!4v1633706543210!5m2!1sen!2sin"
               width="100%"

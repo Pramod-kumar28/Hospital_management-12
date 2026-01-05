@@ -165,8 +165,8 @@ const SampleTracking = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-700">📦 Sample Tracking</h2>
-          <p className="text-gray-500">Track samples with barcode/QR code support throughout the testing process</p>
+          <h2 className="text-2xl font-semibold text-gray-700">Sample Tracking</h2>
+          <p className="text-gray-500">Track samples with barcode/QR  code support throughout the testing process</p>
         </div>
         <div className="flex gap-3">
           <Button

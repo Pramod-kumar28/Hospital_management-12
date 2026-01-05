@@ -354,7 +354,7 @@ export default function Features() {
     <div className="min-h-screen bg-white">
 
       {/* Page Hero - FIXED SECTION */}
-      <section className="py-16 bg-gradient-to-br from-blue-50 to-cyan-50 relative overflow-hidden">
+      <section className="py-12 mt-12 bg-gradient-to-br from-blue-50 to-cyan-50 relative overflow-hidden">
         {/* Static Background Elements */}
         <div className="absolute top-10 left-5% opacity-10">
           <Heart className="w-8 h-8 md:w-12 md:h-12 text-red-400" />
@@ -395,7 +395,7 @@ export default function Features() {
       </section>
 
       {/* Features Grid - Enhanced without Random Color Changes */}
-      <section className="py-16 bg-white">
+      <section className="py-10 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
@@ -422,7 +422,7 @@ export default function Features() {
       </section>
 
       {/* Benefits Section */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-10 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
@@ -443,7 +443,7 @@ export default function Features() {
       
        
       {/* Detailed Features Section */}
-      <section className="py-16 bg-gradient-to-br from-gray-50 to-white">
+      <section className="py-10 bg-gradient-to-br from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -533,7 +533,7 @@ export default function Features() {
       </section>
 
       {/* Final CTA - ALSO FIXED */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+      <section className="py-10 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Ready to Transform Your Hospital?
@@ -559,7 +559,7 @@ export default function Features() {
         </div>
       </section>
       {/* Technology Stack */}
-      <section className="py-16 bg-white">
+      <section className="py-10 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
@@ -781,7 +781,7 @@ function EnhancedFeatureDetailSection({
   reverse = false 
 }) {
   return (
-    <div className={`grid lg:grid-cols-2 gap-8 md:gap-12 items-center mb-20 last:mb-0 ${reverse ? 'lg:grid-flow-dense' : ''}`}>
+    <div className={`grid lg:grid-cols-2 gap-8 md:gap-12 items-center mb-10 last:mb-0 ${reverse ? 'lg:grid-flow-dense' : ''}`}>
       {/* Content */}
       <div className={`space-y-6 ${reverse ? 'lg:col-start-2' : ''}`}>
         {/* Badge */}

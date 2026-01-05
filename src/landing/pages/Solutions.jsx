@@ -617,7 +617,7 @@ const Solutions = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-50 to-white py-12 sm:py-20 lg:py-24">
+      <section className="bg-gradient-to-br from-blue-50 to-white py-12 sm:py-12 lg:py-14 mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-4xl mx-auto">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 mb-4 sm:mb-6">
@@ -647,7 +647,7 @@ const Solutions = () => {
       </section>
 
       {/* Key Features - Now with horizontal scrolling on mobile */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-white">
+      <section className="py-12 sm:py-16 lg:py-10 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
@@ -682,7 +682,7 @@ const Solutions = () => {
       </section>
 
       {/* Solutions Grid */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-gray-50">
+      <section className="py-12 sm:py-16 lg:py-10 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
@@ -693,7 +693,7 @@ const Solutions = () => {
             </p>
           </div>
 
-          <div className="space-y-16 sm:space-y-20 lg:space-y-24">
+          <div className="space-y-16 sm:space-y-10 lg:space-y-14">
             {solutions.map((solution, index) => (
               <div 
                 key={index} 
@@ -703,7 +703,7 @@ const Solutions = () => {
               >
                 {/* Content */}
                 <div className="flex-1 w-full">
-                  <div className="flex items-center gap-3 mb-4 sm:mb-6">
+                  <div className="flex items-center gap-3 mb-2 sm:mb-6">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
                       <solution.icon className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
                     </div>
@@ -773,7 +773,7 @@ const Solutions = () => {
       </section>
 
       {/* Integration Section */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-white">
+      <section className="py-12 sm:py-16 lg:py-10 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
@@ -833,7 +833,7 @@ const Solutions = () => {
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-gray-50">
+      <section className="py-12 sm:py-16 lg:py-10 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
             Start Your Digital Transformation Journey

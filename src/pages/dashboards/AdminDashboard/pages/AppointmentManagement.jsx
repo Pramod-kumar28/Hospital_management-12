@@ -136,7 +136,7 @@ const AppointmentManagement = () => {
   // Statistics
   const stats = [
     { label: 'Confirmed', value: appointments.filter(a => a.status === 'Confirmed').length, color: 'blue' },
-    { label: 'Pending', value: appointments.filter(a => a.status === 'Pending').length, color: 'yellow' },
+    { label: 'Pending', value: appointments.filter(a => a.status === 'Pending').length, color: 'orange' },
     { label: 'Completed', value: appointments.filter(a => a.status === 'Completed').length, color: 'green' },
     { label: 'Cancelled', value: appointments.filter(a => a.status === 'Cancelled').length, color: 'red' }
   ]
@@ -148,7 +148,7 @@ const AppointmentManagement = () => {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold text-gray-700">
-          📋 Appointment Management
+          Appointment Management
         </h2>
         <button 
           onClick={() => openModal('add')}
@@ -183,14 +183,71 @@ const AppointmentManagement = () => {
       </div>
 
       {/* Statistics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {stats.map(({ label, value, color }) => (
           <div key={label} className="bg-white p-4 rounded-lg card-shadow border text-center">
             <div className={`text-2xl font-bold text-${color}-600`}>{value}</div>
             <div className="text-sm text-gray-500">{label}</div>
           </div>
         ))}
+      </div> */}
+
+      {/* Statistics - Glassmorphism Design */}
+<div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+  {stats.map(({ label, value, color }) => {
+    const colorConfigs = {
+      blue: { 
+        bg: 'bg-blue-500/10 backdrop-blur-sm', 
+        text: 'text-blue-700', 
+        icon: 'fas fa-users',
+        gradient: 'from-blue-500/20 to-blue-600/10'
+      },
+      green: { 
+        bg: 'bg-green-500/10 backdrop-blur-sm', 
+        text: 'text-green-700', 
+        icon: 'fas fa-user-nurse',
+        gradient: 'from-green-500/20 to-green-600/10'
+      },
+      red: { 
+        bg: 'bg-red-500/10 backdrop-blur-sm', 
+        text: 'text-red-700', 
+        icon: 'fas fa-microscope',
+        gradient: 'from-red-500/20 to-red-600/10'
+      },
+      orange: { 
+        bg: 'bg-orange-500/10 backdrop-blur-sm', 
+        text: 'text-orange-700', 
+        icon: 'fas fa-pills',
+        gradient: 'from-orange-500/20 to-orange-600/10'
+      }
+    }
+    
+    const config = colorConfigs[color] || colorConfigs.blue
+
+    return (
+      <div 
+        key={label} 
+        className={`${config.bg} border border-white/30 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 hover:-translate-y-1 relative overflow-hidden`}
+      >
+        {/* Gradient Background */}
+        <div className={`absolute inset-0 bg-gradient-to-br ${config.gradient} opacity-50`}></div>
+        
+        <div className="relative z-10">
+          <div className="flex items-center justify-between mb-4">
+            <div className="bg-white/50 backdrop-blur-sm p-3 rounded-xl">
+              <i className={`${config.icon} ${config.text} text-xl`}></i>
+            </div>
+            <span className="text-xs font-medium px-3 py-1 bg-white/80 backdrop-blur-sm rounded-full border border-white/30">
+              +2 this month
+            </span>
+          </div>
+          <div className={`text-4xl font-bold ${config.text} mb-2`}>{value}</div>
+          <div className="text-gray-700 font-medium">{label}</div>
+        </div>
       </div>
+    )
+  })}
+</div>
 
       {/* Appointments Table */}
       <div className="bg-white rounded-xl card-shadow border overflow-hidden">

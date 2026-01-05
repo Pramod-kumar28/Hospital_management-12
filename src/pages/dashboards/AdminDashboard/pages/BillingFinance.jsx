@@ -145,7 +145,7 @@ const BillingFinance = () => {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold text-gray-700">
-          💰 Billing & Finance
+          Billing & Finance
         </h2>
         <button 
           onClick={() => openModal('generate')}
@@ -179,7 +179,7 @@ const BillingFinance = () => {
       </div>
 
       {/* Financial Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+      {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
         {stats.map(({ label, value, color, description }) => (
           <div key={label} className="bg-white p-6 rounded-xl card-shadow border">
             <div className="text-sm text-gray-500">{label}</div>
@@ -187,7 +187,71 @@ const BillingFinance = () => {
             <div className={`text-xs text-${color}-500 mt-1`}>{description}</div>
           </div>
         ))}
+      </div> */}
+
+      {/* Statistics - Glassmorphism Design */}
+<div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+  {stats.map(({ label, value, color, description }) => {
+    const colorConfigs = {
+      blue: { 
+        bg: 'bg-blue-500/10 backdrop-blur-md',
+        text: 'text-blue-700',
+        icon: 'fas fa-chart-line',
+        shadow: 'shadow-blue-500/10',
+        border: 'border-blue-200/50'
+      },
+      green: { 
+        bg: 'bg-green-500/10 backdrop-blur-md',
+        text: 'text-green-700',
+        icon: 'fas fa-check-circle',
+        shadow: 'shadow-green-500/10',
+        border: 'border-green-200/50'
+      },
+      yellow: { 
+        bg: 'bg-yellow-500/10 backdrop-blur-md',
+        text: 'text-yellow-700',
+        icon: 'fas fa-hourglass-half',
+        shadow: 'shadow-yellow-500/10',
+        border: 'border-yellow-200/50'
+      },
+      red: { 
+        bg: 'bg-red-500/10 backdrop-blur-md',
+        text: 'text-red-700',
+        icon: 'fas fa-star',
+        shadow: 'shadow-red-500/10',
+        border: 'border-red-200/50'
+      }
+    }
+    
+    const config = colorConfigs[color] || colorConfigs.blue
+
+    return (
+      <div 
+        key={label} 
+        className={`${config.bg} ${config.border} border ${config.shadow} shadow-xl p-6 rounded-2xl transition-all duration-500 hover:scale-[1.02]`}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <div className="bg-white/50 backdrop-blur-sm p-3 rounded-xl">
+            <i className={`${config.icon} ${config.text} text-xl`}></i>
+          </div>
+          <div className="text-xs font-medium px-3 py-1 bg-white/80 backdrop-blur-sm rounded-full text-gray-700">
+            Live
+          </div>
+        </div>
+        
+        <div className={`text-3xl font-bold ${config.text} mb-1`}>{value}</div>
+        <div className="text-gray-800 font-medium mb-2">{label}</div>
+        
+        {description && (
+          <div className="text-sm text-gray-600 mt-3 pt-3 border-t border-white/30">
+            <i className="fas fa-info-circle mr-2 opacity-70"></i>
+            {description}
+          </div>
+        )}
       </div>
+    )
+  })}
+</div>
 
       {/* Bills Table */}
       <div className="bg-white rounded-xl card-shadow border overflow-hidden">

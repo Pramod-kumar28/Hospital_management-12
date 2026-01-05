@@ -1180,7 +1180,7 @@ const EquipmentTracking = () => {
         <div className="flex flex-col md:flex-row justify-between items-start gap-3 md:gap-4">
           <div className="w-full md:w-auto">
             <h2 className="text-xl md:text-2xl font-semibold text-gray-700 flex items-center gap-2">
-              <i className="fas fa-microscope"></i>
+                
               Equipment Tracking
             </h2>
             <p className="text-sm md:text-base text-gray-500 mt-1">Track laboratory equipment, maintenance, and calibration schedules</p>

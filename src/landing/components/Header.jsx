@@ -173,7 +173,7 @@ export default function Header(){
         <div className="flex items-center justify-between h-16">
           {/* Logo Section - LEFT ALIGNED */}
           <div className="flex-shrink-0 flex items-center md:pl-6">
-            <Link to="/" className="inline-flex items-center gap-3 font-bold text-gray-900 group">
+            <Link to="/" className="inline-flex items-center gap-1 font-bold text-gray-900 group">
               {/* LOGO IMAGE - LARGER SIZE */}
               <div className="w-16 h-16 md:w-20 md:h-20">
                 <img 
@@ -181,6 +181,9 @@ export default function Header(){
                   alt="DCM Hospital Logo" 
                   className="h-16 md:h-20 w-auto object-contain"
                 /> 
+              </div>
+              <div className="md:flex flex-col">
+                <span className="text-[16px] text-gray-700 group-hover:text-blue-600 transition-colors duration-200">Hospital Management</span>
               </div>
             </Link>
           </div>
@@ -209,9 +212,7 @@ export default function Header(){
 
           {/* Mobile Menu Button - RIGHT ALIGNED */}
           <div className="flex lg:hidden items-center gap-2">
-            <Link to="/contact" className="lg:hidden px-3 py-2 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
-              Demo
-            </Link>
+            
             <button 
               className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 border border-gray-200"
               onClick={() => setOpen(!open)} 
@@ -271,7 +272,7 @@ export default function Header(){
             <div className="flex gap-3 pt-4 border-t border-gray-200">
               <Link 
                 to="/signin" 
-                className="flex-1 px-4 py-3 text-center text-base font-medium text-gray-700 rounded-lg bg-gray-50 hover:bg-gray-100 transition-all duration-200 border border-gray-200"
+                className="flex-1 px-2 py-3 text-center text-base font-medium text-gray-700 rounded-lg bg-gray-50 hover:bg-gray-100 transition-all duration-200 border border-gray-200"
                 onClick={() => setOpen(false)}
               >
                 Sign In

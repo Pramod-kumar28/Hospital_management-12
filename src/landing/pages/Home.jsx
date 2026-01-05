@@ -1044,174 +1044,307 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Why Healthcare Facilities Choose DCM - Updated with Carousel */}
-      <section className="py-10 bg-white">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="grid md:grid-cols-2 gap-16 items-center">
-            {/* Image on Left */}
-            <div className="relative">
-              <img
-                alt="Healthcare Technology"
-                className="w-full rounded-2xl shadow-2xl border-4 border-white/20 transform hover:scale-105 transition-transform duration-500"
-                src="https://images.unsplash.com/photo-1586773860418-d37222d8fce3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
-              />
-              
-            </div>
+{/* Why Healthcare Facilities Choose DCM - Updated with Carousel */}
+<section className="py-8 md:py-10 bg-white">
+  <div className="max-w-6xl mx-auto px-4">
+    <div className="flex flex-col lg:grid lg:grid-cols-2 gap-8 md:gap-16 items-center">
+      {/* Image on Left - Show first on mobile */}
+      <div className="w-full order-1 lg:order-1">
+        <img
+          alt="Healthcare Technology"
+          className="w-full rounded-xl md:rounded-2xl shadow-lg md:shadow-2xl border-2 md:border-4 border-white/20 transform hover:scale-105 transition-transform duration-500"
+          src="https://images.unsplash.com/photo-1586773860418-d37222d8fce3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+        />
+      </div>
 
-            {/* Content on Right */}
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-                Why Healthcare Facilities <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-800">Choose DCM</span>
-              </h2>
-              <p className="text-lg text-gray-600 mb-8">
-                Built with modern technology and healthcare expertise to deliver the best experience for hospitals,
-                doctors, and patients across India.
-              </p>
+      {/* Content on Right */}
+      <div className="w-full order-2 lg:order-2 mb-6 md:mb-0">
+        <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 md:mb-6">
+          Why Healthcare Facilities <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-800">Choose DCM</span>
+        </h2>
+        <p className="text-base md:text-lg text-gray-600 mb-6 md:mb-8">
+          Built with modern technology and healthcare expertise to deliver the best experience for hospitals,
+          doctors, and patients across India.
+        </p>
 
-              {/* Why Choose Carousel */}
-              <div className="relative">
-               
-                {/* Scrollable Container */}
+        {/* Why Choose Carousel - Fixed for mobile */}
+        <div className="relative">
+          {/* Carousel Container with proper mobile width */}
+          <div className="relative overflow-hidden">
+            {/* Carousel Track */}
+            <div 
+              ref={whyChooseScrollRef}
+              className="flex transition-transform duration-300 ease-in-out"
+            >
+              {whyChooseItems.map((item, idx) => (
                 <div 
-                  ref={whyChooseScrollRef}
-                  className="flex overflow-x-auto pb-8 snap-x snap-mandatory scrollbar-hide space-x-6"
-                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                  key={idx} 
+                  className="flex-shrink-0 w-full px-1 sm:px-2 md:px-0"
+                  style={{ width: '100%' }}
                 >
-                  {whyChooseItems.map((item, idx) => (
-                    <div 
-                      key={idx} 
-                      className="flex-shrink-0 w-full snap-center p-8 rounded-2xl cursor-pointer hover:border-blue-300 transition-all duration-300 group"
-                    >
-                      <div className="relative z-10 text-center">
-                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center mb-6 shadow-lg mx-auto group-hover:scale-110 transition-transform duration-300">
-                          <item.icon size={32} />
-                        </div>
-                        <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors duration-300">{item.title}</h3>
-                        <p className="text-gray-600 text-lg leading-relaxed">{item.sub}</p>
+                  <div className="bg-white md:bg-transparent p-4 md:p-8 rounded-xl md:rounded-2xl border border-blue-100 md:border-transparent hover:border-blue-300 transition-all duration-300 group shadow-sm md:shadow-none hover:shadow-md">
+                    <div className="relative z-10 text-center">
+                      <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl md:rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center mb-4 md:mb-6 shadow-lg mx-auto group-hover:scale-110 transition-transform duration-300">
+                        <item.icon size={28} className="md:size-8" />
                       </div>
+                      <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 group-hover:text-blue-600 transition-colors duration-300">{item.title}</h3>
+                      <p className="text-gray-600 text-base md:text-lg leading-relaxed px-2 md:px-0">{item.sub}</p>
                     </div>
-                  ))}
-                </div>
-
-                {/* Navigation Dots */}
-                <div className="flex justify-center gap-3 mt-6">
-                  {whyChooseItems.map((_, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => handleWhyChooseDotClick(idx)}
-                      className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                        idx === currentWhyChoose 
-                          ? 'bg-blue-600 w-8' 
-                          : 'bg-blue-300 hover:bg-blue-400'
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
-
-             
-            </div>
-          </div>
-        </div>
-
-        <style jsx>{`
-          .scrollbar-hide {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-          }
-          .scrollbar-hide::-webkit-scrollbar {
-            display: none;
-          }
-        `}</style>
-      </section>
-
-      {/* Comparison Section */}
-      <section className="py-12 md:py-10 bg-white">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              Why DCM Outperforms Traditional Systems
-            </h2>
-            <p className="text-gray-600 text-base md:text-lg">
-              See how DCM Hospital Management System compares to legacy solutions
-            </p>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
-            {/* Header */}
-            <div className="grid grid-cols-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-4 md:p-6">
-              <div className="text-left">
-                <h3 className="font-bold text-lg md:text-xl">Features</h3>
-              </div>
-              <div className="text-center">
-                <h3 className="font-bold text-lg md:text-xl">DCM Hospital Management</h3>
-                <p className="text-blue-100 text-sm">Modern Cloud Solution</p>
-              </div>
-              <div className="text-center">
-                <h3 className="font-bold text-lg md:text-xl">Traditional Systems</h3>
-                <p className="text-blue-100 text-sm">Legacy On-premise</p>
-              </div>
-            </div>
-
-            {/* Comparison Rows */}
-            <div className="divide-y divide-gray-100">
-              {comparisonData.map((item, index) => (
-                <div key={index} className="grid grid-cols-3 p-4 md:p-6 hover:bg-blue-50 transition-colors duration-200">
-                  <div className="text-left">
-                    <span className="font-semibold text-gray-900 text-sm md:text-base">{item.feature}</span>
-                  </div>
-                  
-                  {/* DCM Column */}
-                  <div className="text-center">
-                    {item.dcm.status === "yes" && (
-                      <div className="flex items-center justify-center gap-2 text-green-600">
-                        <CheckCircle2 className="w-5 h-5" />
-                        <span className="font-medium text-sm md:text-base">{item.dcm.text}</span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Others Column */}
-                  <div className="text-center">
-                    {item.others.status === "no" && (
-                      <div className="flex items-center justify-center gap-2 text-red-600">
-                        <X className="w-5 h-5" />
-                        <span className="font-medium text-sm md:text-base">{item.others.text}</span>
-                      </div>
-                    )}
-                    {item.others.status === "partial" && (
-                      <div className="flex items-center justify-center gap-2 text-yellow-600">
-                        <Clock className="w-5 h-5" />
-                        <span className="font-medium text-sm md:text-base">{item.others.text}</span>
-                      </div>
-                    )}
-                    {item.others.status === "limited" && (
-                      <div className="flex items-center justify-center gap-2 text-orange-600">
-                        <TrendingUp className="w-5 h-5" />
-                        <span className="font-medium text-sm md:text-base">{item.others.text}</span>
-                      </div>
-                    )}
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Footer CTA */}
-            <div className="bg-gray-50 p-6 text-center border-t border-gray-200">
-              <p className="text-gray-600 mb-4 text-sm md:text-base">
-                Ready to upgrade to modern hospital management?
-              </p>
-              <a 
-                href="/contact" 
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
-              >
-                Start Free Trial
-                <ArrowRight size={20} />
-              </a>
-            </div>
+            {/* Navigation Buttons for Mobile */}
+            <button
+              onClick={() => handleWhyChooseSlide(-1)}
+              className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-2 md:hidden z-10 bg-white rounded-full p-2 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200"
+              aria-label="Previous"
+            >
+              <ChevronLeft className="w-4 h-4 text-gray-600" />
+            </button>
+
+            <button
+              onClick={() => handleWhyChooseSlide(1)}
+              className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-2 md:hidden z-10 bg-white rounded-full p-2 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200"
+              aria-label="Next"
+            >
+              <ChevronRight className="w-4 h-4 text-gray-600" />
+            </button>
+          </div>
+
+          {/* Navigation Dots - Mobile optimized */}
+          <div className="flex justify-center gap-2 md:gap-3 mt-6 md:mt-8">
+            {whyChooseItems.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentWhyChoose(idx)}
+                className={`w-3 h-3 md:w-3 md:h-3 rounded-full transition-all duration-300 ${
+                  idx === currentWhyChoose 
+                    ? 'bg-blue-600 w-8 md:w-8' 
+                    : 'bg-blue-200 md:bg-blue-300 hover:bg-blue-400'
+                }`}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            ))}
           </div>
         </div>
-      </section>
+      </div>
+    </div>
+  </div>
+
+  <style jsx>{`
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+  `}</style>
+</section>
+
+{/* Comparison Section */}
+<section className="py-8 md:py-10 bg-white">
+  <div className="max-w-6xl mx-auto px-4">
+    <div className="text-center max-w-2xl mx-auto mb-8 md:mb-12">
+      <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
+        Why DCM Outperforms Traditional Systems
+      </h2>
+      <p className="text-base md:text-lg text-gray-600">
+        See how DCM Hospital Management System compares to legacy solutions
+      </p>
+    </div>
+
+    {/* Wrap table in overflow container for mobile */}
+    <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+      <div className="min-w-[800px] md:min-w-0">
+        <div className="bg-white rounded-xl md:rounded-2xl shadow-lg md:shadow-xl border border-gray-200 overflow-hidden">
+          {/* Header - Simplified for mobile */}
+          <div className="grid grid-cols-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-3 md:p-6">
+            <div className="text-left flex items-center">
+              <h3 className="font-bold text-sm md:text-lg lg:text-xl">Features</h3>
+            </div>
+            <div className="text-center">
+              <h3 className="font-bold text-sm md:text-lg lg:text-xl">DCM Hospital Management</h3>
+              <p className="text-blue-100 text-xs md:text-sm">Modern Cloud Solution</p>
+            </div>
+            <div className="text-center">
+              <h3 className="font-bold text-sm md:text-lg lg:text-xl">Traditional Systems</h3>
+              <p className="text-blue-100 text-xs md:text-sm">Legacy On-premise</p>
+            </div>
+          </div>
+
+          {/* Comparison Rows - Mobile optimized */}
+          <div className="divide-y divide-gray-100">
+            {comparisonData.map((item, index) => (
+              <div key={index} className="grid grid-cols-3 p-3 md:p-6 hover:bg-blue-50 transition-colors duration-200">
+                <div className="text-left flex items-center pr-2">
+                  <span className="font-semibold text-gray-900 text-xs md:text-base">{item.feature}</span>
+                </div>
+                
+                {/* DCM Column */}
+                <div className="text-center flex items-center justify-center">
+                  {item.dcm.status === "yes" && (
+                    <div className="flex flex-col md:flex-row items-center gap-1 md:gap-2 text-green-600">
+                      <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+                      <span className="font-medium text-xs md:text-base">{item.dcm.text}</span>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Others Column */}
+                <div className="text-center flex items-center justify-center">
+                  {item.others.status === "no" && (
+                    <div className="flex flex-col md:flex-row items-center gap-1 md:gap-2 text-red-600">
+                      <X className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+                      <span className="font-medium text-xs md:text-base">{item.others.text}</span>
+                    </div>
+                  )}
+                  {item.others.status === "partial" && (
+                    <div className="flex flex-col md:flex-row items-center gap-1 md:gap-2 text-yellow-600">
+                      <Clock className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+                      <span className="font-medium text-xs md:text-base">{item.others.text}</span>
+                    </div>
+                  )}
+                  {item.others.status === "limited" && (
+                    <div className="flex flex-col md:flex-row items-center gap-1 md:gap-2 text-orange-600">
+                      <TrendingUp className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+                      <span className="font-medium text-xs md:text-base">{item.others.text}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Footer CTA - Mobile optimized */}
+          <div className="bg-gray-50 p-4 md:p-6 text-center border-t border-gray-200">
+            <p className="text-gray-600 mb-3 md:mb-4 text-sm md:text-base">
+              Ready to upgrade to modern hospital management?
+            </p>
+            <a 
+              href="/contact" 
+              className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-5 md:px-6 py-3 rounded-lg md:rounded-xl font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all duration-300 transform hover:scale-105 shadow-lg text-sm md:text-base w-full md:w-auto"
+            >
+              Start Free Trial
+              <ArrowRight size={16} className="md:size-5" />
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{/* Comparison Section */}
+<section className="py-12 md:py-10 bg-white">
+  <div className="max-w-6xl mx-auto px-4">
+    <div className="text-center max-w-2xl mx-auto mb-12">
+      <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+        Why DCM Outperforms Traditional Systems
+      </h2>
+      <p className="text-gray-600 text-base md:text-lg">
+        See how DCM Hospital Management System compares to legacy solutions
+      </p>
+    </div>
+
+    {/* MOBILE SCROLL WRAPPER */}
+    <div className="overflow-x-auto">
+      <div className="min-w-[640px] bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+        
+        {/* Header */}
+        <div className="grid grid-cols-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-4 md:p-6">
+          <div className="text-left">
+            <h3 className="font-bold text-lg md:text-xl">Features</h3>
+          </div>
+          <div className="text-center">
+            <h3 className="font-bold text-lg md:text-xl">DCM Hospital Management</h3>
+            <p className="text-blue-100 text-sm">Modern Cloud Solution</p>
+          </div>
+          <div className="text-center">
+            <h3 className="font-bold text-lg md:text-xl">Traditional Systems</h3>
+            <p className="text-blue-100 text-sm">Legacy On-premise</p>
+          </div>
+        </div>
+
+        {/* Comparison Rows */}
+        <div className="divide-y divide-gray-100">
+          {comparisonData.map((item, index) => (
+            <div
+              key={index}
+              className="grid grid-cols-3 p-4 md:p-6 hover:bg-blue-50 transition-colors duration-200"
+            >
+              {/* Feature */}
+              <div className="text-left">
+                <span className="font-semibold text-gray-900 text-sm md:text-base">
+                  {item.feature}
+                </span>
+              </div>
+
+              {/* DCM */}
+              <div className="text-center">
+                {item.dcm.status === "yes" && (
+                  <div className="flex items-center justify-center gap-2 text-green-600">
+                    <CheckCircle2 className="w-5 h-5" />
+                    <span className="font-medium text-sm md:text-base">
+                      {item.dcm.text}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Others */}
+              <div className="text-center">
+                {item.others.status === "no" && (
+                  <div className="flex items-center justify-center gap-2 text-red-600">
+                    <X className="w-5 h-5" />
+                    <span className="font-medium text-sm md:text-base">
+                      {item.others.text}
+                    </span>
+                  </div>
+                )}
+
+                {item.others.status === "partial" && (
+                  <div className="flex items-center justify-center gap-2 text-yellow-600">
+                    <Clock className="w-5 h-5" />
+                    <span className="font-medium text-sm md:text-base">
+                      {item.others.text}
+                    </span>
+                  </div>
+                )}
+
+                {item.others.status === "limited" && (
+                  <div className="flex items-center justify-center gap-2 text-orange-600">
+                    <TrendingUp className="w-5 h-5" />
+                    <span className="font-medium text-sm md:text-base">
+                      {item.others.text}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer CTA */}
+        <div className="bg-gray-50 p-6 text-center border-t border-gray-200">
+          <p className="text-gray-600 mb-4 text-sm md:text-base">
+            Ready to upgrade to modern hospital management?
+          </p>
+          <a
+            href="/contact"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
+          >
+            Start Free Trial
+            <ArrowRight size={20} />
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 
       {/* Working Testimonials Carousel - 1 Card on Mobile, 3 Cards on Desktop with Auto Slide */}
       <section className="py-12 md:py-10 bg-gray-50 relative overflow-hidden">

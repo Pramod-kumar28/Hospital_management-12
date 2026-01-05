@@ -846,7 +846,7 @@ const PatientRecords = () => {
     <div className="animate-fade-in">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-800">📋 Patient Records</h2>
+          <h2 className="text-2xl font-semibold text-gray-800"> Patient Records</h2>
           <p className="text-gray-600 mt-1">Manage patient information and medical history</p>
         </div>
         <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">

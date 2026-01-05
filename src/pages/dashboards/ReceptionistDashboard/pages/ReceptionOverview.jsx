@@ -262,58 +262,135 @@ const ReceptionOverview = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <h2 className="text-2xl font-semibold text-gray-700">📊 Reception Dashboard</h2>
+      <h2 className="text-2xl font-semibold text-gray-700"> Reception Dashboard</h2>
       
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded border card-shadow hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleQuickAction('records')}>
-          <div className="flex items-center">
-            <div className="p-3 bg-blue-100 rounded-lg mr-4">
-              <i className="fas fa-users text-blue-600 text-xl"></i>
-            </div>
-            <div>
-              <p className="text-gray-500 text-sm">Total Patients</p>
-              <p className="text-2xl font-bold text-blue-600 mt-1">{dashboardData.stats.totalPatients}</p>
-            </div>
-          </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+  {/* TOTAL PATIENTS */}
+  <div
+    className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition"
+    onClick={() => handleQuickAction('records')}
+  >
+    <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent pointer-events-none" />
+
+    <div className="relative flex justify-between items-end">
+      <div>
+        <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-600 mb-3">
+          <i className="fas fa-users text-white"></i>
         </div>
-        
-        <div className="bg-white p-4 rounded border card-shadow hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleQuickAction('appointments')}>
-          <div className="flex items-center">
-            <div className="p-3 bg-green-100 rounded-lg mr-4">
-              <i className="fas fa-calendar-check text-green-600 text-xl"></i>
-            </div>
-            <div>
-              <p className="text-gray-500 text-sm">Today's Appointments</p>
-              <p className="text-2xl font-bold text-green-600 mt-1">{dashboardData.stats.todayAppointments}</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white p-4 rounded border card-shadow hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleQuickAction('billing')}>
-          <div className="flex items-center">
-            <div className="p-3 bg-yellow-100 rounded-lg mr-4">
-              <i className="fas fa-file-invoice text-yellow-600 text-xl"></i>
-            </div>
-            <div>
-              <p className="text-gray-500 text-sm">Pending Bills</p>
-              <p className="text-2xl font-bold text-yellow-600 mt-1">{dashboardData.stats.pendingBills}</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white p-4 rounded border card-shadow hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleQuickAction('registration')}>
-          <div className="flex items-center">
-            <div className="p-3 bg-purple-100 rounded-lg mr-4">
-              <i className="fas fa-user-plus text-purple-600 text-xl"></i>
-            </div>
-            <div>
-              <p className="text-gray-500 text-sm">New Registrations</p>
-              <p className="text-2xl font-bold text-purple-600 mt-1">{dashboardData.stats.newRegistrations}</p>
-            </div>
-          </div>
-        </div>
+        <p className="text-sm text-gray-500">Total Patients</p>
+        <p className="text-2xl font-bold text-gray-900">
+          {dashboardData.stats.totalPatients}
+        </p>
+        <p className="text-xs text-gray-400 mt-1">Overall registered</p>
       </div>
+
+      {/* mini bars */}
+      <div className="flex items-end gap-1 h-14">
+        <div className="w-1.5 h-5 bg-blue-300 rounded"></div>
+        <div className="w-1.5 h-8 bg-blue-400 rounded"></div>
+        <div className="w-1.5 h-11 bg-blue-500 rounded"></div>
+        <div className="w-1.5 h-7 bg-blue-400 rounded"></div>
+        <div className="w-1.5 h-12 bg-blue-600 rounded"></div>
+      </div>
+    </div>
+  </div>
+
+  {/* TODAY'S APPOINTMENTS */}
+  <div
+    className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition"
+    onClick={() => handleQuickAction('appointments')}
+  >
+    <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent pointer-events-none" />
+
+    <div className="relative flex justify-between items-end">
+      <div>
+        <div className="w-10 h-10 flex items-center justify-center rounded-full bg-green-600 mb-3">
+          <i className="fas fa-calendar-check text-white"></i>
+        </div>
+        <p className="text-sm text-gray-500">Today's Appointments</p>
+        <p className="text-2xl font-bold text-gray-900">
+          {dashboardData.stats.todayAppointments}
+        </p>
+        <p className="text-xs text-gray-400 mt-1">Today</p>
+      </div>
+
+      {/* mini line */}
+      <svg width="70" height="40" viewBox="0 0 70 40">
+        <polyline
+          points="0,30 12,24 24,26 36,18 48,20 60,14"
+          fill="none"
+          stroke="#22c55e"
+          strokeWidth="2"
+        />
+      </svg>
+    </div>
+  </div>
+
+  {/* PENDING BILLS */}
+  <div
+    className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition"
+    onClick={() => handleQuickAction('billing')}
+  >
+    <div className="absolute inset-0 bg-gradient-to-br from-yellow-50 to-transparent pointer-events-none" />
+
+    <div className="relative flex justify-between items-end">
+      <div>
+        <div className="w-10 h-10 flex items-center justify-center rounded-full bg-yellow-500 mb-3">
+          <i className="fas fa-file-invoice text-white"></i>
+        </div>
+        <p className="text-sm text-gray-500">Pending Bills</p>
+        <p className="text-2xl font-bold text-gray-900">
+          {dashboardData.stats.pendingBills}
+        </p>
+        <p className="text-xs text-gray-400 mt-1">Awaiting payment</p>
+      </div>
+
+      {/* mini bars */}
+      <div className="flex items-end gap-1 h-14">
+        <div className="w-1.5 h-10 bg-yellow-300 rounded"></div>
+        <div className="w-1.5 h-6 bg-yellow-200 rounded"></div>
+        <div className="w-1.5 h-12 bg-yellow-400 rounded"></div>
+        <div className="w-1.5 h-8 bg-yellow-300 rounded"></div>
+        <div className="w-1.5 h-9 bg-yellow-200 rounded"></div>
+      </div>
+    </div>
+  </div>
+
+  {/* NEW REGISTRATIONS */}
+  <div
+    className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition"
+    onClick={() => handleQuickAction('registration')}
+  >
+    <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent pointer-events-none" />
+
+    <div className="relative flex justify-between items-end">
+      <div>
+        <div className="w-10 h-10 flex items-center justify-center rounded-full bg-purple-600 mb-3">
+          <i className="fas fa-user-plus text-white"></i>
+        </div>
+        <p className="text-sm text-gray-500">New Registrations</p>
+        <p className="text-2xl font-bold text-gray-900">
+          {dashboardData.stats.newRegistrations}
+        </p>
+        <p className="text-xs text-gray-400 mt-1">Recently added</p>
+      </div>
+
+      {/* mini line */}
+      <svg width="70" height="40" viewBox="0 0 70 40">
+        <polyline
+          points="0,28 12,26 24,22 36,24 48,18 60,12"
+          fill="none"
+          stroke="#a855f7"
+          strokeWidth="2"
+        />
+      </svg>
+    </div>
+  </div>
+
+</div>
+
 
       {/* Recent Data */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

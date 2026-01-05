@@ -274,7 +274,7 @@ Hospital Administration
   return (
     <div className="animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-        <h2 className="text-xl md:text-2xl font-semibold text-gray-700">🏥 Discharge Summary</h2>
+        <h2 className="text-xl md:text-2xl font-semibold text-gray-700"> Discharge Summary</h2>
         <div className="flex gap-2">
           <button 
             onClick={resetForm}

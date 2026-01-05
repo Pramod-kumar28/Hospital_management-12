@@ -42,7 +42,7 @@ const PatientRegistration = () => {
 
   return (
     <div className="animate-fade-in">
-      <h2 className="text-2xl font-semibold text-gray-700 mb-6">Patient Registration</h2>
+      <h2 className="text-2xl font-semibold text-gray-700 mb-6"> Patient Registration</h2>
 
       <div className="bg-white rounded-xl card-shadow border p-6">
         <form onSubmit={handleSubmit} className="space-y-6">

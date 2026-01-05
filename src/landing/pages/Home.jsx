@@ -865,7 +865,7 @@ export default function Home() {
 
               <p className="text-lg text-gray-600 mb-6 leading-relaxed">
                 Streamline operations, improve patient care, and boost efficiency with our comprehensive
-                hospital management system trusted by 50+ healthcare facilities.
+                hospital management system trusted by 50+ healthcare facilities.  Our platform integrates all hospital departments into one seamless workflow for optimal coordination and patient outcomes.
               </p>
 
               <div className="flex flex-wrap gap-3 mb-6">
@@ -985,7 +985,8 @@ export default function Home() {
               Complete Hospital Management Suite
             </h2>
             <p className="text-gray-600 text-base md:text-lg">
-              Everything you need to run a modern healthcare facility efficiently
+              Everything you need to run a modern healthcare facility efficiently.
+              Our comprehensive platform integrates all hospital operations for seamless workflow.
             </p>
           </div>
 
@@ -1235,196 +1236,110 @@ export default function Home() {
 </section>
 
 
-      {/* Working Testimonials Carousel - 1 Card on Mobile, 3 Cards on Desktop with Auto Slide */}
-      <section className="py-12 md:py-10 bg-gray-50 relative overflow-hidden">
-        {/* Medical Icons in Background */}
-        <div className="absolute top-10 left-5% opacity-5 animate-pulse">
-          <Heart className="w-10 h-10 md:w-16 md:h-16 text-red-400" />
-        </div>
-        <div className="absolute bottom-10 right-5% opacity-5 animate-bounce delay-300">
-          <Stethoscope className="w-12 h-12 md:w-18 md:h-18 text-blue-400" />
-        </div>
-        <div className="absolute top-1/3 right-10% opacity-5 animate-pulse delay-700">
-          <Activity className="w-8 h-8 md:w-12 md:h-12 text-green-400" />
-        </div>
 
-        <div className="max-w-7xl mx-auto px-4 relative z-10">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              Trusted by Healthcare Professionals
-            </h2>
-            <p className="text-gray-600 text-base md:text-lg">
-              See what doctors and administrators from leading Hyderabad hospitals say about DCM
-            </p>
+{/* Mobile Application Section */}
+<section className="py-12 md:py-10 bg-gradient-to-br from-blue-50 to-cyan-50 relative overflow-hidden">
+  {/* Background Medical Icons */}
+  <div className="absolute top-10 left-5% opacity-5 animate-pulse">
+    <Smartphone className="w-12 h-12 md:w-16 md:h-16 text-blue-400" />
+  </div>
+  <div className="absolute bottom-10 right-10% opacity-5 animate-bounce delay-300">
+    <Activity className="w-10 h-10 md:w-14 md:h-14 text-green-400" />
+  </div>
+
+  <div className="max-w-6xl mx-auto px-4 relative z-10">
+    <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
+      {/* Content */}
+      <div>
+        
+        <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+          Complete Hospital Management <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-600">On Your Mobile</span>
+        </h2>
+
+        <p className="text-gray-600 text-base md:text-lg mb-6 leading-relaxed">
+          Access all hospital management features on iOS and Android devices. 
+          <span className="font-semibold text-blue-600"> Free for all subscribers</span> with no additional cost.
+          All platform features are available on mobile, including telemedicine, lab results, and real-time analytics.
+          Push notifications keep you updated about appointments, lab results, and important alerts instantly.
+        </p>
+
+        <div className="space-y-4 mb-8">
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="text-green-500 mt-2 flex-shrink-0" size={20} />
+            <div>
+              <h4 className="font-semibold text-gray-900">Real-time Patient Management</h4>
+              <p className="text-gray-600 text-sm">Access patient records, schedule appointments, and update medical history on the go. View live patient vitals and treatment progress from anywhere.</p>
+            </div>
           </div>
 
-          {/* Carousel Container */}
-          <div className="relative">
-            {/* Navigation Buttons */}
-            <button
-              onClick={prevSlide}
-              className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 z-10 bg-white rounded-full p-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 border border-gray-200"
-              aria-label="Previous testimonials"
-            >
-              <ChevronLeft className="w-5 h-5 text-gray-600" />
-            </button>
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="text-green-500 mt-2 flex-shrink-0" size={20} />
+            <div>
+              <h4 className="font-semibold text-gray-900">Doctor Portal Access</h4>
+              <p className="text-gray-600 text-sm">Doctors can view schedules, write prescriptions, and consult patients from anywhere. Access medical references and drug databases for accurate treatment decisions.</p>
+            </div>
+          </div>
 
-            <button
-              onClick={nextSlide}
-              className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 z-10 bg-white rounded-full p-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 border border-gray-200"
-              aria-label="Next testimonials"
-            >
-              <ChevronRight className="w-5 h-5 text-gray-600" />
-            </button>
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="text-green-500 mt-2 flex-shrink-0" size={20} />
+            <div>
+              <h4 className="font-semibold text-gray-900">Billing & Payments</h4>
+              <p className="text-gray-600 text-sm">Process bills, accept payments, and manage accounts directly from mobile. Generate invoices, track payments, and send payment reminders to patients instantly.</p>
+            </div>
+          </div>
 
-            {/* Carousel Track */}
-            <div className="overflow-hidden">
-              <div 
-                ref={carouselRef}
-                className="flex transition-transform duration-500 ease-in-out"
-                style={{ transform: `translateX(-${currentSlide * (100 / slidesToShow)}%)` }}
-              >
-                {testimonials.map((testimonial, index) => (
-                  <div 
-                    key={index} 
-                    className="flex-shrink-0 px-3"
-                    style={{ width: `${100 / slidesToShow}%` }}
-                  >
-                    <div className="bg-white rounded-xl shadow-lg p-6 border border-blue-100 hover:shadow-xl transition-all duration-300 h-full">
-                      <Quote className="text-blue-400 mb-4 w-6 h-6" />
-                      <div className="flex items-center gap-3 mb-4">
-                        <img 
-                          src={testimonial.avatar} 
-                          alt={testimonial.name} 
-                          className="w-12 h-12 rounded-full object-cover shadow-md" 
-                        />
-                        <div>
-                          <h4 className="font-semibold text-gray-900 text-base">{testimonial.name}</h4>
-                          <p className="text-gray-600 text-sm">{testimonial.role}</p>
-                          <p className="text-blue-600 text-sm font-medium">{testimonial.hospital}</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-1 mb-3">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star 
-                            key={i} 
-                            size={16} 
-                            className="text-yellow-400" 
-                            fill="currentColor" 
-                          />
-                        ))}
-                      </div>
-                      <p className="text-gray-700 italic text-sm md:text-base">{testimonial.text}</p>
-                    </div>
-                  </div>
-                ))}
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="text-green-500 mt-2 flex-shrink-0" size={20} />
+            <div>
+              <h4 className="font-semibold text-gray-900">White Label & Customization</h4>
+              <p className="text-gray-600 text-sm">Customize the platform with your hospital's branding, logo, and colors. Offer patients a seamless experience under your own brand identity. Choose from multiple themes and customize the interface to match your hospital's style.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-3">
+          <a 
+            href="/features" 
+            className="group inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 shadow-lg hover:shadow-xl transition-all duration-300"
+          >
+            View All Features
+            <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+          </a>
+          <a 
+            href="/contact" 
+            className="group inline-flex items-center px-6 py-3 rounded-xl border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300"
+          >
+            Download App Now
+          </a>
+        </div>
+
+      </div>
+
+      {/* Mobile App Mockup */}
+      <div className="relative">
+        <div className="relative mx-auto max-w-sm md:max-w-lg">
+          <img
+            src="https://images.unsplash.com/photo-1551650975-87deedd944c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+            alt="Hospital Management Mobile App"
+            className="rounded-3xl shadow-2xl border-8 border-white"
+          />
+          <div className="absolute -bottom-1 -right-1 bg-white rounded-2xl p-2 shadow-2xl">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+                <Smartphone className="text-white w-6 h-6" />
+              </div>
+              <div>
+                <p className="font-bold text-gray-900 text-sm">Free for Subscribers</p>
+                <p className="text-sm text-gray-600">Available on App Store & Play Store</p>
               </div>
             </div>
-
-            {/* Navigation Dots */}
-            <div className="flex justify-center gap-2 mt-8">
-              {Array.from({ length: totalSlides }).map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setCurrentSlide(i)}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                    currentSlide === i ? "bg-blue-600 w-8" : "bg-gray-300 hover:bg-gray-400"
-                  }`}
-                  aria-label={`Go to testimonial group ${i + 1}`}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Testimonial Stats */}
-          <div className="text-center mt-12">
-            <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full">
-              <Star className="w-4 h-4" fill="currentColor" />
-              <span className="font-semibold text-sm">
-                {testimonials.length}+ Verified Reviews from Healthcare Professionals
-              </span>
-            </div>
           </div>
         </div>
-      </section>
+      </div>
+    </div>
+  </div>
+</section>
 
-      {/* Partners */}
-      {/* <section className="py-16 md:py-20 bg-gradient-to-br from-gray-50 to-white">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Our Healthcare Partners</h2>
-            <p className="text-gray-600 text-base md:text-lg">
-              Discover how leading Hyderabad hospitals are using DCM to transform patient care
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {partners.map((p) => (
-              <div key={p.name} className="group bg-white rounded-xl md:rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:-translate-y-1 hover:shadow-xl transition-all duration-500 transform hover:scale-105">
-                <div className="h-40 md:h-52 overflow-hidden">
-                  <img src={p.img} alt={p.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                </div>
-                <div className="p-4 md:p-6">
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <h3 className="text-base md:text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">{p.name}</h3>
-                      <div className="flex items-center gap-1 text-gray-500 text-xs md:text-sm">
-                        <MapPin size={12} className="md:w-4 md:h-4" />
-                        <span>{p.location}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-3 bg-gradient-to-r from-blue-50 to-cyan-50 p-3 md:p-4 rounded-lg border-l-4 border-blue-600">
-                    <p className="text-gray-700 text-sm md:text-base italic">{p.quote}</p>
-                    <p className="text-gray-600 text-xs md:text-sm mt-2 font-medium">{p.author}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section> */}
-
-      {/* Enhanced CTA */}
-      <section className="py-12 md:py-10 bg-gradient-to-br from-blue-600 to-blue-700 text-white relative overflow-hidden">
-        {/* Enhanced Health-themed Animated Background Elements */}
-        <div className="absolute top-4 md:top-10 left-4 md:left-10 opacity-20 animate-pulse">
-          <Heart className="w-8 h-8 md:w-12 md:h-12 text-white" />
-        </div>
-        <div className="absolute bottom-4 md:bottom-10 right-4 md:right-10 opacity-20 animate-bounce">
-          <Stethoscope className="w-8 h-8 md:w-12 md:h-12 text-white" />
-        </div>
-        <div className="absolute top-1/3 right-20 opacity-15 animate-pulse delay-500">
-          <Activity className="w-10 h-10 md:w-14 md:h-14 text-white" />
-        </div>
-        <div className="absolute bottom-1/3 left-20 opacity-15 animate-bounce delay-700">
-          <Pill className="w-8 h-8 md:w-12 md:h-12 text-white" />
-        </div>
-
-        <div className="max-w-6xl mx-auto px-4 text-center relative z-10">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4">
-            Ready to Transform Your Hospital Operations?
-          </h2>
-          <p className="text-white/90 text-base md:text-lg mb-6 md:mb-8">
-            Join 50+ healthcare facilities already using DCM Hospital Management
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <a 
-              href="/contact" 
-              className="group inline-flex items-center gap-2 bg-white text-blue-700 px-5 md:px-6 py-3 rounded-xl font-medium hover:bg-gray-50 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-            >
-              Request Demo
-              <ArrowRight size={16} className="md:w-5 md:h-5 group-hover:translate-x-1 transition-transform" />
-            </a>
-            <a 
-              href="/pricing" 
-              className="group inline-flex items-center gap-2 border-2 border-white px-5 md:px-6 py-3 rounded-xl font-medium hover:bg-white hover:text-blue-700 transition-all duration-300 transform hover:scale-105"
-            >
-              View Pricing
-            </a>
-          </div>
-        </div>
-      </section>
 
       {/* Benefits Section with White Background and Blue Cards */}
       <section className="py-12 md:py-10 bg-white">
@@ -1434,7 +1349,8 @@ export default function Home() {
               Transform Your Hospital Operations
             </h2>
             <p className="text-gray-600 text-base md:text-lg">
-              Experience measurable improvements across all departments
+              Experience measurable improvements across all departments.
+              Our platform enhances patient care quality while optimizing resource utilization and operational workflows for maximum efficiency.
             </p>
           </div>
 
@@ -1443,19 +1359,19 @@ export default function Home() {
               { 
                 icon: TrendingUp, 
                 title: "45% Faster Operations", 
-                desc: "Reduce administrative time and focus on patient care",
+                desc: "Reduce administrative time and focus on patient care with automated workflows and streamlined processes.",
                 gradient: "from-blue-500 to-blue-600"
               },
               { 
                 icon: Award, 
                 title: "99.9% System Uptime", 
-                desc: "Reliable cloud infrastructure with zero downtime",
+                desc: "Reliable cloud infrastructure with zero downtime ensures uninterrupted hospital operations 24/7.",
                 gradient: "from-blue-600 to-cyan-500"
               },
               { 
                 icon: Clock, 
                 title: "60% Time Savings", 
-                desc: "Automate routine tasks and streamline workflows",
+                desc: "Automate routine tasks and streamline workflows to free up staff for critical patient care activities.",
                 gradient: "from-cyan-500 to-blue-500"
               },
             ].map(({ icon: Icon, title, desc, gradient }) => (

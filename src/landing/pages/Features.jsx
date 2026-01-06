@@ -1733,8 +1733,8 @@ export default function Features() {
       </section>
 
       {/* Features Grid - Clickable Cards */}
-      <section className="py-10 bg-white px-4">
-        <div className="max-w-7xl mx-auto px-8">
+      <section className="py-10 bg-white px-4 sm:px-2">
+        <div className="max-w-7xl mx-auto md:px-8 sm:px-4">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
               Comprehensive Feature Suite
@@ -1767,7 +1767,7 @@ export default function Features() {
 
       {/* Benefits Section */}
       <section className="py-10 px-4 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-8">
+        <div className="max-w-7xl mx-auto md:px-8">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
               Why Choose DCM Hospital Management?
@@ -1788,7 +1788,7 @@ export default function Features() {
       </section>
       
       {/* Detailed Features Section */}
-      <section className="py-10 px-8 bg-gradient-to-br from-gray-50 to-white">
+      <section className="py-10 md:px-8 bg-gradient-to-br from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -1882,7 +1882,7 @@ export default function Features() {
       </section>
 
       {/* Technology Stack */}
-      <section className="py-10 bg-white px-8">
+      <section className="py-10 bg-white md:px-8">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
@@ -1943,7 +1943,7 @@ function AnimatedFeatureCard({ feature, index, isHovered, onHover, onLeave }) {
           
           {/* Features List with Staggered Animation */}
           <div className="space-y-2.5 mt-4">
-            {feature.additionalPoints && feature.additionalPoints.slice(0, 3).map((point, idx) => (
+            {feature.additionalPoints && feature.additionalPoints.slice(0, 4).map((point, idx) => (
               <div 
                 key={idx} 
                 className="flex items-center gap-3 opacity-70 group-hover:opacity-100 transition-opacity duration-500"
@@ -1957,20 +1957,20 @@ function AnimatedFeatureCard({ feature, index, isHovered, onHover, onLeave }) {
         </div>
 
         {/* Elegant Divider */}
-        <div className="my-6 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent group-hover:via-blue-200 transition-all duration-500"></div>
+        <div className="my-3 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent group-hover:via-blue-200 transition-all duration-500"></div>
 
         {/* Stats with Click Indicator */}
         <div className="flex items-center justify-between mt-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-full group-hover:from-blue-100 group-hover:to-cyan-100 transition-all duration-400">
+          {/* <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-full group-hover:from-blue-100 group-hover:to-cyan-100 transition-all duration-400">
             <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${feature.color} text-white flex items-center justify-center`}>
               <TrendingUp size={14} />
             </div>
             <span className="font-semibold text-blue-700 text-sm">{feature.stats}</span>
-          </div>
+          </div> */}
           
           {/* Click indicator */}
-          <div className="flex items-center gap-1 text-sm text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <span className="text-xs">Details</span>
+          <div className="flex items-center gap-1 text-sm text-blue-600 opacity-200 group-hover:opacity-100 transition-opacity duration-300 mt-3">
+            <span className="text-sm">Details</span>
             <ChevronRight className="w-4 h-4" />
           </div>
         </div>

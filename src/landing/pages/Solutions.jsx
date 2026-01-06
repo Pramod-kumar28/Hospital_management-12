@@ -647,7 +647,7 @@ const Solutions = () => {
       </section>
 
       {/* Key Features - Now with horizontal scrolling on mobile */}
-      <section className="py-12 sm:py-16 lg:py-10 bg-white px-8">
+      <section className="py-12 sm:py-16 lg:py-10 bg-white md:px-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
@@ -682,7 +682,7 @@ const Solutions = () => {
       </section>
 
       {/* Solutions Grid */}
-      <section className="py-12 sm:py-16 lg:py-10 bg-gray-50 px-8">
+      <section className="py-12 sm:py-16 lg:py-10 bg-gray-50 md:px-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
@@ -774,7 +774,7 @@ const Solutions = () => {
 
       {/* Integration Section */}
       <section className="py-12 sm:py-16 lg:py-10 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-4 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
               Seamless Integration Ecosystem

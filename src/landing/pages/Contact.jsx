@@ -540,7 +540,7 @@ export default function Contact() {
             <ContactInfoCard
               icon={<Mail className="w-5 h-5" />}
               title="Email Us"
-              content="info@careermetrics.com"
+              content="hr@designcareermetrics.com"
               subContent="support@careermetrics.com"
               bgColor="bg-gradient-to-br from-blue-500 to-cyan-500"
               hoverBgColor="hover:from-blue-600 hover:to-cyan-600"
@@ -551,7 +551,7 @@ export default function Contact() {
             <ContactInfoCard
               icon={<Phone className="w-5 h-5" />}
               title="Call Us"
-              content="Sales: +91 1800-123-4567"
+              content="Sales: +91 7337572543"
               subContent="Support: +91 1800-123-4568"
               bgColor="bg-gradient-to-br from-green-500 to-emerald-500"
               hoverBgColor="hover:from-green-600 hover:to-emerald-600"
@@ -563,7 +563,7 @@ export default function Contact() {
               icon={<MapPin className="w-5 h-5" />}
               title="Visit Us"
               content="Design Career Metrics Pvt Ltd"
-              subContent="Hyderabad, Telangana 500081"
+              subContent="Office #407 &409 4th Floor, Jain Sadguru Image's Capital Park, Madhapur,Hyderabad"
               bgColor="bg-gradient-to-br from-purple-500 to-pink-500"
               hoverBgColor="hover:from-purple-600 hover:to-pink-600"
               buttonText="Get Directions"
@@ -596,7 +596,7 @@ export default function Contact() {
               }}></div>
             </div>
             
-            <div className="relative p-8">
+            <div className="relative p-4 md:p-8">
               <div className="text-center mb-8">
                 <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 bg-gradient-to-r from-gray-900 to-blue-900 bg-clip-text text-transparent">
                   Send Us a Message

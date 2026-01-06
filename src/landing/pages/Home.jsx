@@ -2360,31 +2360,6 @@ export default function Home() {
     setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides);
   };
 
-  // ----- Partners -----
-  const partners = [
-    {
-      name: "Apollo Hospitals",
-      location: "Hyderabad, Telangana",
-      img: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      quote: '"DCM\'s patient management system has reduced our administrative workload by 40% across Hyderabad branches."',
-      author: "- Dr. Rajesh Kumar, Chief Medical Officer",
-    },
-    {
-      name: "Yashoda Hospitals",
-      location: "Hyderabad, Telangana",
-      img: "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      quote: '"The pharmacy management module has optimized our inventory, reducing medication waste by 25% in Hyderabad."',
-      author: "- Ms. Priya Sharma, Hospital Administrator",
-    },
-    {
-      name: "KIMS Hospitals",
-      location: "Hyderabad, Telangana",
-      img: "https://images.unsplash.com/photo-1551601651-2a8555f1a136?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      quote: '"As a multi-location hospital in Hyderabad, DCM\'s centralized reporting gives us complete real-time visibility."',
-      author: "- Dr. Amit Patel, Medical Director",
-    },
-  ];
-
   // ----- Comparison Data -----
   const comparisonData = [
     {
@@ -2796,7 +2771,7 @@ export default function Home() {
         to="/features" 
         className="group inline-flex items-center justify-center rounded-xl px-8 py-4 text-base font-semibold bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
       >
-        Explore All Modules
+        Explore All features
         <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
       </Link>
     </div>

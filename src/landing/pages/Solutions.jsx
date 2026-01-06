@@ -617,13 +617,13 @@ const Solutions = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-50 to-white py-12 sm:py-12 lg:py-14 mt-12">
+      <section className="bg-gradient-to-br from-blue-50 to-blue-50 py-12 sm:py-12 lg:py-14 mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 mb-4 sm:mb-6">
+            <h1 className="text-3xl sm:text-2xl lg:text-4xl xl:text-5xl font-bold text-gray-900 mb-4 sm:mb-6">
               Comprehensive Healthcare Solutions
             </h1>
-            <p className="text-lg sm:text-xl lg:text-2xl text-gray-600 mb-6 sm:mb-8 leading-relaxed">
+            <p className="text-lg sm:text-xl lg:text-xl text-gray-600 mb-6 sm:mb-8 leading-relaxed">
               Transform your healthcare facility with our integrated hospital management platform. 
               Streamline operations, enhance patient care, and drive sustainable growth.
             </p>

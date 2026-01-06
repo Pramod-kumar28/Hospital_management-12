@@ -1617,7 +1617,6 @@ import {
   Smartphone, Globe, Lock, Award, Clock, TrendingUp, Key,
   ClipboardCheck, Smartphone as Mobile, Users as UserCheck
 } from "lucide-react";
-import ChatBot from './ChatBot';
 import { featureDetails } from '../../utils/featureDetails';
 
 export default function Features() {
@@ -1900,7 +1899,6 @@ export default function Features() {
           </div>
         </div>
       </section>
-      <ChatBot/>
     </div>
   );
 }

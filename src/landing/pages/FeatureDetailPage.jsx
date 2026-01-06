@@ -364,7 +364,6 @@ import {
   TrendingUp, Award, Calendar, FileText, Database, Cloud, Server
 } from 'lucide-react';
 import { featureDetails } from '../../utils/featureDetails';
-import ChatBot from './ChatBot';
 
 export default function FeatureDetailPage() {
   const { featureId } = useParams();
@@ -663,7 +662,6 @@ export default function FeatureDetailPage() {
           </div>
         </section>
 
-        <ChatBot />
       </div>
     </>
   );

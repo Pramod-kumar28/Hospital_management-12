@@ -259,6 +259,7 @@ import Signup from '../landing/pages/Signup.jsx'
 import LabDashboard from '../pages/dashboards/LabDashboard/LabDashboard.jsx'
 import ForgotPassword from '../landing/pages/Forgotpassword.jsx'
 import FeatureDetailPage from '../landing/pages/FeatureDetailPage.jsx'
+import Download from '../landing/pages/Download.jsx'
 
 const AppRoutes = () => {
   const { isAuthenticated, user } = useSelector(state => state.auth)
@@ -291,6 +292,7 @@ const AppRoutes = () => {
         <Route path="/login" element={!isAuthenticated ? <LoginPage /> : <Navigate to={getDefaultRoute()} replace />} />
         <Route path="/signup" element={<Signup />} />
         <Route path='/forgot-password' element={<ForgotPassword />} />
+        <Route path='/download' element={<Download/>} />
       </Route>
       
       {/* App Authentication Routes */}

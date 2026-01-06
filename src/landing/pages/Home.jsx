@@ -2184,7 +2184,6 @@ import {
   Quote, Star, MapPin, Facebook, Twitter, Linkedin, Instagram, Youtube, X,
   Award, TrendingUp, Clock, Smartphone, Database, Cloud, Server, ChevronLeft, ChevronRight
 } from "lucide-react";
-import ChatBot from "./ChatBot";
 import { Link } from "react-router-dom";
 
 export default function Home() {
@@ -3172,7 +3171,6 @@ export default function Home() {
         <div className="text-sm text-gray-300">Thank you for contacting us. We will get back to you within 24 hours.</div>
       </div>
 
-      <ChatBot/>
     </>
   );
 }

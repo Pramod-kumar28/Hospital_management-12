@@ -2520,19 +2520,19 @@ export default function Home() {
               </p>
 
               <div className="flex flex-wrap gap-3 mb-6">
-                <a 
-                  href="/contact" 
+                <Link 
+                  to="/contact" 
                   className="group inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                 >
                   Request Demo
                   <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                </a>
-                <a 
-                  href="/features" 
+                </Link>
+                <Link 
+                  to="/features" 
                   className="group inline-flex items-center px-6 py-3 rounded-xl border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300 transform hover:scale-105"
                 >
                   View Features
-                </a>
+                </Link>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 text-gray-600">
@@ -2628,19 +2628,19 @@ export default function Home() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">
-          <a 
-            href="/features" 
+          <Link 
+            to="/features" 
             className="group inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 shadow-lg hover:shadow-xl transition-all duration-300"
           >
             View All Features
             <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-          </a>
-          <a 
-            href="/contact" 
+          </Link>
+          <Link 
+            href="/download" 
             className="group inline-flex items-center px-6 py-3 rounded-xl border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300"
           >
             Download App Now
-          </a>
+          </Link>
         </div>
 
       </div>
@@ -3093,13 +3093,13 @@ export default function Home() {
           <p className="text-gray-600 mb-4 text-base">
             Ready to upgrade to modern hospital management?
           </p>
-          <a
-            href="/contact"
+          <Link
+            to="/contact"
             className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
           >
             Start Free Trial
             <ArrowRight size={20} />
-          </a>
+          </Link>
         </div>
       </div>
     </div>

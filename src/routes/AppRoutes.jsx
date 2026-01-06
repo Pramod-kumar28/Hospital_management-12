@@ -258,6 +258,7 @@ import Contact from '../landing/pages/Contact.jsx'
 import Signup from '../landing/pages/Signup.jsx'
 import LabDashboard from '../pages/dashboards/LabDashboard/LabDashboard.jsx'
 import ForgotPassword from '../landing/pages/Forgotpassword.jsx'
+import FeatureDetailPage from '../landing/pages/FeatureDetailPage.jsx'
 
 const AppRoutes = () => {
   const { isAuthenticated, user } = useSelector(state => state.auth)
@@ -283,6 +284,7 @@ const AppRoutes = () => {
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
         <Route path="/features" element={<Features />} />
+        <Route path="/features/:featureId" element={<FeatureDetailPage />} />
         <Route path="/solutions" element={<Solutions />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/contact" element={<Contact />} />

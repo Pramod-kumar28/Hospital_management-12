@@ -2185,6 +2185,7 @@ import {
   Award, TrendingUp, Clock, Smartphone, Database, Cloud, Server, ChevronLeft, ChevronRight
 } from "lucide-react";
 import ChatBot from "./ChatBot";
+import { Link } from "react-router-dom";
 
 export default function Home() {
   const [isVisible, setIsVisible] = useState(false);
@@ -2358,31 +2359,6 @@ export default function Home() {
   const prevSlide = () => {
     setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides);
   };
-
-  // ----- Partners -----
-  const partners = [
-    {
-      name: "Apollo Hospitals",
-      location: "Hyderabad, Telangana",
-      img: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      quote: '"DCM\'s patient management system has reduced our administrative workload by 40% across Hyderabad branches."',
-      author: "- Dr. Rajesh Kumar, Chief Medical Officer",
-    },
-    {
-      name: "Yashoda Hospitals",
-      location: "Hyderabad, Telangana",
-      img: "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      quote: '"The pharmacy management module has optimized our inventory, reducing medication waste by 25% in Hyderabad."',
-      author: "- Ms. Priya Sharma, Hospital Administrator",
-    },
-    {
-      name: "KIMS Hospitals",
-      location: "Hyderabad, Telangana",
-      img: "https://images.unsplash.com/photo-1551601651-2a8555f1a136?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      quote: '"As a multi-location hospital in Hyderabad, DCM\'s centralized reporting gives us complete real-time visibility."',
-      author: "- Dr. Amit Patel, Medical Director",
-    },
-  ];
 
   // ----- Comparison Data -----
   const comparisonData = [
@@ -2593,7 +2569,7 @@ export default function Home() {
       </section>
 
       {/* Mobile Application Section */}
-<section className="py-12 md:py-10 bg-gradient-to-br from-blue-50 to-cyan-50 relative overflow-hidden">
+<section className="py-12 md:py-10 relative overflow-hidden">
   {/* Background Medical Icons */}
   <div className="absolute top-10 left-5% opacity-5 animate-pulse">
     <Smartphone className="w-12 h-12 md:w-16 md:h-16 text-blue-400" />
@@ -2695,147 +2671,251 @@ export default function Home() {
   </div>
 </section>
 
-      {/* Features Preview with Health Animations - Only 3 Cards */}
-      <section className="py-12 md:py-10 bg-gradient-to-br from-blue-50 to-cyan-50 relative overflow-hidden" id="features-preview">
-        {/* Enhanced Medical Background Animations */}
-        <div className="absolute top-10 left-5% opacity-5 animate-pulse">
-          <Heart className="w-8 h-8 md:w-12 md:h-12 text-red-400" />
-        </div>
-        <div className="absolute bottom-10 right-5% opacity-5 animate-bounce delay-500">
-          <Stethoscope className="w-10 h-10 md:w-14 md:h-14 text-blue-400" />
-        </div>
-        <div className="absolute top-1/2 left-10% opacity-5 animate-pulse delay-1000">
-          <Activity className="w-6 h-6 md:w-10 md:h-10 text-green-400" />
-        </div>
-        <div className="absolute bottom-1/3 right-15% opacity-5 animate-bounce delay-700">
-          <Pill className="w-8 h-8 md:w-12 md:h-12 text-purple-400" />
-        </div>
-
-        <div className="max-w-6xl mx-auto px-4 relative z-10">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              Complete Hospital Management Suite
-            </h2>
-            <p className="text-gray-600 text-base md:text-lg">
-              Everything you need to run a modern healthcare facility efficiently.
-              Our comprehensive platform integrates all hospital operations for seamless workflow.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-            {[
-              { 
-                icon: Users, 
-                title: "Patient Management", 
-                desc: "Comprehensive patient registration, medical history, and appointment scheduling.",
-                delay: "0"
-              },
-              { 
-                icon: Stethoscope, 
-                title: "Doctor Portal", 
-                desc: "Secure doctor dashboard with digital prescriptions and patient records access.",
-                delay: "100"
-              },
-              { 
-                icon: CreditCard, 
-                title: "Billing & Accounts", 
-                desc: "Complete financial management with insurance claims and revenue reconciliation.",
-                delay: "200"
-              },
-            ].map(({ icon: Icon, title, desc, delay }) => (
-              <div 
-  key={title} 
-  className="group bg-white/80 backdrop-blur-sm p-6 md:p-8 rounded-2xl shadow-xl border border-white/20 hover:bg-white hover:shadow-2xl transition-all duration-500 relative overflow-hidden"
->
-  {/* Glassmorphism Overlay */}
-  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-  
-  {/* Animated Background Pattern */}
-  <div className="absolute inset-0 opacity-5">
-    <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,blue_1px,transparent_0)] bg-[length:40px_40px]"></div>
+{/* Features Modules - Continuous Scrolling */}
+<section className="py-12 md:py-10 bg-gradient-to-br from-blue-50 to-cyan-50 relative overflow-hidden" id="features-modules">
+  {/* Background Animations */}
+  <div className="absolute top-10 left-5% opacity-5 animate-pulse">
+    <Heart className="w-8 h-8 md:w-12 md:h-12 text-red-400" />
   </div>
-  
-  <div className="relative z-10">
-    <span className="inline-flex items-center justify-center w-14 h-14 md:w-16 md:h-16 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white mb-4 group-hover:scale-110 group-hover:shadow-lg transition-all duration-500 shadow-md backdrop-blur-sm">
-      <Icon size={24} className="md:w-7 md:h-7" />
-    </span>
+  <div className="absolute bottom-10 right-5% opacity-5 animate-bounce delay-500">
+    <Stethoscope className="w-10 h-10 md:w-14 md:h-14 text-blue-400" />
+  </div>
+
+  <div className="max-w-7xl mx-auto px-4 relative z-10">
+    <div className="text-center max-w-2xl mx-auto mb-12">
+      <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+        Complete Hospital Management Suite
+      </h2>
+      <p className="text-gray-600 text-base md:text-lg">
+        Everything you need to run a modern healthcare facility efficiently.
+        Our comprehensive platform integrates all hospital operations for seamless workflow.
+      </p>
+    </div>
+
+    {/* Scrolling Modules Container */}
+    <div className="relative">
+      {/* Left Gradient Fade */}
+      <div className="absolute left-0 top-0 bottom-0 w-20 md:w-32 bg-gradient-to-r from-blue-50 to-transparent z-10 pointer-events-none"></div>
+      
+      {/* Right Gradient Fade */}
+      <div className="absolute right-0 top-0 bottom-0 w-20 md:w-32 bg-gradient-to-l from-cyan-50 to-transparent z-10 pointer-events-none"></div>
+
+      {/* Continuous Scrolling Cards */}
+      <div className="overflow-x-auto md:overflow-hidden">
+        <div className="flex min-w-max desktop-scroll">
+          {/* First Set */}
+          {[
+            { icon: Users, title: "Hospital Admin", desc: "Department, staff & performance management", number: "2.2" },
+            { icon: Heart, title: "Patient Management", desc: "Registration, scheduling & medical history", number: "2.3" },
+            { icon: Stethoscope, title: "Doctor Portal", desc: "Secure access & digital prescriptions", number: "2.4" },
+            { icon: CreditCard, title: "Billing & Accounts", desc: "Financial management & insurance claims", number: "2.5" },
+            { icon: Pill, title: "Pharmacy Management", desc: "Inventory control & sales tracking", number: "2.6" },
+            { icon: FlaskConical, title: "Lab Management", desc: "Lab workflows & test result processing", number: "2.7" },
+            { icon: Video, title: "Telemedicine", desc: "Secure video consultations & remote care", number: "2.8" },
+            { icon: TrendingUp, title: "Analytics & Reporting", desc: "Real-time insights & performance tracking", number: "2.9" },
+          ].map(({ icon: Icon, title, desc, number }) => (
+            <div key={title} className="flex-shrink-0 w-64 md:w-72 mx-2">
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-blue-100 hover:shadow-xl hover:border-blue-300 transition-all duration-300 p-6 h-full">
+                
+                <div className="pt-2">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center mb-4">
+                    <Icon className="w-7 h-7 text-blue-600" />
+                  </div>
+                  
+                  <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2">{title}</h3>
+                  <p className="text-gray-600 text-sm md:text-base">{desc}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {/* Duplicate Set for Continuous Scroll */}
+          {[
+            { icon: Users, title: "Hospital Admin", desc: "Department, staff & performance management", number: "2.2" },
+            { icon: Heart, title: "Patient Management", desc: "Registration, scheduling & medical history", number: "2.3" },
+            { icon: Stethoscope, title: "Doctor Portal", desc: "Secure access & digital prescriptions", number: "2.4" },
+            { icon: CreditCard, title: "Billing & Accounts", desc: "Financial management & insurance claims", number: "2.5" },
+            { icon: Pill, title: "Pharmacy Management", desc: "Inventory control & sales tracking", number: "2.6" },
+            { icon: FlaskConical, title: "Lab Management", desc: "Lab workflows & test result processing", number: "2.7" },
+            { icon: Video, title: "Telemedicine", desc: "Secure video consultations & remote care", number: "2.8" },
+            { icon: TrendingUp, title: "Analytics & Reporting", desc: "Real-time insights & performance tracking", number: "2.9" },
+          ].map(({ icon: Icon, title, desc, number }, index) => (
+            <div key={`${title}-${index}`} className="flex-shrink-0 w-64 md:w-72 mx-2">
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-blue-100 hover:shadow-xl hover:border-blue-300 transition-all duration-300 p-6 h-full">
+                
+                <div className="pt-2">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center mb-4">
+                    <Icon className="w-7 h-7 text-blue-600" />
+                  </div>
+                  
+                  <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2">{title}</h3>
+                  <p className="text-gray-600 text-sm md:text-base">{desc}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    {/* Mobile Instructions */}
+    <div className="md:hidden text-center mt-6">
+      <div className="inline-flex items-center gap-2 text-blue-600 bg-blue-100 px-4 py-2 rounded-full">
+        <span className="text-sm font-medium">← Swipe to explore modules →</span>
+      </div>
+    </div>
+
+    {/* CTA Button */}
+    <div className="text-center mt-12">
+      <Link 
+        to="/features" 
+        className="group inline-flex items-center justify-center rounded-xl px-8 py-4 text-base font-semibold bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+      >
+        Explore All features
+        <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
+      </Link>
+    </div>
+  </div>
+
+  <style>{`
+    @keyframes scroll {
+      0% {
+        transform: translateX(0);
+      }
+      100% {
+        transform: translateX(-50%);
+      }
+    }
     
-    <h3 className="text-xl md:text-2xl font-bold mb-3 text-gray-900 group-hover:text-blue-700 transition-colors duration-300">{title}</h3>
-    <p className="text-gray-600 text-base md:text-lg leading-relaxed group-hover:text-gray-800 transition-colors duration-300">{desc}</p>
-  </div>
-  
-  {/* Floating Particles */}
-  <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl blur opacity-0 group-hover:opacity-20 transition-opacity duration-500 -z-10"></div>
-</div>
+    /* Desktop animation */
+    @media (min-width: 768px) {
+      .desktop-scroll {
+        animation: scroll 40s linear infinite;
+        width: max-content;
+      }
+      
+      .desktop-scroll:hover {
+        animation-play-state: paused;
+      }
+    }
+    
+    /* Mobile scrollbar hide */
+    .overflow-x-auto {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .overflow-x-auto::-webkit-scrollbar {
+      display: none;
+    }
+  `}</style>
+</section>
+
+<section className="py-8 md:py-20 bg-white">
+  <div className="max-w-6xl mx-auto px-4">
+    <div className="grid md:grid-cols-2 gap-8 md:gap-16 items-center">
+      {/* Image on Left - Hidden on mobile, shown on md and above */}
+      <div className="hidden md:block relative">
+        <img
+          alt="Healthcare Technology"
+          className="w-full rounded-2xl shadow-2xl border-4 border-white/20 transform hover:scale-105 transition-transform duration-500"
+          src="https://images.unsplash.com/photo-1586773860418-d37222d8fce3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+        />
+      </div>
+
+      {/* Content on Right */}
+      <div>
+        <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 md:mb-6">
+          Why Healthcare Facilities <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-800">Choose DCM</span>
+        </h2>
+        <p className="text-base md:text-lg text-gray-600 mb-6 md:mb-8">
+          Built with modern technology and healthcare expertise to deliver the best experience for hospitals,
+          doctors, and patients across India.
+        </p>
+
+        {/* Mobile View - Cards (only on small screens) */}
+        <div className="md:hidden">
+          <div className="space-y-4">
+            {whyChooseItems.map((item, idx) => (
+              <div 
+                key={idx} 
+                className="bg-gradient-to-br from-blue-50 to-white p-4 rounded-xl border border-blue-100 hover:border-blue-300 transition-all duration-300"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center flex-shrink-0">
+                    <item.icon size={20} />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-gray-900 mb-1">{item.title}</h3>
+                    <p className="text-gray-600 text-sm">{item.sub}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Mobile Image - Shown below cards on mobile */}
+          <div className="mt-8">
+            <img
+              alt="Healthcare Technology"
+              className="w-full rounded-xl shadow-lg border-4 border-white/20"
+              src="https://images.unsplash.com/photo-1586773860418-d37222d8fce3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+            />
+          </div>
+        </div>
+
+        {/* Desktop/Tablet View - Carousel (hidden on mobile) */}
+        <div className="hidden md:block relative">
+          {/* Scrollable Container */}
+          <div 
+            ref={whyChooseScrollRef}
+            className="flex overflow-x-auto pb-8 snap-x snap-mandatory scrollbar-hide space-x-6"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {whyChooseItems.map((item, idx) => (
+              <div 
+                key={idx} 
+                className="flex-shrink-0 w-full snap-center p-6 md:p-8 rounded-2xl cursor-pointer hover:border-blue-300 transition-all duration-300 group"
+              >
+                <div className="relative z-10 text-center">
+                  <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center mb-4 md:mb-6 shadow-lg mx-auto group-hover:scale-110 transition-transform duration-300">
+                    <item.icon size={24} className="md:w-8 md:h-8" />
+                  </div>
+                  <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 group-hover:text-blue-600 transition-colors duration-300">{item.title}</h3>
+                  <p className="text-gray-600 text-base md:text-lg leading-relaxed">{item.sub}</p>
+                </div>
+              </div>
             ))}
           </div>
 
-          <div className="text-center mt-10">
-            <a 
-              href="/features" 
-              className="group inline-flex items-center justify-center rounded-xl px-8 py-4 text-base font-semibold bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-            >
-              View All Features
-              <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
-            </a>
+          {/* Navigation Dots */}
+          <div className="flex justify-center gap-3 mt-6">
+            {whyChooseItems.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleWhyChooseDotClick(idx)}
+                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                  idx === currentWhyChoose 
+                    ? 'bg-blue-600 w-6 md:w-8' 
+                    : 'bg-blue-300 hover:bg-blue-400'
+                }`}
+              />
+            ))}
           </div>
         </div>
-      </section>
+      </div>
+    </div>
+  </div>
 
-<section className="py-8 md:py-10 bg-white">
-         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-           <div className="grid lg:grid-cols-2 gap-8 md:gap-16 items-center">
-             {/* Image */}
-             <div className="order-2 lg:order-1">
-               <img
-                 alt="Healthcare Technology"
-                 className="w-full rounded-xl md:rounded-2xl shadow-lg border-4 border-white/20 transform hover:scale-105 transition-transform duration-500"
-                 src="https://images.unsplash.com/photo-1586773860418-d37222d8fce3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
-               />
-            </div>
-             {/* Content */}
-             <div className="order-1 lg:order-2">
-               <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 md:mb-6">
-                 Why Healthcare Facilities <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-800">Choose DCM</span>
-               </h2>
-               <p className="text-gray-600 text-base md:text-lg mb-6 md:mb-8">
-                 Built with modern technology and healthcare expertise to deliver the best experience for hospitals,
-                 doctors, and patients across India.
-               </p>
-               {/* Grid of features instead of carousel for better mobile UX */}
-               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-                 {whyChooseItems.slice(0, 4).map((item, idx) => (
-                   <div 
-                     key={idx} 
-                     className="bg-gradient-to-br from-blue-50 to-white p-4 rounded-xl border border-blue-100 hover:border-blue-300 transition-all duration-300 group"
-                   >
-                     <div className="flex items-start gap-3">
-                       <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
-                         <item.icon size={20} />
-                       </div>
-                       <div>
-                         <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors duration-300">{item.title}</h3>
-                         <p className="text-gray-600 text-xs md:text-sm">{item.sub}</p>
-                       </div>
-                     </div>
-                   </div>
-                 ))}
-               </div>
-
-               {/* Show more button for mobile */}
-               <div className="mt-6 flex lg:hidden">
-                 <a 
-                   href="/why-choose-us" 
-                   className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
-                 >
-                   View all benefits
-                   <ArrowRight size={16} />
-                 </a>
-               </div>
-             </div>
-           </div>
-         </div>
-       </section>
+  <style jsx>{`
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+  `}</style>
+</section>
 
 
       {/* Benefits Section with White Background and Blue Cards */}

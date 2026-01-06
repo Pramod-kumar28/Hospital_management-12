@@ -617,13 +617,13 @@ const Solutions = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-50 to-white py-12 sm:py-12 lg:py-14 mt-12">
+      <section className="bg-gradient-to-br from-blue-50 to-blue-50 py-12 sm:py-12 lg:py-14 mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 mb-4 sm:mb-6">
+            <h1 className="text-3xl sm:text-2xl lg:text-4xl xl:text-5xl font-bold text-gray-900 mb-4 sm:mb-6">
               Comprehensive Healthcare Solutions
             </h1>
-            <p className="text-lg sm:text-xl lg:text-2xl text-gray-600 mb-6 sm:mb-8 leading-relaxed">
+            <p className="text-lg sm:text-xl lg:text-xl text-gray-600 mb-6 sm:mb-8 leading-relaxed">
               Transform your healthcare facility with our integrated hospital management platform. 
               Streamline operations, enhance patient care, and drive sustainable growth.
             </p>
@@ -646,43 +646,8 @@ const Solutions = () => {
         </div>
       </section>
 
-      {/* Key Features - Now with horizontal scrolling on mobile */}
-      <section className="py-12 sm:py-16 lg:py-10 bg-white px-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
-              Built for Modern Healthcare
-             </h2>
-            <p className="text-base sm:text-lg text-gray-600">
-              Our platform is specifically designed to meet the unique challenges and requirements of today's healthcare environment
-            </p>
-          </div>
-
-          {/* Horizontal scrolling container for mobile, grid for larger screens */}
-          <div className="flex overflow-x-auto pb-6 sm:pb-0 sm:grid sm:grid-cols-2 lg:grid-cols-6 sm:gap-6 lg:gap-4 hide-scrollbar">
-            {features.map((feature, index) => (
-              <div 
-                key={index} 
-                className="min-w-[280px] sm:min-w-0 bg-gray-50 rounded-xl p-6 text-center hover:shadow-lg transition-all duration-300 border border-gray-100 flex-shrink-0 sm:flex-shrink mr-4 sm:mr-0 last:mr-0"
-              >
-                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <feature.icon className="w-6 h-6 sm:w-7 sm:h-7 text-blue-600" />
-                </div>
-                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">{feature.title}</h3>
-                <p className="text-sm sm:text-base text-gray-600 leading-relaxed">{feature.description}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Scroll indicator for mobile */}
-          <div className="sm:hidden text-center mt-4">
-            <p className="text-xs text-gray-500">Scroll horizontally to view all features</p>
-          </div>
-        </div>
-      </section>
-
       {/* Solutions Grid */}
-      <section className="py-12 sm:py-16 lg:py-10 bg-gray-50 px-8">
+      <section className="py-12 sm:py-16 lg:py-10 bg-gray-50 md:px-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
@@ -774,7 +739,7 @@ const Solutions = () => {
 
       {/* Integration Section */}
       <section className="py-12 sm:py-16 lg:py-10 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-4 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
               Seamless Integration Ecosystem
@@ -814,7 +779,7 @@ const Solutions = () => {
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
                   {[
                     { icon: Users, label: "Patient Portal" },
-                    { icon: Stethoscope, label: "EHR System" },
+                    { icon: Stethoscope, label: "Doctor Portal" },
                     { icon: CreditCard, label: "Billing" },
                     { icon: Pill, label: "Pharmacy" },
                     { icon: FlaskConical, label: "Laboratory" },

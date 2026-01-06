@@ -2181,10 +2181,9 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity, Menu, Zap, ArrowRight, CheckCircle2, Building2, Users, Heart, Calendar,
   Stethoscope, CreditCard, Pill, FlaskConical, Video, Shield, Globe, Lock,
-  Quote, Star, MapPin, Facebook, Twitter, Linkedin, Instagram, Youtube, X,
+  Quote, Star, MapPin, Facebook, Twitter, Linkedin, Instagram, Youtube, X,BarChart3,
   Award, TrendingUp, Clock, Smartphone, Database, Cloud, Server, ChevronLeft, ChevronRight
 } from "lucide-react";
-import ChatBot from "./ChatBot";
 import { Link } from "react-router-dom";
 
 export default function Home() {
@@ -2672,7 +2671,7 @@ export default function Home() {
 </section>
 
 {/* Features Modules - Continuous Scrolling */}
-<section className="py-12 md:py-10 bg-gradient-to-br from-blue-50 to-cyan-50 relative overflow-hidden" id="features-modules">
+<section className="py-12 md:py-10 relative overflow-hidden" id="features-modules">
   {/* Background Animations */}
   <div className="absolute top-10 left-5% opacity-5 animate-pulse">
     <Heart className="w-8 h-8 md:w-12 md:h-12 text-red-400" />
@@ -2705,24 +2704,28 @@ export default function Home() {
         <div className="flex min-w-max desktop-scroll">
           {/* First Set */}
           {[
-            { icon: Users, title: "Hospital Admin", desc: "Department, staff & performance management", number: "2.2" },
-            { icon: Heart, title: "Patient Management", desc: "Registration, scheduling & medical history", number: "2.3" },
-            { icon: Stethoscope, title: "Doctor Portal", desc: "Secure access & digital prescriptions", number: "2.4" },
-            { icon: CreditCard, title: "Billing & Accounts", desc: "Financial management & insurance claims", number: "2.5" },
-            { icon: Pill, title: "Pharmacy Management", desc: "Inventory control & sales tracking", number: "2.6" },
-            { icon: FlaskConical, title: "Lab Management", desc: "Lab workflows & test result processing", number: "2.7" },
-            { icon: Video, title: "Telemedicine", desc: "Secure video consultations & remote care", number: "2.8" },
-            { icon: TrendingUp, title: "Analytics & Reporting", desc: "Real-time insights & performance tracking", number: "2.9" },
-          ].map(({ icon: Icon, title, desc, number }) => (
+            { icon: Building2, title: "Hospital Admin", desc: "Department, staff & performance management", color: "from-gray-600 to-gray-800" },
+            { icon: Users, title: "Patient Management", desc: "Registration, scheduling & medical history", color: "from-blue-500 to-cyan-500" },
+            { icon: Stethoscope, title: "Doctor Portal", desc: "Secure access & digital prescriptions", color: "from-green-500 to-emerald-500" },
+            { icon: CreditCard, title: "Billing & Accounts", desc: "Financial management & insurance claims", color: "from-purple-500 to-pink-500" },
+            { icon: Pill, title: "Pharmacy Management", desc: "Inventory control & sales tracking", color: "from-orange-500 to-red-500" },
+            { icon: FlaskConical, title: "Lab Management", desc: "Lab workflows & test result processing", color: "from-indigo-500 to-blue-500" },
+            { icon: Video, title: "Telemedicine", desc: "Secure video consultations & remote care", color: "from-teal-500 to-green-500" },
+            { icon: BarChart3, title: "Analytics & Reporting", desc: "Real-time insights & performance tracking", color: "from-cyan-500 to-blue-500" },
+          ].map(({ icon: Icon, title, desc, color }) => (
             <div key={title} className="flex-shrink-0 w-64 md:w-72 mx-2">
               <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-blue-100 hover:shadow-xl hover:border-blue-300 transition-all duration-300 p-6 h-full">
                 
-                <div className="pt-2">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center mb-4">
-                    <Icon className="w-7 h-7 text-blue-600" />
+                {/* Icon and Title in one line */}
+                <div className="flex items-center gap-3 mb-2">
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center flex-shrink-0`}>
+                    <Icon className="w-6 h-6 text-white" />
                   </div>
-                  
-                  <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2">{title}</h3>
+                  <h3 className="text-lg md:text-xl font-bold text-gray-900">{title}</h3>
+                </div>
+                
+                {/* Description in next line */}
+                <div className="pt-1">
                   <p className="text-gray-600 text-sm md:text-base">{desc}</p>
                 </div>
               </div>
@@ -2731,24 +2734,28 @@ export default function Home() {
 
           {/* Duplicate Set for Continuous Scroll */}
           {[
-            { icon: Users, title: "Hospital Admin", desc: "Department, staff & performance management", number: "2.2" },
-            { icon: Heart, title: "Patient Management", desc: "Registration, scheduling & medical history", number: "2.3" },
-            { icon: Stethoscope, title: "Doctor Portal", desc: "Secure access & digital prescriptions", number: "2.4" },
-            { icon: CreditCard, title: "Billing & Accounts", desc: "Financial management & insurance claims", number: "2.5" },
-            { icon: Pill, title: "Pharmacy Management", desc: "Inventory control & sales tracking", number: "2.6" },
-            { icon: FlaskConical, title: "Lab Management", desc: "Lab workflows & test result processing", number: "2.7" },
-            { icon: Video, title: "Telemedicine", desc: "Secure video consultations & remote care", number: "2.8" },
-            { icon: TrendingUp, title: "Analytics & Reporting", desc: "Real-time insights & performance tracking", number: "2.9" },
-          ].map(({ icon: Icon, title, desc, number }, index) => (
+            { icon: Building2, title: "Hospital Admin", desc: "Department, staff & performance management", color: "from-gray-600 to-gray-800" },
+            { icon: Users, title: "Patient Management", desc: "Registration, scheduling & medical history", color: "from-blue-500 to-cyan-500" },
+            { icon: Stethoscope, title: "Doctor Portal", desc: "Secure access & digital prescriptions", color: "from-green-500 to-emerald-500" },
+            { icon: CreditCard, title: "Billing & Accounts", desc: "Financial management & insurance claims", color: "from-purple-500 to-pink-500" },
+            { icon: Pill, title: "Pharmacy Management", desc: "Inventory control & sales tracking", color: "from-orange-500 to-red-500" },
+            { icon: FlaskConical, title: "Lab Management", desc: "Lab workflows & test result processing", color: "from-indigo-500 to-blue-500" },
+            { icon: Video, title: "Telemedicine", desc: "Secure video consultations & remote care", color: "from-teal-500 to-green-500" },
+            { icon: BarChart3, title: "Analytics & Reporting", desc: "Real-time insights & performance tracking", color: "from-cyan-500 to-blue-500" },
+          ].map(({ icon: Icon, title, desc, color }, index) => (
             <div key={`${title}-${index}`} className="flex-shrink-0 w-64 md:w-72 mx-2">
               <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-blue-100 hover:shadow-xl hover:border-blue-300 transition-all duration-300 p-6 h-full">
                 
-                <div className="pt-2">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center mb-4">
-                    <Icon className="w-7 h-7 text-blue-600" />
+                {/* Icon and Title in one line */}
+                <div className="flex items-center gap-3 mb-2">
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center flex-shrink-0`}>
+                    <Icon className="w-6 h-6 text-white" />
                   </div>
-                  
-                  <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2">{title}</h3>
+                  <h3 className="text-lg md:text-xl font-bold text-gray-900">{title}</h3>
+                </div>
+                
+                {/* Description in next line */}
+                <div className="pt-1">
                   <p className="text-gray-600 text-sm md:text-base">{desc}</p>
                 </div>
               </div>
@@ -3172,7 +3179,6 @@ export default function Home() {
         <div className="text-sm text-gray-300">Thank you for contacting us. We will get back to you within 24 hours.</div>
       </div>
 
-      <ChatBot/>
     </>
   );
 }

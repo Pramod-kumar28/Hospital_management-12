@@ -48,7 +48,7 @@ export default function Header(){
               <Link to="/login" className="px-5 py-2.5 text-sm font-medium text-gray-700 hover:text-blue-600 rounded-lg hover:bg-gray-100 transition-all duration-200 border border-transparent hover:border-gray-200">
                 Sign In
               </Link>
-              <Link to="/contact" className="px-6 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 border border-blue-600">
+              <Link to="/download" className="px-6 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 border border-blue-600">
                 Download App
               </Link>
             </div>
@@ -115,14 +115,14 @@ export default function Header(){
             {/* Mobile CTA Buttons */}
             <div className="flex gap-3 pt-4 border-t border-gray-200">
               <Link 
-                to="/signin" 
+                to="/login" 
                 className="flex-1 px-2 py-3 text-center text-base font-medium text-gray-700 rounded-lg bg-gray-50 hover:bg-gray-100 transition-all duration-200 border border-gray-200"
                 onClick={() => setOpen(false)}
               >
                 Sign In
               </Link>
               <Link 
-                to="/contact" 
+                to="/download" 
                 className="flex-1 px-4 py-3 text-center text-base font-medium text-white rounded-lg bg-blue-600 hover:bg-blue-700 transition-all duration-200 shadow-lg"
                 onClick={() => setOpen(false)}
               >

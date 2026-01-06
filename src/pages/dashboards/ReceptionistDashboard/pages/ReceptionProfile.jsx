@@ -29,7 +29,7 @@ const ReceptionProfile = () => {
         <div className="bg-white p-4 border rounded card-shadow">
           <div className="flex flex-col items-center mb-4">
             <img 
-              src="https://i.pravatar.cc/100?img=6" 
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS9B-uq-hoK_JiRml8oo37F6A0ro-ondfH0cQ&s" 
               className="w-24 h-24 rounded-full mb-3" 
               alt="Receptionist" 
             />

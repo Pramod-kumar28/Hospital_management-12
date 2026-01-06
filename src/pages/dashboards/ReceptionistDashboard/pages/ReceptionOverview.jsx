@@ -41,7 +41,7 @@
 //   return (
 //     <div className="space-y-6 animate-fade-in">
 //       <h2 className="text-2xl font-semibold text-gray-700">📊 Reception Dashboard</h2>
-      
+
 //       {/* Stats Cards */}
 //       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 //         <div className="bg-white p-4 rounded border card-shadow">
@@ -55,7 +55,7 @@
 //             </div>
 //           </div>
 //         </div>
-        
+
 //         <div className="bg-white p-4 rounded border card-shadow">
 //           <div className="flex items-center">
 //             <div className="p-3 bg-green-100 rounded-lg mr-4">
@@ -67,7 +67,7 @@
 //             </div>
 //           </div>
 //         </div>
-        
+
 //         <div className="bg-white p-4 rounded border card-shadow">
 //           <div className="flex items-center">
 //             <div className="p-3 bg-yellow-100 rounded-lg mr-4">
@@ -79,7 +79,7 @@
 //             </div>
 //           </div>
 //         </div>
-        
+
 //         <div className="bg-white p-4 rounded border card-shadow">
 //           <div className="flex items-center">
 //             <div className="p-3 bg-purple-100 rounded-lg mr-4">
@@ -118,7 +118,7 @@
 //             data={dashboardData.appointments}
 //           />
 //         </div>
-        
+
 //         <div className="bg-white p-4 rounded border card-shadow">
 //           <h3 className="text-lg font-semibold mb-3">Recent Registrations</h3>
 //           <DataTable
@@ -240,7 +240,7 @@
 //       detail: { page: action }
 //     })
 //     window.dispatchEvent(event)
-    
+
 //     // Log for debugging
 //     console.log(`Navigating to: ${action}`)
 //   }
@@ -263,7 +263,7 @@
 //   return (
 //     <div className="space-y-6 animate-fade-in">
 //       <h2 className="text-2xl font-semibold text-gray-700">📊 Reception Dashboard</h2>
-      
+
 //       {/* Stats Cards */}
 //       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 //         <div className="bg-white p-4 rounded border card-shadow hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleQuickAction('records')}>
@@ -277,7 +277,7 @@
 //             </div>
 //           </div>
 //         </div>
-        
+
 //         <div className="bg-white p-4 rounded border card-shadow hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleQuickAction('appointments')}>
 //           <div className="flex items-center">
 //             <div className="p-3 bg-green-100 rounded-lg mr-4">
@@ -289,7 +289,7 @@
 //             </div>
 //           </div>
 //         </div>
-        
+
 //         <div className="bg-white p-4 rounded border card-shadow hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleQuickAction('billing')}>
 //           <div className="flex items-center">
 //             <div className="p-3 bg-yellow-100 rounded-lg mr-4">
@@ -301,7 +301,7 @@
 //             </div>
 //           </div>
 //         </div>
-        
+
 //         <div className="bg-white p-4 rounded border card-shadow hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleQuickAction('registration')}>
 //           <div className="flex items-center">
 //             <div className="p-3 bg-purple-100 rounded-lg mr-4">
@@ -349,7 +349,7 @@
 //             onRowClick={handleAppointmentClick}
 //           />
 //         </div>
-        
+
 //         <div className="bg-white p-4 rounded border card-shadow">
 //           <div className="flex justify-between items-center mb-3">
 //             <h3 className="text-lg font-semibold">Recent Registrations</h3>
@@ -397,7 +397,7 @@
 //             <p className="font-medium text-gray-800">New Registration</p>
 //             <p className="text-xs text-gray-500 mt-1">Register new patient</p>
 //           </button>
-          
+
 //           <button 
 //             className="p-4 border rounded-lg hover:bg-green-50 transition-colors text-center group"
 //             onClick={() => handleQuickAction('appointments')}
@@ -408,7 +408,7 @@
 //             <p className="font-medium text-gray-800">Schedule Appointment</p>
 //             <p className="text-xs text-gray-500 mt-1">Book appointment</p>
 //           </button>
-          
+
 //           <button 
 //             className="p-4 border rounded-lg hover:bg-yellow-50 transition-colors text-center group"
 //             onClick={() => handleQuickAction('billing')}
@@ -419,7 +419,7 @@
 //             <p className="font-medium text-gray-800">Generate Bill</p>
 //             <p className="text-xs text-gray-500 mt-1">Create invoice/bill</p>
 //           </button>
-          
+
 //           <button 
 //             className="p-4 border rounded-lg hover:bg-purple-50 transition-colors text-center group"
 //             onClick={() => handleQuickAction('records')}
@@ -443,7 +443,7 @@
 //             </div>
 //             <p className="font-medium text-sm text-gray-800">OPD Management</p>
 //           </button>
-          
+
 //           <button 
 //             className="p-3 border rounded-lg hover:bg-green-50 transition-colors text-center group"
 //             onClick={() => handleQuickAction('ipd')}
@@ -453,7 +453,7 @@
 //             </div>
 //             <p className="font-medium text-sm text-gray-800">IPD Management</p>
 //           </button>
-          
+
 //           <button 
 //             className="p-3 border rounded-lg hover:bg-purple-50 transition-colors text-center group"
 //             onClick={() => handleQuickAction('documents')}
@@ -592,133 +592,133 @@ const ReceptionOverview = ({ setActivePage }) => {
   return (
     <div className="space-y-6 animate-fade-in">
       <h2 className="text-2xl font-semibold text-gray-700"> Reception Dashboard</h2>
-      
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 
-  {/* TOTAL PATIENTS */}
-  <div
-    className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition"
-    onClick={() => handleQuickAction('records')}
-  >
-    <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent pointer-events-none" />
+        {/* TOTAL PATIENTS */}
+        <div
+          className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition"
+          onClick={() => handleQuickAction('records')}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent pointer-events-none" />
 
-    <div className="relative flex justify-between items-end">
-      <div>
-        <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-600 mb-3">
-          <i className="fas fa-users text-white"></i>
+          <div className="relative flex justify-between items-end">
+            <div>
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-600 mb-3">
+                <i className="fas fa-users text-white"></i>
+              </div>
+              <p className="text-sm text-gray-500">Total Patients</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {dashboardData.stats.totalPatients}
+              </p>
+              <p className="text-xs text-gray-400 mt-1">Overall registered</p>
+            </div>
+
+            {/* mini bars */}
+            <div className="flex items-end gap-1 h-14">
+              <div className="w-1.5 h-5 bg-blue-300 rounded"></div>
+              <div className="w-1.5 h-8 bg-blue-400 rounded"></div>
+              <div className="w-1.5 h-11 bg-blue-500 rounded"></div>
+              <div className="w-1.5 h-7 bg-blue-400 rounded"></div>
+              <div className="w-1.5 h-12 bg-blue-600 rounded"></div>
+            </div>
+          </div>
         </div>
-        <p className="text-sm text-gray-500">Total Patients</p>
-        <p className="text-2xl font-bold text-gray-900">
-          {dashboardData.stats.totalPatients}
-        </p>
-        <p className="text-xs text-gray-400 mt-1">Overall registered</p>
-      </div>
 
-      {/* mini bars */}
-      <div className="flex items-end gap-1 h-14">
-        <div className="w-1.5 h-5 bg-blue-300 rounded"></div>
-        <div className="w-1.5 h-8 bg-blue-400 rounded"></div>
-        <div className="w-1.5 h-11 bg-blue-500 rounded"></div>
-        <div className="w-1.5 h-7 bg-blue-400 rounded"></div>
-        <div className="w-1.5 h-12 bg-blue-600 rounded"></div>
-      </div>
-    </div>
-  </div>
+        {/* TODAY'S APPOINTMENTS */}
+        <div
+          className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition"
+          onClick={() => handleQuickAction('appointments')}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent pointer-events-none" />
 
-  {/* TODAY'S APPOINTMENTS */}
-  <div
-    className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition"
-    onClick={() => handleQuickAction('appointments')}
-  >
-    <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent pointer-events-none" />
+          <div className="relative flex justify-between items-end">
+            <div>
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-green-600 mb-3">
+                <i className="fas fa-calendar-check text-white"></i>
+              </div>
+              <p className="text-sm text-gray-500">Today's Appointments</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {dashboardData.stats.todayAppointments}
+              </p>
+              <p className="text-xs text-gray-400 mt-1">Today</p>
+            </div>
 
-    <div className="relative flex justify-between items-end">
-      <div>
-        <div className="w-10 h-10 flex items-center justify-center rounded-full bg-green-600 mb-3">
-          <i className="fas fa-calendar-check text-white"></i>
+            {/* mini line */}
+            <svg width="70" height="40" viewBox="0 0 70 40">
+              <polyline
+                points="0,30 12,24 24,26 36,18 48,20 60,14"
+                fill="none"
+                stroke="#22c55e"
+                strokeWidth="2"
+              />
+            </svg>
+          </div>
         </div>
-        <p className="text-sm text-gray-500">Today's Appointments</p>
-        <p className="text-2xl font-bold text-gray-900">
-          {dashboardData.stats.todayAppointments}
-        </p>
-        <p className="text-xs text-gray-400 mt-1">Today</p>
-      </div>
 
-      {/* mini line */}
-      <svg width="70" height="40" viewBox="0 0 70 40">
-        <polyline
-          points="0,30 12,24 24,26 36,18 48,20 60,14"
-          fill="none"
-          stroke="#22c55e"
-          strokeWidth="2"
-        />
-      </svg>
-    </div>
-  </div>
+        {/* PENDING BILLS */}
+        <div
+          className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition"
+          onClick={() => handleQuickAction('billing')}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-yellow-50 to-transparent pointer-events-none" />
 
-  {/* PENDING BILLS */}
-  <div
-    className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition"
-    onClick={() => handleQuickAction('billing')}
-  >
-    <div className="absolute inset-0 bg-gradient-to-br from-yellow-50 to-transparent pointer-events-none" />
+          <div className="relative flex justify-between items-end">
+            <div>
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-yellow-500 mb-3">
+                <i className="fas fa-file-invoice text-white"></i>
+              </div>
+              <p className="text-sm text-gray-500">Pending Bills</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {dashboardData.stats.pendingBills}
+              </p>
+              <p className="text-xs text-gray-400 mt-1">Awaiting payment</p>
+            </div>
 
-    <div className="relative flex justify-between items-end">
-      <div>
-        <div className="w-10 h-10 flex items-center justify-center rounded-full bg-yellow-500 mb-3">
-          <i className="fas fa-file-invoice text-white"></i>
+            {/* mini bars */}
+            <div className="flex items-end gap-1 h-14">
+              <div className="w-1.5 h-10 bg-yellow-300 rounded"></div>
+              <div className="w-1.5 h-6 bg-yellow-200 rounded"></div>
+              <div className="w-1.5 h-12 bg-yellow-400 rounded"></div>
+              <div className="w-1.5 h-8 bg-yellow-300 rounded"></div>
+              <div className="w-1.5 h-9 bg-yellow-200 rounded"></div>
+            </div>
+          </div>
         </div>
-        <p className="text-sm text-gray-500">Pending Bills</p>
-        <p className="text-2xl font-bold text-gray-900">
-          {dashboardData.stats.pendingBills}
-        </p>
-        <p className="text-xs text-gray-400 mt-1">Awaiting payment</p>
-      </div>
 
-      {/* mini bars */}
-      <div className="flex items-end gap-1 h-14">
-        <div className="w-1.5 h-10 bg-yellow-300 rounded"></div>
-        <div className="w-1.5 h-6 bg-yellow-200 rounded"></div>
-        <div className="w-1.5 h-12 bg-yellow-400 rounded"></div>
-        <div className="w-1.5 h-8 bg-yellow-300 rounded"></div>
-        <div className="w-1.5 h-9 bg-yellow-200 rounded"></div>
-      </div>
-    </div>
-  </div>
+        {/* NEW REGISTRATIONS */}
+        <div
+          className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition"
+          onClick={() => handleQuickAction('registration')}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent pointer-events-none" />
 
-  {/* NEW REGISTRATIONS */}
-  <div
-    className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition"
-    onClick={() => handleQuickAction('registration')}
-  >
-    <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent pointer-events-none" />
+          <div className="relative flex justify-between items-end">
+            <div>
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-purple-600 mb-3">
+                <i className="fas fa-user-plus text-white"></i>
+              </div>
+              <p className="text-sm text-gray-500">New Registrations</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {dashboardData.stats.newRegistrations}
+              </p>
+              <p className="text-xs text-gray-400 mt-1">Recently added</p>
+            </div>
 
-    <div className="relative flex justify-between items-end">
-      <div>
-        <div className="w-10 h-10 flex items-center justify-center rounded-full bg-purple-600 mb-3">
-          <i className="fas fa-user-plus text-white"></i>
+            {/* mini line */}
+            <svg width="70" height="40" viewBox="0 0 70 40">
+              <polyline
+                points="0,28 12,26 24,22 36,24 48,18 60,12"
+                fill="none"
+                stroke="#a855f7"
+                strokeWidth="2"
+              />
+            </svg>
+          </div>
         </div>
-        <p className="text-sm text-gray-500">New Registrations</p>
-        <p className="text-2xl font-bold text-gray-900">
-          {dashboardData.stats.newRegistrations}
-        </p>
-        <p className="text-xs text-gray-400 mt-1">Recently added</p>
+
       </div>
-
-      {/* mini line */}
-      <svg width="70" height="40" viewBox="0 0 70 40">
-        <polyline
-          points="0,28 12,26 24,22 36,24 48,18 60,12"
-          fill="none"
-          stroke="#a855f7"
-          strokeWidth="2"
-        />
-      </svg>
-    </div>
-  </div>
-
-</div>
 
 
       {/* Three Column Layout */}
@@ -726,7 +726,7 @@ const ReceptionOverview = ({ setActivePage }) => {
         {/* Today's Appointments Table */}
         <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
           <div className="absolute inset-0 to-transparent pointer-events-none" />
-          
+
           <div className="relative">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center">
@@ -738,27 +738,25 @@ const ReceptionOverview = ({ setActivePage }) => {
                   <p className="text-gray-500 text-sm">Upcoming appointments for today</p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => handleQuickAction('appointments')}
                 className="text-blue-600 text-sm hover:underline hover:text-blue-800"
               >
                 View All →
               </button>
             </div>
-            
+
             <div className="space-y-3">
               {dashboardData.appointments.map(apt => (
                 <div key={apt.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:shadow-sm transition-all cursor-pointer"
-                     onClick={() => handleAppointmentClick(apt)}>
+                  onClick={() => handleAppointmentClick(apt)}>
                   <div className="flex items-center">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-4 ${
-                      apt.status === 'Confirmed' ? 'bg-green-100' : 
-                      apt.status === 'Pending' ? 'bg-yellow-100' : 'bg-blue-100'
-                    }`}>
-                      <i className={`fas ${
-                        apt.status === 'Confirmed' ? 'fa-check-circle text-green-600' : 
-                        apt.status === 'Pending' ? 'fa-clock text-yellow-600' : 'fa-spinner text-blue-600'
-                      }`}></i>
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-4 ${apt.status === 'Confirmed' ? 'bg-green-100' :
+                        apt.status === 'Pending' ? 'bg-yellow-100' : 'bg-blue-100'
+                      }`}>
+                      <i className={`fas ${apt.status === 'Confirmed' ? 'fa-check-circle text-green-600' :
+                          apt.status === 'Pending' ? 'fa-clock text-yellow-600' : 'fa-spinner text-blue-600'
+                        }`}></i>
                     </div>
                     <div>
                       <div className="font-medium">{apt.patient}</div>
@@ -768,13 +766,12 @@ const ReceptionOverview = ({ setActivePage }) => {
                   </div>
                   <div className="text-right">
                     <div className="font-medium text-gray-700">{apt.time}</div>
-                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-2 ${
-                      apt.status === 'Confirmed' 
-                        ? 'bg-green-100 text-green-800' 
+                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-2 ${apt.status === 'Confirmed'
+                        ? 'bg-green-100 text-green-800'
                         : apt.status === 'Pending'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-blue-100 text-blue-800'
-                    }`}>
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-blue-100 text-blue-800'
+                      }`}>
                       {apt.status}
                     </span>
                   </div>
@@ -787,7 +784,7 @@ const ReceptionOverview = ({ setActivePage }) => {
         {/* Recent Registrations */}
         <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
           <div className="absolute inset-0  to-transparent pointer-events-none" />
-          
+
           <div className="relative">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center">
@@ -799,49 +796,48 @@ const ReceptionOverview = ({ setActivePage }) => {
                   <p className="text-gray-500 text-sm">New patient registrations today</p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => handleQuickAction('registration')}
                 className="text-blue-600 text-sm hover:underline hover:text-blue-800"
               >
                 View All →
               </button>
             </div>
-            
+
             <div className="space-y-3">
               {dashboardData.registrations.map(reg => (
                 <div key={reg.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:shadow-sm transition-all cursor-pointer"
-                     onClick={() => handleRegistrationClick(reg)}>
+                  onClick={() => handleRegistrationClick(reg)}>
                   <div className="flex items-center">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-4 ${
-                      reg.type === 'New' ? 'bg-blue-100' : 'bg-green-100'
-                    }`}>
-                      <i className={`fas ${
-                        reg.type === 'New' ? 'fa-user-plus text-blue-600' : 'fa-user-check text-green-600'
-                      }`}></i>
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-4 ${reg.type === 'New' ? 'bg-blue-100' : 'bg-green-100'
+                      }`}>
+                      <i className={`fas ${reg.type === 'New' ? 'fa-user-plus text-blue-600' : 'fa-user-check text-green-600'
+                        }`}></i>
                     </div>
                     <div>
                       <div className="font-medium">{reg.name}</div>
                       <div className="text-sm text-gray-500">Registration ID: {reg.id}</div>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className={`px-2 py-0.5 rounded text-xs ${
-                          reg.priority === 'Urgent' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'
-                        }`}>
+                        <span className={`px-2 py-0.5 rounded text-xs ${reg.priority === 'Urgent' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'
+                          }`}>
                           {reg.priority}
                         </span>
-                        <span className="text-xs text-gray-500">{reg.type}</span>
+                        {/* <span className="text-xs text-gray-500">{reg.type}</span> */}
                       </div>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right min-w-[88px] whitespace-nowrap">
                     <div className="font-medium text-gray-700">{reg.time}</div>
-                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-2 ${
-                      reg.type === 'New' 
-                        ? 'bg-blue-100 text-blue-800' 
-                        : 'bg-green-100 text-green-800'
-                    }`}>
+                    <span
+                      className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-2 ${reg.type === 'New'
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-green-100 text-green-800'
+                        }`}
+                    >
                       {reg.type}
                     </span>
                   </div>
+
                 </div>
               ))}
             </div>
@@ -851,7 +847,7 @@ const ReceptionOverview = ({ setActivePage }) => {
         {/* Quick Actions */}
         <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
           <div className="absolute inset-0  to-transparent pointer-events-none" />
-          
+
           <div className="relative">
             <div className="flex items-center mb-4">
               <div className="w-10 h-10 flex items-center justify-center rounded-full bg-purple-500 mr-3">
@@ -859,7 +855,7 @@ const ReceptionOverview = ({ setActivePage }) => {
               </div>
               <h3 className="font-semibold text-lg">Quick Actions</h3>
             </div>
-            
+
             <div className="space-y-3">
               <button
                 onClick={() => handleQuickAction('registration')}
@@ -873,7 +869,7 @@ const ReceptionOverview = ({ setActivePage }) => {
                 </div>
                 <i className="fas fa-chevron-right text-gray-400"></i>
               </button>
-              
+
               <button
                 onClick={() => handleQuickAction('appointments')}
                 className="w-full flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 hover:shadow-sm transition-all text-left"
@@ -886,7 +882,7 @@ const ReceptionOverview = ({ setActivePage }) => {
                 </div>
                 <i className="fas fa-chevron-right text-gray-400"></i>
               </button>
-              
+
               <button
                 onClick={() => handleQuickAction('billing')}
                 className="w-full flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 hover:shadow-sm transition-all text-left"
@@ -899,7 +895,7 @@ const ReceptionOverview = ({ setActivePage }) => {
                 </div>
                 <i className="fas fa-chevron-right text-gray-400"></i>
               </button>
-              
+
               <button
                 onClick={() => handleQuickAction('records')}
                 className="w-full flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 hover:shadow-sm transition-all text-left"
@@ -953,7 +949,7 @@ const ReceptionOverview = ({ setActivePage }) => {
                 <i className="fas fa-chevron-right text-gray-400"></i>
               </button>
             </div>
-            
+
             {/* Additional Actions */}
             {/* <div className="mt-6 pt-4 border-t border-gray-200">
               <div className="flex justify-between text-xs text-gray-500 mb-2">
@@ -982,67 +978,94 @@ const ReceptionOverview = ({ setActivePage }) => {
 
       {/* Waiting Area */}
       <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
-        <div className="absolute inset-0  to-transparent pointer-events-none" />
-        
         <div className="relative">
-          <div className="flex items-center justify-between mb-6">
+
+          {/* HEADER */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div className="flex items-center">
-              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-yellow-500 mr-3">
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-yellow-500 mr-3 shrink-0">
                 <i className="fas fa-clock text-white"></i>
               </div>
               <div>
                 <h3 className="font-semibold text-lg">Waiting Area</h3>
-                <p className="text-gray-500 text-sm">Patients currently waiting for consultation</p>
+                <p className="text-gray-500 text-sm">
+                  Patients currently waiting for consultation
+                </p>
               </div>
             </div>
-            <button 
+
+            <button
               onClick={() => handleQuickAction('records')}
-              className="text-blue-600 text-sm hover:underline hover:text-blue-800"
+              className="text-blue-600 text-sm hover:underline hover:text-blue-800 self-start sm:self-auto"
             >
               Manage Queue →
             </button>
           </div>
-          
+
+          {/* PATIENT LIST */}
           <div className="space-y-3">
             {dashboardData.waitingPatients?.map(patient => (
-              <div key={patient.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:shadow-sm transition-all cursor-pointer"
-                   onClick={() => handlePatientClick(patient)}>
-                <div className="flex items-center">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-4 ${
-                    patient.priority === 'Urgent' ? 'bg-red-100' : 'bg-gray-100'
-                  }`}>
-                    <i className={`fas ${
-                      patient.priority === 'Urgent' ? 'fa-exclamation-triangle text-red-600' : 'fa-user-clock text-gray-600'
-                    }`}></i>
+              <div
+                key={patient.id}
+                onClick={() => handlePatientClick(patient)}
+                className="
+            flex flex-col lg:flex-row 
+            lg:items-center lg:justify-between
+            gap-4 p-4 border border-gray-200 rounded-lg
+            hover:bg-gray-50 hover:shadow-sm transition-all cursor-pointer
+          "
+              >
+                {/* LEFT SECTION */}
+                <div className="flex items-start sm:items-center">
+                  <div
+                    className={`w-10 h-10 rounded-lg flex items-center justify-center mr-4 shrink-0 ${patient.priority === 'Urgent' ? 'bg-red-100' : 'bg-gray-100'
+                      }`}
+                  >
+                    <i
+                      className={`fas ${patient.priority === 'Urgent'
+                          ? 'fa-exclamation-triangle text-red-600'
+                          : 'fa-user-clock text-gray-600'
+                        }`}
+                    ></i>
                   </div>
+
                   <div>
                     <div className="font-medium">{patient.name}</div>
                     <div className="text-sm text-gray-500">{patient.department}</div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className={`px-2 py-0.5 rounded text-xs ${
-                        patient.priority === 'Urgent' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'
-                      }`}>
+
+                    <div className="flex flex-wrap items-center gap-2 mt-1">
+                      <span
+                        className={`px-2 py-0.5 rounded text-xs ${patient.priority === 'Urgent'
+                            ? 'bg-red-100 text-red-700'
+                            : 'bg-gray-100 text-gray-700'
+                          }`}
+                      >
                         {patient.priority}
                       </span>
-                      <span className="text-xs text-gray-500">
+
+                      <span className="text-xs text-gray-500 flex items-center">
                         <i className="far fa-clock mr-1"></i>
                         Waiting since {patient.waitingSince}
                       </span>
                     </div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="font-medium text-gray-700">
+
+                {/* RIGHT SECTION */}
+                <div className="flex lg:flex-col items-start lg:items-end gap-2">
+                  <div className="text-sm font-medium text-gray-700 flex items-center">
                     <i className="fas fa-door-open text-gray-400 mr-2"></i>
                     Ready for
                   </div>
-                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-2 ${
-                    patient.department === 'Emergency' 
-                      ? 'bg-red-100 text-red-800' 
-                      : patient.department === 'Cardiology'
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'bg-gray-100 text-gray-800'
-                  }`}>
+
+                  <span
+                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${patient.department === 'Emergency'
+                        ? 'bg-red-100 text-red-800'
+                        : patient.department === 'Cardiology'
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}
+                  >
                     {patient.department}
                   </span>
                 </div>
@@ -1051,6 +1074,7 @@ const ReceptionOverview = ({ setActivePage }) => {
           </div>
         </div>
       </div>
+
 
       {/* Emergency Contact Banner */}
       <div className="bg-gradient-to-r from-red-500 to-orange-500 rounded-xl p-5 text-white">

@@ -27,45 +27,45 @@ const Prescriptions = () => {
     setLoading(true)
     setTimeout(() => {
       setPrescriptions([
-        { 
-          id: 1, 
-          patient: "Ravi Kumar", 
-          medicine: "Paracetamol", 
-          dosage: "500mg", 
+        {
+          id: 1,
+          patient: "Ravi Kumar",
+          medicine: "Paracetamol",
+          dosage: "500mg",
           frequency: "Twice daily",
-          duration: "5 days", 
+          duration: "5 days",
           instructions: "After meals",
-          date: "2023-10-15" 
+          date: "2023-10-15"
         },
-        { 
-          id: 2, 
-          patient: "Anita Sharma", 
-          medicine: "Ibuprofen", 
-          dosage: "400mg", 
+        {
+          id: 2,
+          patient: "Anita Sharma",
+          medicine: "Ibuprofen",
+          dosage: "400mg",
           frequency: "Three times daily",
-          duration: "3 days", 
+          duration: "3 days",
           instructions: "With plenty of water",
-          date: "2023-10-10" 
+          date: "2023-10-10"
         },
-        { 
-          id: 3, 
-          patient: "Suresh Patel", 
-          medicine: "Metformin", 
-          dosage: "500mg", 
+        {
+          id: 3,
+          patient: "Suresh Patel",
+          medicine: "Metformin",
+          dosage: "500mg",
           frequency: "Once daily",
-          duration: "30 days", 
+          duration: "30 days",
           instructions: "With breakfast",
-          date: "2023-10-05" 
+          date: "2023-10-05"
         },
-        { 
-          id: 4, 
-          patient: "Priya Singh", 
-          medicine: "Sumatriptan", 
-          dosage: "50mg", 
+        {
+          id: 4,
+          patient: "Priya Singh",
+          medicine: "Sumatriptan",
+          dosage: "50mg",
           frequency: "As needed",
-          duration: "As needed", 
+          duration: "As needed",
           instructions: "At onset of migraine",
-          date: "2023-09-28" 
+          date: "2023-09-28"
         }
       ])
       setLoading(false)
@@ -220,65 +220,97 @@ const Prescriptions = () => {
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-        <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-700 text-responsive">Prescriptions</h2>
+        <h5 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-700 text-responsive">
+          Prescriptions</h5>
         <button
           onClick={() => setIsNewModalOpen(true)}
-          className="btn btn-primary btn-mobile-full sm:w-auto flex items-center justify-center"
+          className="btn btn-primary  btn-sm btn-mobile-full sm:w-auto flex items-center justify-center my-3"
         >
-          <i className="fas fa-plus mr-2"></i> New Prescription
+          <i className="fas fa-plus mr-2 "></i> New Prescription
         </button>
       </div>
-      
-      {/* Data Table */}
+
       <DataTable
         columns={[
-          { key: 'patient', title: 'Patient', sortable: true },
-          { key: 'medicine', title: 'Medicine', sortable: true },
-          { key: 'dosage', title: 'Dosage', sortable: true },
-          { key: 'frequency', title: 'Frequency', sortable: true },
-          { key: 'duration', title: 'Duration', sortable: true },
-          { key: 'date', title: 'Date', sortable: true },
+          {
+            key: 'patient',
+            title: 'Patient',
+            sortable: true,
+            className: 'text-left min-w-[160px]'
+          },
+          {
+            key: 'medicine',
+            title: 'Medicine',
+            sortable: true,
+            className: 'text-left min-w-[140px]'
+          },
+          {
+            key: 'dosage',
+            title: 'Dosage',
+            sortable: true,
+            className: 'text-center min-w-[90px]'
+          },
+          {
+            key: 'frequency',
+            title: 'Frequency',
+            sortable: true,
+            className: 'text-left min-w-[160px]'
+          },
+          {
+            key: 'duration',
+            title: 'Duration',
+            sortable: true,
+            className: 'text-center min-w-[110px]'
+          },
+          {
+            key: 'date',
+            title: 'Date',
+            sortable: true,
+            className: 'text-center min-w-[120px]'
+          },
           {
             key: 'actions',
             title: 'Actions',
+            className: 'text-center min-w-[120px]',
             render: (_, row) => (
-              <div className="flex gap-2 justify-start">
+              <div className="flex items-center justify-center gap-2">
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
                     handleEditPrescription(row)
                   }}
-                  className="text-blue-500 hover:text-blue-700 p-2 rounded hover:bg-blue-50 modal-touch-target"
-                  title="Edit Prescription"
+                  className="table-action-btn text-blue-600"
+                  title="Edit"
                 >
-                  <i className="fas fa-edit text-sm"></i>
+                  <i className="fas fa-edit"></i>
                 </button>
+
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
                     handlePrintPrescription(row)
                   }}
-                  className="text-green-500 hover:text-green-700 p-2 rounded hover:bg-green-50 modal-touch-target"
-                  title="Print Prescription"
+                  className="table-action-btn text-green-600"
+                  title="Print"
                 >
-                  <i className="fas fa-print text-sm"></i>
+                  <i className="fas fa-print"></i>
                 </button>
+
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
                     handleDeletePrescription(row.id)
                   }}
-                  className="text-red-500 hover:text-red-700 p-2 rounded hover:bg-red-50 modal-touch-target"
-                  title="Delete Prescription"
+                  className="table-action-btn text-red-600"
+                  title="Delete"
                 >
-                  <i className="fas fa-trash text-sm"></i>
+                  <i className="fas fa-trash"></i>
                 </button>
               </div>
             )
           }
         ]}
         data={prescriptions}
-        onRowClick={(row) => console.log('Prescription clicked:', row)}
         selectable={false}
       />
 
@@ -292,8 +324,8 @@ const Prescriptions = () => {
             { name: 'Amoxicillin', use: 'Antibiotic', color: 'purple' },
             { name: 'Cetirizine', use: 'Antihistamine', color: 'yellow' }
           ].map((med, index) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className="border rounded p-3 text-center hover:bg-gray-50 cursor-pointer card-hover transition-all duration-200"
               onClick={() => {
                 setNewPrescription(prev => ({

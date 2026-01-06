@@ -162,26 +162,75 @@ const Billing = () => {
 
       {/* Billing Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-        <div className="bg-white p-6 rounded-xl card-shadow border">
-          <div className="text-sm text-gray-500">Total Revenue</div>
-          <div className="text-2xl font-bold text-green-600 mt-1">
-            ₹{bills.filter(b => b.status === 'Paid').reduce((sum, bill) => sum + bill.total, 0)}
-          </div>
-          <div className="text-xs text-green-500 mt-1">This month</div>
-        </div>
-        <div className="bg-white p-6 rounded-xl card-shadow border">
-          <div className="text-sm text-gray-500">Pending Payments</div>
-          <div className="text-2xl font-bold text-yellow-600 mt-1">
-            ₹{bills.filter(b => b.status === 'Pending').reduce((sum, bill) => sum + bill.total, 0)}
-          </div>
-          <div className="text-xs text-yellow-500 mt-1">Awaiting collection</div>
-        </div>
-        <div className="bg-white p-6 rounded-xl card-shadow border">
-          <div className="text-sm text-gray-500">Total Invoices</div>
-          <div className="text-2xl font-bold text-blue-600 mt-1">{bills.length}</div>
-          <div className="text-xs text-blue-500 mt-1">Generated this month</div>
-        </div>
+
+  {/* TOTAL REVENUE */}
+  <div className="bg-green-50 border border-green-200 rounded-2xl p-5 hover:shadow-lg transition">
+    <div className="flex items-start justify-between">
+      <div>
+        <p className="text-xs font-semibold text-green-700 uppercase tracking-wide">
+          Total Revenue
+        </p>
+        <p className="text-2xl font-bold text-gray-900 mt-1">
+          ₹{bills.filter(b => b.status === 'Paid').reduce((sum, bill) => sum + bill.total, 0)}
+        </p>
       </div>
+
+      <div className="w-11 h-11 rounded-xl bg-green-600 flex items-center justify-center">
+        <i className="fas fa-rupee-sign text-white"></i>
+      </div>
+    </div>
+
+    <div className="h-px w-full bg-green-200 my-3"></div>
+
+    <p className="text-xs text-green-600">This month</p>
+  </div>
+
+  {/* PENDING PAYMENTS */}
+  <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-5 hover:shadow-lg transition">
+    <div className="flex items-start justify-between">
+      <div>
+        <p className="text-xs font-semibold text-yellow-700 uppercase tracking-wide">
+          Pending Payments
+        </p>
+        <p className="text-2xl font-bold text-gray-900 mt-1">
+          ₹{bills.filter(b => b.status === 'Pending').reduce((sum, bill) => sum + bill.total, 0)}
+        </p>
+      </div>
+
+      <div className="w-11 h-11 rounded-xl bg-yellow-500 flex items-center justify-center">
+        <i className="fas fa-hourglass-half text-white"></i>
+      </div>
+    </div>
+
+    <div className="h-px w-full bg-yellow-200 my-3"></div>
+
+    <p className="text-xs text-yellow-600">Awaiting collection</p>
+  </div>
+
+  {/* TOTAL INVOICES */}
+  <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 hover:shadow-lg transition">
+    <div className="flex items-start justify-between">
+      <div>
+        <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide">
+          Total Invoices
+        </p>
+        <p className="text-2xl font-bold text-gray-900 mt-1">
+          {bills.length}
+        </p>
+      </div>
+
+      <div className="w-11 h-11 rounded-xl bg-blue-600 flex items-center justify-center">
+        <i className="fas fa-file-invoice text-white"></i>
+      </div>
+    </div>
+
+    <div className="h-px w-full bg-blue-200 my-3"></div>
+
+    <p className="text-xs text-blue-600">Generated this month</p>
+  </div>
+
+</div>
+
     </div>
   )
 }

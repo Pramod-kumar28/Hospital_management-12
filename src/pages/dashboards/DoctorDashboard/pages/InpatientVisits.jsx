@@ -1,133 +1,4 @@
-// import React, { useState, useEffect } from 'react'
-// import LoadingSpinner from '../../../../components/common/LoadingSpinner/LoadingSpinner'
-// import DataTable from '../../../../components/ui/Tables/DataTable'
-
-// const InpatientVisits = () => {
-//   const [loading, setLoading] = useState(true)
-//   const [inpatients, setInpatients] = useState([])
-
-//   useEffect(() => {
-//     loadInpatients()
-//   }, [])
-
-//   const loadInpatients = async () => {
-//     setLoading(true)
-//     setTimeout(() => {
-//       setInpatients([
-//         { id: 1, name: "Ravi Kumar", ward: "General", bed: "101", admissionDate: "2023-10-12", condition: "Pneumonia", status: "Stable" },
-//         { id: 2, name: "Suresh Patel", ward: "ICU", bed: "205", admissionDate: "2023-10-10", condition: "Cardiac Monitoring", status: "Critical" }
-//       ])
-//       setLoading(false)
-//     }, 1000)
-//   }
-
-//   if (loading) return <LoadingSpinner />
-
-//   return (
-//     <div className="animate-fade-in">
-//       <h2 className="text-2xl font-semibold text-gray-700 mb-6">Inpatient Visits</h2>
-      
-//       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-//         {inpatients.map(patient => (
-//           <div key={patient.id} className="bg-white p-4 border rounded card-shadow fade-in">
-//             <div className="flex justify-between items-start mb-3">
-//               <div>
-//                 <h3 className="font-semibold text-blue-700 text-lg">{patient.name}</h3>
-//                 <p className="text-sm text-gray-600">{patient.ward} - Bed {patient.bed}</p>
-//               </div>
-//               <span className={`px-2 py-1 rounded-full text-xs ${
-//                 patient.status === 'Stable' ? 'status-confirmed' : 'status-urgent'
-//               }`}>
-//                 {patient.status}
-//               </span>
-//             </div>
-            
-//             <div className="grid grid-cols-2 gap-4 mb-4">
-//               <div>
-//                 <p className="text-sm text-gray-500">Admission Date</p>
-//                 <p className="font-medium">{patient.admissionDate}</p>
-//               </div>
-//               <div>
-//                 <p className="text-sm text-gray-500">Condition</p>
-//                 <p className="font-medium">{patient.condition}</p>
-//               </div>
-//             </div>
-            
-//             <div className="mb-4">
-//               <p className="text-sm text-gray-500 mb-1">Treatment Plan</p>
-//               <p className="text-sm">
-//                 {patient.condition === 'Pneumonia' 
-//                   ? 'Antibiotics, Oxygen therapy, Regular monitoring' 
-//                   : 'Cardiac monitoring, Medication, Restricted activity'}
-//               </p>
-//             </div>
-            
-//             <div className="flex gap-2">
-//               <button className="bg-blue-500 text-white px-3 py-1 text-xs rounded hover:bg-blue-600 flex items-center">
-//                 <i className="fas fa-notes-medical mr-1"></i> Update Notes
-//               </button>
-//               <button className="bg-green-500 text-white px-3 py-1 text-xs rounded hover:bg-green-600 flex items-center">
-//                 <i className="fas fa-chart-line mr-1"></i> Vitals
-//               </button>
-//               <button className="bg-purple-500 text-white px-3 py-1 text-xs rounded hover:bg-purple-600 flex items-center">
-//                 <i className="fas fa-pills mr-1"></i> Medications
-//               </button>
-//             </div>
-//           </div>
-//         ))}
-//       </div>
-
-//       {/* Ward Rounds Schedule */}
-//       <div className="bg-white p-4 border rounded card-shadow">
-//         <h3 className="text-lg font-semibold mb-3">Ward Rounds Schedule</h3>
-//         <DataTable
-//           columns={[
-//             { key: 'time', title: 'Time', sortable: true },
-//             { key: 'ward', title: 'Ward', sortable: true },
-//             { key: 'patients', title: 'Patients', sortable: true },
-//             { 
-//               key: 'status', 
-//               title: 'Status', 
-//               sortable: true,
-//               render: (value) => (
-//                 <span className={`px-2 py-1 rounded-full text-xs ${
-//                   value === 'Completed' ? 'status-completed' : 'status-pending'
-//                 }`}>
-//                   {value}
-//                 </span>
-//               )
-//             }
-//           ]}
-//           data={[
-//             { time: '9:00 AM', ward: 'General Ward', patients: '5 patients', status: 'Completed' },
-//             { time: '11:00 AM', ward: 'ICU', patients: '2 patients', status: 'Pending' },
-//             { time: '2:00 PM', ward: 'Pediatrics', patients: '3 patients', status: 'Pending' }
-//           ]}
-//         />
-//       </div>
-//     </div>
-//   )
-// }
-
-// export default InpatientVisits
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import LoadingSpinner from '../../../../components/common/LoadingSpinner/LoadingSpinner'
 import DataTable from '../../../../components/ui/Tables/DataTable'
 
@@ -145,6 +16,8 @@ const InpatientVisits = () => {
     temperature: '',
     oxygenSaturation: ''
   })
+  const [newMedication, setNewMedication] = useState('')
+  const medicationInputRef = useRef(null)
 
   useEffect(() => {
     loadInpatients()
@@ -214,7 +87,6 @@ const InpatientVisits = () => {
   }
 
   const handleSaveVitals = () => {
-    // In a real application, you would save vitals to the backend
     console.log('Saving vitals for:', selectedPatient.name, vitals)
     setShowVitalsModal(false)
     setSelectedPatient(null)
@@ -222,18 +94,23 @@ const InpatientVisits = () => {
 
   const handleMedications = (patient) => {
     setSelectedPatient(patient)
+    setNewMedication('')
     setShowMedicationsModal(true)
   }
 
-  const handleAddMedication = (patientId, medication) => {
-    setInpatients(prev => prev.map(patient => 
-      patient.id === patientId 
-        ? { 
-            ...patient, 
-            medications: [...patient.medications, medication] 
-          }
-        : patient
-    ))
+  const handleAddMedication = () => {
+    if (newMedication.trim() && selectedPatient) {
+      setInpatients(prev => prev.map(patient => 
+        patient.id === selectedPatient.id 
+          ? { 
+              ...patient, 
+              medications: [...patient.medications, newMedication.trim()] 
+            }
+          : patient
+      ))
+      setNewMedication('')
+      medicationInputRef.current?.focus()
+    }
   }
 
   const handleRemoveMedication = (patientId, medicationIndex) => {
@@ -247,16 +124,18 @@ const InpatientVisits = () => {
     ))
   }
 
-  const handleStatusSort = (a, b) => {
-    const statusOrder = { 'Critical': 0, 'Stable': 1, 'Discharged': 2 }
-    return statusOrder[a.status] - statusOrder[b.status]
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleAddMedication()
+    }
   }
 
   if (loading) return <LoadingSpinner />
 
   return (
     <div className="animate-fade-in">
-      <h2 className="text-2xl font-semibold text-gray-700 mb-6">Inpatient Visits</h2>
+      <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2 flex items-center">
+        Inpatient Visits</h2>
       
       {/* Patient Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -301,26 +180,38 @@ const InpatientVisits = () => {
               </div>
             )}
             
-            <div className="flex gap-2 flex-wrap">
-              <button 
-                onClick={() => handleUpdateNotes(patient)}
-                className="bg-blue-500 text-white px-3 py-1 text-xs rounded hover:bg-blue-600 flex items-center transition-colors"
-              >
-                <i className="fas fa-notes-medical mr-1"></i> Update Notes
-              </button>
-              <button 
-                onClick={() => handleVitals(patient)}
-                className="bg-green-500 text-white px-3 py-1 text-xs rounded hover:bg-green-600 flex items-center transition-colors"
-              >
-                <i className="fas fa-chart-line mr-1"></i> Vitals
-              </button>
-              <button 
-                onClick={() => handleMedications(patient)}
-                className="bg-purple-500 text-white px-3 py-1 text-xs rounded hover:bg-purple-600 flex items-center transition-colors"
-              >
-                <i className="fas fa-pills mr-1"></i> Medications
-              </button>
-            </div>
+            <div className="flex gap-3 flex-wrap">
+  <button
+    onClick={() => handleUpdateNotes(patient)}
+    className="bg-blue-500 text-white px-4 py-2 text-sm rounded-xl
+    hover:bg-blue-600 shadow-sm hover:shadow-md
+    flex items-center transition-all"
+  >
+    <i className="fas fa-notes-medical mr-2 text-base"></i>
+    Update Notes
+  </button>
+
+  <button
+    onClick={() => handleVitals(patient)}
+    className="bg-green-500 text-white px-4 py-2 text-sm rounded-xl
+    hover:bg-green-600 shadow-sm hover:shadow-md
+    flex items-center transition-all"
+  >
+    <i className="fas fa-chart-line mr-2 text-base"></i>
+    Vitals
+  </button>
+
+  <button
+    onClick={() => handleMedications(patient)}
+    className="bg-purple-500 text-white px-4 py-2 text-sm rounded-xl
+    hover:bg-purple-600 shadow-sm hover:shadow-md
+    flex items-center transition-all"
+  >
+    <i className="fas fa-pills mr-2 text-base"></i>
+    Medications
+  </button>
+</div>
+
           </div>
         ))}
       </div>
@@ -360,25 +251,33 @@ const InpatientVisits = () => {
       {showNotesModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">
-              Update Notes for {selectedPatient?.name}
-            </h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">
+                Update Notes for {selectedPatient?.name}
+              </h3>
+              <button
+                onClick={() => setShowNotesModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <i className="fas fa-times text-lg"></i>
+              </button>
+            </div>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="w-full h-32 p-3 border border-gray-300 rounded mb-4 resize-none"
               placeholder="Enter patient notes..."
             />
-            <div className="flex justify-end gap-3">
+            <div className="flex flex-col sm:flex-row justify-end gap-3">
               <button
                 onClick={() => setShowNotesModal(false)}
-                className="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
+                className="w-full sm:w-auto px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSaveNotes}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                className="w-full sm:w-auto px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
               >
                 Save Notes
               </button>
@@ -391,10 +290,18 @@ const InpatientVisits = () => {
       {showVitalsModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">
-              Record Vitals for {selectedPatient?.name}
-            </h3>
-            <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">
+                Record Vitals for {selectedPatient?.name}
+              </h3>
+              <button
+                onClick={() => setShowVitalsModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <i className="fas fa-times text-lg"></i>
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="block text-sm text-gray-600 mb-1">Blood Pressure</label>
                 <input
@@ -436,16 +343,16 @@ const InpatientVisits = () => {
                 />
               </div>
             </div>
-            <div className="flex justify-end gap-3">
+            <div className="flex flex-col sm:flex-row justify-end gap-3">
               <button
                 onClick={() => setShowVitalsModal(false)}
-                className="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
+                className="w-full sm:w-auto px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSaveVitals}
-                className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                className="w-full sm:w-auto px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
               >
                 Save Vitals
               </button>
@@ -454,61 +361,98 @@ const InpatientVisits = () => {
         </div>
       )}
 
-      {/* Medications Modal */}
+      {/* Medications Modal - FIXED FOR MOBILE */}
       {showMedicationsModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">
-              Medications for {selectedPatient?.name}
-            </h3>
-            <div className="mb-4">
-              <h4 className="font-medium mb-2">Current Medications:</h4>
-              <div className="space-y-2">
-                {selectedPatient?.medications?.map((medication, index) => (
-                  <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                    <span>{medication}</span>
-                    <button
-                      onClick={() => handleRemoveMedication(selectedPatient.id, index)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <i className="fas fa-times"></i>
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Add new medication..."
-                className="flex-1 p-2 border border-gray-300 rounded"
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter' && e.target.value.trim()) {
-                    handleAddMedication(selectedPatient.id, e.target.value.trim())
-                    e.target.value = ''
-                  }
-                }}
-              />
-              <button
-                onClick={(e) => {
-                  const input = e.target.previousElementSibling
-                  if (input.value.trim()) {
-                    handleAddMedication(selectedPatient.id, input.value.trim())
-                    input.value = ''
-                  }
-                }}
-                className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
-              >
-                Add
-              </button>
-            </div>
-            <div className="flex justify-end mt-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Modal Header */}
+            <div className="flex justify-between items-center p-4 border-b">
+              <h3 className="text-lg font-semibold">
+                Medications for {selectedPatient?.name}
+              </h3>
               <button
                 onClick={() => setShowMedicationsModal(false)}
-                className="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
+                className="text-gray-500 hover:text-gray-700"
               >
-                Close
+                <i className="fas fa-times text-lg"></i>
               </button>
+            </div>
+
+            {/* Modal Content - Scrollable */}
+            <div className="flex-1 overflow-y-auto p-4">
+              <div className="mb-4">
+                <h4 className="font-medium mb-2">Current Medications:</h4>
+                {selectedPatient?.medications?.length > 0 ? (
+                  <div className="space-y-2">
+                    {selectedPatient.medications.map((medication, index) => (
+                      <div 
+                        key={index} 
+                        className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+                      >
+                        <div className="flex items-center">
+                          <i className="fas fa-pill text-purple-500 mr-3"></i>
+                          <span className="text-sm sm:text-base">{medication}</span>
+                        </div>
+                        <button
+                          onClick={() => handleRemoveMedication(selectedPatient.id, index)}
+                          className="text-red-500 hover:text-red-700 ml-2"
+                          aria-label="Remove medication"
+                        >
+                          <i className="fas fa-trash-alt"></i>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-4 text-gray-500">
+                    <i className="fas fa-pills text-3xl text-gray-300 mb-2"></i>
+                    <p>No medications added yet</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Add Medication Form */}
+              <div className="mt-4">
+                <h4 className="font-medium mb-2">Add New Medication:</h4>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    ref={medicationInputRef}
+                    type="text"
+                    value={newMedication}
+                    onChange={(e) => setNewMedication(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Enter medication name and dosage..."
+                    className="flex-1 p-2 border border-gray-300 rounded text-sm sm:text-base"
+                  />
+                  <button
+                    onClick={handleAddMedication}
+                    disabled={!newMedication.trim()}
+                    className={`px-4 py-2 rounded flex items-center justify-center gap-2 ${
+                      newMedication.trim() 
+                        ? 'bg-purple-500 text-white hover:bg-purple-600' 
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    <i className="fas fa-plus"></i>
+                    <span className="hidden sm:inline">Add</span>
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Press Enter or click Add to save medication
+                </p>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t">
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setShowMedicationsModal(false)}
+                  className="w-full sm:w-auto px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>

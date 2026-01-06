@@ -222,61 +222,107 @@ const IPDManagement = () => {
       </div>
 
       {/* IPD Dashboard */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white p-4 rounded-lg card-shadow border">
-          <div className="flex items-center">
-            <div className="p-3 bg-blue-100 rounded-lg mr-4">
-              <i className="fas fa-bed text-blue-600 text-xl"></i>
-            </div>
-            <div>
-              <p className="text-gray-500">Total Admissions</p>
-              <p className="text-2xl font-bold text-blue-600 mt-1">{ipdPatients.length}</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white p-4 rounded-lg card-shadow border">
-          <div className="flex items-center">
-            <div className="p-3 bg-red-100 rounded-lg mr-4">
-              <i className="fas fa-heartbeat text-red-600 text-xl"></i>
-            </div>
-            <div>
-              <p className="text-gray-500">Critical Patients</p>
-              <p className="text-2xl font-bold text-red-600 mt-1">
-                {ipdPatients.filter(p => p.status === 'Critical').length}
-              </p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white p-4 rounded-lg card-shadow border">
-          <div className="flex items-center">
-            <div className="p-3 bg-green-100 rounded-lg mr-4">
-              <i className="fas fa-door-open text-green-600 text-xl"></i>
-            </div>
-            <div>
-              <p className="text-gray-500">Available Beds</p>
-              <p className="text-2xl font-bold text-green-600 mt-1">
-                {wards.reduce((sum, ward) => sum + ward.availableBeds, 0)}
-              </p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white p-4 rounded-lg card-shadow border">
-          <div className="flex items-center">
-            <div className="p-3 bg-purple-100 rounded-lg mr-4">
-              <i className="fas fa-money-bill-wave text-purple-600 text-xl"></i>
-            </div>
-            <div>
-              <p className="text-gray-500">Today's Revenue</p>
-              <p className="text-2xl font-bold text-purple-600 mt-1">
-                ₹{ipdPatients.reduce((sum, p) => sum + p.roomCharges, 0)}
-              </p>
-            </div>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+
+  {/* TOTAL ADMISSIONS */}
+  <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5">
+    <div className="flex items-start justify-between">
+      <div>
+        <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide">
+          Total Admissions
+        </p>
+        <p className="text-2xl font-bold text-gray-900 mt-1">
+          {ipdPatients.length}
+        </p>
       </div>
+
+      <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center">
+        <i className="fas fa-bed text-white text-lg"></i>
+      </div>
+    </div>
+
+    {/* FULL WIDTH LINE */}
+    <div className="h-px w-full bg-blue-200 my-3"></div>
+
+    <p className="text-xs text-blue-600">
+      Overall admitted patients
+    </p>
+  </div>
+
+  {/* CRITICAL PATIENTS */}
+  <div className="bg-red-50 border border-red-200 rounded-2xl p-5">
+    <div className="flex items-start justify-between">
+      <div>
+        <p className="text-xs font-semibold text-red-700 uppercase tracking-wide">
+          Critical Patients
+        </p>
+        <p className="text-2xl font-bold text-gray-900 mt-1">
+          {ipdPatients.filter(p => p.status === 'Critical').length}
+        </p>
+      </div>
+
+      <div className="w-12 h-12 rounded-xl bg-red-500 flex items-center justify-center">
+        <i className="fas fa-heartbeat text-white text-lg"></i>
+      </div>
+    </div>
+
+    <div className="h-px w-full bg-red-200 my-3"></div>
+
+    <p className="text-xs text-red-600">
+      Requires immediate care
+    </p>
+  </div>
+
+  {/* AVAILABLE BEDS */}
+  <div className="bg-green-50 border border-green-200 rounded-2xl p-5">
+    <div className="flex items-start justify-between">
+      <div>
+        <p className="text-xs font-semibold text-green-700 uppercase tracking-wide">
+          Available Beds
+        </p>
+        <p className="text-2xl font-bold text-gray-900 mt-1">
+          {wards.reduce((sum, ward) => sum + ward.availableBeds, 0)}
+        </p>
+      </div>
+
+      <div className="w-12 h-12 rounded-xl bg-green-500 flex items-center justify-center">
+        <i className="fas fa-door-open text-white text-lg"></i>
+      </div>
+    </div>
+
+    <div className="h-px w-full bg-green-200 my-3"></div>
+
+    <p className="text-xs text-green-600">
+      Ready for admission
+    </p>
+  </div>
+
+  {/* TODAY'S REVENUE */}
+  <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-5">
+    <div className="flex items-start justify-between">
+      <div>
+        <p className="text-xs font-semibold text-yellow-700 uppercase tracking-wide">
+          Today's Revenue
+        </p>
+        <p className="text-2xl font-bold text-gray-900 mt-1">
+          ₹{ipdPatients.reduce((sum, p) => sum + p.roomCharges, 0)}
+        </p>
+      </div>
+
+      <div className="w-12 h-12 rounded-xl bg-yellow-500 flex items-center justify-center">
+        <i className="fas fa-money-bill-wave text-white text-lg"></i>
+      </div>
+    </div>
+
+    <div className="h-px w-full bg-yellow-200 my-3"></div>
+
+    <p className="text-xs text-yellow-600">
+      Room charges collected
+    </p>
+  </div>
+
+</div>
+
 
       {/* IPD Patients Table */}
       <div className="bg-white rounded-lg card-shadow border overflow-hidden mb-6">
@@ -303,7 +349,7 @@ const IPDManagement = () => {
               title: 'Status', 
               sortable: true,
               render: (value) => (
-                <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(value)}`}>
+                <span className={`px-3 py-1 rounded-full text-xs  font-medium ${getStatusColor(value)}`}>
                   {value}
                 </span>
               )
@@ -313,8 +359,9 @@ const IPDManagement = () => {
             {
               key: 'actions',
               title: 'Actions',
+              headerClassName: 'pl-6',
               render: (_, row) => (
-                <div className="flex gap-2">
+                <div className="flex gap-0.5">
                   <button 
                     className="text-blue-600 hover:text-blue-800 p-1 modal-touch-target" 
                     title="View Details"

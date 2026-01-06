@@ -329,7 +329,8 @@ const Messaging = () => {
 
   return (
     <div className="animate-fade-in">
-      <h2 className="text-2xl font-semibold text-gray-700 mb-6"> Messaging & Notifications</h2>
+      <h2 className="text-2xl font-semibold text-gray-700 mb-6">
+        <i className='fas fa-comments text-blue-500 mr-3'></i> Messaging & Notifications</h2>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Messages Section */}

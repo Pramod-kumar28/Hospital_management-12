@@ -519,7 +519,7 @@ export default function Contact() {
   return (
     <div className="min-h-screen bg-white">
       {/* Page Hero */}
-      <section className="relative py-10 mt-12 bg-white overflow-hidden">
+      <section className="relative py-10 mt-16 bg-white overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-[0.02]">
           <div className="absolute inset-0" style={{

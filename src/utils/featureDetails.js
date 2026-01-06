@@ -304,7 +304,7 @@ export const featureDetails = {
     title: "Mobile Access",
     description: "Full platform access on iOS & Android mobile applications with offline functionality and push notifications.",
     longDescription: "Our mobile applications provide full access to the hospital management system on iOS and Android devices, enabling healthcare professionals to work efficiently from anywhere.",
-    image: "https://images.unsplash.com/photo-1623915695133-d624f7759fd0?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bW9iaWxlJTIwYWNjZXNzJTIwaG9zcGl0YWwlMjBhcHBsaWNhdGlvbnxlbnwwfHwwfHx8MA%3D%3D",
+    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHwxfHxtb2JpbGUlMjBoZWFsdGhjYXJlJTIwYXBwfGVufDB8fHx8MTc2MjUyNzQwOHww&ixlib=rb-4.1.0&q=85",
     icon: Smartphone,
     color: "from-purple-600 to-pink-600",
     features: [

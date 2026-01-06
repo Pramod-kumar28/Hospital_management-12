@@ -31,21 +31,27 @@ export default function Download() {
                         and data-driven dashboards to boost efficiency and hospital growth.
                     </p>
 
-                    {/* Stats */}
-                    <div className="grid grid-cols-3 gap-4 mt-8">
-                        <div className="border p-6 rounded-xl bg-white text-center shadow">
-                            <h3 className="text-3xl font-bold text-blue-600">250+</h3>
-                            <p className="text-sm text-gray-600 mt-1">Hospitals</p>
+                    {/* Core Principles */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                        <div className="border-l-4 border-blue-500 pl-4 py-3">
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Seamless Integration</h3>
+                            <p className="text-gray-600 text-sm">
+                                Unified platform connecting all hospital departments for smooth workflow
+                            </p>
                         </div>
 
-                        <div className="border p-6 rounded-xl bg-white text-center shadow">
-                            <h3 className="text-3xl font-bold text-blue-600">24/7</h3>
-                            <p className="text-sm text-gray-600 mt-1">Live Support</p>
+                        <div className="border-l-4 border-green-500 pl-4 py-3">
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Patient-Centric Design</h3>
+                            <p className="text-gray-600 text-sm">
+                                Focus on enhancing patient experience and care quality
+                            </p>
                         </div>
 
-                        <div className="border p-6 rounded-xl bg-white text-center shadow">
-                            <h3 className="text-3xl font-bold text-blue-600">12+</h3>
-                            <p className="text-sm text-gray-600 mt-1">Awards</p>
+                        <div className="border-l-4 border-purple-500 pl-4 py-3">
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Data-Driven Decisions</h3>
+                            <p className="text-gray-600 text-sm">
+                                Real-time analytics for informed healthcare management
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -102,41 +108,6 @@ export default function Download() {
                             <span className="text-lg font-semibold">App Store</span>
                         </Link>
 
-                    </div>
-
-                    {/* App Features */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6  max-w-4xl mx-auto">
-                        <div className="flex flex-col items-center text-center p-4">
-                            <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mb-3">
-                                <Calendar className="w-6 h-6 text-white" />
-                            </div>
-                            <h3 className="font-bold text-lg mb-2">Appointments</h3>
-                            <p className="text-gray-300 text-sm">Book with real-time availability</p>
-                        </div>
-                        
-                        <div className="flex flex-col items-center text-center p-4">
-                            <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mb-3">
-                                <FileText className="w-6 h-6 text-white" />
-                            </div>
-                            <h3 className="font-bold text-lg mb-2">Lab Reports</h3>
-                            <p className="text-gray-300 text-sm">Access digital reports</p>
-                        </div>
-                        
-                        <div className="flex flex-col items-center text-center p-4">
-                            <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mb-3">
-                                <CreditCard className="w-6 h-6 text-white" />
-                            </div>
-                            <h3 className="font-bold text-lg mb-2">Payments</h3>
-                            <p className="text-gray-300 text-sm">Secure billing & payments</p>
-                        </div>
-
-                        <div className="flex flex-col items-center text-center p-4">
-                            <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mb-3">
-                                <Smartphone className="w-6 h-6 text-white" />
-                            </div>
-                            <h3 className="font-bold text-lg mb-2">Mobile Access</h3>
-                            <p className="text-gray-300 text-sm">Full platform on mobile</p>
-                        </div>
                     </div>
                 </div>
             </footer>

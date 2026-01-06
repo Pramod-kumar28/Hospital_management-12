@@ -176,7 +176,7 @@ const Billing = () => {
       </div>
 
       <div className="w-11 h-11 rounded-xl bg-green-600 flex items-center justify-center">
-        <i className="fas fa-rupee-sign text-white"></i>
+        <i className="fas fa-indian-rupee-sign text-white"></i>
       </div>
     </div>
 

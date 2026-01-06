@@ -1,215 +1,213 @@
-// import React from 'react'
-// import { Link } from 'react-router-dom'
-// import { Activity, Mail, Phone, MapPin, Facebook, Twitter, Linkedin, Instagram, Youtube } from 'lucide-react'
-
-// export default function Footer() {
-//   return (
-//     <footer className="bg-gray-900 text-gray-300">
-//       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-//         <div className="grid md:grid-cols-4 gap-8">
-//           <div className="md:col-span-2">
-//             <Link to="/" className="flex items-center gap-2 font-semibold text-white mb-4">
-//               <div className="w-8 h-8 rounded-md bg-blue-600 text-white flex items-center justify-center">
-//                 <Activity size={16} />
-//               </div>
-//               <span className="text-lg">DCM Hospital</span>
-//             </Link>
-//             <p className="text-gray-400 mb-4 max-w-md">
-//               Modern, secure, and scalable hospital management system trusted by healthcare professionals worldwide.
-//             </p>
-//             <div className="space-y-2 text-sm">
-//               <div className="flex items-center gap-2">
-//                 <Mail size={16} />
-//                 <span>info@dcmhospital.com</span>
-//               </div>
-//               <div className="flex items-center gap-2">
-//                 <Phone size={16} />
-//                 <span>+91 1800-123-4567</span>
-//               </div>
-//               <div className="flex items-center gap-2">
-//                 <MapPin size={16} />
-//                 <span>Mumbai, India</span>
-//               </div>
-//             </div>
-//           </div>
-
-//           <div>
-//             <h3 className="text-white font-semibold mb-4">Product</h3>
-//             <ul className="space-y-2 text-sm">
-//               <li><Link to="/features" className="text-gray-400 hover:text-white transition-colors">Features</Link></li>
-//               <li><Link to="/solutions" className="text-gray-400 hover:text-white transition-colors">Solutions</Link></li>
-//               <li><Link to="/pricing" className="text-gray-400 hover:text-white transition-colors">Pricing</Link></li>
-//             </ul>
-//           </div>
-
-//           <div>
-//             <h3 className="text-white font-semibold mb-4">Company</h3>
-//             <ul className="space-y-2 text-sm">
-//               <li><Link to="/contact" className="text-gray-400 hover:text-white transition-colors">Contact</Link></li>
-//               <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Careers</a></li>
-//               <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Blog</a></li>
-//             </ul>
-//           </div>
-//         </div>
-
-//         <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-//           <p className="text-sm text-gray-400">© 2024 DCM Hospital Management. All rights reserved.</p>
-//           <div className="flex gap-3 mt-4 md:mt-0">
-//             <a href="#" className="w-8 h-8 rounded bg-gray-800 hover:bg-blue-600 transition-colors flex items-center justify-center">
-//               <Facebook size={16} />
-//             </a>
-//             <a href="#" className="w-8 h-8 rounded bg-gray-800 hover:bg-blue-600 transition-colors flex items-center justify-center">
-//               <Twitter size={16} />
-//             </a>
-//             <a href="#" className="w-8 h-8 rounded bg-gray-800 hover:bg-blue-600 transition-colors flex items-center justify-center">
-//               <Linkedin size={16} />
-//             </a>
-//             <a href="#" className="w-8 h-8 rounded bg-gray-800 hover:bg-blue-600 transition-colors flex items-center justify-center">
-//               <Instagram size={16} />
-//             </a>
-//             <a href="#" className="w-8 h-8 rounded bg-gray-800 hover:bg-blue-600 transition-colors flex items-center justify-center">
-//               <Youtube size={16} />
-//             </a>
-//           </div>
-//         </div>
-//       </div>
-//     </footer>
-//   )
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import React from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Activity, Mail, Phone, MapPin, Facebook, Twitter, Linkedin, Instagram, Youtube } from 'lucide-react'
 
-export default function Footer() {
+// Modal Component
+const Modal = ({ isOpen, onClose, title, children }) => {
+  if (!isOpen) return null
+
   return (
-    <footer className="bg-gradient-to-r from-blue-600 to-blue-800 text-gray-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid md:grid-cols-4 gap-8">
-          <div className="md:col-span-2">
-           < Link to="/" className="flex items-center gap-3 mb-4">
-            {/* LOGO AND BRAND NAME SECTION */}
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-14 h-14 md:w-16 md:h-16 flex-shrink-0">
-                <img
-                  src="./assets/images/DCM-Logo.png"
-                  alt="DCM Hospital Logo"
-                  className="w-full h-full object-contain"
-                />
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+        <div className="flex justify-between items-center border-b border-gray-200 px-6 py-4">
+          <h2 className="text-xl font-bold text-gray-800">{title}</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 transition duration-300"
+          >
+            <i className="fas fa-times text-xl"></i>
+          </button>
+        </div>
+        <div className="px-6 py-4 overflow-y-auto max-h-[calc(80vh-59px)]">
+          {children}
+        </div>
+        <div className="border-t border-gray-200 px-6 py-2 bg-gray-50">
+          <button
+            onClick={onClose}
+            className="bg-amber-500 hover:bg-amber-600 text-white px-6 py-2 rounded-lg transition duration-300"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const Footer = () => {
+  const [activeModal, setActiveModal] = useState(null)
+
+  const openModal = (modalName) => setActiveModal(modalName)
+  const closeModal = () => setActiveModal(null)
+
+  return (
+    <>
+      <footer className="navy-blue bg-navy-blue text-white py-10">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {/* Company Info */}
+            <div>
+              <div className="flex items-center mb-6">
+                <div className="h-12 w-22 shadow-lg overflow-hidden mr-3"> {/* Increased width from w-19 to w-22 */}
+                  <img
+                    src="./assets/images/DCM-Logo.png"
+                    alt="Logo"
+                    className="h-12 w-20" 
+                  />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold"><span className='text-white-500'>Hospital Management system</span></h2>
+                </div>
               </div>
-              <div className="flex flex-col">
-                <span className="text-xl font-bold text-white">Hospital Management</span>
-                {/* <span className="text-base text-blue-100 font-medium">Management System</span> */}
+              <p className="text-gray-300 mb-6 text-sm">
+                Transforming healthcare delivery through innovative technology solutions. Trusted by hospitals across Hyderabad and beyond.
+              </p>
+              <div className="flex space-x-4">
+                <Link to="#" className="light-navy hover:bg-blue-700 h-10 w-10 rounded-full flex items-center justify-center transition duration-300">
+                  <i className="fab fa-facebook-f"></i>
+                </Link>
+                <Link to="#" className="light-navy hover:bg-blue-700 h-10 w-10 rounded-full flex items-center justify-center transition duration-300">
+                  <i className="fab fa-twitter"></i>
+                </Link>
+                <Link to="#" className="light-navy hover:bg-blue-700 h-10 w-10 rounded-full flex items-center justify-center transition duration-300">
+                  <i className="fab fa-linkedin-in"></i>
+                </Link>
+                <Link to="#" className="light-navy hover:bg-blue-700 h-10 w-10 rounded-full flex items-center justify-center transition duration-300">
+                  <i className="fab fa-instagram"></i>
+                </Link>
               </div>
-              <span className="text-lg text-white">DCM Hospital Management</span>
-              </div>
-            </Link>
-            <p className="text-blue-100 mb-6 max-w-md">
-              Modern, secure, and scalable hospital management system trusted by healthcare professionals worldwide.
-            </p>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2 text-blue-100">
-                <Mail size={16} />
-                <span>info@dcmhospital.com</span>
-              </div>
-              <div className="flex items-center gap-2 text-blue-100">
-                <Phone size={16} />
-                <span>+91 1800-123-4567</span>
-              </div>
-              <div className="flex items-center gap-2 text-blue-100">
-                <MapPin size={16} />
-                <span>Mumbai, India</span>
+            </div>
+           
+            {/* Quick Links */}
+            <div>
+              <h3 className="text-lg font-semibold mb-6 lg:text-left sm:text-left">Quick Links</h3>
+              <ul className="space-y-3 text-sm lg:text-left sm:text-left">
+                <li><Link to="/" className="text-gray-300 hover:text-white-500 transition duration-300">Home</Link></li>
+                <li><Link to="/features" className="text-gray-300 hover:text-white-500 transition duration-300">Features</Link></li>
+                <li><Link to="/solutions" className="text-gray-300 hover:text-white-500 transition duration-300">Solutions</Link></li>
+                <li><Link to="/pricing" className="text-gray-300 hover:text-white-500 transition duration-300">Pricing</Link></li>
+                <li><Link to="/contact" className="text-gray-300 hover:text-white-500 transition duration-300">Contact</Link></li>
+              </ul>
+            </div>
+           
+            {/* Services */}
+            <div>
+              <h3 className="text-lg font-semibold mb-6">Our Services</h3>
+              <ul className="space-y-3 text-sm">
+                <li><Link to="#" className="text-gray-300 hover:text-white-500 transition duration-300">Pharmacy Management</Link></li>
+                <li><Link to="#" className="text-gray-300 hover:text-white-500 transition duration-300">Laboratory (LIMS)</Link></li>
+                <li><Link to="#" className="text-gray-300 hover:text-white-500 transition duration-300">Telemedicine</Link></li>
+                <li><Link to="#" className="text-gray-300 hover:text-white-500 transition duration-300">Doctor Portal</Link></li>
+                <li><Link to="#" className="text-gray-300 hover:text-white-500 transition duration-300">Billing & Accounts</Link></li>
+                <li><Link to="#" className="text-gray-300 hover:text-white-500 transition duration-300">Hyderabad, India</Link></li>
+              </ul>
+            </div>  
+           
+            {/* Contact Info */}
+            <div>
+              <h3 className="text-lg font-semibold mb-6">Connect</h3>
+              <div className="space-y-3 mb-4 text-sm">
+                <div className="flex items-start space-x-3">
+                  <i className="fas fa-map-marker-alt text-white-500 mt-1" />
+                  <span className="text-gray-300">
+                    Office #407 & 409 4th Floor, Jain Sadguru Image's Capital Park, Madhapur, Hyderabad
+                  </span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <i className="fas fa-phone text-white-500" />
+                  <span className="text-gray-300">+91 1800 123 4567</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <i className="fas fa-envelope text-white-500" />
+                  <span className="text-gray-300">info@dcmhospital.com</span>
+                </div>
               </div>
             </div>
           </div>
-
-          <div>
-            <h3 className="text-white font-semibold mb-4">Solutions</h3>
-            <ul className="space-y-2 text-sm">
-              <li><Link to="/" className="text-white-200 hover:text-white transition-colors">Home</Link></li>
-              <li><Link to="/features" className="text-white-200 hover:text-white transition-colors">Features</Link></li>
-              <li><Link to="/solutions" className="text-white-200 hover:text-white transition-colors">Solutions</Link></li>
-              <li><Link to="/pricing" className="text-white-200 hover:text-white transition-colors">Pricing</Link></li>
-              <li><Link to="/contact" className="text-white-200 hover:text-white transition-colors">Contact</Link></li>
-              
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="text-white font-semibold mb-4">Company</h3>
-            <ul className="space-y-2 text-sm">
-              <li><a href="#" className="text-white-200 hover:text-white transition-colors">Terms of Service</a></li>
-              <li><a href="#" className="text-white-200 hover:text-white transition-colors">Privacy Policy</a></li>
-             
-            </ul>
-          </div>
-        </div>
-
-        <div className="border-t border-blue-500 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-sm text-white-200">© 2024 DCM Hospital Management. All rights reserved.</p>
-          <div className="flex gap-3 mt-4 md:mt-0">
-            {/* Facebook - Blue */}
-            <a 
-              href="#" 
-              className="w-10 h-10 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-all duration-300 transform hover:scale-110 shadow-lg flex items-center justify-center"
-            >
-              <Facebook size={18} />
-            </a>
-            
-            {/* Twitter - Sky Blue */}
-            <a 
-              href="#" 
-              className="w-10 h-10 rounded-lg bg-blue-400 text-white hover:bg-blue-500 transition-all duration-300 transform hover:scale-110 shadow-lg flex items-center justify-center"
-            >
-              <Twitter size={18} />
-            </a>
-            
-            {/* LinkedIn - Professional Blue */}
-            <a 
-              href="#" 
-              className="w-10 h-10 rounded-lg bg-blue-700 text-white hover:bg-blue-800 transition-all duration-300 transform hover:scale-110 shadow-lg flex items-center justify-center"
-            >
-              <Linkedin size={18} />
-            </a>
-            
-            {/* Instagram - Gradient Purple to Pink */}
-            <a 
-              href="#" 
-              className="w-10 h-10 rounded-lg bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white hover:from-purple-600 hover:via-pink-600 hover:to-red-600 transition-all duration-300 transform hover:scale-110 shadow-lg flex items-center justify-center"
-            >
-              <Instagram size={18} />
-            </a>
-            
-            {/* YouTube - Red */}
-            <a 
-              href="#" 
-              className="w-10 h-10 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-all duration-300 transform hover:scale-110 shadow-lg flex items-center justify-center"
-            >
-              <Youtube size={18} />
-            </a>
+         
+          {/* Footer Bottom */}
+          <div className="border-t border-blue-800 pt-8 mt-8">
+            <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+              <p className="text-gray-400 text-sm">
+                &copy; 2025 DCM Hospital Management. All rights reserved.
+              </p>
+              <p className="text-gray-400 text-sm">
+                &copy; Developed by <a href="https://designcareermetrics.com/" className="hover:text-amber-500 transition duration-300">Designcareermetrics</a>
+              </p>
+              <div className="flex space-x-6 text-sm">
+                <Link 
+                  to="/privacy"
+                  className="text-gray-400 hover:text-amber-500 transition-colors"
+                >
+                  Privacy Policy
+                </Link>
+                <Link 
+                  to="/terms-of-service"
+                  className="text-gray-400 hover:text-amber-500 transition-colors"
+                >
+                  Terms of Service
+                </Link>
+                <Link 
+                  to="/contact"
+                  className="text-gray-400 hover:text-amber-500 transition-colors"
+                >
+                  Support
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </footer>
+      </footer>
+
+      {/* Sitemap Modal - Removed legal sections since you have separate pages */}
+      <Modal isOpen={activeModal === 'sitemap'} onClose={closeModal} title="Website Sitemap">
+        <div className="text-gray-700">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h3 className="font-semibold text-lg mb-3 text-gray-800 border-b pb-2">Main Pages</h3>
+              <ul className="space-y-2">
+                <li><Link to="/" className="text-amber-600 hover:text-amber-700 transition duration-300">Home</Link></li>
+                <li><Link to="/features" className="text-amber-600 hover:text-amber-700 transition duration-300">Features</Link></li>
+                <li><Link to="/solutions" className="text-amber-600 hover:text-amber-700 transition duration-300">Solutions</Link></li>
+                <li><Link to="/pricing" className="text-amber-600 hover:text-amber-700 transition duration-300">Pricing</Link></li>
+                <li><Link to="/contact" className="text-amber-600 hover:text-amber-700 transition duration-300">Contact Us</Link></li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-semibold text-lg mb-3 text-gray-800 border-b pb-2">Services</h3>
+              <ul className="space-y-2">
+                <li><Link to="#" className="text-amber-600 hover:text-amber-700 transition duration-300">Pharmacy Management</Link></li>
+                <li><Link to="#" className="text-amber-600 hover:text-amber-700 transition duration-300">Laboratory (LIMS)</Link></li>
+                <li><Link to="#" className="text-amber-600 hover:text-amber-700 transition duration-300">Telemedicine</Link></li>
+                <li><Link to="#" className="text-amber-600 hover:text-amber-700 transition duration-300">Doctor Portal</Link></li>
+                <li><Link to="#" className="text-amber-600 hover:text-amber-700 transition duration-300">Billing & Accounts</Link></li>
+              </ul>
+            </div>
+{/* 
+            <div>
+              <h3 className="font-semibold text-lg mb-3 text-gray-800 border-b pb-2">Company</h3>
+              <ul className="space-y-2">
+                <li><Link to="/about" className="text-amber-600 hover:text-amber-700 transition duration-300">About Us</Link></li>
+                <li><Link to="/careers" className="text-amber-600 hover:text-amber-700 transition duration-300">Careers</Link></li>
+                <li><Link to="/blog" className="text-amber-600 hover:text-amber-700 transition duration-300">Blog</Link></li>
+                <li><Link to="/testimonials" className="text-amber-600 hover:text-amber-700 transition duration-300">Testimonials</Link></li>
+              </ul>
+            </div> */}
+{/* 
+            <div>
+              <h3 className="font-semibold text-lg mb-3 text-gray-800 border-b pb-2">Resources</h3>
+              <ul className="space-y-2">
+                <li><Link to="/faq" className="text-amber-600 hover:text-amber-700 transition duration-300">FAQ</Link></li>
+                <li><Link to="/support" className="text-amber-600 hover:text-amber-700 transition duration-300">Support Center</Link></li>
+                <li><Link to="/documentation" className="text-amber-600 hover:text-amber-700 transition duration-300">Documentation</Link></li>
+                <li><Link to="/api-docs" className="text-amber-600 hover:text-amber-700 transition duration-300">API Documentation</Link></li>
+              </ul>
+            </div> */}
+          </div>
+        </div>
+      </Modal>
+    </>
   )
 }
+
+export default Footer

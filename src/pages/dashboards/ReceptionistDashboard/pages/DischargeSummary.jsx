@@ -568,23 +568,89 @@ Hospital Administration
 
       {/* Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
-        <div className="bg-white p-4 rounded-lg card-shadow border text-center">
-          <div className="text-2xl font-bold text-blue-600">{patients.length}</div>
-          <div className="text-sm text-gray-500">IPD Patients</div>
-        </div>
-        <div className="bg-white p-4 rounded-lg card-shadow border text-center">
-          <div className="text-2xl font-bold text-green-600">12</div>
-          <div className="text-sm text-gray-500">Discharged Today</div>
-        </div>
-        <div className="bg-white p-4 rounded-lg card-shadow border text-center">
-          <div className="text-2xl font-bold text-purple-600">24</div>
-          <div className="text-sm text-gray-500">This Month</div>
-        </div>
-        <div className="bg-white p-4 rounded-lg card-shadow border text-center">
-          <div className="text-2xl font-bold text-orange-600">98%</div>
-          <div className="text-sm text-gray-500">Completion Rate</div>
-        </div>
+
+  {/* IPD Patients */}
+  <div className="group bg-gradient-to-br from-blue-50 to-white border border-blue-200 rounded-xl p-5 
+                  hover:shadow-lg transition-all duration-300">
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm text-gray-600">IPD Patients</p>
+        <p className="text-2xl font-bold text-blue-700 mt-1">
+          {patients.length}
+        </p>
       </div>
+      <div className="w-11 h-11 rounded-full bg-blue-600 text-white flex items-center justify-center
+                      group-hover:scale-110 transition-transform">
+        <i className="fas fa-procedures"></i>
+      </div>
+    </div>
+    <div className="mt-3 h-1 w-full bg-blue-100 rounded-full">
+      <div className="h-1 w-2/3 bg-blue-500 rounded-full"></div>
+    </div>
+  </div>
+
+  {/* Discharged Today */}
+  <div className="group bg-gradient-to-br from-green-50 to-white border border-green-200 rounded-xl p-5 
+                  hover:shadow-lg transition-all duration-300">
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm text-gray-600">Discharged Today</p>
+        <p className="text-2xl font-bold text-green-700 mt-1">
+          12
+        </p>
+      </div>
+      <div className="w-11 h-11 rounded-full bg-green-600 text-white flex items-center justify-center
+                      group-hover:scale-110 transition-transform">
+        <i className="fas fa-check-circle"></i>
+      </div>
+    </div>
+    <div className="mt-3 h-1 w-full bg-green-100 rounded-full">
+      <div className="h-1 w-1/2 bg-green-500 rounded-full"></div>
+    </div>
+  </div>
+
+  {/* This Month */}
+  <div className="group bg-gradient-to-br from-purple-50 to-white border border-purple-200 rounded-xl p-5 
+                  hover:shadow-lg transition-all duration-300">
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm text-gray-600">This Month</p>
+        <p className="text-2xl font-bold text-purple-700 mt-1">
+          24
+        </p>
+      </div>
+      <div className="w-11 h-11 rounded-full bg-purple-600 text-white flex items-center justify-center
+                      group-hover:scale-110 transition-transform">
+        <i className="fas fa-calendar-alt"></i>
+      </div>
+    </div>
+    <div className="mt-3 h-1 w-full bg-purple-100 rounded-full">
+      <div className="h-1 w-3/4 bg-purple-500 rounded-full"></div>
+    </div>
+  </div>
+
+  {/* Completion Rate */}
+  <div className="group bg-gradient-to-br from-orange-50 to-white border border-orange-200 rounded-xl p-5 
+                  hover:shadow-lg transition-all duration-300">
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm text-gray-600">Completion Rate</p>
+        <p className="text-2xl font-bold text-orange-700 mt-1">
+          98%
+        </p>
+      </div>
+      <div className="w-11 h-11 rounded-full bg-orange-600 text-white flex items-center justify-center
+                      group-hover:scale-110 transition-transform">
+        <i className="fas fa-chart-line"></i>
+      </div>
+    </div>
+    <div className="mt-3 h-1 w-full bg-orange-100 rounded-full">
+      <div className="h-1 w-[98%] bg-orange-500 rounded-full"></div>
+    </div>
+  </div>
+
+</div>
+
     </div>
   );
 };

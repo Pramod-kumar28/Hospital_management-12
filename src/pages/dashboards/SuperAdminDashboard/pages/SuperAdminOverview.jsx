@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const SuperAdminOverview = () => {
   const [state, setState] = useState({
@@ -93,66 +94,65 @@ const SuperAdminOverview = () => {
     .filter(s => s.status === 'Paid')
     .reduce((sum, sub) => sum + sub.amount, 0)
 
+    const navigate = useNavigate()
+
   return (
     <div className="space-y-6 animate-fade-in">
       <h2 className="text-2xl font-semibold text-gray-700 mb-6">
-         Dashboard Overview
+        Dashboard Overview
       </h2>
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 
-        {/* Doctors */}
-        <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
-          {/* light background shape */}
+        {/* Active Hospitals */}
+        
+        <div onClick={()=>navigate('users')}
+         className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent pointer-events-none" />
 
-          {/* badge */}
           <span className="absolute top-4 right-4 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded">
-            +95%
+            +12%
           </span>
 
           <div className="relative flex justify-between items-end">
-            {/* left */}
             <div>
               <div className="w-10 h-10 flex items-center justify-center rounded-full bg-indigo-600 mb-3">
-                <i className="fas fa-user-md text-white"></i>
+                <i className="fas fa-hospital text-white"></i>
               </div>
-              <p className="text-sm text-gray-500">Doctors</p>
-              <p className="text-2xl font-bold text-gray-900">247</p>
-              <p className="text-xs text-gray-400 mt-1">in last 7 Days</p>
+              <p className="text-sm text-gray-500">Active Hospitals</p>
+              <p className="text-2xl font-bold text-gray-900">38</p>
+              <p className="text-xs text-gray-400 mt-1">Currently operational</p>
             </div>
 
-            {/* mini bars */}
             <div className="flex items-end gap-1 h-14">
-              <div className="w-1.5 h-4 bg-indigo-300 rounded"></div>
+              <div className="w-1.5 h-5 bg-indigo-300 rounded"></div>
+              <div className="w-1.5 h-8 bg-indigo-400 rounded"></div>
+              <div className="w-1.5 h-11 bg-indigo-500 rounded"></div>
               <div className="w-1.5 h-7 bg-indigo-400 rounded"></div>
-              <div className="w-1.5 h-10 bg-indigo-500 rounded"></div>
-              <div className="w-1.5 h-6 bg-indigo-400 rounded"></div>
-              <div className="w-1.5 h-12 bg-indigo-600 rounded"></div>
+              <div className="w-1.5 h-13 bg-indigo-600 rounded"></div>
             </div>
           </div>
         </div>
 
-        {/* Patients */}
+        {/* Total Patients (All Hospitals) */}
         <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-transparent pointer-events-none" />
 
           <span className="absolute top-4 right-4 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded">
-            +25%
+            +18%
           </span>
 
           <div className="relative flex justify-between items-end">
             <div>
               <div className="w-10 h-10 flex items-center justify-center rounded-full bg-red-500 mb-3">
-                <i className="fas fa-user-injured text-white"></i>
+                <i className="fas fa-users text-white"></i>
               </div>
-              <p className="text-sm text-gray-500">Patients</p>
-              <p className="text-2xl font-bold text-gray-900">4178</p>
-              <p className="text-xs text-gray-400 mt-1">in last 7 Days</p>
+              <p className="text-sm text-gray-500">Total Patients</p>
+              <p className="text-2xl font-bold text-gray-900">1,42,780</p>
+              <p className="text-xs text-gray-400 mt-1">Across all hospitals</p>
             </div>
 
-            {/* mini line */}
             <svg width="70" height="40" viewBox="0 0 70 40">
               <polyline
                 points="0,30 12,22 24,26 36,18 48,20 60,12"
@@ -164,12 +164,12 @@ const SuperAdminOverview = () => {
           </div>
         </div>
 
-        {/* Appointment */}
+        {/* Total Appointments */}
         <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent pointer-events-none" />
 
-          <span className="absolute top-4 right-4 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded">
-            -15%
+          <span className="absolute top-4 right-4 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded">
+            +9%
           </span>
 
           <div className="relative flex justify-between items-end">
@@ -177,41 +177,39 @@ const SuperAdminOverview = () => {
               <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-500 mb-3">
                 <i className="fas fa-calendar-check text-white"></i>
               </div>
-              <p className="text-sm text-gray-500">Appointment</p>
-              <p className="text-2xl font-bold text-gray-900">12178</p>
-              <p className="text-xs text-gray-400 mt-1">in last 7 Days</p>
+              <p className="text-sm text-gray-500">Appointments</p>
+              <p className="text-2xl font-bold text-gray-900">3,85,420</p>
+              <p className="text-xs text-gray-400 mt-1">Last 30 days</p>
             </div>
 
-            {/* mini bars */}
             <div className="flex items-end gap-1 h-14">
-              <div className="w-1.5 h-10 bg-sky-400 rounded"></div>
+              <div className="w-1.5 h-9 bg-sky-400 rounded"></div>
               <div className="w-1.5 h-6 bg-sky-300 rounded"></div>
               <div className="w-1.5 h-12 bg-sky-500 rounded"></div>
               <div className="w-1.5 h-8 bg-sky-400 rounded"></div>
-              <div className="w-1.5 h-9 bg-sky-300 rounded"></div>
+              <div className="w-1.5 h-10 bg-sky-300 rounded"></div>
             </div>
           </div>
         </div>
 
-        {/* Revenue */}
+        {/* Platform Revenue */}
         <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent pointer-events-none" />
 
           <span className="absolute top-4 right-4 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded">
-            +25%
+            +27%
           </span>
 
           <div className="relative flex justify-between items-end">
             <div>
               <div className="w-10 h-10 flex items-center justify-center rounded-full bg-green-500 mb-3">
-                <i className="fas fa-wallet text-white"></i>
+                <i className="fas fa-indian-rupee-sign text-white"></i>
               </div>
-              <p className="text-sm text-gray-500">Revenue</p>
-              <p className="text-2xl font-bold text-gray-900">$55,1240</p>
-              <p className="text-xs text-gray-400 mt-1">in last 7 Days</p>
+              <p className="text-sm text-gray-500">Platform Revenue</p>
+              <p className="text-2xl font-bold text-gray-900">₹8.4 Cr</p>
+              <p className="text-xs text-gray-400 mt-1">All hospitals combined</p>
             </div>
 
-            {/* mini line */}
             <svg width="70" height="40" viewBox="0 0 70 40">
               <polyline
                 points="0,28 12,26 24,20 36,22 48,16 60,10"
@@ -224,6 +222,7 @@ const SuperAdminOverview = () => {
         </div>
 
       </div>
+
 
 
       {/* Recent Activity */}
@@ -333,8 +332,8 @@ const SuperAdminOverview = () => {
                   </div>
                 </div>
                 <span className={`px-2 py-1 rounded text-xs font-medium ${user.status === 'Active'
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-gray-100 text-gray-800'
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-gray-100 text-gray-800'
                   }`}>
                   {user.status}
                 </span>

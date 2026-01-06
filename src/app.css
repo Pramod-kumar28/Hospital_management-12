@@ -182,6 +182,13 @@ body.modal-open {
 }
  
 /* ===== LAYOUT COMPONENTS ===== */
+
+.navy-blue{
+    background-color: #1e3a5f;
+}
+.light-navy{
+    background-color: #2d4f7c;
+}
  
 /* Container for all screens */
 .container-responsive {

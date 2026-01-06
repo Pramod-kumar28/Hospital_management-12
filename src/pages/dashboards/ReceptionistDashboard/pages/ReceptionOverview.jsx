@@ -725,7 +725,7 @@ const ReceptionOverview = ({ setActivePage }) => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
         {/* Today's Appointments Table */}
         <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 to-transparent pointer-events-none" />
           
           <div className="relative">
             <div className="flex items-center justify-between mb-6">
@@ -786,7 +786,7 @@ const ReceptionOverview = ({ setActivePage }) => {
 
         {/* Recent Registrations */}
         <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent pointer-events-none" />
+          <div className="absolute inset-0  to-transparent pointer-events-none" />
           
           <div className="relative">
             <div className="flex items-center justify-between mb-6">
@@ -850,7 +850,7 @@ const ReceptionOverview = ({ setActivePage }) => {
 
         {/* Quick Actions */}
         <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent pointer-events-none" />
+          <div className="absolute inset-0  to-transparent pointer-events-none" />
           
           <div className="relative">
             <div className="flex items-center mb-4">
@@ -955,7 +955,7 @@ const ReceptionOverview = ({ setActivePage }) => {
             </div>
             
             {/* Additional Actions */}
-            <div className="mt-6 pt-4 border-t border-gray-200">
+            {/* <div className="mt-6 pt-4 border-t border-gray-200">
               <div className="flex justify-between text-xs text-gray-500 mb-2">
                 <span>Additional Tools</span>
               </div>
@@ -975,14 +975,14 @@ const ReceptionOverview = ({ setActivePage }) => {
                   Profile
                 </button>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
 
       {/* Waiting Area */}
       <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-yellow-50 to-transparent pointer-events-none" />
+        <div className="absolute inset-0  to-transparent pointer-events-none" />
         
         <div className="relative">
           <div className="flex items-center justify-between mb-6">

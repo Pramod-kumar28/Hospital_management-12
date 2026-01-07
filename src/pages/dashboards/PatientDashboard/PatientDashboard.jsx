@@ -46,20 +46,20 @@ const PatientDashboard = () => {
     switch (activePage) {
       case 'dashboard':
         return <PatientOverview setActivePage={setActivePage} />
-    //   case 'appointments':
-    //     return <Appointments />
-    //   case 'records':
-    //     return <MedicalRecords />
-    //   case 'prescriptions':
-    //     return <Prescriptions />
-    //   case 'tests':
-    //     return <TestResults />
-    //   case 'billing':
-    //     return <Billing />
+      case 'appointments':
+        return <Appointments />
+      case 'records':
+        return <MedicalRecords />
+      case 'prescriptions':
+        return <Prescriptions />
+      case 'tests':
+        return <TestResults />
+      case 'billing':
+        return <Billing />
       case 'profile':
         return <Profile />
-    //   case 'messages':
-    //     return <Messages />
+      case 'messages':
+        return <Messages />
       default:
         return <PatientOverview setActivePage={setActivePage} />
     }

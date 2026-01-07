@@ -1,419 +1,747 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Mail, ArrowLeft, Shield, CheckCircle, 
-  Heart, Zap, Clock, Key
-} from 'lucide-react';
 
-export default function ForgotPassword() {
-  const [email, setEmail] = useState('');
+const PasswordResetPage = () => {
+  const [currentStep, setCurrentStep] = useState(1);
+  const [selectedMethod, setSelectedMethod] = useState('');
+  const [userContact, setUserContact] = useState('');
+  const [countdownTime, setCountdownTime] = useState(600);
+  const [resendTime, setResendTime] = useState(60);
+  const [email, setEmail] = useState('doctor.john@hospital.org');
+  const [phone, setPhone] = useState('98765 43210');
+  const [countryCode, setCountryCode] = useState('+91');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [passwordStrength, setPasswordStrength] = useState(20);
+  const [strengthText, setStrengthText] = useState('Weak');
+  const [strengthColor, setStrengthColor] = useState('bg-red-500');
+  const [passwordMatch, setPasswordMatch] = useState(false);
+  const [passwordMismatch, setPasswordMismatch] = useState(false);
+  const [showOtpSuccess, setShowOtpSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState('');
-  const [step, setStep] = useState(1); // 1: Email input, 2: Code verification, 3: New password
-  const [code, setCode] = useState(['', '', '', '']);
-  const inputRefs = useRef([]);
+  
+  const otpInputRefs = useRef([]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Simulate success
-      setSuccess(true);
-      setTimeout(() => {
-        setStep(2);
-        setSuccess(false);
-      }, 2000);
-      
-    } catch (err) {
-      setError('Failed to send reset instructions. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+  // Step Navigation
+  const goToStep = (step) => {
+    if (step < 1 || step > 4) return;
+    setCurrentStep(step);
   };
 
-  const handleCodeChange = (index, value) => {
-    // Only allow numbers
-    if (value && !/^\d+$/.test(value)) return;
-
-    const newCode = [...code];
-    newCode[index] = value;
-    setCode(newCode);
-
-    // Auto-focus next input
-    if (value && index < 3) {
-      inputRefs.current[index + 1].focus();
-    }
-
-    // Auto-focus previous input on backspace
-    if (!value && index > 0) {
-      inputRefs.current[index - 1].focus();
-    }
+  // Method Selection
+  const selectMethod = (method) => {
+    setSelectedMethod(method);
+    goToStep(2);
   };
 
-  const handleKeyDown = (index, e) => {
-    // Handle backspace
-    if (e.key === 'Backspace' && !code[index] && index > 0) {
-      inputRefs.current[index - 1].focus();
-    }
-    
-    // Handle arrow keys
-    if (e.key === 'ArrowLeft' && index > 0) {
-      inputRefs.current[index - 1].focus();
-    }
-    if (e.key === 'ArrowRight' && index < 3) {
-      inputRefs.current[index + 1].focus();
-    }
-  };
-
-  const handlePaste = (e) => {
-    e.preventDefault();
-    const pasteData = e.clipboardData.getData('text').slice(0, 4);
-    if (/^\d+$/.test(pasteData)) {
-      const newCode = [...code];
-      for (let i = 0; i < pasteData.length; i++) {
-        if (i < 4) {
-          newCode[i] = pasteData[i];
-        }
+  // Handle Contact Form Submission
+  const submitContactForm = () => {
+    if (selectedMethod === 'email') {
+      if (!email || !email.includes('@')) {
+        alert('Please enter a valid email address');
+        return;
       }
-      setCode(newCode);
-      
-      // Focus the last filled input or the last one
-      const lastFilledIndex = Math.min(pasteData.length - 1, 3);
-      inputRefs.current[lastFilledIndex].focus();
+      setUserContact(email);
+    } else if (selectedMethod === 'sms') {
+      if (!phone) {
+        alert('Please enter a phone number');
+        return;
+      }
+      setUserContact(phone);
+    }
+
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      goToStep(3);
+    }, 1000);
+  };
+
+  // OTP Functions
+  const handleOtpChange = (index, value) => {
+    if (value.length <= 1 && /^\d*$/.test(value)) {
+      const newOtp = [...otp];
+      newOtp[index] = value;
+      setOtp(newOtp);
+
+      // Auto focus next input
+      if (value && index < 5) {
+        otpInputRefs.current[index + 1]?.focus();
+      }
     }
   };
 
-  const handleCodeVerification = async (e) => {
-    e.preventDefault();
+  const handleOtpKeyDown = (index, e) => {
+    // Handle backspace
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      otpInputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  // Start Countdown
+  useEffect(() => {
+    let countdownInterval;
+    let resendInterval;
+
+    if (currentStep === 3) {
+      setCountdownTime(600);
+      setResendTime(60);
+
+      // Start countdown timer
+      countdownInterval = setInterval(() => {
+        setCountdownTime((prev) => {
+          if (prev <= 1) {
+            clearInterval(countdownInterval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      // Start resend timer
+      resendInterval = setInterval(() => {
+        setResendTime((prev) => {
+          if (prev <= 1) {
+            clearInterval(resendInterval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (countdownInterval) clearInterval(countdownInterval);
+      if (resendInterval) clearInterval(resendInterval);
+    };
+  }, [currentStep]);
+
+  // Auto-focus first OTP input
+  useEffect(() => {
+    if (currentStep === 3 && otpInputRefs.current[0]) {
+      setTimeout(() => {
+        otpInputRefs.current[0]?.focus();
+      }, 100);
+    }
+  }, [currentStep]);
+
+  const verifyOTP = () => {
+    // Auto-enter dummy OTP for testing
+    const dummyOTP = ['1', '2', '3', '4', '5', '6'];
+    setOtp(dummyOTP);
+    setShowOtpSuccess(true);
+
+    setTimeout(() => {
+      goToStep(4);
+    }, 1500);
+  };
+
+  const resendCode = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      setResendTime(60);
+      alert('New code sent!');
+    }, 1000);
+  };
+
+  // Password Strength Check
+  const checkPasswordStrength = (password) => {
+    setNewPassword(password);
     
-    // Check if all code digits are filled
-    if (code.some(digit => digit === '')) {
-      setError('Please enter the complete verification code.');
+    let strength = 0;
+    const hasLength = password.length >= 8;
+    const hasUpper = /[A-Z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+
+    if (hasLength) strength += 25;
+    if (hasUpper) strength += 25;
+    if (hasNumber) strength += 25;
+    if (hasSpecial) strength += 25;
+
+    setPasswordStrength(strength);
+
+    if (strength <= 25) {
+      setStrengthText('Weak');
+      setStrengthColor('bg-red-500');
+    } else if (strength <= 50) {
+      setStrengthText('Fair');
+      setStrengthColor('bg-yellow-500');
+    } else if (strength <= 75) {
+      setStrengthText('Good');
+      setStrengthColor('bg-blue-500');
+    } else {
+      setStrengthText('Strong');
+      setStrengthColor('bg-green-500');
+    }
+
+    // Check password match
+    checkPasswordMatch(password, confirmPassword);
+  };
+
+  const checkPasswordMatch = (newPass = newPassword, confirmPass = confirmPassword) => {
+    setConfirmPassword(confirmPass);
+    
+    if (!confirmPass) {
+      setPasswordMatch(false);
+      setPasswordMismatch(false);
+      return;
+    }
+
+    if (newPass === confirmPass && newPass.length > 0) {
+      setPasswordMatch(true);
+      setPasswordMismatch(false);
+    } else {
+      setPasswordMatch(false);
+      setPasswordMismatch(true);
+    }
+  };
+
+  const togglePassword = (fieldId) => {
+    const field = document.getElementById(fieldId);
+    const icon = field.nextElementSibling?.querySelector('i');
+    if (field && icon) {
+      const type = field.getAttribute('type') === 'password' ? 'text' : 'password';
+      field.setAttribute('type', type);
+      icon.className = type === 'password' ? 'fas fa-eye text-gray-400' : 'fas fa-eye-slash text-gray-400';
+    }
+  };
+
+  // Handle Password Form Submission
+  const submitPasswordForm = () => {
+    if (newPassword.length < 8) {
+      alert('Password must be at least 8 characters');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      alert('Passwords do not match');
       return;
     }
 
     setLoading(true);
-    setError('');
-
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setStep(3);
-    } catch (err) {
-      setError('Invalid verification code. Please try again.');
-    } finally {
+    setTimeout(() => {
       setLoading(false);
-    }
+      setCurrentStep(5); // Success screen
+    }, 2000);
   };
 
-  const handlePasswordReset = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setSuccess(true);
-      setTimeout(() => {
-        // Redirect to login page after successful password reset
-        window.location.href = '/signin';
-      }, 2000);
-    } catch (err) {
-      setError('Failed to reset password. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+  // Format time display
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
+
+  // Loading Overlay
+  const LoadingOverlay = ({ message }) => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-xl shadow-lg text-center mx-4 max-w-xs">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p className="text-gray-700 font-medium text-sm md:text-base">{message}</p>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 mt-16">
-      {/* Header */}
-      <div className="border-b border-gray-200 bg-white">
-      </div>
+    <div className="min-h-screen bg-white flex items-center justify-center p-4 md:p-6">
+      {loading && <LoadingOverlay message={currentStep === 2 ? "Sending code..." : currentStep === 4 ? "Updating password..." : "Processing..."} />}
+      
+      <div className="max-w-lg w-full">
+        
+        {/* Header */}
+        <div className="text-center mb-6 md:mb-8">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="bg-blue-600 text-white p-2 md:p-3 rounded-xl">
+              <i className="fas fa-hospital text-xl md:text-2xl"></i>
+            </div>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">DCMS Hospital</h1>
+              <p className="text-gray-600 text-sm md:text-base">Secure Password Recovery</p>
+            </div>
+          </div>
+        </div>
 
-      {/* Main Content */}
-      <div className="container-x py-8 md:py-12">
-        <div className="max-w-md mx-auto px-4 sm:px-6">
-          {/* Progress Steps - Horizontal Flow */}
-          <div className="flex justify-center mb-8">
-            <div className="flex items-center w-full max-w-xs">
-              {/* Step 1 */}
-              <div className="flex flex-col items-center flex-1">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
-                  step >= 1 
-                    ? 'bg-blue-600 border-blue-600 text-white' 
-                    : 'bg-white border-gray-300 text-gray-400'
-                }`}>
-                  {step > 1 ? <CheckCircle className="w-5 h-5" /> : '1'}
-                </div>
-                <span className={`text-xs mt-2 text-center ${step >= 1 ? 'text-blue-600 font-medium' : 'text-gray-500'}`}>
-                  Enter Email
-                </span>
+        {/* Main Form Card */}
+        <div className="bg-white rounded-xl shadow-lg p-4 md:p-8">
+          {/* Progress Steps */}
+          <div className="mb-6 md:mb-8">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-sm font-medium text-gray-700">
+                Step <span>{currentStep}</span> of 4
               </div>
-              
-              {/* Connector 1 */}
-              <div className={`flex-1 h-0.5 mx-2 ${step >= 2 ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
-              
-              {/* Step 2 */}
-              <div className="flex flex-col items-center flex-1">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
-                  step >= 2 
-                    ? 'bg-blue-600 border-blue-600 text-white' 
-                    : 'bg-white border-gray-300 text-gray-400'
-                }`}>
-                  {step > 2 ? <CheckCircle className="w-5 h-5" /> : '2'}
-                </div>
-                <span className={`text-xs mt-2 text-center ${step >= 2 ? 'text-blue-600 font-medium' : 'text-gray-500'}`}>
-                  Verify Code
-                </span>
+              <div className="text-xs md:text-sm text-gray-500 text-right">
+                {currentStep === 1 && 'Identify Method'}
+                {currentStep === 2 && 'Contact Information'}
+                {currentStep === 3 && 'Verify Code'}
+                {currentStep === 4 && 'New Password'}
+                {currentStep === 5 && 'Complete'}
               </div>
-              
-              {/* Connector 2 */}
-              <div className={`flex-1 h-0.5 mx-2 ${step >= 3 ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
-              
-              {/* Step 3 */}
-              <div className="flex flex-col items-center flex-1">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
-                  step >= 3 
-                    ? 'bg-blue-600 border-blue-600 text-white' 
-                    : 'bg-white border-gray-300 text-gray-400'
+            </div>
+            <div className="flex items-center">
+              <div className="flex-1 flex items-center">
+                <div className={`w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center font-semibold text-xs md:text-sm ${
+                  currentStep >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
+                }`}>
+                  1
+                </div>
+                <div className={`flex-1 h-1 ${currentStep >= 2 ? 'bg-blue-600' : 'bg-gray-200'}`}></div>
+              </div>
+              <div className="flex-1 flex items-center">
+                <div className={`w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center font-semibold text-xs md:text-sm ${
+                  currentStep >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
+                }`}>
+                  2
+                </div>
+                <div className={`flex-1 h-1 ${currentStep >= 3 ? 'bg-blue-600' : 'bg-gray-200'}`}></div>
+              </div>
+              <div className="flex-1 flex items-center">
+                <div className={`w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center font-semibold text-xs md:text-sm ${
+                  currentStep >= 3 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
                 }`}>
                   3
                 </div>
-                <span className={`text-xs mt-2 text-center ${step >= 3 ? 'text-blue-600 font-medium' : 'text-gray-500'}`}>
-                  New Password
-                </span>
+                <div className={`flex-1 h-1 ${currentStep >= 4 ? 'bg-blue-600' : 'bg-gray-200'}`}></div>
+              </div>
+              <div className={`w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center font-semibold text-xs md:text-sm ${
+                currentStep >= 4 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
+              }`}>
+                4
               </div>
             </div>
           </div>
 
-          {/* Card */}
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-6 md:p-8">
-            {/* Header */}
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                <Key className="w-8 h-8 text-white" />
-              </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-                {step === 1 && 'Reset Your Password'}
-                {step === 2 && 'Verify Your Identity'}
-                {step === 3 && 'Create New Password'}
-              </h2>
-              <p className="text-gray-600 text-sm md:text-base">
-                {step === 1 && 'Enter your email address and we\'ll send you reset instructions'}
-                {step === 2 && 'Enter the verification code sent to your email'}
-                {step === 3 && 'Create a new secure password for your account'}
-              </p>
-            </div>
+          {/* Step 1: Choose Method */}
+          {currentStep === 1 && (
+            <div className="animate-fadeIn">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">Reset Your Password</h2>
+              <p className="text-gray-600 mb-6 text-sm md:text-base">Choose verification method</p>
+              
+              <div className="space-y-4 mb-6">
+                {/* Email Option */}
+                <div 
+                  className="p-3 md:p-4 border-2 border-gray-200 rounded-xl hover:border-blue-500 cursor-pointer transition-all active:scale-[0.99]"
+                  onClick={() => selectMethod('email')}
+                >
+                  <div className="flex items-center gap-3 md:gap-4">
+                    <div className="p-2 md:p-3 rounded-lg bg-blue-100">
+                      <i className="fas fa-envelope text-blue-600 text-lg md:text-xl"></i>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900 text-sm md:text-base">Email Verification</h3>
+                      <p className="text-gray-600 text-xs md:text-sm">Send code to your hospital email</p>
+                    </div>
+                    <i className="fas fa-chevron-right text-gray-400"></i>
+                  </div>
+                </div>
 
-            {/* Success Message */}
-            {success && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-green-400 mr-3" />
+                {/* SMS Option */}
+                <div 
+                  className="p-3 md:p-4 border-2 border-gray-200 rounded-xl hover:border-blue-500 cursor-pointer transition-all active:scale-[0.99]"
+                  onClick={() => selectMethod('sms')}
+                >
+                  <div className="flex items-center gap-3 md:gap-4">
+                    <div className="p-2 md:p-3 rounded-lg bg-green-100">
+                      <i className="fas fa-mobile-alt text-green-600 text-lg md:text-xl"></i>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900 text-sm md:text-base">SMS Verification</h3>
+                      <p className="text-gray-600 text-xs md:text-sm">Receive a text message with code</p>
+                    </div>
+                    <i className="fas fa-chevron-right text-gray-400"></i>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-3 md:p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="flex items-start">
+                  <i className="fas fa-info-circle text-blue-500 mr-3 mt-0.5"></i>
                   <div>
-                    <p className="text-sm text-green-700 font-medium">
-                      {step === 1 && 'Reset instructions sent to your email!'}
-                      {step === 3 && 'Password reset successfully! Redirecting...'}
+                    <p className="text-xs md:text-sm text-blue-700">
+                      Choose the method linked to your hospital account for fastest recovery.
                     </p>
                   </div>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Error Message */}
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                <div className="flex items-center">
-                  <Shield className="h-5 w-5 text-red-400 mr-3" />
+          {/* Step 2: Enter Contact Information */}
+          {currentStep === 2 && (
+            <div className="animate-fadeIn">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
+                {selectedMethod === 'email' ? 'Enter Your Email' : 'Enter Your Mobile Number'}
+              </h2>
+              <p className="text-gray-600 mb-6 text-sm md:text-base">
+                {selectedMethod === 'email' ? "We'll send a verification code to your hospital email" : "We'll send an SMS to your registered mobile"}
+              </p>
+              
+              <div className="space-y-6">
+                {/* Email Form */}
+                {selectedMethod === 'email' && (
                   <div>
-                    <p className="text-sm text-red-700">{error}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Step 1: Email Input */}
-            {step === 1 && (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Address
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Mail className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      type="email"
-                      required
-                      className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                      placeholder="your.email@hospital.com"
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <i className="fas fa-envelope mr-2 text-blue-500"></i>
+                      Hospital Email Address
+                    </label>
+                    <input 
+                      type="email" 
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      required 
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+                      placeholder="doctor.name@hospital.org"
                     />
+                    <p className="text-xs text-gray-500 mt-2">Use your official hospital email address</p>
                   </div>
-                </div>
+                )}
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full px-4 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold hover:from-blue-700 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center gap-2"
-                >
-                  {loading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      Sending Instructions...
-                    </>
-                  ) : (
-                    <>
-                      Send Reset Instructions
-                      <Zap className="w-4 h-4" />
-                    </>
-                  )}
-                </button>
-              </form>
-            )}
-
-            {/* Step 2: Code Verification */}
-            {step === 2 && (
-              <form onSubmit={handleCodeVerification} className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Verification Code
-                  </label>
-                  <div className="grid grid-cols-4 gap-3">
-                    {[0, 1, 2, 3].map((index) => (
-                      <input
-                        key={index}
-                        ref={(el) => (inputRefs.current[index] = el)}
-                        type="text"
-                        maxLength={1}
-                        value={code[index]}
-                        onChange={(e) => handleCodeChange(index, e.target.value)}
-                        onKeyDown={(e) => handleKeyDown(index, e)}
-                        onPaste={handlePaste}
-                        className="w-full text-center py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-xl font-semibold"
-                        required
-                        inputMode="numeric"
-                        pattern="[0-9]*"
+                {/* SMS Form */}
+                {selectedMethod === 'sms' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <i className="fas fa-mobile-alt mr-2 text-green-500"></i>
+                      Mobile Number
+                    </label>
+                    <div className="flex gap-2">
+                      <select 
+                        value={countryCode}
+                        onChange={(e) => setCountryCode(e.target.value)}
+                        className="w-20 md:w-24 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-base"
+                      >
+                        <option value="+91">+91</option>
+                        <option value="+1">+1</option>
+                        <option value="+44">+44</option>
+                      </select>
+                      <input 
+                        type="tel" 
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        required 
+                        className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-base"
+                        placeholder="9876543210"
                       />
-                    ))}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">The number registered with your hospital account</p>
                   </div>
-                  <p className="text-sm text-gray-500 mt-2 text-center">
-                    Enter the 4-digit code sent to {email}
-                  </p>
-                </div>
+                )}
 
-                <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
-                  <Clock className="w-4 h-4" />
-                  <span>Code expires in 10:00</span>
-                </div>
-
-                <div className="flex gap-3 flex-col sm:flex-row">
-                  <button
-                    type="button"
-                    onClick={() => setStep(1)}
-                    className="flex-1 px-4 py-3 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                    <Link to="/login">
+                  <button 
+                    type="button" 
+                    onClick={() => goToStep(1)}
+                    className="flex-1 p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-base"
                   >
-                    Back
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="flex-1 px-4 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold hover:from-blue-700 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                    <i className="fas fa-arrow-left mr-2"></i>Back
+                  </button></Link>
+                  <button 
+                    type="button" 
+                    onClick={submitContactForm}
+                    className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white p-3 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition-all text-base"
                   >
-                    {loading ? 'Verifying...' : 'Verify Code'}
+                    Send Verification Code
+                    <i className="fas fa-paper-plane ml-2"></i>
                   </button>
                 </div>
-
-                <div className="text-center">
-                  <button
-                    type="button"
-                    className="text-blue-600 hover:text-blue-500 text-sm font-medium transition-colors"
-                  >
-                    Didn't receive code? Resend
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {/* Step 3: New Password */}
-            {step === 3 && (
-              <form onSubmit={handlePasswordReset} className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    New Password
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    className="w-full px-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    placeholder="Enter new password"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Must be at least 8 characters with uppercase, lowercase, and numbers
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Confirm New Password
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    className="w-full px-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    placeholder="Confirm new password"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full px-4 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold hover:from-blue-700 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center gap-2"
-                >
-                  {loading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      Resetting Password...
-                    </>
-                  ) : (
-                    <>
-                      Reset Password
-                      <CheckCircle className="w-4 h-4" />
-                    </>
-                  )}
-                </button>
-              </form>
-            )}
-
-            {/* Help Section */}
-            <div className="mt-8 pt-6 border-t border-gray-200">
-              <div className="text-center">
-                <p className="text-sm text-gray-600">
-                  Need help?{' '}
-                  <a href="mailto:support@dcmhospital.com" className="text-blue-600 hover:text-blue-500 font-medium transition-colors">
-                    Contact Support
-                  </a>
-                </p>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Security Notice */}
-          <div className="mt-6 text-center">
-            <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-              <Shield className="w-4 h-4" />
-              <span className="text-xs md:text-sm">Your security is our priority. All reset links expire in 1 hour.</span>
+          {/* Step 3: OTP Verification */}
+          {currentStep === 3 && (
+            <div className="animate-fadeIn">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">Enter Verification Code</h2>
+              <p className="text-gray-600 mb-6 text-sm md:text-base">
+                We sent a 6-digit code to <span className="font-semibold">{userContact}</span>
+              </p>
+              
+              <div className="space-y-6">
+                {/* OTP Input */}
+                <div className="flex justify-center gap-1 md:gap-2 mb-4">
+                  {[0, 1, 2, 3, 4, 5].map((index) => (
+                    <input
+                      key={index}
+                      ref={(el) => otpInputRefs.current[index] = el}
+                      type="text"
+                      maxLength="1"
+                      value={otp[index]}
+                      onChange={(e) => handleOtpChange(index, e.target.value)}
+                      onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                      className="w-10 h-10 md:w-12 md:h-12 text-center text-lg md:text-xl font-bold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                      id={`otp${index + 1}`}
+                    />
+                  ))}
+                </div>
+
+                {/* Countdown Timer */}
+                <div className="text-center">
+                  <div className="mb-4">
+                    <div className={`font-mono text-base md:text-lg font-bold mb-1 ${
+                      countdownTime <= 60 ? 'text-red-600' : 'text-gray-700'
+                    }`}>
+                      {formatTime(countdownTime)}
+                    </div>
+                    <p className="text-sm text-gray-500">Code expires in</p>
+                  </div>
+
+                  <button 
+                    onClick={resendCode}
+                    className="text-blue-600 hover:text-blue-800 font-medium text-sm md:text-base"
+                    disabled={resendTime > 0}
+                  >
+                    Resend Code (<span>{resendTime}</span>s)
+                  </button>
+                </div>
+
+                {/* Verification Status */}
+                {showOtpSuccess && (
+                  <div className="p-3 md:p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center">
+                      <i className="fas fa-check-circle text-green-500 text-lg md:text-xl mr-3"></i>
+                      <div>
+                        <h3 className="font-semibold text-green-800 text-sm md:text-base">Verified Successfully!</h3>
+                        <p className="text-green-700 text-xs md:text-sm">Redirecting to password reset...</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                  <button 
+                    onClick={() => goToStep(2)}
+                    className="flex-1 p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-base"
+                  >
+                    <i className="fas fa-arrow-left mr-2"></i>Back
+                  </button>
+                  <button 
+                    onClick={verifyOTP}
+                    className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white p-3 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition-all text-base"
+                  >
+                    Verify Code
+                    <i className="fas fa-check ml-2"></i>
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Step 4: New Password */}
+          {currentStep === 4 && (
+            <div className="animate-fadeIn">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">Create New Password</h2>
+              <p className="text-gray-600 mb-6 text-sm md:text-base">Your password must meet hospital security requirements</p>
+              
+              <div className="space-y-6">
+                {/* New Password */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <i className="fas fa-lock mr-2 text-green-500"></i>
+                    New Password
+                  </label>
+                  <div className="relative">
+                    <input 
+                      type="password" 
+                      id="newPassword"
+                      value={newPassword}
+                      onChange={(e) => checkPasswordStrength(e.target.value)}
+                      required
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 pr-10 text-base"
+                      placeholder="Create a strong password"
+                    />
+                    <button 
+                      type="button" 
+                      onClick={() => togglePassword('newPassword')}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                    >
+                      <i className="fas fa-eye text-gray-400"></i>
+                    </button>
+                  </div>
+                  
+                  {/* Password Strength Meter */}
+                  <div className="mt-2">
+                    <div className="flex justify-between mb-1">
+                      <span className="text-xs text-gray-600">Password strength:</span>
+                      <span className={`text-xs font-medium ${
+                        strengthText === 'Weak' ? 'text-red-600' :
+                        strengthText === 'Fair' ? 'text-yellow-600' :
+                        strengthText === 'Good' ? 'text-blue-600' : 'text-green-600'
+                      }`}>
+                        {strengthText}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-1.5">
+                      <div 
+                        className={`h-full rounded-full transition-all duration-300 ${strengthColor}`} 
+                        style={{ width: `${passwordStrength}%` }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  {/* Password Requirements */}
+                  <div className="mt-3 space-y-1">
+                    <div className="flex items-center">
+                      <i className={`fas ${
+                        newPassword.length >= 8 ? 'fa-check text-green-500' : 'fa-times text-red-500'
+                      } text-xs mr-2`}></i>
+                      <span className={`text-xs ${
+                        newPassword.length >= 8 ? 'text-green-600' : 'text-gray-600'
+                      }`}>At least 8 characters</span>
+                    </div>
+                    <div className="flex items-center">
+                      <i className={`fas ${
+                        /[A-Z]/.test(newPassword) ? 'fa-check text-green-500' : 'fa-times text-red-500'
+                      } text-xs mr-2`}></i>
+                      <span className={`text-xs ${
+                        /[A-Z]/.test(newPassword) ? 'text-green-600' : 'text-gray-600'
+                      }`}>One uppercase letter</span>
+                    </div>
+                    <div className="flex items-center">
+                      <i className={`fas ${
+                        /[0-9]/.test(newPassword) ? 'fa-check text-green-500' : 'fa-times text-red-500'
+                      } text-xs mr-2`}></i>
+                      <span className={`text-xs ${
+                        /[0-9]/.test(newPassword) ? 'text-green-600' : 'text-gray-600'
+                      }`}>One number</span>
+                    </div>
+                    <div className="flex items-center">
+                      <i className={`fas ${
+                        /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPassword) ? 'fa-check text-green-500' : 'fa-times text-red-500'
+                      } text-xs mr-2`}></i>
+                      <span className={`text-xs ${
+                        /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPassword) ? 'text-green-600' : 'text-gray-600'
+                      }`}>One special character</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Confirm Password */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <i className="fas fa-lock mr-2 text-blue-500"></i>
+                    Confirm New Password
+                  </label>
+                  <div className="relative">
+                    <input 
+                      type="password" 
+                      id="confirmPassword"
+                      value={confirmPassword}
+                      onChange={(e) => checkPasswordMatch(newPassword, e.target.value)}
+                      required
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-10 text-base"
+                      placeholder="Re-enter your new password"
+                    />
+                    <button 
+                      type="button" 
+                      onClick={() => togglePassword('confirmPassword')}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                    >
+                      <i className="fas fa-eye text-gray-400"></i>
+                    </button>
+                  </div>
+                  {passwordMatch && (
+                    <div className="mt-2">
+                      <i className="fas fa-check-circle text-green-500 mr-1"></i>
+                      <span className="text-xs text-green-600">Passwords match</span>
+                    </div>
+                  )}
+                  {passwordMismatch && (
+                    <div className="mt-2">
+                      <i className="fas fa-times-circle text-red-500 mr-1"></i>
+                      <span className="text-xs text-red-600">Passwords do not match</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                  <button 
+                    type="button" 
+                    onClick={() => goToStep(3)}
+                    className="flex-1 p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-base"
+                  >
+                    <i className="fas fa-arrow-left mr-2"></i>Back
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={submitPasswordForm}
+                    disabled={!passwordMatch || newPassword.length < 8}
+                    className={`flex-1 p-3 rounded-lg font-semibold transition-all text-base ${
+                      passwordMatch && newPassword.length >= 8
+                        ? 'bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    Reset Password
+                    <i className="fas fa-check-double ml-2"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Success Screen */}
+          {currentStep === 5 && (
+            <div className="text-center py-6 md:py-8">
+              <div className="w-14 h-14 md:w-16 md:h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i className="fas fa-check text-green-500 text-xl md:text-2xl"></i>
+              </div>
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">Password Reset Successful!</h2>
+              <p className="text-gray-600 mb-6 text-sm md:text-base">Your password has been updated successfully.</p>
+              
+              <div className="bg-green-50 p-3 md:p-4 rounded-lg border border-green-200 mb-6">
+                <div className="flex items-start">
+                  <i className="fas fa-info-circle text-green-500 mr-3 mt-0.5"></i>
+                  <div className="text-left">
+                    <p className="text-xs md:text-sm text-green-800">
+                      <span className="font-semibold">Next steps:</span> You'll be automatically logged out of all other devices. Please log in again with your new password.
+                    </p>
+                  </div>
+                </div>
+              </div>
+                 
+                 <Link to="/login">
+              <button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white p-3 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition-all text-base">
+                Go to Login
+                <i className="fas fa-sign-in-alt ml-2"></i>
+              </button></Link>
+            </div>
+          )}
+
+          {/* Back to Login Link */}
+          <Link to="/login">
+          {currentStep < 5 && (
+            <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t text-center">
+              <a href="#" className="text-blue-600 hover:text-blue-800 font-medium inline-flex items-center gap-2 text-sm md:text-base">
+                <i className="fas fa-arrow-left"></i>
+                Back to Login
+              </a>
+            </div>
+          )}</Link>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-6 md:mt-8 text-center">
+          <p className="text-gray-500 text-xs md:text-sm">
+            <i className="fas fa-shield-alt mr-1"></i>
+            DCMS Hospital System • HIPAA Compliant • Secure Recovery
+          </p>
         </div>
       </div>
+
+      {/* Add CSS for animations */}
+      <style jsx>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out;
+        }
+      `}</style>
     </div>
   );
-}
+};
+
+export default PasswordResetPage;

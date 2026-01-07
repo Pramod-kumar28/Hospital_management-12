@@ -23,5 +23,5 @@ const demoUsers = [
   { email: 'nurse@dcm.demo', password: 'nurse123', role: 'NURSE' },
   { email: 'reception@dcm.demo', password: 'reception123', role: 'RECEPTIONIST' },
   { email: 'super@dcm.demo', password: 'sup123', role: 'SUPER_ADMIN' },
-  // { email: 'patient@dcm.demo', password: 'patient123', role: 'PATIENT' }
+  { email: 'patient@dcm.demo', password: 'patient123', role: 'PATIENT' }
 ]

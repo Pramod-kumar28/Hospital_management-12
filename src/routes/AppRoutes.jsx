@@ -274,7 +274,7 @@ const AppRoutes = () => {
       case 'NURSE': return '/nurse'
       case 'RECEPTIONIST': return '/receptionist'
       case 'SUPER_ADMIN': return '/super-admin'
-      // case 'PATIENT': return '/patient' // NEW: Patient route
+      case 'PATIENT': return '/patient' // NEW: Patient route
       case 'LAB': return '/lab'
       default: return '/login'
     }
@@ -342,11 +342,11 @@ const AppRoutes = () => {
       } />
       
       {/* NEW: Patient Dashboard Route */}
-      {/* <Route path="/patient/*" element={
+      <Route path="/patient/*" element={
         <ProtectedRoute requiredRole="PATIENT">
           <PatientDashboard />
         </ProtectedRoute>
-      } /> */}
+      } />
 
       <Route path="/lab/*" element={
         <ProtectedRoute requiredRole="LAB">

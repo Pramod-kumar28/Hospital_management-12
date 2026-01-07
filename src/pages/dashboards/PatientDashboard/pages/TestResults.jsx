@@ -118,7 +118,7 @@ const TestResults = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-700">🔬 Test Results</h2>
+          <h2 className="text-2xl font-semibold text-gray-700"> Test Results</h2>
           <p className="text-gray-500 text-sm mt-1">View and download your lab test reports</p>
         </div>
         <div className="flex gap-2">
@@ -133,29 +133,81 @@ const TestResults = () => {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-lg border text-center">
-          <div className="text-xl md:text-2xl font-bold text-blue-600">{testResults.length}</div>
-          <div className="text-sm text-gray-500">Total Tests</div>
-        </div>
-        <div className="bg-white p-4 rounded-lg border text-center">
-          <div className="text-xl md:text-2xl font-bold text-green-600">
-            {testResults.filter(t => t.result === 'Normal').length}
-          </div>
-          <div className="text-sm text-gray-500">Normal Results</div>
-        </div>
-        <div className="bg-white p-4 rounded-lg border text-center">
-          <div className="text-xl md:text-2xl font-bold text-yellow-600">
-            {testResults.filter(t => t.result === 'Borderline').length}
-          </div>
-          <div className="text-sm text-gray-500">Borderline</div>
-        </div>
-        <div className="bg-white p-4 rounded-lg border text-center">
-          <div className="text-xl md:text-2xl font-bold text-red-600">
-            {testResults.filter(t => t.result === 'Abnormal').length}
-          </div>
-          <div className="text-sm text-gray-500">Abnormal</div>
-        </div>
+
+  {/* Total Tests */}
+  <div className="flex bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition">
+    <div className="w-1.5 bg-blue-600"></div>
+
+    <div className="flex items-center gap-4 p-4 w-full">
+      <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+        <i className="fas fa-vials text-blue-600"></i>
       </div>
+
+      <div>
+        <p className="text-sm text-gray-500">Total Tests</p>
+        <p className="text-2xl font-bold text-gray-900">
+          {testResults.length}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  {/* Normal */}
+  <div className="flex bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition">
+    <div className="w-1.5 bg-green-600"></div>
+
+    <div className="flex items-center gap-4 p-4 w-full">
+      <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+        <i className="fas fa-check-circle text-green-600"></i>
+      </div>
+
+      <div>
+        <p className="text-sm text-gray-500">Normal Results</p>
+        <p className="text-2xl font-bold text-gray-900">
+          {testResults.filter(t => t.result === 'Normal').length}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  {/* Borderline */}
+  <div className="flex bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition">
+    <div className="w-1.5 bg-yellow-500"></div>
+
+    <div className="flex items-center gap-4 p-4 w-full">
+      <div className="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center">
+        <i className="fas fa-exclamation-circle text-yellow-600"></i>
+      </div>
+
+      <div>
+        <p className="text-sm text-gray-500">Borderline</p>
+        <p className="text-2xl font-bold text-gray-900">
+          {testResults.filter(t => t.result === 'Borderline').length}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  {/* Abnormal */}
+  <div className="flex bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition">
+    <div className="w-1.5 bg-red-600"></div>
+
+    <div className="flex items-center gap-4 p-4 w-full">
+      <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
+        <i className="fas fa-times-circle text-red-600"></i>
+      </div>
+
+      <div>
+        <p className="text-sm text-gray-500">Abnormal</p>
+        <p className="text-2xl font-bold text-gray-900">
+          {testResults.filter(t => t.result === 'Abnormal').length}
+        </p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
 
       {/* Filter Tabs */}
       <div className="flex flex-wrap gap-2">

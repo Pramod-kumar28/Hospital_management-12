@@ -85,7 +85,7 @@ const Prescriptions = () => {
   }
 
   const getStatusColor = (status) => {
-    switch(status.toLowerCase()) {
+    switch (status.toLowerCase()) {
       case 'active': return 'bg-green-100 text-green-800'
       case 'expired': return 'bg-red-100 text-red-800'
       case 'completed': return 'bg-blue-100 text-blue-800'
@@ -93,8 +93,8 @@ const Prescriptions = () => {
     }
   }
 
-  const filteredPrescriptions = filter === 'all' 
-    ? prescriptions 
+  const filteredPrescriptions = filter === 'all'
+    ? prescriptions
     : prescriptions.filter(p => p.status.toLowerCase() === filter.toLowerCase())
 
   if (loading) return <LoadingSpinner />
@@ -104,7 +104,7 @@ const Prescriptions = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-700">💊 Prescriptions</h2>
+          <h2 className="text-2xl font-semibold text-gray-700"> Prescriptions</h2>
           <p className="text-gray-500 text-sm mt-1">View and manage your prescribed medications</p>
         </div>
         <div className="flex gap-2">
@@ -118,70 +118,142 @@ const Prescriptions = () => {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-lg border text-center">
-          <div className="text-xl md:text-2xl font-bold text-blue-600">{prescriptions.length}</div>
-          <div className="text-sm text-gray-500">Total Prescriptions</div>
-        </div>
-        <div className="bg-white p-4 rounded-lg border text-center">
-          <div className="text-xl md:text-2xl font-bold text-green-600">
-            {prescriptions.filter(p => p.status === 'Active').length}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+
+        {/* Total Prescriptions */}
+        <div className="relative bg-gradient-to-br from-white to-blue-50 p-5 rounded-2xl border border-blue-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-blue-200 rounded-full -translate-y-8 translate-x-8 opacity-20"></div>
+          <div className="absolute bottom-0 left-0 w-16 h-16 bg-blue-300 rounded-full translate-y-8 -translate-x-8 opacity-10"></div>
+
+          <div className="relative flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider">
+                Total Prescriptions
+              </p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">
+                {prescriptions.length}
+              </p>
+            </div>
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
+              <i className="fas fa-file-prescription text-white text-lg"></i>
+            </div>
           </div>
-          <div className="text-sm text-gray-500">Active</div>
-        </div>
-        <div className="bg-white p-4 rounded-lg border text-center">
-          <div className="text-xl md:text-2xl font-bold text-yellow-600">
-            {prescriptions.filter(p => p.refills > 0).length}
+
+          <div className="relative mt-4 pt-3 border-t border-blue-100">
+            <p className="text-xs text-blue-700 font-medium">All issued medications</p>
           </div>
-          <div className="text-sm text-gray-500">Pending Refills</div>
         </div>
-        <div className="bg-white p-4 rounded-lg border text-center">
-          <div className="text-xl md:text-2xl font-bold text-red-600">
-            {prescriptions.filter(p => p.status === 'Expired').length}
+
+        {/* Active */}
+        <div className="relative bg-gradient-to-br from-white to-emerald-50 p-5 rounded-2xl border border-emerald-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-200 rounded-full -translate-y-8 translate-x-8 opacity-20"></div>
+          <div className="absolute bottom-0 left-0 w-16 h-16 bg-emerald-300 rounded-full translate-y-8 -translate-x-8 opacity-10"></div>
+
+          <div className="relative flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider">
+                Active
+              </p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">
+                {prescriptions.filter(p => p.status === 'Active').length}
+              </p>
+            </div>
+            <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-md">
+              <i className="fas fa-check-circle text-white text-lg"></i>
+            </div>
           </div>
-          <div className="text-sm text-gray-500">Expired</div>
+
+          <div className="relative mt-4 pt-3 border-t border-emerald-100">
+            <p className="text-xs text-emerald-700 font-medium">Currently in use</p>
+          </div>
         </div>
+
+        {/* Pending Refills */}
+        <div className="relative bg-gradient-to-br from-white to-amber-50 p-5 rounded-2xl border border-amber-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-amber-200 rounded-full -translate-y-8 translate-x-8 opacity-20"></div>
+          <div className="absolute bottom-0 left-0 w-16 h-16 bg-amber-300 rounded-full translate-y-8 -translate-x-8 opacity-10"></div>
+
+          <div className="relative flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold text-amber-600 uppercase tracking-wider">
+                Pending Refills
+              </p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">
+                {prescriptions.filter(p => p.refills > 0).length}
+              </p>
+            </div>
+            <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center shadow-md">
+              <i className="fas fa-sync-alt text-white text-lg"></i>
+            </div>
+          </div>
+
+          <div className="relative mt-4 pt-3 border-t border-amber-100">
+            <p className="text-xs text-amber-700 font-medium">Requires renewal</p>
+          </div>
+        </div>
+
+        {/* Expired */}
+        <div className="relative bg-gradient-to-br from-white to-rose-50 p-5 rounded-2xl border border-rose-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-rose-200 rounded-full -translate-y-8 translate-x-8 opacity-20"></div>
+          <div className="absolute bottom-0 left-0 w-16 h-16 bg-rose-300 rounded-full translate-y-8 -translate-x-8 opacity-10"></div>
+
+          <div className="relative flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold text-rose-600 uppercase tracking-wider">
+                Expired
+              </p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">
+                {prescriptions.filter(p => p.status === 'Expired').length}
+              </p>
+            </div>
+            <div className="w-12 h-12 bg-gradient-to-br from-rose-500 to-rose-600 rounded-xl flex items-center justify-center shadow-md">
+              <i className="fas fa-times-circle text-white text-lg"></i>
+            </div>
+          </div>
+
+          <div className="relative mt-4 pt-3 border-t border-rose-100">
+            <p className="text-xs text-rose-700 font-medium">No longer valid</p>
+          </div>
+        </div>
+
       </div>
+
 
       {/* Filter Tabs */}
       <div className="flex flex-wrap gap-2">
         <button
           onClick={() => setFilter('all')}
-          className={`px-4 py-2 rounded-lg font-medium text-sm ${
-            filter === 'all' 
-              ? 'bg-blue-100 text-blue-700 border border-blue-200' 
+          className={`px-4 py-2 rounded-lg font-medium text-sm ${filter === 'all'
+              ? 'bg-blue-100 text-blue-700 border border-blue-200'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
+            }`}
         >
           All
         </button>
         <button
           onClick={() => setFilter('active')}
-          className={`px-4 py-2 rounded-lg font-medium text-sm ${
-            filter === 'active' 
-              ? 'bg-green-100 text-green-700 border border-green-200' 
+          className={`px-4 py-2 rounded-lg font-medium text-sm ${filter === 'active'
+              ? 'bg-green-100 text-green-700 border border-green-200'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
+            }`}
         >
           Active
         </button>
         <button
           onClick={() => setFilter('completed')}
-          className={`px-4 py-2 rounded-lg font-medium text-sm ${
-            filter === 'completed' 
-              ? 'bg-blue-100 text-blue-700 border border-blue-200' 
+          className={`px-4 py-2 rounded-lg font-medium text-sm ${filter === 'completed'
+              ? 'bg-blue-100 text-blue-700 border border-blue-200'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
+            }`}
         >
           Completed
         </button>
         <button
           onClick={() => setFilter('expired')}
-          className={`px-4 py-2 rounded-lg font-medium text-sm ${
-            filter === 'expired' 
-              ? 'bg-red-100 text-red-700 border border-red-200' 
+          className={`px-4 py-2 rounded-lg font-medium text-sm ${filter === 'expired'
+              ? 'bg-red-100 text-red-700 border border-red-200'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
+            }`}
         >
           Expired
         </button>
@@ -200,13 +272,13 @@ const Prescriptions = () => {
               </div>
               <span className="text-xs text-gray-500">{prescription.date}</span>
             </div>
-            
+
             <div className="space-y-3 mb-4">
               <div className="flex items-center text-sm">
                 <i className="fas fa-user-md text-gray-400 mr-2 w-5"></i>
                 <span className="text-gray-700">{prescription.doctor}</span>
               </div>
-              
+
               <div className="space-y-2">
                 <p className="text-sm font-medium text-gray-700">Medications:</p>
                 {prescription.medicines.slice(0, 2).map((medicine, index) => (
@@ -218,20 +290,20 @@ const Prescriptions = () => {
                   <p className="text-xs text-gray-500">+{prescription.medicines.length - 2} more medications</p>
                 )}
               </div>
-              
+
               {prescription.refills > 0 && (
                 <div className="flex items-center text-sm">
                   <i className="fas fa-redo text-blue-400 mr-2 w-5"></i>
                   <span className="text-blue-600 font-medium">{prescription.refills} refill{prescription.refills !== 1 ? 's' : ''} available</span>
                 </div>
               )}
-              
+
               <div className="flex items-center text-sm">
                 <i className="far fa-calendar text-gray-400 mr-2 w-5"></i>
                 <span className="text-gray-700">Expires: {prescription.expiry}</span>
               </div>
             </div>
-            
+
             <div className="flex justify-between pt-4 border-t">
               <button
                 onClick={() => handleViewDetails(prescription)}
@@ -276,7 +348,7 @@ const Prescriptions = () => {
                   <i className="fas fa-times text-lg"></i>
                 </button>
               </div>
-              
+
               <div className="space-y-6">
                 {/* Header Info */}
                 <div className="grid grid-cols-2 gap-4">
@@ -299,7 +371,7 @@ const Prescriptions = () => {
                     <p className="font-medium">{selectedPrescription.expiry}</p>
                   </div>
                 </div>
-                
+
                 {/* Doctor Info */}
                 <div className="border-t pt-4">
                   <p className="text-sm text-gray-500 mb-2">Prescribed by</p>
@@ -312,7 +384,7 @@ const Prescriptions = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Medications List */}
                 <div className="border-t pt-4">
                   <p className="text-sm text-gray-500 mb-4">Medications List</p>
@@ -340,7 +412,7 @@ const Prescriptions = () => {
                     ))}
                   </div>
                 </div>
-                
+
                 {/* Refill Info */}
                 <div className="border-t pt-4">
                   <p className="text-sm text-gray-500 mb-2">Refill Information</p>
@@ -361,7 +433,7 @@ const Prescriptions = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Doctor Notes */}
                 {selectedPrescription.notes && (
                   <div className="border-t pt-4">
@@ -371,7 +443,7 @@ const Prescriptions = () => {
                     </div>
                   </div>
                 )}
-                
+
                 {/* Actions */}
                 <div className="flex justify-end gap-3 pt-6 border-t">
                   <button

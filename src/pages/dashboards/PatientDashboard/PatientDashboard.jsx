@@ -78,7 +78,7 @@ const PatientDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 mt-3">
       {/* Fixed Header */}
       <div className="fixed top-0 left-0 right-0 z-50">
         <Header 
@@ -89,7 +89,7 @@ const PatientDashboard = () => {
       </div>
      
       {/* Main Layout */}
-      <div className="flex pt-16 min-h-screen">
+      <div className="flex pt-16 min-h-screen ml-3">
         {/* Desktop Sidebar - Fixed position */}
         <div className={`hidden md:block fixed top-16 left-0 bottom-0 z-40 transition-transform duration-300 ${
           isDesktopSidebarOpen ? 'translate-x-0' : '-translate-x-full'

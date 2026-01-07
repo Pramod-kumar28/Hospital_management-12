@@ -161,7 +161,7 @@ const Appointments = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-700">📅 My Appointments</h2>
+          <h2 className="text-2xl font-semibold text-gray-700"> My Appointments</h2>
           <p className="text-gray-500 text-sm mt-1">Manage and schedule your medical appointments</p>
         </div>
         <button 
@@ -173,32 +173,98 @@ const Appointments = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-lg border text-center">
-          <div className="text-xl md:text-2xl font-bold text-blue-600">
-            {appointments.filter(a => a.status === 'Confirmed').length}
-          </div>
-          <div className="text-sm text-gray-500">Confirmed</div>
-        </div>
-        <div className="bg-white p-4 rounded-lg border text-center">
-          <div className="text-xl md:text-2xl font-bold text-yellow-600">
-            {appointments.filter(a => a.status === 'Pending').length}
-          </div>
-          <div className="text-sm text-gray-500">Pending</div>
-        </div>
-        <div className="bg-white p-4 rounded-lg border text-center">
-          <div className="text-xl md:text-2xl font-bold text-green-600">
-            {appointments.filter(a => a.status === 'Completed').length}
-          </div>
-          <div className="text-sm text-gray-500">Completed</div>
-        </div>
-        <div className="bg-white p-4 rounded-lg border text-center">
-          <div className="text-xl md:text-2xl font-bold text-red-600">
-            {appointments.filter(a => a.status === 'Cancelled').length}
-          </div>
-          <div className="text-sm text-gray-500">Cancelled</div>
-        </div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+
+  {/* Confirmed */}
+  <div className="relative bg-gradient-to-br from-white to-blue-50 p-5 rounded-2xl border border-blue-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+    <div className="absolute top-0 right-0 w-20 h-20 bg-blue-200 rounded-full -translate-y-8 translate-x-8 opacity-20"></div>
+    <div className="absolute bottom-0 left-0 w-16 h-16 bg-blue-300 rounded-full translate-y-8 -translate-x-8 opacity-10"></div>
+
+    <div className="relative flex items-center justify-between">
+      <div>
+        <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider">Confirmed</p>
+        <p className="text-2xl font-bold text-gray-900 mt-1">
+          {appointments.filter(a => a.status === 'Confirmed').length}
+        </p>
       </div>
+      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
+        <i className="fas fa-calendar-check text-white text-lg"></i>
+      </div>
+    </div>
+
+    <div className="relative mt-4 pt-3 border-t border-blue-100">
+      <p className="text-xs text-blue-700 font-medium">Scheduled & approved</p>
+    </div>
+  </div>
+
+  {/* Pending */}
+  <div className="relative bg-gradient-to-br from-white to-amber-50 p-5 rounded-2xl border border-amber-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+    <div className="absolute top-0 right-0 w-20 h-20 bg-amber-200 rounded-full -translate-y-8 translate-x-8 opacity-20"></div>
+    <div className="absolute bottom-0 left-0 w-16 h-16 bg-amber-300 rounded-full translate-y-8 -translate-x-8 opacity-10"></div>
+
+    <div className="relative flex items-center justify-between">
+      <div>
+        <p className="text-xs font-semibold text-amber-600 uppercase tracking-wider">Pending</p>
+        <p className="text-2xl font-bold text-gray-900 mt-1">
+          {appointments.filter(a => a.status === 'Pending').length}
+        </p>
+      </div>
+      <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center shadow-md">
+        <i className="fas fa-hourglass-half text-white text-lg"></i>
+      </div>
+    </div>
+
+    <div className="relative mt-4 pt-3 border-t border-amber-100">
+      <p className="text-xs text-amber-700 font-medium">Awaiting confirmation</p>
+    </div>
+  </div>
+
+  {/* Completed */}
+  <div className="relative bg-gradient-to-br from-white to-emerald-50 p-5 rounded-2xl border border-emerald-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+    <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-200 rounded-full -translate-y-8 translate-x-8 opacity-20"></div>
+    <div className="absolute bottom-0 left-0 w-16 h-16 bg-emerald-300 rounded-full translate-y-8 -translate-x-8 opacity-10"></div>
+
+    <div className="relative flex items-center justify-between">
+      <div>
+        <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Completed</p>
+        <p className="text-2xl font-bold text-gray-900 mt-1">
+          {appointments.filter(a => a.status === 'Completed').length}
+        </p>
+      </div>
+      <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-md">
+        <i className="fas fa-check-circle text-white text-lg"></i>
+      </div>
+    </div>
+
+    <div className="relative mt-4 pt-3 border-t border-emerald-100">
+      <p className="text-xs text-emerald-700 font-medium">Successfully handled</p>
+    </div>
+  </div>
+
+  {/* Cancelled */}
+  <div className="relative bg-gradient-to-br from-white to-rose-50 p-5 rounded-2xl border border-rose-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+    <div className="absolute top-0 right-0 w-20 h-20 bg-rose-200 rounded-full -translate-y-8 translate-x-8 opacity-20"></div>
+    <div className="absolute bottom-0 left-0 w-16 h-16 bg-rose-300 rounded-full translate-y-8 -translate-x-8 opacity-10"></div>
+
+    <div className="relative flex items-center justify-between">
+      <div>
+        <p className="text-xs font-semibold text-rose-600 uppercase tracking-wider">Cancelled</p>
+        <p className="text-2xl font-bold text-gray-900 mt-1">
+          {appointments.filter(a => a.status === 'Cancelled').length}
+        </p>
+      </div>
+      <div className="w-12 h-12 bg-gradient-to-br from-rose-500 to-rose-600 rounded-xl flex items-center justify-center shadow-md">
+        <i className="fas fa-times-circle text-white text-lg"></i>
+      </div>
+    </div>
+
+    <div className="relative mt-4 pt-3 border-t border-rose-100">
+      <p className="text-xs text-rose-700 font-medium">Patient unavailable</p>
+    </div>
+  </div>
+
+</div>
+
 
       {/* Appointments List */}
       <div className="bg-white rounded-lg border overflow-hidden">

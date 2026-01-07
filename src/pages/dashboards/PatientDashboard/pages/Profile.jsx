@@ -104,7 +104,7 @@ const Profile = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-700">👤 My Profile</h2>
+          <h2 className="text-2xl font-semibold text-gray-700"> My Profile</h2>
           <p className="text-gray-500 text-sm mt-1">Manage your personal and medical information</p>
         </div>
         <div className="flex gap-2">

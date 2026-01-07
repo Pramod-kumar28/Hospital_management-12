@@ -70,7 +70,7 @@ const PatientOverview = ({ setActivePage }) => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-2xl font-semibold text-gray-700">
-            👋 Welcome back, {dashboardData.patientInfo.name}
+            Welcome back, {dashboardData.patientInfo.name}
           </h2>
           <p className="text-gray-500 text-sm mt-1">
             Patient ID: PAT-001 • Last visit: {dashboardData.patientInfo.lastVisit} • Age: {dashboardData.patientInfo.age}
@@ -104,47 +104,111 @@ const PatientOverview = ({ setActivePage }) => {
               Primary Care Physician: {dashboardData.patientInfo.doctor}
             </p>
           </div>
-          <button 
+          <button
             onClick={() => handlePageChange('records')}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
           >
             <i className="fas fa-file-medical-alt mr-2"></i>View Complete History
           </button>
         </div>
-        
+
         {/* Health Metrics Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-6">
-          <div className="bg-white p-3 rounded-lg border text-center">
-            <div className="text-xs text-gray-500">Blood Pressure</div>
-            <div className="text-lg font-bold text-blue-700 mt-1">{dashboardData.healthMetrics.bloodPressure}</div>
-            <div className="text-xs text-green-500 mt-1">Normal</div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5 mt-6">
+
+          {/* Blood Pressure */}
+          <div className="relative bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent rounded-xl pointer-events-none" />
+            <div className="relative text-center">
+              <div className="w-10 h-10 mx-auto flex items-center justify-center rounded-full bg-blue-600 text-white mb-2">
+                <i className="fas fa-heartbeat text-sm"></i>
+              </div>
+              <p className="text-xs text-gray-500">Blood Pressure</p>
+              <p className="text-lg font-bold text-blue-700 mt-1">
+                {dashboardData.healthMetrics.bloodPressure}
+              </p>
+              <p className="text-xs text-emerald-600 mt-1 font-medium">Normal</p>
+            </div>
           </div>
-          <div className="bg-white p-3 rounded-lg border text-center">
-            <div className="text-xs text-gray-500">Blood Sugar</div>
-            <div className="text-lg font-bold text-blue-700 mt-1">{dashboardData.healthMetrics.bloodSugar}</div>
-            <div className="text-xs text-green-500 mt-1">Normal</div>
+
+          {/* Blood Sugar */}
+          <div className="relative bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition">
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 to-transparent rounded-xl pointer-events-none" />
+            <div className="relative text-center">
+              <div className="w-10 h-10 mx-auto flex items-center justify-center rounded-full bg-indigo-600 text-white mb-2">
+                <i className="fas fa-tint text-sm"></i>
+              </div>
+              <p className="text-xs text-gray-500">Blood Sugar</p>
+              <p className="text-lg font-bold text-blue-700 mt-1">
+                {dashboardData.healthMetrics.bloodSugar}
+              </p>
+              <p className="text-xs text-emerald-600 mt-1 font-medium">Normal</p>
+            </div>
           </div>
-          <div className="bg-white p-3 rounded-lg border text-center">
-            <div className="text-xs text-gray-500">Weight</div>
-            <div className="text-lg font-bold text-blue-700 mt-1">{dashboardData.healthMetrics.weight}</div>
-            <div className="text-xs text-yellow-500 mt-1">+1kg from last month</div>
+
+          {/* Weight */}
+          <div className="relative bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition">
+            <div className="absolute inset-0 bg-gradient-to-br from-yellow-50 to-transparent rounded-xl pointer-events-none" />
+            <div className="relative text-center">
+              <div className="w-10 h-10 mx-auto flex items-center justify-center rounded-full bg-yellow-500 text-white mb-2">
+                <i className="fas fa-weight text-sm"></i>
+              </div>
+              <p className="text-xs text-gray-500">Weight</p>
+              <p className="text-lg font-bold text-blue-700 mt-1">
+                {dashboardData.healthMetrics.weight}
+              </p>
+              <p className="text-xs text-yellow-600 mt-1 font-medium">
+                +1kg from last month
+              </p>
+            </div>
           </div>
-          <div className="bg-white p-3 rounded-lg border text-center">
-            <div className="text-xs text-gray-500">BMI</div>
-            <div className="text-lg font-bold text-blue-700 mt-1">{dashboardData.healthMetrics.bmi}</div>
-            <div className="text-xs text-green-500 mt-1">Healthy</div>
+
+          {/* BMI */}
+          <div className="relative bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition">
+            <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent rounded-xl pointer-events-none" />
+            <div className="relative text-center">
+              <div className="w-10 h-10 mx-auto flex items-center justify-center rounded-full bg-green-600 text-white mb-2">
+                <i className="fas fa-user-check text-sm"></i>
+              </div>
+              <p className="text-xs text-gray-500">BMI</p>
+              <p className="text-lg font-bold text-blue-700 mt-1">
+                {dashboardData.healthMetrics.bmi}
+              </p>
+              <p className="text-xs text-emerald-600 mt-1 font-medium">Healthy</p>
+            </div>
           </div>
-          <div className="bg-white p-3 rounded-lg border text-center">
-            <div className="text-xs text-gray-500">Cholesterol</div>
-            <div className="text-lg font-bold text-blue-700 mt-1">{dashboardData.healthMetrics.cholesterol}</div>
-            <div className="text-xs text-yellow-500 mt-1">Borderline</div>
+
+          {/* Cholesterol */}
+          <div className="relative bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition">
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-transparent rounded-xl pointer-events-none" />
+            <div className="relative text-center">
+              <div className="w-10 h-10 mx-auto flex items-center justify-center rounded-full bg-orange-500 text-white mb-2">
+                <i className="fas fa-flask text-sm"></i>
+              </div>
+              <p className="text-xs text-gray-500">Cholesterol</p>
+              <p className="text-lg font-bold text-blue-700 mt-1">
+                {dashboardData.healthMetrics.cholesterol}
+              </p>
+              <p className="text-xs text-yellow-600 mt-1 font-medium">Borderline</p>
+            </div>
           </div>
-          <div className="bg-white p-3 rounded-lg border text-center">
-            <div className="text-xs text-gray-500">Blood Group</div>
-            <div className="text-lg font-bold text-blue-700 mt-1">{dashboardData.patientInfo.bloodGroup}</div>
-            <div className="text-xs text-gray-500 mt-1">Universal Donor</div>
+
+          {/* Blood Group */}
+          <div className="relative bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition">
+            <div className="absolute inset-0 bg-gradient-to-br from-rose-50 to-transparent rounded-xl pointer-events-none" />
+            <div className="relative text-center">
+              <div className="w-10 h-10 mx-auto flex items-center justify-center rounded-full bg-rose-600 text-white mb-2">
+                <i className="fas fa-tint text-sm"></i>
+              </div>
+              <p className="text-xs text-gray-500">Blood Group</p>
+              <p className="text-lg font-bold text-blue-700 mt-1">
+                {dashboardData.patientInfo.bloodGroup}
+              </p>
+              <p className="text-xs text-gray-500 mt-1 font-medium">Universal Donor</p>
+            </div>
           </div>
+
         </div>
+
       </div>
 
       {/* Three Column Layout */}
@@ -156,7 +220,7 @@ const PatientOverview = ({ setActivePage }) => {
               <i className="fas fa-calendar-check text-blue-500 mr-2"></i>
               Upcoming Appointments
             </h3>
-            <button 
+            <button
               onClick={() => handlePageChange('appointments')}
               className="text-blue-600 text-sm hover:underline hover:text-blue-800"
             >
@@ -166,17 +230,16 @@ const PatientOverview = ({ setActivePage }) => {
           <div className="space-y-4">
             {dashboardData.upcomingAppointments.map(appointment => (
               <div key={appointment.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer"
-                   onClick={() => handlePageChange('appointments')}>
+                onClick={() => handlePageChange('appointments')}>
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="font-medium">{appointment.doctor}</div>
                     <div className="text-sm text-gray-500 mt-1">{appointment.reason}</div>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    appointment.status === 'Confirmed' 
-                      ? 'bg-green-100 text-green-800' 
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${appointment.status === 'Confirmed'
+                      ? 'bg-green-100 text-green-800'
                       : 'bg-yellow-100 text-yellow-800'
-                  }`}>
+                    }`}>
                     {appointment.status}
                   </span>
                 </div>
@@ -186,7 +249,7 @@ const PatientOverview = ({ setActivePage }) => {
                 </div>
               </div>
             ))}
-            <button 
+            <button
               onClick={() => handlePageChange('appointments')}
               className="w-full text-center py-3 border border-dashed border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
             >
@@ -202,7 +265,7 @@ const PatientOverview = ({ setActivePage }) => {
               <i className="fas fa-flask text-purple-500 mr-2"></i>
               Recent Test Results
             </h3>
-            <button 
+            <button
               onClick={() => handlePageChange('tests')}
               className="text-blue-600 text-sm hover:underline hover:text-blue-800"
             >
@@ -212,19 +275,18 @@ const PatientOverview = ({ setActivePage }) => {
           <div className="space-y-4">
             {dashboardData.recentTestResults.map(test => (
               <div key={test.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer"
-                   onClick={() => handlePageChange('tests')}>
+                onClick={() => handlePageChange('tests')}>
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="font-medium">{test.test}</div>
                     <div className="text-sm text-gray-500 mt-1">Date: {test.date}</div>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    test.status === 'Normal' 
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${test.status === 'Normal'
                       ? 'bg-green-100 text-green-800' :
                       test.status === 'Borderline'
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-red-100 text-red-800'
-                  }`}>
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-red-100 text-red-800'
+                    }`}>
                     {test.status}
                   </span>
                 </div>
@@ -234,7 +296,7 @@ const PatientOverview = ({ setActivePage }) => {
                 </div>
               </div>
             ))}
-            <button 
+            <button
               onClick={() => handlePageChange('tests')}
               className="w-full text-center py-3 border border-dashed border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
             >
@@ -250,7 +312,7 @@ const PatientOverview = ({ setActivePage }) => {
               <i className="fas fa-prescription-bottle-alt text-green-500 mr-2"></i>
               Current Medications
             </h3>
-            <button 
+            <button
               onClick={() => handlePageChange('prescriptions')}
               className="text-blue-600 text-sm hover:underline hover:text-blue-800"
             >
@@ -260,17 +322,16 @@ const PatientOverview = ({ setActivePage }) => {
           <div className="space-y-4">
             {dashboardData.currentPrescriptions.map(prescription => (
               <div key={prescription.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer"
-                   onClick={() => handlePageChange('prescriptions')}>
+                onClick={() => handlePageChange('prescriptions')}>
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="font-medium">{prescription.medicine}</div>
                     <div className="text-sm text-gray-500 mt-1">{prescription.dosage} • {prescription.frequency}</div>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    prescription.refills > 1 
-                      ? 'bg-green-100 text-green-800' 
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${prescription.refills > 1
+                      ? 'bg-green-100 text-green-800'
                       : 'bg-yellow-100 text-yellow-800'
-                  }`}>
+                    }`}>
                     {prescription.refills} refill{prescription.refills !== 1 ? 's' : ''}
                   </span>
                 </div>
@@ -279,7 +340,7 @@ const PatientOverview = ({ setActivePage }) => {
                     <i className="far fa-calendar mr-1"></i>
                     Expires: {prescription.expiry}
                   </span>
-                  <button 
+                  <button
                     onClick={(e) => {
                       e.stopPropagation()
                       handlePageChange('prescriptions')
@@ -291,7 +352,7 @@ const PatientOverview = ({ setActivePage }) => {
                 </div>
               </div>
             ))}
-            <button 
+            <button
               onClick={() => handlePageChange('prescriptions')}
               className="w-full text-center py-3 border border-dashed border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
             >
@@ -310,7 +371,7 @@ const PatientOverview = ({ setActivePage }) => {
               <i className="fas fa-credit-card text-orange-500 mr-2"></i>
               Billing Summary
             </h3>
-            <button 
+            <button
               onClick={() => handlePageChange('billing')}
               className="text-blue-600 text-sm hover:underline hover:text-blue-800"
             >
@@ -337,7 +398,7 @@ const PatientOverview = ({ setActivePage }) => {
             <div className="h-2 bg-gray-200 rounded-full">
               <div className="h-full bg-blue-500 rounded-full" style={{ width: `${dashboardData.bills.insuranceCoverage}%` }}></div>
             </div>
-            <button 
+            <button
               onClick={() => handlePageChange('billing')}
               className="w-full mt-4 py-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors font-medium"
             >
@@ -353,7 +414,7 @@ const PatientOverview = ({ setActivePage }) => {
               <i className="fas fa-bell text-yellow-500 mr-2"></i>
               Health Reminders
             </h3>
-            <button 
+            <button
               onClick={() => handlePageChange('settings')}
               className="text-blue-600 text-sm hover:underline hover:text-blue-800"
             >
@@ -364,16 +425,14 @@ const PatientOverview = ({ setActivePage }) => {
             {dashboardData.reminders.map(reminder => (
               <div key={reminder.id} className="border rounded-lg p-3 hover:bg-gray-50 transition-colors">
                 <div className="flex items-center">
-                  <div className={`p-2 rounded-lg mr-3 ${
-                    reminder.type === 'medication' ? 'bg-blue-100' :
-                    reminder.type === 'appointment' ? 'bg-green-100' :
-                    'bg-yellow-100'
-                  }`}>
-                    <i className={`fas ${
-                      reminder.type === 'medication' ? 'fa-pills text-blue-500' :
-                      reminder.type === 'appointment' ? 'fa-calendar-check text-green-500' :
-                      'fa-vial text-yellow-500'
-                    }`}></i>
+                  <div className={`p-2 rounded-lg mr-3 ${reminder.type === 'medication' ? 'bg-blue-100' :
+                      reminder.type === 'appointment' ? 'bg-green-100' :
+                        'bg-yellow-100'
+                    }`}>
+                    <i className={`fas ${reminder.type === 'medication' ? 'fa-pills text-blue-500' :
+                        reminder.type === 'appointment' ? 'fa-calendar-check text-green-500' :
+                          'fa-vial text-yellow-500'
+                      }`}></i>
                   </div>
                   <div className="flex-1">
                     <div className="font-medium text-sm">{reminder.message}</div>
@@ -383,7 +442,7 @@ const PatientOverview = ({ setActivePage }) => {
               </div>
             ))}
           </div>
-          <button 
+          <button
             onClick={() => handlePageChange('records')}
             className="w-full mt-4 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-medium"
           >

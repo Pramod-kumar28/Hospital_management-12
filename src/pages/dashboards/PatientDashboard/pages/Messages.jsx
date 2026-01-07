@@ -82,7 +82,7 @@ const Messages = () => {
     <div className="h-[calc(100vh-8rem)] animate-fade-in">
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-2xl font-semibold text-gray-700">💬 Messages</h2>
+        <h2 className="text-2xl font-semibold text-gray-700"> Messages</h2>
         <p className="text-gray-500 text-sm mt-1">Chat with your healthcare providers</p>
       </div>
 

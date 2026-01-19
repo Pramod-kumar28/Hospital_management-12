@@ -271,7 +271,9 @@ const LoginPage = () => {
     { email: 'reception@dcm.demo', password: 'reception123', role: 'RECEPTIONIST', name: 'Receptionist' },
     { email: 'super@dcm.demo', password: 'sup123', role: 'SUPER_ADMIN', name: 'Super Admin' },
     { email: 'lab@dcm.demo', password: 'lab123', role: 'LAB', name: 'Lab Technician' },
-    {email: 'patient@dcm.demo', password: 'patient123', role: 'PATIENT', name: 'Patient User' }
+    {email: 'patient@dcm.demo', password: 'patient123', role: 'PATIENT', name: 'Patient User' },
+    { email: 'pharmacy@dcm.demo', password: 'pharma123', role: 'PHARMACY', name: 'Pharmacy'},
+    { email: 'telemedicine@dcm.demo', password: 'tele123', role: 'MEDICINE', name: 'Telemedicine'},
 
   ];
 
@@ -344,6 +346,12 @@ const LoginPage = () => {
             break;
           case 'PATIENT':
             navigate('/patient');
+            break;
+          case 'PHARMACY':
+            navigate('/pharmacy');
+            break;
+         case 'TELEMEDICINE':
+            navigate('/telemedicine');
             break;
           default:
             navigate('/login');

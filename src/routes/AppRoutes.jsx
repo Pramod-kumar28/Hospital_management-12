@@ -246,6 +246,8 @@ import NurseDashboard from '../pages/dashboards/NurseDashboard/NurseDashboard'
 import ReceptionistDashboard from '../pages/dashboards/ReceptionistDashboard/ReceptionistDashboard'
 import SuperAdminDashboard from '../pages/dashboards/SuperAdminDashboard/SuperAdminDashboard'
 import PatientDashboard from '../pages/dashboards/PatientDashboard/PatientDashboard' // NEW: Import PatientDashboard
+import PharmacyDashboard from '../pages/dashboards/PharmacyDashboard/PharmacyDashboard'
+import TelemedicineDashboard from '../pages/dashboards/TelemedicineDashboard/TelemedicineDashboard'
 
 // Import landing page components
 import Layout from '../landing/components/Layout.jsx'
@@ -276,6 +278,8 @@ const AppRoutes = () => {
       case 'SUPER_ADMIN': return '/super-admin'
       case 'PATIENT': return '/patient' // NEW: Patient route
       case 'LAB': return '/lab'
+      case 'PHARMACY': return '/pharmacy'
+      case 'TELEMEDICINE': return '/telemedicine'
       default: return '/login'
     }
   }
@@ -353,6 +357,19 @@ const AppRoutes = () => {
           <LabDashboard />
         </ProtectedRoute>
       } />
+
+      <Route path="/pharmacy/*" element={
+        <ProtectedRoute requiredRole="PHARMACY">
+          <PharmacyDashboard />
+        </ProtectedRoute>
+      } />
+
+             <Route path="/telemedicine/*" element={
+        <ProtectedRoute requiredRole="TELEMEDICINE">
+          <TelemedicineDashboard />
+        </ProtectedRoute>
+      } />
+      
       
       {/* Default redirect - now goes to landing page when not authenticated */}
       <Route path="/" element={<Navigate to={getDefaultRoute()} replace />} />

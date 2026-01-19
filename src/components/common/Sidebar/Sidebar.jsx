@@ -603,6 +603,9 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
       case 'SUPER_ADMIN': return 'Super Admin'
       case 'PATIENT': return 'Patient Portal'
       case 'LAB': return 'Laboratory Portal'
+      case 'PHARMACY': return 'Pharmacy Portal'
+      case 'TELEMEDICINE': return 'Telemedicine Portal'
+
       default: return 'Dashboard'
     }
   }
@@ -694,6 +697,39 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
     { id: 'profile', label: 'My Profile', icon: 'fa-user' }
   ]
 
+   const pharmacyMenu = [
+    { id: "dashboard", label: "Dashboard", icon: "fas fa-tachometer-alt" },
+    { id: "inventory", label: "Inventory", icon: "fas fa-boxes" },
+    { id: "purchaseorders", label: "Purchase Orders", icon: "fas fa-shopping-cart" },
+    { id: "salestracking", label: "Sales Tracking", icon: "fa-chart-line" },
+    { id: "expiryalerts", label: "Expiry Alerts", icon: "fas fa-exclamation-triangle" },
+    { id: "suppliermanagement", label: "Supplier Management", icon: "fas fa-truck" },
+    { id: "medicinedatabase", label: "Medicine Database", icon: "fas fa-database" },
+    { id: "settings", label: "Settings", icon: "fas fa-cog" },
+  ];
+
+const teleMedicineMenu = [
+  { id: "dashboard", label: "Dashboard", icon: "fa-solid fa-chart-line" },
+
+  { id: "appointments", label: "My Appointments", icon: "fa-solid fa-calendar-check" },
+
+  { id: "prescriptions", label: "Prescriptions", icon: "fa-solid fa-file-prescription" },
+
+  { id: "doctorprofile", label: "Doctor Profile", icon: "fa-solid fa-user-doctor" },
+
+  { id: "doctoroverview", label: "Doctor Overview", icon: "fa-solid fa-clipboard-list" },
+
+  { id: "remotepatientmonitoring", label: "Remote Patient Monitoring", icon: "fa-solid fa-heart-pulse" },
+
+  { id: "labresults", label: "Lab Results", icon: "fa-flask"},
+
+  { id: "patients", label: "Patient Records", icon: "fa-user-injured"},
+
+  { id: "inpatient", label: "Inpatient Visits", icon: "fa-procedures"},
+
+    { id: "messages", label: "Messaging", icon: "fa-comments" },
+];
+
   const getMenuItems = () => {
     switch (user?.role) {
       case 'ADMIN': return adminMenu
@@ -702,6 +738,10 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
       case 'SUPER_ADMIN': return superAdminMenu
       case 'PATIENT': return patientMenu
       case 'LAB': return labMenu
+      case "MANAGER":
+        return pharmacyMenu;
+      case "MEDICINE":
+        return teleMedicineMenu;
       default: return doctorMenu
     }
   }

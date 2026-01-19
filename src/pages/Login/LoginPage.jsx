@@ -273,7 +273,7 @@ const LoginPage = () => {
     { email: 'lab@dcm.demo', password: 'lab123', role: 'LAB', name: 'Lab Technician' },
     {email: 'patient@dcm.demo', password: 'patient123', role: 'PATIENT', name: 'Patient User' },
     { email: 'pharmacy@dcm.demo', password: 'pharma123', role: 'PHARMACY', name: 'Pharmacy'},
-    { email: 'telemedicine@dcm.demo', password: 'tele123', role: 'MEDICINE', name: 'Telemedicine'},
+    { email: 'telemedicine@dcm.demo', password: 'tele123', role: 'TELEMEDICINE', name: 'Telemedicine'},
 
   ];
 

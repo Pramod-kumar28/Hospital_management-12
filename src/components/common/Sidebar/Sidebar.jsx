@@ -710,24 +710,15 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
 
 const teleMedicineMenu = [
   { id: "dashboard", label: "Dashboard", icon: "fa-solid fa-chart-line" },
-
   { id: "appointments", label: "My Appointments", icon: "fa-solid fa-calendar-check" },
-
   { id: "prescriptions", label: "Prescriptions", icon: "fa-solid fa-file-prescription" },
-
-  { id: "doctorprofile", label: "Doctor Profile", icon: "fa-solid fa-user-doctor" },
-
-  { id: "doctoroverview", label: "Doctor Overview", icon: "fa-solid fa-clipboard-list" },
-
   { id: "remotepatientmonitoring", label: "Remote Patient Monitoring", icon: "fa-solid fa-heart-pulse" },
-
   { id: "labresults", label: "Lab Results", icon: "fa-flask"},
-
   { id: "patients", label: "Patient Records", icon: "fa-user-injured"},
-
-  { id: "inpatient", label: "Inpatient Visits", icon: "fa-procedures"},
-
-    { id: "messages", label: "Messaging", icon: "fa-comments" },
+  { id: "inpatient", label: "Inpatient Visits", icon: "fa-procedures"}, 
+  { id: "messages", label: "Messaging", icon: "fa-comments" },
+  { id: "doctoroverview", label: "Doctor Overview", icon: "fa-solid fa-clipboard-list" },
+  { id: "doctorprofile", label: "Doctor Profile", icon: "fa-solid fa-user-doctor" },
 ];
 
   const getMenuItems = () => {
@@ -738,9 +729,9 @@ const teleMedicineMenu = [
       case 'SUPER_ADMIN': return superAdminMenu
       case 'PATIENT': return patientMenu
       case 'LAB': return labMenu
-      case "MANAGER":
+      case "PHARMACY":
         return pharmacyMenu;
-      case "MEDICINE":
+      case "TELEMEDICINE":
         return teleMedicineMenu;
       default: return doctorMenu
     }

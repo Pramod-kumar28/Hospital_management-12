@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { toast } from "react-toastify";
 import { Pill, Search, Filter, Plus, Eye, Pencil, Trash2 } from "lucide-react";
+import Modal from "../../../../components/common/Modal/Modal";
 
 export default function Inventory() {
   const [search, setSearch] = useState("");
@@ -8,19 +9,20 @@ export default function Inventory() {
   const [status, setStatus] = useState("All");
   const [page, setPage] = useState(1);
 
-  const handleAddMedicine = () => toast.success("Opening add medicine form");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [mode, setMode] = useState("add"); // add | view | edit
+  const [selectedIndex, setSelectedIndex] = useState(null);
 
-  const handleApplyFilters = () => toast.info("Filters applied");
+  const [formData, setFormData] = useState({
+    name: "",
+    code: "",
+    category: "",
+    stock: "",
+    price: "",
+    expiry: "",
+  });
 
-  const handleView = (name) => toast.info(`Viewing details of ${name}`);
-
-  const handleEdit = (name) => toast.warning(`Editing ${name}`);
-
-  const handleDelete = (name) => toast.error(`${name} removed from inventory`);
-
-  const handlePageChange = (direction) => toast(`Page ${direction}`);
-
-  const medicines = [
+  const [medicines, setMedicines] = useState([
     {
       name: "Amoxicillin 500mg",
       code: "AMX-500",
@@ -66,7 +68,131 @@ export default function Inventory() {
       expiry: "8 Dec 2023",
       status: "Out of Stock",
     },
-  ];
+  ]);
+
+  // ---------------- HELPERS ----------------
+
+  const getStatus = (stock) => {
+    const value = Number(stock);
+    if (value === 0) return "Out of Stock";
+    if (value <= 10) return "Low Stock";
+    return "In Stock";
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      code: "",
+      category: "",
+      stock: "",
+      price: "",
+      expiry: "",
+    });
+    setMode("add");
+    setSelectedIndex(null);
+  };
+
+  // ---------------- HANDLERS ----------------
+
+  const handleAddMedicine = () => {
+    resetForm();
+    setMode("add");
+    setIsModalOpen(true);
+  };
+
+  const handleFormChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSaveMedicine = () => {
+    if (
+      !formData.name ||
+      !formData.code ||
+      !formData.category ||
+      formData.stock === "" ||
+      formData.price === "" ||
+      !formData.expiry
+    ) {
+      toast.error("Please fill all fields");
+      return;
+    }
+
+    const medicineData = {
+      name: formData.name,
+      code: formData.code,
+      category: formData.category,
+      stock: Number(formData.stock),
+      price: Number(formData.price),
+      expiry: new Date(formData.expiry).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }),
+      status: getStatus(formData.stock),
+    };
+
+    if (mode === "edit") {
+      setMedicines((prev) =>
+        prev.map((m, i) =>
+          i === selectedIndex ? medicineData : m
+        )
+      );
+      toast.success("Medicine updated");
+    } else {
+      setMedicines((prev) => [...prev, medicineData]);
+      toast.success("Medicine added");
+    }
+
+    setIsModalOpen(false);
+    resetForm();
+  };
+
+  const handleView = (medicine, index) => {
+    setFormData({
+      name: medicine.name,
+      code: medicine.code,
+      category: medicine.category,
+      stock: medicine.stock,
+      price: medicine.price,
+      expiry: "",
+    });
+    setSelectedIndex(index);
+    setMode("view");
+    setIsModalOpen(true);
+  };
+
+  const handleEdit = (medicine, index) => {
+    setFormData({
+      name: medicine.name,
+      code: medicine.code,
+      category: medicine.category,
+      stock: medicine.stock,
+      price: medicine.price,
+      expiry: "",
+    });
+    setSelectedIndex(index);
+    setMode("edit");
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = (index) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this medicine?"
+    );
+    if (!confirmDelete) return;
+
+    setMedicines((prev) => prev.filter((_, i) => i !== index));
+    toast.success("Medicine deleted");
+  };
+
+  const handleApplyFilters = () => toast.info("Filters applied");
+  const handlePageChange = (direction) =>
+    toast(`Page ${direction}`);
+
+  // ---------------- FILTER ----------------
 
   const filteredMedicines = medicines.filter(
     (m) =>
@@ -74,6 +200,8 @@ export default function Inventory() {
       (category === "All" || m.category === category) &&
       (status === "All" || m.status === status)
   );
+
+  // ---------------- UI ----------------
 
   return (
     <div className="bg-slate-100 min-h-screen space-y-6 px-3 sm:px-6 py-4">
@@ -147,18 +275,17 @@ export default function Inventory() {
 
       {/* TABLE */}
       <div className="bg-white rounded-xl shadow">
-        {/* 🔑 RESPONSIVE FIX */}
         <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[900px]">
             <thead className="bg-slate-50 text-slate-600">
               <tr>
-                <th className="p-4 text-left">Medicine</th>
-                <th>Category</th>
-                <th>Stock</th>
-                <th>Price</th>
-                <th>Expiry</th>
-                <th>Status</th>
-                <th className="text-center">Actions</th>
+                <th className="p-4 text-left">Medicine Details</th>
+                <th className="text-left px-2">Category</th>
+                <th className="text-left px-2">Stock</th>
+                <th className="text-left px-2">Price</th>
+                <th className="text-left px-2">Expiry</th>
+                <th className="text-left px-3">Status</th>
+                <th className="text-center px-2">Actions</th>
               </tr>
             </thead>
 
@@ -189,17 +316,17 @@ export default function Inventory() {
                     <Eye
                       size={16}
                       className="text-blue-600 cursor-pointer"
-                      onClick={() => handleView(m.name)}
+                      onClick={() => handleView(m, i)}
                     />
                     <Pencil
                       size={16}
                       className="text-green-600 cursor-pointer"
-                      onClick={() => handleEdit(m.name)}
+                      onClick={() => handleEdit(m, i)}
                     />
                     <Trash2
                       size={16}
                       className="text-red-600 cursor-pointer"
-                      onClick={() => handleDelete(m.name)}
+                      onClick={() => handleDelete(i)}
                     />
                   </td>
                 </tr>
@@ -232,6 +359,103 @@ export default function Inventory() {
           </div>
         </div>
       </div>
+
+      {/* MODAL */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={
+          mode === "view"
+            ? "View Medicine"
+            : mode === "edit"
+            ? "Edit Medicine"
+            : "Add New Medicine"
+        }
+        size="md"
+      >
+        <div className="space-y-4">
+          <input
+            name="name"
+            value={formData.name}
+            onChange={handleFormChange}
+            disabled={mode === "view"}
+            placeholder="Medicine Name"
+            className="w-full border px-3 py-2 rounded disabled:bg-slate-100"
+          />
+
+          <input
+            name="code"
+            value={formData.code}
+            onChange={handleFormChange}
+            disabled={mode === "view"}
+            placeholder="Medicine Code"
+            className="w-full border px-3 py-2 rounded disabled:bg-slate-100"
+          />
+
+          <select
+            name="category"
+            value={formData.category}
+            onChange={handleFormChange}
+            disabled={mode === "view"}
+            className="w-full border px-3 py-2 rounded disabled:bg-slate-100"
+          >
+            <option value="">Select Category</option>
+            <option>Antibiotic</option>
+            <option>Analgesic</option>
+            <option>Hypertension</option>
+            <option>Antihistamine</option>
+            <option>Diabetes</option>
+          </select>
+
+          <div className="grid grid-cols-2 gap-3">
+            <input
+              name="stock"
+              type="number"
+              value={formData.stock}
+              onChange={handleFormChange}
+              disabled={mode === "view"}
+              placeholder="Stock"
+              className="w-full border px-3 py-2 rounded disabled:bg-slate-100"
+            />
+            <input
+              name="price"
+              type="number"
+              value={formData.price}
+              onChange={handleFormChange}
+              disabled={mode === "view"}
+              placeholder="Price"
+              className="w-full border px-3 py-2 rounded disabled:bg-slate-100"
+            />
+          </div>
+
+          <input
+            name="expiry"
+            type="date"
+            value={formData.expiry}
+            onChange={handleFormChange}
+            disabled={mode === "view"}
+            className="w-full border px-3 py-2 rounded disabled:bg-slate-100"
+          />
+
+          <div className="flex justify-end gap-3 pt-4">
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="px-4 py-2 border rounded"
+            >
+              Close
+            </button>
+
+            {mode !== "view" && (
+              <button
+                onClick={handleSaveMedicine}
+                className="px-4 py-2 bg-blue-600 text-white rounded"
+              >
+                {mode === "edit" ? "Update Medicine" : "Save Medicine"}
+              </button>
+            )}
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

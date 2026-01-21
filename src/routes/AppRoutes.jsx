@@ -263,6 +263,7 @@ import ForgotPassword from '../landing/pages/Forgotpassword.jsx'
 import FeatureDetailPage from '../landing/pages/FeatureDetailPage.jsx'
 import Download from '../landing/pages/Download.jsx'
 import PrivacyPolicy from '../landing/components/PrivacyPolicy.jsx'
+import TermsOfService from '../landing/components/TermsOfService.jsx'
 
 const AppRoutes = () => {
   const { isAuthenticated, user } = useSelector(state => state.auth)
@@ -295,6 +296,7 @@ const AppRoutes = () => {
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/privacy" element={<PrivacyPolicy/>}/>
+        <Route path="/terms" element={<TermsOfService />} />
         <Route path="/login" element={!isAuthenticated ? <LoginPage /> : <Navigate to={getDefaultRoute()} replace />} />
         <Route path="/signup" element={<Signup />} />
         <Route path='/forgot-password' element={<ForgotPassword />} />

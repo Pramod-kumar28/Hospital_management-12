@@ -141,7 +141,7 @@ const Footer = () => {
                   Privacy Policy
                 </Link>
                 <Link 
-                  to="/terms-of-service"
+                  to="/terms"
                   className="text-gray-400 hover:text-amber-500 transition-colors"
                 >
                   Terms of Service

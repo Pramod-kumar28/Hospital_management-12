@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
-import { loginSuccess } from '../../redux/slices/authSlice';
+import { loginStart, loginSuccess, loginFailure } from '../../redux/slices/authSlice';
+import { API_BASE_URL } from '../../config/api';
 import { 
   Eye, EyeOff, Mail, Lock, Zap, 
   Building2, Users, Stethoscope, Shield, CheckCircle 
 } from 'lucide-react';
+
+// Backend auth base and endpoints (v1)
+const AUTH_BASE = '/api/v1/auth';
+const SUPER_ADMIN_LOGIN = `${AUTH_BASE}/super-admin/login`;
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -52,72 +57,97 @@ const LoginPage = () => {
     setError('');
   };
 
+  const navigateByRole = (role) => {
+    const routes = {
+      ADMIN: '/admin',
+      DOCTOR: '/doctor',
+      NURSE: '/nurse',
+      RECEPTIONIST: '/receptionist',
+      SUPER_ADMIN: '/super-admin',
+      LAB: '/lab',
+      PATIENT: '/patient',
+      PHARMACY: '/pharmacy',
+      TELEMEDICINE: '/telemedicine',
+    };
+    navigate(routes[role] || '/login');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    
+    dispatch(loginStart());
+
     try {
-      console.log('Login attempt:', formData);
-      
-      // Find the user from demo users
-      const user = demoUsers.find(u => 
-        u.email === formData.email && u.password === formData.password
-      );
-      
-      if (user) {
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // ✅ FIX: Dispatch login success to Redux
-        dispatch(loginSuccess({
-          user: {
-            id: 1,
-            name: user.name,
-            email: user.email,
-            role: user.role
-          },
-          token: 'demo-token-' + Date.now()
-        }));
-        
-        // Redirect to role-specific dashboard
-        switch(user.role) {
-          case 'ADMIN':
-            navigate('/admin');
-            break;
-          case 'DOCTOR':
-            navigate('/doctor');
-            break;
-          case 'NURSE':
-            navigate('/nurse');
-            break;
-          case 'RECEPTIONIST':
-            navigate('/receptionist');
-            break;
-          case 'SUPER_ADMIN':
-            navigate('/super-admin');
-            break;
-          case 'LAB':
-            navigate('/lab');
-            break;
-          case 'PATIENT':
-            navigate('/patient');
-            break;
-          case 'PHARMACY':
-            navigate('/pharmacy');
-            break;
-         case 'TELEMEDICINE':
-            navigate('/telemedicine');
-            break;
-          default:
-            navigate('/login');
+      // 1) Try backend API first (super-admin login: POST /api/v1/auth/super-admin/login)
+      const loginUrl = `${API_BASE_URL}${SUPER_ADMIN_LOGIN}`;
+      const res = await fetch(loginUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      if (res.ok) {
+        const response = await res.json();
+        // Backend shape: { success, message, data: { access_token, refresh_token, user: { id, email, first_name, last_name, roles, hospital_id } } }
+        const data = response.data ?? response;
+        const token = data.access_token ?? data.token ?? data.accessToken ?? data.jwt;
+        const user = data.user ?? data;
+        const role = user.roles?.[0] ?? user.role ?? user.authorities?.[0];
+        const name = [user.first_name, user.last_name].filter(Boolean).join(' ') || user.name || user.username || user.email;
+        if (token && user) {
+          dispatch(loginSuccess({
+            user: {
+              id: user.id,
+              name,
+              email: user.email,
+              role,
+              hospital_id: user.hospital_id,
+            },
+            token,
+          }));
+          navigateByRole(role);
+          return;
         }
-      } else {
-        setError('Invalid email or password. Please try again or use demo accounts below.');
       }
-    } catch (error) {
-      console.error('Login failed:', error);
-      setError('Login failed! Please check your connection and try again.');
+
+      // 2) Fallback: demo users (when backend is down or returns 401)
+      const user = demoUsers.find(
+        (u) => u.email === formData.email && u.password === formData.password
+      );
+      if (user) {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        dispatch(loginSuccess({
+          user: { id: 1, name: user.name, email: user.email, role: user.role },
+          token: 'demo-token-' + Date.now(),
+        }));
+        navigateByRole(user.role);
+        return;
+      }
+
+      const errMsg = res.status === 401 || res.status === 400
+        ? (await res.json().catch(() => ({})))?.message || 'Invalid email or password.'
+        : 'Invalid email or password. Try again or use demo accounts below.';
+      setError(errMsg);
+      dispatch(loginFailure(errMsg));
+    } catch (err) {
+      console.error('Login failed:', err);
+      const user = demoUsers.find(
+        (u) => u.email === formData.email && u.password === formData.password
+      );
+      if (user) {
+        dispatch(loginSuccess({
+          user: { id: 1, name: user.name, email: user.email, role: user.role },
+          token: 'demo-token-' + Date.now(),
+        }));
+        navigateByRole(user.role);
+      } else {
+        setError('Cannot reach backend. Check that it is running at ' + API_BASE_URL + ' or use demo accounts.');
+        dispatch(loginFailure(err?.message || 'Network error'));
+      }
     } finally {
       setLoading(false);
     }

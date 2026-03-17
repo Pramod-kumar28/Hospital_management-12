@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import Modal from '../../../../components/common/Modal/Modal';
-import { API_BASE_URL, SUPER_ADMIN_HOSPITALS, SUPER_ADMIN_HOSPITALS_CREATE } from '../../../../config/api';
+import { API_BASE_URL, SUPER_ADMIN_HOSPITALS, SUPER_ADMIN_HOSPITALS_CREATE, API_HEADERS } from '../../../../config/api';
 
 // Map backend status (ACTIVE/SUSPENDED/INACTIVE) to display label
 const statusToDisplay = (s) => (s === 'ACTIVE' ? 'Active' : s === 'SUSPENDED' ? 'Suspended' : s === 'INACTIVE' ? 'Inactive' : s || '');
@@ -68,7 +68,7 @@ const HospitalManagement = () => {
       if (filters.state) params.set('state', filters.state);
       const url = `${API_BASE_URL}${SUPER_ADMIN_HOSPITALS}?${params.toString()}`;
       const res = await fetch(url, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {}
+        headers: { ...API_HEADERS, ...(token ? { Authorization: `Bearer ${token}` } : {}) }
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -202,6 +202,7 @@ const HospitalManagement = () => {
         const res = await fetch(url, {
           method: 'POST',
           headers: {
+            ...API_HEADERS,
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`
           },
@@ -266,7 +267,7 @@ const HospitalManagement = () => {
         const body = Object.fromEntries(Object.entries(payload).filter(([, v]) => v != null && v !== ''));
         const res = await fetch(url, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          headers: { ...API_HEADERS, 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify(body)
         });
         const data = await res.json().catch(() => ({}));
@@ -295,7 +296,7 @@ const HospitalManagement = () => {
       const url = `${API_BASE_URL}${SUPER_ADMIN_HOSPITALS}/${hospital.id}/status`;
       const res = await fetch(url, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { ...API_HEADERS, 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ status: nextStatus })
       });
       const data = await res.json().catch(() => ({}));
@@ -317,7 +318,7 @@ const HospitalManagement = () => {
       const url = `${API_BASE_URL}${SUPER_ADMIN_HOSPITALS}/${hospitalId}?confirm=true`;
       const res = await fetch(url, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { ...API_HEADERS, Authorization: `Bearer ${token}` }
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {

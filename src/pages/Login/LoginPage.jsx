@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { loginStart, loginSuccess, loginFailure } from '../../redux/slices/authSlice';
-import { API_BASE_URL } from '../../config/api';
+import { API_BASE_URL, API_HEADERS } from '../../config/api';
 import { 
   Eye, EyeOff, Mail, Lock, Zap, 
   Building2, Users, Stethoscope, Shield, CheckCircle 
@@ -83,7 +83,7 @@ const LoginPage = () => {
       const loginUrl = `${API_BASE_URL}${SUPER_ADMIN_LOGIN}`;
       const res = await fetch(loginUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...API_HEADERS },
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,

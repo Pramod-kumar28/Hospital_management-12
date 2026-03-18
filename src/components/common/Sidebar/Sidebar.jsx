@@ -89,6 +89,7 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
   const superAdminMenu = [
     { id: 'dashboard', label: 'Dashboard Overview', icon: 'fa-chart-line' },
     { id: 'hospitals', label: 'Hospital Management', icon: 'fa-hospital-alt' },
+    { id: 'hospital-admins', label: 'Hospital Administrator Management', icon: 'fa-user-shield' },
     { id: 'subscriptions', label: 'Subscriptions & Billing', icon: 'fa-credit-card' },
     { id: 'users', label: 'User Accounts', icon: 'fa-user-cog' },
     { id: 'settings', label: 'Platform Settings', icon: 'fa-sliders-h' },

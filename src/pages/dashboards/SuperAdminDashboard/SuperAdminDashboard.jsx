@@ -3,6 +3,7 @@ import Header from '../../../components/common/Header/Header'
 import Sidebar from '../../../components/common/Sidebar/Sidebar'
 import SuperAdminOverview from './pages/SuperAdminOverview'
 import HospitalManagement from './pages/HospitalManagement'
+import HospitalAdministratorManagement from './pages/HospitalAdministratorManagement'
 import SubscriptionsBilling from './pages/SubscriptionsBilling'
 import UserManagement from './pages/UserAccounts'
 import SystemSettings from './pages/PlatformSettings'
@@ -22,6 +23,8 @@ const SuperAdminDashboard = () => {
         return <SuperAdminOverview />
       case 'hospitals':
         return <HospitalManagement />
+      case 'hospital-admins':
+        return <HospitalAdministratorManagement />
       case 'subscriptions':
         return <SubscriptionsBilling />
       case 'users':

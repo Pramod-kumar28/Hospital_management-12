@@ -255,7 +255,7 @@ const SubscriptionsBilling = () => {
               <tr>
                 <th className="text-left px-3 py-3 text-xs font-medium whitespace-nowrap">Hospital</th>
                 <th className="text-left px-3 py-3 text-xs font-medium whitespace-nowrap">Plan</th>
-                <th className="text-left px-3 py-3 text-xs font-medium whitespace-nowrap">Amount</th>
+                <th className="text-left px-3 py-3 text-xs font-medium whitespace-nowrap">Amount RS/-</th>
                 <th className="text-left px-3 py-3 text-xs font-medium whitespace-nowrap">Renewal</th>
                 <th className="text-left px-3 py-3 text-xs font-medium whitespace-nowrap">Status</th>
                 <th className="text-left px-3 py-3 text-xs font-medium whitespace-nowrap">Actions</th>

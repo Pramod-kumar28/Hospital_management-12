@@ -6,6 +6,36 @@ import { API_BASE_URL, SUPER_ADMIN_HOSPITALS, SUPER_ADMIN_HOSPITALS_CREATE, API_
 // Map backend status (ACTIVE/SUSPENDED/INACTIVE) to display label
 const statusToDisplay = (s) => (s === 'ACTIVE' ? 'Active' : s === 'SUSPENDED' ? 'Suspended' : s === 'INACTIVE' ? 'Inactive' : s || '');
 const displayToStatus = (s) => (s === 'Active' ? 'ACTIVE' : s === 'Suspended' ? 'SUSPENDED' : s === 'Inactive' ? 'INACTIVE' : s);
+const subscriptionToDisplay = (plan) => {
+  if (plan === 'FREE' || plan === 'Free') return 'Free';
+  if (plan === 'STANDARD' || plan === 'STANDARD_PLAN' || plan === 'Basic') return 'Basic';
+  if (plan === 'PREMIUM' || plan === 'Premium') return 'Premium';
+  return plan || '—';
+};
+const displayToSubscription = (plan) => {
+  if (plan === 'Free' || plan === 'FREE') return 'FREE';
+  if (plan === 'Basic' || plan === 'STANDARD') return 'STANDARD';
+  if (plan === 'Premium' || plan === 'PREMIUM') return 'PREMIUM';
+  return plan;
+};
+const extractHospitalSubscriptionPlan = (hospital) => (
+  hospital?.subscription_plan ??
+  hospital?.subscriptionPlan ??
+  hospital?.subscription_name ??
+  hospital?.plan_name ??
+  hospital?.current_plan ??
+  hospital?.active_plan ??
+  hospital?.subscription?.name ??
+  hospital?.subscription?.display_name ??
+  hospital?.subscription?.plan_name ??
+  hospital?.subscription_details?.name ??
+  hospital?.subscription_details?.display_name ??
+  hospital?.plan?.name ??
+  hospital?.plan?.display_name ??
+  hospital?.billing?.subscription_plan ??
+  hospital?.billing?.plan_name ??
+  '—'
+);
 
 // Map API hospital item to table row shape
 const mapHospitalFromApi = (h, index = 0) => ({
@@ -21,7 +51,7 @@ const mapHospitalFromApi = (h, index = 0) => ({
   registration_number: h?.registration_number ?? '',
   status: statusToDisplay(h?.status),
   statusRaw: h?.status,
-  subscriptionPlan: h?.subscription_plan ?? h?.subscriptionPlan ?? '—',
+  subscriptionPlan: subscriptionToDisplay(extractHospitalSubscriptionPlan(h)),
   logo: h?.logo_url ?? `https://picsum.photos/seed/hospital${index}/80/80`,
   users: h?.user_count ?? h?.users ?? 0,
   revenue: h?.revenue != null ? `₹${Number(h.revenue)}` : '₹0',
@@ -63,7 +93,7 @@ const HospitalManagement = () => {
       params.set('page', String(page));
       params.set('limit', String(limit));
       if (filters.status) params.set('status', displayToStatus(filters.status) || filters.status);
-      if (filters.plan) params.set('subscription', filters.plan);
+      if (filters.plan) params.set('subscription', displayToSubscription(filters.plan) || filters.plan);
       if (filters.city) params.set('city', filters.city);
       if (filters.state) params.set('state', filters.state);
       const url = `${API_BASE_URL}${SUPER_ADMIN_HOSPITALS}?${params.toString()}`;
@@ -335,7 +365,7 @@ const HospitalManagement = () => {
   const stats = {
     total: pagination.total || hospitals.length,
     active: hospitals.filter(h => h.status === 'Active' || h.statusRaw === 'ACTIVE').length,
-    professional: hospitals.filter(h => h.subscriptionPlan === 'STANDARD' || h.subscriptionPlan === 'PREMIUM').length,
+    professional: hospitals.filter(h => h.subscriptionPlan === 'Basic' || h.subscriptionPlan === 'Premium').length,
     revenue: hospitals.reduce((sum, h) => sum + parseInt(String(h.revenue || '0').replace(/₹|,/g, ''), 10), 0)
   };
 
@@ -429,7 +459,7 @@ const HospitalManagement = () => {
               <div className="w-10 h-10 flex items-center justify-center rounded-full bg-purple-600 mb-3">
                 <i className="fas fa-crown text-white"></i>
               </div>
-              <p className="text-sm text-gray-500">Professional Plan</p>
+              <p className="text-sm text-gray-500">Basic & Premium Plans</p>
               <p className="text-2xl font-bold text-gray-900">{stats.professional}</p>
               <p className="text-xs text-gray-400 mt-1">High-value customers</p>
             </div>
@@ -512,9 +542,9 @@ const HospitalManagement = () => {
               onChange={(e) => setFilters(prev => ({ ...prev, plan: e.target.value }))}
             >
               <option value="">All Plans</option>
-              <option value="FREE">FREE</option>
-              <option value="STANDARD" className="text-purple-600">STANDARD</option>
-              <option value="PREMIUM" className="text-blue-600">PREMIUM</option>
+              <option value="Free">Free</option>
+              <option value="Basic" className="text-purple-600">Basic</option>
+              <option value="Premium" className="text-blue-600">Premium</option>
             </select>
 
             <button
@@ -591,9 +621,9 @@ const HospitalManagement = () => {
                       <p className="font-medium text-gray-900">{hospital.contact}</p>
                     </td>
                     <td className="py-4 px-6">
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${hospital.subscriptionPlan === 'Basic'
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${hospital.subscriptionPlan === 'Free'
                           ? 'bg-gray-100 text-gray-800'
-                          : hospital.subscriptionPlan === 'Professional'
+                          : hospital.subscriptionPlan === 'Basic'
                             ? 'bg-purple-100 text-purple-800'
                             : 'bg-blue-100 text-blue-800'
                         }`}>
@@ -765,9 +795,9 @@ const HospitalManagement = () => {
                   className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none transition-all"
                   required
                 >
+                  <option value="Free">Free Plan</option>
                   <option value="Basic">Basic Plan</option>
-                  <option value="Professional">Professional Plan</option>
-                  <option value="Enterprise">Enterprise Plan</option>
+                  <option value="Premium">Premium Plan</option>
                 </select>
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                   <i className="fas fa-chevron-down text-gray-400"></i>

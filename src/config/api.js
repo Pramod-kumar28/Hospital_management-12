@@ -13,3 +13,10 @@ export const SUPER_ADMIN_HOSPITALS_CREATE = '/api/v1/auth/super-admin/hospitals'
 
 /** Super Admin: GET list, GET one, PUT, PATCH status, DELETE (separate router on backend) */
 export const SUPER_ADMIN_HOSPITALS = '/api/v1/super-admin/hospitals';
+
+/** Super Admin: subscription plan management */
+export const SUPER_ADMIN_SUBSCRIPTION_PLANS = '/api/v1/super-admin/plans';
+
+/** Super Admin: hospital subscription management */
+export const SUPER_ADMIN_HOSPITAL_SUBSCRIPTION = (hospitalName) => `/api/v1/super-admin/hospitals/${encodeURIComponent(hospitalName)}/subscription`;
+export const SUPER_ADMIN_HOSPITAL_ASSIGN_PLAN = (hospitalName) => `/api/v1/super-admin/hospitals/${encodeURIComponent(hospitalName)}/assign-plan`;

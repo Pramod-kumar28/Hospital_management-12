@@ -1,537 +1,803 @@
-import React, { useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
+import { useSelector } from 'react-redux'
 import Modal from '../../../../components/common/Modal/Modal'
+import { API_BASE_URL, API_HEADERS, SUPER_ADMIN_SUBSCRIPTION_PLANS } from '../../../../config/api'
+
+const PLAN_OPTIONS = ['FREE', 'STANDARD', 'PREMIUM']
+
+const EMPTY_FORM = {
+  id: '',
+  name: 'FREE',
+  display_name: '',
+  description: '',
+  monthly_price: 0,
+  yearly_price: 0,
+  max_doctors: 0,
+  max_patients: 0,
+  max_appointments_per_month: 0,
+  max_storage_gb: 1,
+  featuresText: '{\n  "support": "email"\n}'
+}
+
+const extractApiErrorMessage = (data, fallbackMessage) => {
+  const detail = data?.detail
+
+  if (data?.message) return data.message
+  if (typeof detail === 'string') return detail
+  if (detail?.message) return detail.message
+  if (Array.isArray(detail) && detail[0]?.msg) return detail[0].msg
+
+  return fallbackMessage
+}
+
+const mapPlanFromApi = (plan) => ({
+  id: plan?.id ?? plan?.plan_id ?? '',
+  name: plan?.name ?? 'FREE',
+  display_name: plan?.display_name ?? plan?.displayName ?? '',
+  description: plan?.description ?? '',
+  monthly_price: Number(plan?.monthly_price ?? 0),
+  yearly_price: Number(plan?.yearly_price ?? 0),
+  max_doctors: Number(plan?.max_doctors ?? 0),
+  max_patients: Number(plan?.max_patients ?? 0),
+  max_appointments_per_month: Number(plan?.max_appointments_per_month ?? 0),
+  max_storage_gb: Number(plan?.max_storage_gb ?? 1),
+  features: typeof plan?.features === 'object' && plan?.features !== null ? plan.features : {}
+})
+
+const getPlanItems = (data) => {
+  const raw = data?.data ?? data
+  if (Array.isArray(data?.plans)) return data.plans
+  if (Array.isArray(raw?.plans)) return raw.plans
+  if (Array.isArray(raw?.items)) return raw.items
+  if (Array.isArray(raw)) return raw
+  return []
+}
+
+const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`
+const formatLabel = (value) => String(value || '')
+  .replace(/_/g, ' ')
+  .replace(/\b\w/g, (char) => char.toUpperCase())
+
+const buildPlanHighlights = (plan) => {
+  if (!plan) return []
+
+  const featureEntries = Object.entries(plan.features || {})
+    .slice(0, 3)
+    .map(([key, value]) => {
+      const featureValue = typeof value === 'boolean' ? (value ? 'Enabled' : 'Disabled') : String(value)
+      return `${formatLabel(key)}: ${featureValue}`
+    })
+
+  return [
+    `Up to ${plan.max_doctors} doctors`,
+    `Up to ${plan.max_patients} patients`,
+    `${plan.max_appointments_per_month} appointments / month`,
+    ...featureEntries
+  ].filter(Boolean)
+}
 
 const PlatformSettings = () => {
-  const [settings, setSettings] = useState({
-    pricingPlans: [
-      { name: 'Basic', price: 499, features: ['Up to 50 patients', 'Basic reports', 'Email support'] },
-      { name: 'Professional', price: 999, features: ['Up to 200 patients', 'Advanced analytics', 'Priority support'] },
-      { name: 'Enterprise', price: 1999, features: ['Unlimited patients', 'Custom reports', '24/7 dedicated support'] }
-    ],
-    featureToggles: {
-      telemedicine: true,
-      labIntegration: false,
-      billingModule: true,
-      inventory: false
-    },
-    emailTemplates: {
-      welcome: 'Welcome to MediCloud! Your account has been created.',
-      subscriptionRenewal: 'Your subscription is due for renewal.',
-      paymentConfirmation: 'Your payment has been processed successfully.'
-    }
-  })
+  const token = useSelector((state) => state.auth?.token)
 
-  // Modal states
-  const [isEditPlanModalOpen, setIsEditPlanModalOpen] = useState(false)
-  const [isAddPlanModalOpen, setIsAddPlanModalOpen] = useState(false)
-  const [isEditEmailModalOpen, setIsEditEmailModalOpen] = useState(false)
-  
-  // Form states
-  const [editingPlan, setEditingPlan] = useState(null)
-  const [newPlan, setNewPlan] = useState({
-    name: '',
-    price: '',
-    features: ['']
-  })
-  const [editingEmail, setEditingEmail] = useState({ template: '', content: '' })
+  const [plans, setPlans] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [listError, setListError] = useState('')
+  const [search, setSearch] = useState('')
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [modalMode, setModalMode] = useState('add')
+  const [submitLoading, setSubmitLoading] = useState(false)
+  const [submitError, setSubmitError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
+  const [currentPlan, setCurrentPlan] = useState(EMPTY_FORM)
+  const [deleteLoadingId, setDeleteLoadingId] = useState('')
+  const [selectedPlanId, setSelectedPlanId] = useState('')
 
-  // Feature Toggle Function
-  const toggleFeature = (feature) => {
-    setSettings(prev => ({
-      ...prev,
-      featureToggles: {
-        ...prev.featureToggles,
-        [feature]: !prev.featureToggles[feature]
-      }
-    }))
-    alert(`⚙️ ${feature} feature ${!settings.featureToggles[feature] ? 'enabled' : 'disabled'}`)
-  }
+  const filteredPlans = useMemo(() => {
+    const query = search.trim().toLowerCase()
+    if (!query) return plans
 
-  // Plan Management Functions
-  const editPlan = (planName) => {
-    const plan = settings.pricingPlans.find(p => p.name === planName)
-    setEditingPlan(plan)
-    setIsEditPlanModalOpen(true)
-  }
-
-  const closeEditPlanModal = () => {
-    setIsEditPlanModalOpen(false)
-    setEditingPlan(null)
-  }
-
-  const handleUpdatePlan = (e) => {
-    e.preventDefault()
-    if (!editingPlan) return
-
-    const updatedPlans = settings.pricingPlans.map(plan =>
-      plan.name === editingPlan.name ? editingPlan : plan
+    return plans.filter((plan) =>
+      [
+        plan.name,
+        plan.display_name,
+        plan.description,
+        Object.keys(plan.features || {}).join(' ')
+      ].some((value) => String(value || '').toLowerCase().includes(query))
     )
-    
-    setSettings(prev => ({
-      ...prev,
-      pricingPlans: updatedPlans
-    }))
-    
-    alert(`✅ ${editingPlan.name} plan updated successfully!`)
-    closeEditPlanModal()
-  }
+  }, [plans, search])
 
-  const handlePlanInputChange = (field, value) => {
-    setEditingPlan(prev => ({
-      ...prev,
-      [field]: value
-    }))
-  }
+  const stats = useMemo(() => ({
+    totalPlans: plans.length,
+    monthlyRevenuePotential: plans.reduce((sum, plan) => sum + Number(plan.monthly_price || 0), 0),
+    yearlyRevenuePotential: plans.reduce((sum, plan) => sum + Number(plan.yearly_price || 0), 0),
+    totalStorage: plans.reduce((sum, plan) => sum + Number(plan.max_storage_gb || 0), 0)
+  }), [plans])
 
-  const handlePlanFeatureChange = (index, value) => {
-    const updatedFeatures = [...editingPlan.features]
-    updatedFeatures[index] = value
-    setEditingPlan(prev => ({
-      ...prev,
-      features: updatedFeatures
-    }))
-  }
+  const selectedPlan = filteredPlans.find((plan) => plan.id === selectedPlanId)
+    || plans.find((plan) => plan.id === selectedPlanId)
+    || filteredPlans[0]
+    || plans[0]
 
-  const addFeatureField = () => {
-    setEditingPlan(prev => ({
-      ...prev,
-      features: [...prev.features, '']
-    }))
-  }
-
-  const removeFeature = (index) => {
-    const updatedFeatures = editingPlan.features.filter((_, i) => i !== index)
-    setEditingPlan(prev => ({
-      ...prev,
-      features: updatedFeatures
-    }))
-  }
-
-  // Add New Plan Functions
-  const openAddPlanModal = () => {
-    setNewPlan({
-      name: '',
-      price: '',
-      features: ['']
-    })
-    setIsAddPlanModalOpen(true)
-  }
-
-  const closeAddPlanModal = () => {
-    setIsAddPlanModalOpen(false)
-    setNewPlan({
-      name: '',
-      price: '',
-      features: ['']
-    })
-  }
-
-  const handleAddPlan = (e) => {
-    e.preventDefault()
-    
-    if (!newPlan.name || !newPlan.price) {
-      alert('Please fill in all required fields')
+  useEffect(() => {
+    if (!plans.length) {
+      setSelectedPlanId('')
       return
     }
 
-    const plan = {
-      name: newPlan.name,
-      price: parseInt(newPlan.price),
-      features: newPlan.features.filter(feature => feature.trim() !== '')
+    const exists = plans.some((plan) => plan.id === selectedPlanId)
+    if (!exists) {
+      setSelectedPlanId(plans[0]?.id || '')
+    }
+  }, [plans, selectedPlanId])
+
+  const fetchPlans = async () => {
+    setLoading(true)
+    setListError('')
+
+    try {
+      const res = await fetch(`${API_BASE_URL}${SUPER_ADMIN_SUBSCRIPTION_PLANS}`, {
+        headers: {
+          ...API_HEADERS,
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        }
+      })
+      const data = await res.json().catch(() => ({}))
+
+      if (!res.ok) {
+        setPlans([])
+        setListError(extractApiErrorMessage(data, `Failed to load subscription plans (${res.status})`))
+        return
+      }
+
+      setPlans(getPlanItems(data).map(mapPlanFromApi))
+    } catch (error) {
+      setPlans([])
+      setListError(error?.message || 'Unable to load subscription plans.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchPlans()
+  }, [token])
+
+  const openAddModal = () => {
+    setModalMode('add')
+    setSubmitError('')
+    setFieldErrors({})
+    setCurrentPlan(EMPTY_FORM)
+    setIsModalOpen(true)
+  }
+
+  const openEditModal = (plan) => {
+    setModalMode('edit')
+    setSubmitError('')
+    setFieldErrors({})
+    setCurrentPlan({
+      ...plan,
+      featuresText: JSON.stringify(plan.features || {}, null, 2)
+    })
+    setIsModalOpen(true)
+  }
+
+  const closeModal = () => {
+    setIsModalOpen(false)
+    setSubmitError('')
+    setFieldErrors({})
+    setCurrentPlan(EMPTY_FORM)
+  }
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target
+    const numericFields = [
+      'monthly_price',
+      'yearly_price',
+      'max_doctors',
+      'max_patients',
+      'max_appointments_per_month',
+      'max_storage_gb'
+    ]
+
+    setCurrentPlan((prev) => ({
+      ...prev,
+      [name]: numericFields.includes(name) ? Number(value) : value
+    }))
+
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => ({ ...prev, [name]: '' }))
+    }
+  }
+
+  const validatePlanForm = () => {
+    const errors = {}
+
+    if (!PLAN_OPTIONS.includes(currentPlan.name)) {
+      errors.name = `Valid options: ${PLAN_OPTIONS.join(', ')}`
+    }
+    if (!String(currentPlan.display_name || '').trim()) {
+      errors.display_name = 'Display name is required.'
+    }
+    if (!String(currentPlan.description || '').trim()) {
+      errors.description = 'Description is required.'
+    }
+    if (Number(currentPlan.monthly_price) < 0) {
+      errors.monthly_price = 'Monthly price cannot be negative.'
+    }
+    if (Number(currentPlan.yearly_price) < 0) {
+      errors.yearly_price = 'Yearly price cannot be negative.'
+    }
+    if (Number(currentPlan.max_storage_gb) < 1) {
+      errors.max_storage_gb = 'Storage must be at least 1 GB.'
+    }
+    ;['max_doctors', 'max_patients', 'max_appointments_per_month'].forEach((field) => {
+      if (Number(currentPlan[field]) < 0) {
+        errors[field] = 'Value cannot be negative.'
+      }
+    })
+
+    try {
+      const parsed = JSON.parse(currentPlan.featuresText || '{}')
+      if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+        errors.featuresText = 'Features must be a valid JSON object.'
+      }
+    } catch (error) {
+      errors.featuresText = 'Features must be valid JSON.'
     }
 
-    setSettings(prev => ({
-      ...prev,
-      pricingPlans: [...prev.pricingPlans, plan]
-    }))
-
-    alert(`✅ ${plan.name} plan added successfully!`)
-    closeAddPlanModal()
+    return errors
   }
 
-  const handleNewPlanInputChange = (field, value) => {
-    setNewPlan(prev => ({
-      ...prev,
-      [field]: value
-    }))
-  }
+  const buildPayload = () => ({
+    name: currentPlan.name,
+    display_name: String(currentPlan.display_name || '').trim(),
+    description: String(currentPlan.description || '').trim(),
+    monthly_price: Number(currentPlan.monthly_price || 0),
+    yearly_price: Number(currentPlan.yearly_price || 0),
+    max_doctors: Number(currentPlan.max_doctors || 0),
+    max_patients: Number(currentPlan.max_patients || 0),
+    max_appointments_per_month: Number(currentPlan.max_appointments_per_month || 0),
+    max_storage_gb: Number(currentPlan.max_storage_gb || 1),
+    features: JSON.parse(currentPlan.featuresText || '{}')
+  })
 
-  const handleNewPlanFeatureChange = (index, value) => {
-    const updatedFeatures = [...newPlan.features]
-    updatedFeatures[index] = value
-    setNewPlan(prev => ({
-      ...prev,
-      features: updatedFeatures
-    }))
-  }
+  const handleSubmit = async (event) => {
+    event.preventDefault()
 
-  const addNewFeatureField = () => {
-    setNewPlan(prev => ({
-      ...prev,
-      features: [...prev.features, '']
-    }))
-  }
+    if (!token) {
+      setSubmitError('You must be logged in to manage subscription plans.')
+      return
+    }
 
-  const removeNewFeature = (index) => {
-    const updatedFeatures = newPlan.features.filter((_, i) => i !== index)
-    setNewPlan(prev => ({
-      ...prev,
-      features: updatedFeatures
-    }))
-  }
+    const errors = validatePlanForm()
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      setSubmitError('Please correct the highlighted fields.')
+      return
+    }
 
-  // Email Template Functions
-  const editEmailTemplate = (template) => {
-    setEditingEmail({
-      template: template,
-      content: settings.emailTemplates[template]
-    })
-    setIsEditEmailModalOpen(true)
-  }
+    setSubmitLoading(true)
+    setSubmitError('')
 
-  const closeEditEmailModal = () => {
-    setIsEditEmailModalOpen(false)
-    setEditingEmail({ template: '', content: '' })
-  }
+    try {
+      const isEdit = modalMode === 'edit'
+      const url = isEdit
+        ? `${API_BASE_URL}${SUPER_ADMIN_SUBSCRIPTION_PLANS}/${currentPlan.id}`
+        : `${API_BASE_URL}${SUPER_ADMIN_SUBSCRIPTION_PLANS}`
 
-  const handleUpdateEmailTemplate = (e) => {
-    e.preventDefault()
-    
-    setSettings(prev => ({
-      ...prev,
-      emailTemplates: {
-        ...prev.emailTemplates,
-        [editingEmail.template]: editingEmail.content
+      const res = await fetch(url, {
+        method: isEdit ? 'PUT' : 'POST',
+        headers: {
+          ...API_HEADERS,
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(buildPayload())
+      })
+      const data = await res.json().catch(() => ({}))
+
+      if (!res.ok) {
+        setSubmitError(extractApiErrorMessage(data, `Failed to ${isEdit ? 'update' : 'create'} plan (${res.status})`))
+        return
       }
-    }))
 
-    alert(`✅ ${editingEmail.template} template updated successfully!`)
-    closeEditEmailModal()
+      closeModal()
+      fetchPlans()
+    } catch (error) {
+      setSubmitError(error?.message || 'Unable to save subscription plan.')
+    } finally {
+      setSubmitLoading(false)
+    }
   }
 
-  const deletePlan = (planName) => {
-    if (confirm(`Are you sure you want to delete the ${planName} plan?`)) {
-      setSettings(prev => ({
-        ...prev,
-        pricingPlans: prev.pricingPlans.filter(p => p.name !== planName)
-      }))
-      alert(`🗑️ ${planName} plan deleted`)
+  const handleDeletePlan = async (plan) => {
+    if (!token || !plan?.id) return
+    if (!window.confirm(`Delete subscription plan ${plan.display_name || plan.name}?`)) return
+
+    setDeleteLoadingId(plan.id)
+    try {
+      const res = await fetch(`${API_BASE_URL}${SUPER_ADMIN_SUBSCRIPTION_PLANS}/${plan.id}`, {
+        method: 'DELETE',
+        headers: {
+          ...API_HEADERS,
+          Authorization: `Bearer ${token}`
+        }
+      })
+      const data = await res.json().catch(() => ({}))
+
+      if (!res.ok) {
+        window.alert(extractApiErrorMessage(data, `Failed to delete plan (${res.status})`))
+        return
+      }
+
+      setPlans((prev) => prev.filter((item) => item.id !== plan.id))
+    } catch (error) {
+      window.alert(error?.message || 'Unable to delete subscription plan.')
+    } finally {
+      setDeleteLoadingId('')
     }
   }
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold text-gray-700">
-         Platform Settings
-      </h2>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Pricing Plans */}
-        <div className="bg-white rounded-xl card-shadow border p-6">
-          <h3 className="font-semibold text-lg mb-4">Pricing Plans</h3>
-          <div className="space-y-4">
-            {settings.pricingPlans.map(plan => (
-              <div key={plan.name} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                <div className="flex justify-between items-center mb-2">
-                  <h4 className="font-semibold">{plan.name}</h4>
-                  <span className="text-xl font-bold text-blue-600">₹{plan.price}/month</span>
-                </div>
-                <ul className="text-sm text-gray-600 space-y-1 mb-3">
-                  {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-center gap-2">
-                      <i className="fas fa-check text-green-500"></i>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                <div className="flex gap-2">
-                  <button 
-                    className="flex-1 bg-blue-600 text-white py-2 px-3 rounded text-sm hover:bg-blue-700 transition-colors"
-                    onClick={() => editPlan(plan.name)}
-                  >
-                    Edit Plan
-                  </button>
-                  <button 
-                    className="flex-1 bg-gray-600 text-white py-2 px-3 rounded text-sm hover:bg-gray-700 transition-colors"
-                    onClick={() => deletePlan(plan.name)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
-            <button 
-              className="w-full border-2 border-dashed border-gray-300 rounded-lg py-4 text-gray-500 hover:border-blue-500 hover:text-blue-500 transition-colors"
-              onClick={openAddPlanModal}
-            >
-              <i className="fas fa-plus mr-2"></i>Add New Plan
-            </button>
-          </div>
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 to-blue-800 bg-clip-text text-transparent">
+            Subscription Plan Management
+          </h1>
+          <p className="text-gray-600 mt-2">
+            Create, update, list, and delete subscription plans for hospital onboarding and billing.
+          </p>
         </div>
 
-        {/* Feature Toggles */}
-        <div className="bg-white rounded-xl card-shadow border p-6">
-          <h3 className="font-semibold text-lg mb-4">Feature Toggles</h3>
-          <div className="space-y-4">
-            {Object.entries(settings.featureToggles).map(([feature, enabled]) => (
-              <div key={feature} className="flex justify-between items-center p-3 border rounded-lg">
-                <div>
-                  <div className="font-medium">{feature.charAt(0).toUpperCase() + feature.slice(1)}</div>
-                  <div className="text-xs text-gray-500">Enable/disable {feature} module</div>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    checked={enabled}
-                    onChange={() => toggleFeature(feature)}
-                    className="sr-only peer" 
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                </label>
-              </div>
-            ))}
-          </div>
+        <button
+          type="button"
+          onClick={openAddModal}
+          className="px-5 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:shadow-lg hover:scale-[1.02] active:scale-95 transition-all duration-200 font-medium flex items-center justify-center gap-2"
+        >
+          <i className="fas fa-plus-circle"></i>
+          Add Subscription Plan
+        </button>
+      </div>
 
-          {/* Email Templates */}
-          <h3 className="font-semibold text-lg mb-4 mt-6">Email Templates</h3>
-          <div className="space-y-3">
-            {Object.entries(settings.emailTemplates).map(([template, content]) => (
-              <div key={template} className="border rounded-lg p-3 hover:shadow-md transition-shadow">
-                <div className="flex justify-between items-center mb-2">
-                  <h4 className="font-medium">{template.charAt(0).toUpperCase() + template.slice(1)} Template</h4>
-                  <button 
-                    className="text-blue-600 hover:text-blue-800 text-sm transition-colors"
-                    onClick={() => editEmailTemplate(template)}
-                  >
-                    <i className="fas fa-edit mr-1"></i>Edit
-                  </button>
-                </div>
-                <p className="text-sm text-gray-600 truncate">{content}</p>
-              </div>
-            ))}
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+          <p className="text-sm text-gray-500">Total Plans</p>
+          <p className="text-2xl font-bold text-gray-900 mt-1">{stats.totalPlans}</p>
+        </div>
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+          <p className="text-sm text-gray-500">Monthly Revenue</p>
+          <p className="text-2xl font-bold text-blue-700 mt-1">{formatCurrency(stats.monthlyRevenuePotential)}</p>
+        </div>
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+          <p className="text-sm text-gray-500">Yearly Revenue</p>
+          <p className="text-2xl font-bold text-emerald-700 mt-1">{formatCurrency(stats.yearlyRevenuePotential)}</p>
+        </div>
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+          <p className="text-sm text-gray-500">Storage Capacity</p>
+          <p className="text-2xl font-bold text-purple-700 mt-1">{stats.totalStorage} GB</p>
         </div>
       </div>
 
-      {/* Edit Plan Modal */}
-      <Modal
-        isOpen={isEditPlanModalOpen}
-        onClose={closeEditPlanModal}
-        title={`Edit ${editingPlan?.name} Plan`}
-        size="lg"
-      >
-        {editingPlan && (
-          <form onSubmit={handleUpdatePlan} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Plan Name *
-                </label>
+      {listError && (
+        <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 flex items-center justify-between gap-4">
+          <span className="flex items-center gap-2"><i className="fas fa-exclamation-circle"></i>{listError}</span>
+          <button
+            type="button"
+            onClick={fetchPlans}
+            className="px-3 py-1.5 bg-red-100 hover:bg-red-200 rounded-lg text-sm font-medium"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 xl:grid-cols-[1.35fr_0.95fr] gap-6">
+        <div className="bg-white rounded-xl card-shadow border p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+            <h3 className="font-semibold text-lg">Pricing Plans</h3>
+            <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+              <div className="relative min-w-[240px]">
+                <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
                 <input
                   type="text"
-                  value={editingPlan.name}
-                  onChange={(e) => handlePlanInputChange('name', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  required
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="Search plans..."
+                  className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Price (₹) *
-                </label>
-                <input
-                  type="number"
-                  value={editingPlan.price}
-                  onChange={(e) => handlePlanInputChange('price', parseInt(e.target.value) || 0)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
-              </div>
+              <button
+                type="button"
+                onClick={fetchPlans}
+                className="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
+              >
+                Refresh
+              </button>
             </div>
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Features *
-              </label>
-              <div className="space-y-2">
-                {editingPlan.features.map((feature, index) => (
-                  <div key={index} className="flex gap-2">
-                    <input
-                      type="text"
-                      value={feature}
-                      onChange={(e) => handlePlanFeatureChange(index, e.target.value)}
-                      className="flex-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                      placeholder={`Feature ${index + 1}`}
-                      required
-                    />
-                    {editingPlan.features.length > 1 && (
+          {loading ? (
+            <div className="p-12 text-center">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+              <p className="text-gray-600">Loading subscription plans...</p>
+            </div>
+          ) : filteredPlans.length === 0 ? (
+            <div className="p-12 text-center border rounded-xl">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-50 rounded-full mb-4">
+                <i className="fas fa-layer-group text-blue-500 text-2xl"></i>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">No subscription plans found</h3>
+              <p className="text-gray-500 mb-6">
+                {plans.length === 0 ? 'Create the first subscription plan.' : 'Try adjusting your search.'}
+              </p>
+              <button
+                type="button"
+                onClick={openAddModal}
+                className="px-5 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:shadow-lg transition-all font-medium"
+              >
+                Add Subscription Plan
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredPlans.map((plan) => {
+                const highlights = buildPlanHighlights(plan)
+                const isSelected = (plan.id || plan.name) === (selectedPlan?.id || selectedPlan?.name)
+
+                return (
+                  <div
+                    key={plan.id || plan.name}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setSelectedPlanId(plan.id)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault()
+                        setSelectedPlanId(plan.id)
+                      }
+                    }}
+                    className={`border rounded-lg p-4 transition-all cursor-pointer ${
+                      isSelected
+                        ? 'border-blue-300 ring-2 ring-blue-100 shadow-md'
+                        : 'hover:shadow-md border-gray-200'
+                    }`}
+                  >
+                    <div className="flex justify-between items-start gap-4 mb-2">
+                      <div>
+                        <h4 className="font-semibold text-gray-900">{plan.display_name || formatLabel(plan.name)}</h4>
+                        <p className="text-xs text-gray-500 mt-1">{plan.name}</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xl font-bold text-blue-600">{formatCurrency(plan.monthly_price)}/month</div>
+                        <div className="text-xs text-gray-500">{formatCurrency(plan.yearly_price)}/year</div>
+                      </div>
+                    </div>
+
+                    <p className="text-sm text-gray-600 mb-3">{plan.description || 'No description provided.'}</p>
+
+                    <ul className="text-sm text-gray-600 space-y-1 mb-3">
+                      {highlights.slice(0, 5).map((item, index) => (
+                        <li key={`${plan.id || plan.name}-highlight-${index}`} className="flex items-start gap-2">
+                          <i className="fas fa-check text-green-500 mt-1 text-xs"></i>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <div className="flex gap-2">
                       <button
                         type="button"
-                        onClick={() => removeFeature(index)}
-                        className="px-3 text-red-600 border border-red-300 rounded-md hover:bg-red-50 transition-colors"
+                        className="flex-1 bg-blue-600 text-white py-2 px-3 rounded text-sm hover:bg-blue-700 transition-colors"
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          openEditModal(plan)
+                        }}
                       >
-                        <i className="fas fa-times"></i>
+                        Edit Plan
                       </button>
-                    )}
+                      <button
+                        type="button"
+                        className="flex-1 bg-gray-600 text-white py-2 px-3 rounded text-sm hover:bg-gray-700 transition-colors disabled:opacity-60"
+                        disabled={deleteLoadingId === plan.id}
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          handleDeletePlan(plan)
+                        }}
+                      >
+                        {deleteLoadingId === plan.id ? 'Deleting...' : 'Delete'}
+                      </button>
+                    </div>
                   </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={addFeatureField}
-                  className="text-blue-600 text-sm flex items-center gap-1 hover:text-blue-700 transition-colors"
-                >
-                  <i className="fas fa-plus"></i>
-                  Add Feature
-                </button>
+                )
+              })}
+
+              <button
+                type="button"
+                className="w-full border-2 border-dashed border-gray-300 rounded-lg py-4 text-gray-500 hover:border-blue-500 hover:text-blue-500 transition-colors"
+                onClick={openAddModal}
+              >
+                <i className="fas fa-plus mr-2"></i>Add New Plan
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="bg-white rounded-xl card-shadow border p-6">
+          <h3 className="font-semibold text-lg mb-4">Plan Details</h3>
+
+          {selectedPlan ? (
+            <div className="space-y-4">
+              <div className="p-4 border rounded-lg bg-gradient-to-r from-blue-50 to-white">
+                <div className="flex justify-between items-start gap-4">
+                  <div>
+                    <h4 className="font-semibold text-gray-900">{selectedPlan.display_name || formatLabel(selectedPlan.name)}</h4>
+                    <p className="text-xs text-gray-500 mt-1">{selectedPlan.name}</p>
+                  </div>
+                  <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">
+                    {stats.totalPlans} Plans
+                  </span>
+                </div>
+                <p className="text-sm text-gray-600 mt-3">{selectedPlan.description || 'No description provided.'}</p>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex justify-between items-center p-3 border rounded-lg">
+                  <div>
+                    <div className="font-medium">Monthly Price</div>
+                    <div className="text-xs text-gray-500">Recurring monthly billing amount</div>
+                  </div>
+                  <span className="text-blue-600 font-semibold">{formatCurrency(selectedPlan.monthly_price)}</span>
+                </div>
+
+                <div className="flex justify-between items-center p-3 border rounded-lg">
+                  <div>
+                    <div className="font-medium">Yearly Price</div>
+                    <div className="text-xs text-gray-500">Recurring annual billing amount</div>
+                  </div>
+                  <span className="text-emerald-600 font-semibold">{formatCurrency(selectedPlan.yearly_price)}</span>
+                </div>
+
+                <div className="flex justify-between items-center p-3 border rounded-lg">
+                  <div>
+                    <div className="font-medium">Max Doctors</div>
+                    <div className="text-xs text-gray-500">Allowed doctors under this plan</div>
+                  </div>
+                  <span className="text-gray-800 font-semibold">{selectedPlan.max_doctors}</span>
+                </div>
+
+                <div className="flex justify-between items-center p-3 border rounded-lg">
+                  <div>
+                    <div className="font-medium">Max Patients</div>
+                    <div className="text-xs text-gray-500">Allowed patient count</div>
+                  </div>
+                  <span className="text-gray-800 font-semibold">{selectedPlan.max_patients}</span>
+                </div>
+
+                <div className="flex justify-between items-center p-3 border rounded-lg">
+                  <div>
+                    <div className="font-medium">Appointments / Month</div>
+                    <div className="text-xs text-gray-500">Monthly appointment cap</div>
+                  </div>
+                  <span className="text-gray-800 font-semibold">{selectedPlan.max_appointments_per_month}</span>
+                </div>
+
+                <div className="flex justify-between items-center p-3 border rounded-lg">
+                  <div>
+                    <div className="font-medium">Storage</div>
+                    <div className="text-xs text-gray-500">Maximum storage capacity</div>
+                  </div>
+                  <span className="text-gray-800 font-semibold">{selectedPlan.max_storage_gb} GB</span>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-base mb-3">Features</h4>
+                {Object.keys(selectedPlan.features || {}).length > 0 ? (
+                  <div className="space-y-3">
+                    {Object.entries(selectedPlan.features).map(([key, value]) => (
+                      <div key={key} className="flex justify-between items-center p-3 border rounded-lg">
+                        <div>
+                          <div className="font-medium">{formatLabel(key)}</div>
+                          <div className="text-xs text-gray-500">Feature configuration</div>
+                        </div>
+                        <span className="text-sm font-semibold text-blue-700">
+                          {typeof value === 'boolean' ? (value ? 'Enabled' : 'Disabled') : String(value)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-4 border rounded-lg text-sm text-gray-500">
+                    No feature metadata available for this plan.
+                  </div>
+                )}
               </div>
             </div>
-
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <button
-                type="button"
-                onClick={closeEditPlanModal}
-                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-              >
-                Update Plan
-              </button>
+          ) : (
+            <div className="p-8 border rounded-lg text-center text-gray-500">
+              Select a subscription plan to view its details.
             </div>
-          </form>
-        )}
-      </Modal>
+          )}
+        </div>
+      </div>
 
-      {/* Add New Plan Modal */}
       <Modal
-        isOpen={isAddPlanModalOpen}
-        onClose={closeAddPlanModal}
-        title="Add New Pricing Plan"
-        size="lg"
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        title={modalMode === 'add' ? 'Add Subscription Plan' : 'Edit Subscription Plan'}
+        size="xl"
       >
-        <form onSubmit={handleAddPlan} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Plan Name *
-              </label>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {submitError && (
+            <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-2">
+              <i className="fas fa-exclamation-circle flex-shrink-0"></i>
+              {submitError}
+            </div>
+          )}
+
+          <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 text-sm">
+            Valid backend plan names: <span className="font-semibold">{PLAN_OPTIONS.join(', ')}</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-gray-700">Plan Name *</label>
+              <select
+                name="name"
+                value={currentPlan.name}
+                onChange={handleInputChange}
+                className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${fieldErrors.name ? 'border-red-400' : 'border-gray-200'}`}
+              >
+                {PLAN_OPTIONS.map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+              {fieldErrors.name && <p className="text-sm text-red-600">{fieldErrors.name}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-gray-700">Display Name *</label>
               <input
                 type="text"
-                value={newPlan.name}
-                onChange={(e) => handleNewPlanInputChange('name', e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                placeholder="e.g., Premium"
-                required
+                name="display_name"
+                value={currentPlan.display_name}
+                onChange={handleInputChange}
+                className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${fieldErrors.display_name ? 'border-red-400' : 'border-gray-200'}`}
+                placeholder="e.g. Standard Growth Plan"
               />
+              {fieldErrors.display_name && <p className="text-sm text-red-600">{fieldErrors.display_name}</p>}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Price (₹) *
-              </label>
+
+            <div className="space-y-2 md:col-span-2">
+              <label className="block text-sm font-semibold text-gray-700">Description *</label>
+              <textarea
+                name="description"
+                value={currentPlan.description}
+                onChange={handleInputChange}
+                rows="3"
+                className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none ${fieldErrors.description ? 'border-red-400' : 'border-gray-200'}`}
+                placeholder="Describe the plan benefits and intended customer type"
+              />
+              {fieldErrors.description && <p className="text-sm text-red-600">{fieldErrors.description}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-gray-700">Monthly Price *</label>
               <input
                 type="number"
-                value={newPlan.price}
-                onChange={(e) => handleNewPlanInputChange('price', e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                placeholder="e.g., 1499"
-                required
+                name="monthly_price"
+                value={currentPlan.monthly_price}
+                onChange={handleInputChange}
+                min="0"
+                className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${fieldErrors.monthly_price ? 'border-red-400' : 'border-gray-200'}`}
               />
+              {fieldErrors.monthly_price && <p className="text-sm text-red-600">{fieldErrors.monthly_price}</p>}
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Features *
-            </label>
             <div className="space-y-2">
-              {newPlan.features.map((feature, index) => (
-                <div key={index} className="flex gap-2">
-                  <input
-                    type="text"
-                    value={feature}
-                    onChange={(e) => handleNewPlanFeatureChange(index, e.target.value)}
-                    className="flex-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                    placeholder={`Feature ${index + 1}`}
-                    required
-                  />
-                  {newPlan.features.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeNewFeature(index)}
-                      className="px-3 text-red-600 border border-red-300 rounded-md hover:bg-red-50 transition-colors"
-                    >
-                      <i className="fas fa-times"></i>
-                    </button>
-                  )}
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={addNewFeatureField}
-                className="text-blue-600 text-sm flex items-center gap-1 hover:text-blue-700 transition-colors"
-              >
-                <i className="fas fa-plus"></i>
-                Add Feature
-              </button>
+              <label className="block text-sm font-semibold text-gray-700">Yearly Price *</label>
+              <input
+                type="number"
+                name="yearly_price"
+                value={currentPlan.yearly_price}
+                onChange={handleInputChange}
+                min="0"
+                className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${fieldErrors.yearly_price ? 'border-red-400' : 'border-gray-200'}`}
+              />
+              {fieldErrors.yearly_price && <p className="text-sm text-red-600">{fieldErrors.yearly_price}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-gray-700">Max Doctors *</label>
+              <input
+                type="number"
+                name="max_doctors"
+                value={currentPlan.max_doctors}
+                onChange={handleInputChange}
+                min="0"
+                className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${fieldErrors.max_doctors ? 'border-red-400' : 'border-gray-200'}`}
+              />
+              {fieldErrors.max_doctors && <p className="text-sm text-red-600">{fieldErrors.max_doctors}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-gray-700">Max Patients *</label>
+              <input
+                type="number"
+                name="max_patients"
+                value={currentPlan.max_patients}
+                onChange={handleInputChange}
+                min="0"
+                className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${fieldErrors.max_patients ? 'border-red-400' : 'border-gray-200'}`}
+              />
+              {fieldErrors.max_patients && <p className="text-sm text-red-600">{fieldErrors.max_patients}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-gray-700">Max Appointments Per Month *</label>
+              <input
+                type="number"
+                name="max_appointments_per_month"
+                value={currentPlan.max_appointments_per_month}
+                onChange={handleInputChange}
+                min="0"
+                className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${fieldErrors.max_appointments_per_month ? 'border-red-400' : 'border-gray-200'}`}
+              />
+              {fieldErrors.max_appointments_per_month && <p className="text-sm text-red-600">{fieldErrors.max_appointments_per_month}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-gray-700">Max Storage (GB) *</label>
+              <input
+                type="number"
+                name="max_storage_gb"
+                value={currentPlan.max_storage_gb}
+                onChange={handleInputChange}
+                min="1"
+                className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${fieldErrors.max_storage_gb ? 'border-red-400' : 'border-gray-200'}`}
+              />
+              {fieldErrors.max_storage_gb && <p className="text-sm text-red-600">{fieldErrors.max_storage_gb}</p>}
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <label className="block text-sm font-semibold text-gray-700">Features JSON *</label>
+              <textarea
+                name="featuresText"
+                value={currentPlan.featuresText}
+                onChange={handleInputChange}
+                rows="10"
+                className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-mono text-sm ${fieldErrors.featuresText ? 'border-red-400' : 'border-gray-200'}`}
+                placeholder={'{\n  "support": "email",\n  "analytics": true\n}'}
+              />
+              {fieldErrors.featuresText && <p className="text-sm text-red-600">{fieldErrors.featuresText}</p>}
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t">
+          <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
             <button
               type="button"
-              onClick={closeAddPlanModal}
-              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+              onClick={closeModal}
+              className="px-5 py-3 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-all duration-200 font-medium"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              disabled={submitLoading}
+              className="px-5 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:shadow-lg hover:scale-[1.02] active:scale-95 transition-all duration-200 font-medium flex items-center gap-2 disabled:opacity-60 disabled:pointer-events-none"
             >
-              Add Plan
-            </button>
-          </div>
-        </form>
-      </Modal>
-
-      {/* Edit Email Template Modal */}
-      <Modal
-        isOpen={isEditEmailModalOpen}
-        onClose={closeEditEmailModal}
-        title={`Edit ${editingEmail.template?.charAt(0).toUpperCase() + editingEmail.template?.slice(1)} Email Template`}
-        size="lg"
-      >
-        <form onSubmit={handleUpdateEmailTemplate} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Template Content *
-            </label>
-            <textarea
-              value={editingEmail.content}
-              onChange={(e) => setEditingEmail(prev => ({ ...prev, content: e.target.value }))}
-              rows="8"
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 resize-vertical"
-              placeholder="Enter email template content..."
-              required
-            />
-          </div>
-
-          <div className="flex justify-end gap-3 pt-4 border-t">
-            <button
-              type="button"
-              onClick={closeEditEmailModal}
-              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-            >
-              Update Template
+              {submitLoading ? (
+                <>
+                  <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <i className={modalMode === 'add' ? 'fas fa-plus-circle' : 'fas fa-save'}></i>
+                  {modalMode === 'add' ? 'Create Plan' : 'Update Plan'}
+                </>
+              )}
             </button>
           </div>
         </form>

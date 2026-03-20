@@ -9,6 +9,8 @@ import UserManagement from './pages/UserAccounts'
 import SystemSettings from './pages/PlatformSettings'
 import ReportsAnalytics from './pages/ReportsAnalytics'
 import AuditLogs from './pages/AuditLogs'
+import AnalyticsMonitoring from './pages/AnalyticsMonitoring'
+import SupportManagement from './pages/SupportManagement'
 // import SuperAdminProfile from './pages/SuperAdminProfile'
 
 const SuperAdminDashboard = () => {
@@ -27,6 +29,8 @@ const SuperAdminDashboard = () => {
         return <HospitalAdministratorManagement />
       case 'subscriptions':
         return <SubscriptionsBilling />
+         case 'support':
+        return <SupportManagement />
       case 'users':
         return <UserManagement />
       case 'settings':
@@ -35,6 +39,8 @@ const SuperAdminDashboard = () => {
         return <ReportsAnalytics />
       case 'audit':
         return <AuditLogs />
+        case 'analytics':
+          return <AnalyticsMonitoring />
       
       // case 'profile':
       //   return <SuperAdminProfile />

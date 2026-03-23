@@ -299,7 +299,7 @@ const SubscriptionsBilling = () => {
     const errors = validateForm()
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors)
-      setSubmitError('Please correct the highlighted fields.')
+      setSubmitError('Please correct the highlighted fields....')
       return
     }
 

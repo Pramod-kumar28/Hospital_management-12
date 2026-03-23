@@ -1,100 +1,143 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
+import { API_BASE_URL, API_HEADERS } from '../../../../config/api'
+
+const API_ENDPOINT = '/api/v1/analytics/overview'
+
+// Utility function to safely convert to array
+const ensureArray = (value) => {
+  if (Array.isArray(value)) return value
+  if (value && typeof value === 'object') return Object.values(value)
+  return []
+}
 
 const SuperAdminOverview = () => {
+  const navigate = useNavigate()
+  const authState = useSelector((state) => state?.auth) || {}
+  const token = authState?.token || localStorage.getItem('token')
+
   const [state, setState] = useState({
     hospitals: [],
     subscriptions: [],
     users: [],
     auditLogs: [],
-    reports: []
+    reports: [],
+    totalPatients: 0,
+    totalAppointments: 0,
+    hospitalGrowth: 0,
+    patientGrowth: 0,
+    appointmentGrowth: 0,
+    revenueGrowth: 0,
+    systemHealth: {}
   })
 
-  const fetchHospitals = async () => {
-    const res = await fetch("https://jsonplaceholder.typicode.com/users")
-    return await res.json()
-  }
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
-  const fetchPosts = async () => {
-    const res = await fetch("https://jsonplaceholder.typicode.com/posts?_limit=5")
-    return await res.json()
+  const fetchAnalyticsData = async () => {
+    // Validate authentication
+    if (!token) {
+      const errorMsg = 'Authentication required. Please log in again.'
+      setError(errorMsg)
+      console.warn(errorMsg)
+      return null
+    }
+
+    try {
+      const url = `${API_BASE_URL}${API_ENDPOINT}`
+      const headers = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        ...API_HEADERS
+      }
+
+      console.log('Fetching analytics from:', url)
+
+      const res = await fetch(url, { headers })
+      const data = await res.json().catch(() => ({}))
+
+      if (!res.ok) {
+        const errorMsg = data?.message || data?.detail?.message || data?.error?.message || `Failed to fetch analytics (${res.status})`
+        setError(errorMsg)
+        console.error('Analytics API error:', errorMsg, data)
+        return null
+      }
+
+      console.log('Analytics data fetched successfully')
+      setError('')
+      return data
+    } catch (err) {
+      const errorMsg = err?.message || 'Network error: Unable to fetch analytics data'
+      setError(errorMsg)
+      console.error('Failed to fetch analytics data:', err)
+      return null
+    }
   }
 
   const initializeData = async () => {
-    const hospitalsData = await fetchHospitals()
-    const posts = await fetchPosts()
+    const data = await fetchAnalyticsData()
+    
+    if (data) {
+      setState(prev => ({
+        ...prev,
+        hospitals: data.hospitals || [],
+        subscriptions: data.subscriptions || [],
+        users: data.users || [],
+        auditLogs: data.auditLogs || [],
+        reports: data.reports || [],
+        totalPatients: data.totalPatients || 0,
+        totalAppointments: data.totalAppointments || 0,
+        hospitalGrowth: data.hospitalGrowth || 0,
+        patientGrowth: data.patientGrowth || 0,
+        appointmentGrowth: data.appointmentGrowth || 0,
+        revenueGrowth: data.revenueGrowth || 0,
+        systemHealth: data.systemHealth || {}
+      }))
+    }
 
-    const hospitals = hospitalsData.slice(0, 8).map((h, i) => ({
-      id: `HSP-${1000 + i}`,
-      name: h.company.name,
-      address: `${h.address.street}, ${h.address.city}`,
-      email: h.email,
-      contact: h.phone,
-      subscriptionPlan: ['Basic', 'Professional', 'Enterprise'][i % 3],
-      status: i % 5 === 0 ? 'Suspended' : 'Active',
-      createdDate: new Date(Date.now() - i * 86400000).toISOString().split('T')[0],
-      logo: `https://picsum.photos/seed/hospital${i}/80/80`
-    }))
+    setLoading(false)
+  }
 
-    const subscriptions = hospitals.map((h, i) => ({
-      id: `SUB-${2000 + i}`,
-      hospitalName: h.name,
-      planType: ['Monthly', 'Yearly'][i % 2],
-      amount: [499, 999, 1999][i % 3],
-      renewalDate: new Date(Date.now() + (i + 1) * 86400000 * 30).toISOString().split('T')[0],
-      status: i % 4 === 0 ? 'Pending' : 'Paid',
-      invoiceId: `INV-${3000 + i}`
-    }))
-
-    const users = hospitalsData.slice(0, 12).map((u, i) => ({
-      id: `USR-${4000 + i}`,
-      name: u.name,
-      role: ['Admin', 'Doctor', 'Staff', 'Patient'][i % 4],
-      email: u.email,
-      status: i % 8 === 0 ? 'Inactive' : 'Active',
-      lastLogin: new Date(Date.now() - i * 3600000).toLocaleString(),
-      avatar: `https://i.pravatar.cc/60?img=${i + 1}`
-    }))
-
-    const auditLogs = posts.map((p, i) => ({
-      id: `LOG-${5000 + i}`,
-      user: users[i % users.length].name,
-      action: ['Login', 'Update', 'Create', 'Delete'][i % 4],
-      resource: ['Hospital', 'User', 'Subscription', 'Settings'][i % 4],
-      timestamp: new Date(Date.now() - i * 600000).toLocaleString(),
-      ip: `192.168.1.${i + 1}`
-    }))
-
-    const reports = posts.map((p, i) => ({
-      id: `REP-${6000 + i}`,
-      title: p.title,
-      type: ['Revenue', 'Usage', 'Growth', 'Performance'][i % 4],
-      generatedDate: new Date(Date.now() - i * 86400000).toISOString().split('T')[0],
-      status: ['Completed', 'Processing', 'Failed'][i % 3]
-    }))
-
-    setState(prev => ({
-      ...prev,
-      hospitals,
-      subscriptions,
-      users,
-      auditLogs,
-      reports
-    }))
+  const handleRetry = () => {
+    initializeData()
   }
 
   useEffect(() => {
-    initializeData()
-  }, [])
+    setLoading(true)
+    setError('')
+    
+    if (token) {
+      initializeData()
+    } else {
+      setError('Authentication required. Please log in to access the dashboard.')
+      setLoading(false)
+    }
+  }, [token])
 
-  const totalHospitals = state.hospitals.length
-  const activeSubscriptions = state.subscriptions.filter(s => s.status === 'Paid').length
-  const totalUsers = state.users.length
-  const monthlyRevenue = state.subscriptions
+  const totalHospitals = ensureArray(state.hospitals).length
+  const activeSubscriptions = ensureArray(state.subscriptions).filter(s => s.status === 'Paid').length
+  const totalUsers = ensureArray(state.users).length
+  const monthlyRevenue = ensureArray(state.subscriptions)
     .filter(s => s.status === 'Paid')
-    .reduce((sum, sub) => sum + sub.amount, 0)
+    .reduce((sum, sub) => sum + (sub.amount || 0), 0)
 
-    const navigate = useNavigate()
+  // Debug logging
+  console.log('Component State:', { loading, error, token: token ? 'Present' : 'Missing', hospitalCount: ensureArray(state.hospitals).length })
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading analytics data...</p>
+          <p className="text-xs text-gray-400 mt-4">Token: {token ? 'Present' : 'Missing'}</p>
+        </div>
+      </div>
+    )
+  }
+
+  
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -112,7 +155,7 @@ const SuperAdminOverview = () => {
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent pointer-events-none" />
 
           <span className="absolute top-4 right-4 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded">
-            +12%
+            +{state.hospitalGrowth || 0}%
           </span>
 
           <div className="relative flex justify-between items-end">
@@ -121,7 +164,7 @@ const SuperAdminOverview = () => {
                 <i className="fas fa-hospital text-white"></i>
               </div>
               <p className="text-sm text-gray-500">Active Hospitals</p>
-              <p className="text-2xl font-bold text-gray-900">38</p>
+              <p className="text-2xl font-bold text-gray-900">{state.hospitals?.length || 0}</p>
               <p className="text-xs text-gray-400 mt-1">Currently operational</p>
             </div>
 
@@ -140,7 +183,7 @@ const SuperAdminOverview = () => {
           <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-transparent pointer-events-none" />
 
           <span className="absolute top-4 right-4 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded">
-            +18%
+            +{state.patientGrowth}%
           </span>
 
           <div className="relative flex justify-between items-end">
@@ -149,7 +192,7 @@ const SuperAdminOverview = () => {
                 <i className="fas fa-users text-white"></i>
               </div>
               <p className="text-sm text-gray-500">Total Patients</p>
-              <p className="text-2xl font-bold text-gray-900">1,42,780</p>
+              <p className="text-2xl font-bold text-gray-900">{(state.totalPatients || 0).toLocaleString()}</p>
               <p className="text-xs text-gray-400 mt-1">Across all hospitals</p>
             </div>
 
@@ -169,7 +212,7 @@ const SuperAdminOverview = () => {
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent pointer-events-none" />
 
           <span className="absolute top-4 right-4 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded">
-            +9%
+            +{state.appointmentGrowth}%
           </span>
 
           <div className="relative flex justify-between items-end">
@@ -178,7 +221,7 @@ const SuperAdminOverview = () => {
                 <i className="fas fa-calendar-check text-white"></i>
               </div>
               <p className="text-sm text-gray-500">Appointments</p>
-              <p className="text-2xl font-bold text-gray-900">3,85,420</p>
+              <p className="text-2xl font-bold text-gray-900">{(state.totalAppointments || 0).toLocaleString()}</p>
               <p className="text-xs text-gray-400 mt-1">Last 30 days</p>
             </div>
 
@@ -197,7 +240,7 @@ const SuperAdminOverview = () => {
           <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent pointer-events-none" />
 
           <span className="absolute top-4 right-4 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded">
-            +27%
+            +{state.revenueGrowth}%
           </span>
 
           <div className="relative flex justify-between items-end">
@@ -206,7 +249,7 @@ const SuperAdminOverview = () => {
                 <i className="fas fa-indian-rupee-sign text-white"></i>
               </div>
               <p className="text-sm text-gray-500">Platform Revenue</p>
-              <p className="text-2xl font-bold text-gray-900">₹8.4 Cr</p>
+              <p className="text-2xl font-bold text-gray-900">₹{(monthlyRevenue / 10000000).toFixed(1)} Cr</p>
               <p className="text-xs text-gray-400 mt-1">All hospitals combined</p>
             </div>
 
@@ -237,7 +280,7 @@ const SuperAdminOverview = () => {
           </div>
 
           <div className="divide-y">
-            {state.hospitals.slice(0, 4).map(h => (
+            {ensureArray(state.hospitals).slice(0, 4).map(h => (
               <div
                 key={h.id}
                 className="flex items-center justify-between py-3 hover:bg-gray-50 px-2 rounded-lg transition"
@@ -259,7 +302,7 @@ const SuperAdminOverview = () => {
                 </div>
 
                 <span
-                  className={`flex items-center gap-1 text-xs font-medium px-3 py-1 rounded-full
+                  className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full flex-shrink-0 ml-2
           ${h.status === 'Active'
                       ? 'bg-green-100 text-green-700'
                       : 'bg-red-100 text-red-700'}`}
@@ -272,6 +315,11 @@ const SuperAdminOverview = () => {
                 </span>
               </div>
             ))}
+            {ensureArray(state.hospitals).length === 0 && (
+              <div className="py-8 text-center text-gray-500">
+                <p className="text-sm">No hospitals available</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -322,7 +370,7 @@ const SuperAdminOverview = () => {
             <span className="text-sm text-blue-600 cursor-pointer hover:underline">Manage Users</span>
           </div>
           <div className="space-y-3">
-            {state.users.slice(0, 3).map(user => (
+            {ensureArray(state.users).slice(0, 3).map(user => (
               <div key={user.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
                 <div className="flex items-center gap-3">
                   <img src={user.avatar} className="w-8 h-8 rounded-full" alt="user" />
@@ -351,7 +399,7 @@ const SuperAdminOverview = () => {
             <span className="text-sm text-blue-600 cursor-pointer hover:underline">View All</span>
           </div>
           <div className="space-y-3">
-            {state.subscriptions
+            {ensureArray(state.subscriptions)
               .filter(sub => sub.status === 'Pending')
               .slice(0, 3)
               .map(sub => (

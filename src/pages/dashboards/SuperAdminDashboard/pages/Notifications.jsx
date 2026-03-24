@@ -12,30 +12,56 @@ const NotifyHospitalAdminsForm = () => {
     message: '',
     type: 'success'
   });
-  const [showManualInput, setShowManualInput] = useState(false);
+  const [hospitals, setHospitals] = useState([]);
+  const [loadingHospitals, setLoadingHospitals] = useState(false);
+  const [showHospitalDropdown, setShowHospitalDropdown] = useState(false);
   const [tokenValid, setTokenValid] = useState(true);
-  const [uuidError, setUuidError] = useState('');
-
-  useEffect(() => {
-    const checkToken = () => {
-      const token = localStorage.getItem('access_token') || localStorage.getItem('token');
-      if (!token) {
-        setTokenValid(false);
-        showNotification('Please login to send notifications', 'error');
-      }
-    };
-    checkToken();
-  }, []);
-
-  // Helper function to validate UUID format
-  const isValidUUID = (uuid) => {
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    return uuidRegex.test(uuid);
+  
+  const getHospitalItems = (data) => {
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.data)) return data.data;
+    if (Array.isArray(data?.hospitals)) return data.hospitals;
+    if (Array.isArray(data?.items)) return data.items;
+    return [];
   };
 
-  const hospitalOptions = [
-    { id: '', name: 'All Hospitals', icon: 'fas fa-globe', iconColor: '#10B981', description: 'Send to all hospital administrators' },
-  ];
+  const getHospitalName = (hospital) =>
+    hospital?.name || hospital?.hospital_name || hospital?.hospitalName || 'Unknown Hospital';
+
+  const fetchHospitals = async (token) => {
+    setLoadingHospitals(true);
+    try {
+      const response = await fetch('/api/v1/super-admin/hospitals', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+      });
+
+      const responseData = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        showNotification(responseData?.message || 'Failed to fetch hospitals', 'error');
+        return;
+      }
+      setHospitals(getHospitalItems(responseData));
+    } catch (error) {
+      showNotification(`Failed to fetch hospitals: ${error.message || 'Unknown error'}`, 'error');
+    } finally {
+      setLoadingHospitals(false);
+    }
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+    if (!token) {
+      setTokenValid(false);
+      showNotification('Please login to send notifications', 'error');
+      return;
+    }
+    fetchHospitals(token);
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -50,25 +76,6 @@ const NotifyHospitalAdminsForm = () => {
       ...prev,
       hospitalId
     }));
-    if (hospitalId !== '') {
-      setShowManualInput(false);
-    }
-    setUuidError('');
-  };
-
-  const handleManualIdChange = (e) => {
-    const value = e.target.value;
-    setFormData(prev => ({
-      ...prev,
-      hospitalId: value
-    }));
-    
-    // Validate UUID format
-    if (value && !isValidUUID(value)) {
-      setUuidError('Invalid UUID format. Use format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx');
-    } else {
-      setUuidError('');
-    }
   };
 
   const showNotification = (message, type = 'success') => {
@@ -91,13 +98,6 @@ const NotifyHospitalAdminsForm = () => {
       showNotification('Please enter a message', 'error');
       return false;
     }
-    
-    // Validate UUID if a specific hospital is selected
-    if (formData.hospitalId && !isValidUUID(formData.hospitalId)) {
-      showNotification('Please enter a valid Hospital UUID (format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)', 'error');
-      return false;
-    }
-    
     return true;
   };
 
@@ -119,24 +119,42 @@ const NotifyHospitalAdminsForm = () => {
       handleLogout();
       return;
     }
+    const notificationApiKey =
+      localStorage.getItem('notification_api_key') ||
+      localStorage.getItem('NOTIFICATION_API_KEY') ||
+      (typeof process !== 'undefined' && process?.env?.REACT_APP_NOTIFICATION_API_KEY) ||
+      (typeof import.meta !== 'undefined' && import.meta?.env?.VITE_NOTIFICATION_API_KEY) ||
+      '';
 
     setLoading(true);
     try {
+      const selectedHospital = hospitals.find(
+        (hospital) => String(hospital?.id) === String(formData.hospitalId)
+      );
       const requestBody = {
         hospital_id: formData.hospitalId || null,
+        hospital_name: selectedHospital ? getHospitalName(selectedHospital) : null,
         subject: formData.subject,
         message: formData.message,
       };
+      if (notificationApiKey) {
+        requestBody.notification_api_key = notificationApiKey;
+      }
 
       console.log('Sending notification:', requestBody);
 
+      const requestHeaders = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json',
+      };
+      if (notificationApiKey) {
+        requestHeaders['x-api-key'] = notificationApiKey;
+      }
+
       const response = await fetch('/api/v1/super-admin/notifications/send-to-hospital-admins', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-        },
+        headers: requestHeaders,
         body: JSON.stringify(requestBody),
       });
 
@@ -163,17 +181,13 @@ const NotifyHospitalAdminsForm = () => {
           subject: '',
           message: '',
         });
-        setShowManualInput(false);
-        setUuidError('');
+        setShowHospitalDropdown(false);
       } else {
         // Extract detailed error message
         let errorMsg = 'Failed to send notification';
         
         if (responseData.errors && responseData.errors.length > 0) {
           errorMsg = responseData.errors[0];
-          if (errorMsg.includes('UUID')) {
-            errorMsg = 'Invalid Hospital ID format. Please use a valid UUID format.';
-          }
         } else if (responseData.message) {
           errorMsg = responseData.message;
         }
@@ -190,11 +204,6 @@ const NotifyHospitalAdminsForm = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  // Helper to show example UUIDs
-  const showExampleUUIDs = () => {
-    showNotification('Example UUID format: 123e4567-e89b-12d3-a456-426614174000', 'info');
   };
 
   return (
@@ -215,22 +224,15 @@ const NotifyHospitalAdminsForm = () => {
         )}
       </div>
 
-      {/* Info Card for UUID Format */}
+      {/* Info Card for Hospital Selection */}
       <div className="relative bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
         <div className="flex items-start gap-3">
           <i className="fas fa-info-circle text-blue-500 text-xl mt-0.5"></i>
           <div>
-            <h3 className="font-semibold text-blue-800 text-sm">How to send to specific hospitals:</h3>
+            <h3 className="font-semibold text-blue-800 text-sm">Notification target:</h3>
             <p className="text-xs text-blue-700 mt-1">
-              To send to a specific hospital, you need the hospital's UUID from your database. 
-              Format: <code className="bg-white px-1 py-0.5 rounded text-blue-600">xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</code>
+              Select hospital names to send the mail notification.
             </p>
-            <button
-              onClick={showExampleUUIDs}
-              className="mt-2 text-xs text-blue-600 hover:text-blue-800 underline"
-            >
-              Show example UUID format
-            </button>
           </div>
         </div>
       </div>
@@ -247,7 +249,7 @@ const NotifyHospitalAdminsForm = () => {
                 Select Recipients
               </p>
               <p className="text-sm text-gray-600 mt-1">
-                Choose hospital to send notification
+                To: selected hospital names
               </p>
             </div>
             <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
@@ -256,52 +258,42 @@ const NotifyHospitalAdminsForm = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-            {hospitalOptions.map((hospital) => (
-              <div
-                key={hospital.id}
-                className={`cursor-pointer transition-all duration-300 rounded-xl border-2 p-4 ${
-                  formData.hospitalId === hospital.id
-                    ? 'border-indigo-500 bg-indigo-50 shadow-md'
-                    : 'border-gray-200 hover:border-indigo-300 hover:shadow-md'
-                }`}
-                onClick={() => handleSelectChange(hospital.id)}
-              >
-                <div className="flex flex-col items-center text-center">
-                  <i 
-                    className={`${hospital.icon} text-3xl mb-2`}
-                    style={{ color: hospital.iconColor }}
-                  ></i>
-                  <h4 className="font-semibold text-gray-800 text-sm mb-1">{hospital.name}</h4>
-                  <p className="text-xs text-gray-500">{hospital.description}</p>
-                  {formData.hospitalId === hospital.id && (
-                    <div className="mt-2">
-                      <i className="fas fa-check-circle text-green-500 text-sm"></i>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-            
-            {/* Manual UUID Input Option */}
             <div
               className={`cursor-pointer transition-all duration-300 rounded-xl border-2 p-4 ${
-                showManualInput || (formData.hospitalId && !hospitalOptions.find(h => h.id === formData.hospitalId))
+                formData.hospitalId === '' && !showHospitalDropdown
                   ? 'border-indigo-500 bg-indigo-50 shadow-md'
                   : 'border-gray-200 hover:border-indigo-300 hover:shadow-md'
               }`}
               onClick={() => {
-                if (tokenValid) {
-                  setShowManualInput(true);
-                  setFormData(prev => ({ ...prev, hospitalId: '' }));
-                  setUuidError('');
-                }
+                setShowHospitalDropdown(false);
+                setFormData((prev) => ({ ...prev, hospitalId: '' }));
               }}
             >
               <div className="flex flex-col items-center text-center">
-                <i className="fas fa-keyboard text-3xl mb-2 text-purple-500"></i>
-                <h4 className="font-semibold text-gray-800 text-sm mb-1">Enter Hospital UUID</h4>
-                <p className="text-xs text-gray-500">Manual ID input</p>
-                {(showManualInput || (formData.hospitalId && !hospitalOptions.find(h => h.id === formData.hospitalId))) && (
+                <i className="fas fa-globe text-3xl mb-2 text-green-500"></i>
+                <h4 className="font-semibold text-gray-800 text-sm mb-1">All Hospitals</h4>
+                <p className="text-xs text-gray-500">Send to all hospital administrators</p>
+                {formData.hospitalId === '' && !showHospitalDropdown && (
+                  <div className="mt-2">
+                    <i className="fas fa-check-circle text-green-500 text-sm"></i>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div
+              className={`cursor-pointer transition-all duration-300 rounded-xl border-2 p-4 ${
+                showHospitalDropdown || formData.hospitalId
+                  ? 'border-indigo-500 bg-indigo-50 shadow-md'
+                  : 'border-gray-200 hover:border-indigo-300 hover:shadow-md'
+              }`}
+              onClick={() => setShowHospitalDropdown(true)}
+            >
+              <div className="flex flex-col items-center text-center">
+                <i className="fas fa-list text-3xl mb-2 text-purple-500"></i>
+                <h4 className="font-semibold text-gray-800 text-sm mb-1">Enter Hospital Names</h4>
+                <p className="text-xs text-gray-500">Click to open hospital dropdown</p>
+                {(showHospitalDropdown || formData.hospitalId) && (
                   <div className="mt-2">
                     <i className="fas fa-check-circle text-green-500 text-sm"></i>
                   </div>
@@ -310,39 +302,41 @@ const NotifyHospitalAdminsForm = () => {
             </div>
           </div>
 
-          {/* Manual Input Field */}
-          {(showManualInput || (formData.hospitalId && !hospitalOptions.find(h => h.id === formData.hospitalId))) && (
-            <div className="mt-4 p-4 bg-white rounded-xl border border-indigo-200">
-              <label className="block text-xs font-semibold text-indigo-600 uppercase tracking-wider mb-2">
-                Hospital UUID
-              </label>
-              <input
-                type="text"
-                value={formData.hospitalId}
-                onChange={handleManualIdChange}
-                placeholder="e.g., 123e4567-e89b-12d3-a456-426614174000"
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all ${
-                  uuidError ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                }`}
-                disabled={loading || !tokenValid}
-              />
-              {uuidError && (
-                <p className="text-xs text-red-500 mt-2">
-                  <i className="fas fa-exclamation-circle mr-1"></i>
-                  {uuidError}
-                </p>
-              )}
-              <p className="text-xs text-gray-500 mt-2">
-                <i className="fas fa-info-circle mr-1"></i>
-                Enter the exact hospital UUID from your database. Check your database for hospital IDs.
-              </p>
+          {showHospitalDropdown && (
+            <div className="mt-4 p-4 bg-white rounded-xl border border-indigo-200 space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-indigo-600 uppercase tracking-wider mb-2">
+                  Hospital Name
+                </label>
+                <select
+                  value={formData.hospitalId}
+                  onChange={(e) => handleSelectChange(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  disabled={loading || !tokenValid || loadingHospitals}
+                >
+                  <option value="">Select hospital name</option>
+                  {hospitals
+                    .filter((hospital) => hospital?.id)
+                    .map((hospital) => (
+                      <option key={String(hospital.id)} value={String(hospital.id)}>
+                        {getHospitalName(hospital)}
+                      </option>
+                    ))}
+                </select>
+                {loadingHospitals && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    <i className="fas fa-spinner fa-spin mr-1"></i>
+                    Loading hospital names...
+                  </p>
+                )}
+              </div>
             </div>
           )}
 
           <div className="relative mt-4 pt-3 border-t border-indigo-100">
             <p className="text-xs text-indigo-700 font-medium">
               {formData.hospitalId 
-                ? `Notification will be sent to hospital ID: ${formData.hospitalId}`
+                ? `Mail will be sent to: ${getHospitalName(hospitals.find((hospital) => String(hospital?.id) === String(formData.hospitalId)))}`
                 : `✅ Notification will be sent to ALL hospital administrators`}
             </p>
           </div>
@@ -493,8 +487,7 @@ const NotifyHospitalAdminsForm = () => {
               type="button"
               onClick={() => {
                 setFormData({ hospitalId: '', subject: '', message: '' });
-                setShowManualInput(false);
-                setUuidError('');
+                setShowHospitalDropdown(false);
               }}
               className="px-5 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 flex items-center gap-2 text-sm"
               disabled={loading || !tokenValid}

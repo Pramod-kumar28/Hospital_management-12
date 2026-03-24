@@ -5,6 +5,13 @@ import { API_BASE_URL, API_HEADERS, SUPER_ADMIN_SUBSCRIPTION_PLANS } from '../..
 
 const PLAN_OPTIONS = ['FREE', 'STANDARD', 'PREMIUM']
 
+// Default monthly prices for each plan type
+const DEFAULT_PRICES = {
+  FREE: 0,
+  STANDARD: 1000,    // Middle of 500-1500
+  PREMIUM: 2250      // Middle of 1500-3000
+}
+
 const EMPTY_FORM = {
   id: '',
   name: 'FREE',
@@ -15,8 +22,7 @@ const EMPTY_FORM = {
   max_doctors: 0,
   max_patients: 0,
   max_appointments_per_month: 0,
-  max_storage_gb: 1,
-  featuresText: '{\n  "support": "email"\n}'
+  max_storage_gb: 1
 }
 
 const extractApiErrorMessage = (data, fallbackMessage) => {
@@ -26,6 +32,10 @@ const extractApiErrorMessage = (data, fallbackMessage) => {
   if (typeof detail === 'string') return detail
   if (detail?.message) return detail.message
   if (Array.isArray(detail) && detail[0]?.msg) return detail[0].msg
+  
+  if (data?.errors && Array.isArray(data.errors)) {
+    return data.errors.map(err => err.msg || err).join(', ')
+  }
 
   return fallbackMessage
 }
@@ -33,7 +43,7 @@ const extractApiErrorMessage = (data, fallbackMessage) => {
 const mapPlanFromApi = (plan) => ({
   id: plan?.id ?? plan?.plan_id ?? '',
   name: plan?.name ?? 'FREE',
-  display_name: plan?.display_name ?? plan?.displayName ?? '',
+  display_name: plan?.display_name ?? plan?.plan_name ?? '',
   description: plan?.description ?? '',
   monthly_price: Number(plan?.monthly_price ?? 0),
   yearly_price: Number(plan?.yearly_price ?? 0),
@@ -149,7 +159,8 @@ const PlatformSettings = () => {
         return
       }
 
-      setPlans(getPlanItems(data).map(mapPlanFromApi))
+      const mappedPlans = getPlanItems(data).map(mapPlanFromApi)
+      setPlans(mappedPlans)
     } catch (error) {
       setPlans([])
       setListError(error?.message || 'Unable to load subscription plans.')
@@ -166,7 +177,18 @@ const PlatformSettings = () => {
     setModalMode('add')
     setSubmitError('')
     setFieldErrors({})
-    setCurrentPlan(EMPTY_FORM)
+    setCurrentPlan({
+      id: '',
+      name: 'FREE',
+      display_name: '',
+      description: '',
+      monthly_price: 0,
+      yearly_price: 0,
+      max_doctors: 0,
+      max_patients: 0,
+      max_appointments_per_month: 0,
+      max_storage_gb: 1
+    })
     setIsModalOpen(true)
   }
 
@@ -175,8 +197,16 @@ const PlatformSettings = () => {
     setSubmitError('')
     setFieldErrors({})
     setCurrentPlan({
-      ...plan,
-      featuresText: JSON.stringify(plan.features || {}, null, 2)
+      id: plan.id || '',
+      name: plan.name || 'FREE',
+      display_name: plan.display_name || '',
+      description: plan.description || '',
+      monthly_price: plan.monthly_price || 0,
+      yearly_price: plan.yearly_price || 0,
+      max_doctors: plan.max_doctors || 0,
+      max_patients: plan.max_patients || 0,
+      max_appointments_per_month: plan.max_appointments_per_month || 0,
+      max_storage_gb: plan.max_storage_gb || 1
     })
     setIsModalOpen(true)
   }
@@ -199,10 +229,25 @@ const PlatformSettings = () => {
       'max_storage_gb'
     ]
 
-    setCurrentPlan((prev) => ({
-      ...prev,
-      [name]: numericFields.includes(name) ? Number(value) : value
-    }))
+    let newValue = numericFields.includes(name) ? Number(value) : value
+
+    setCurrentPlan((prev) => {
+      let updated = { ...prev, [name]: newValue }
+
+      // Auto-set default prices when plan type changes in add mode only
+      if (name === 'name' && modalMode === 'add') {
+        let defaultMonthly = DEFAULT_PRICES[newValue] || 0
+        updated.monthly_price = defaultMonthly
+        updated.yearly_price = defaultMonthly * 12
+      }
+
+      // Auto-calculate yearly price when monthly price changes
+      if (name === 'monthly_price') {
+        updated.yearly_price = newValue * 12
+      }
+
+      return updated
+    })
 
     if (fieldErrors[name]) {
       setFieldErrors((prev) => ({ ...prev, [name]: '' }))
@@ -218,8 +263,14 @@ const PlatformSettings = () => {
     if (!String(currentPlan.display_name || '').trim()) {
       errors.display_name = 'Display name is required.'
     }
+    if (currentPlan.display_name?.length > 500) {
+      errors.display_name = 'Display name cannot exceed 500 characters.'
+    }
     if (!String(currentPlan.description || '').trim()) {
       errors.description = 'Description is required.'
+    }
+    if (currentPlan.description?.length > 500) {
+      errors.description = 'Description cannot exceed 500 characters.'
     }
     if (Number(currentPlan.monthly_price) < 0) {
       errors.monthly_price = 'Monthly price cannot be negative.'
@@ -236,30 +287,40 @@ const PlatformSettings = () => {
       }
     })
 
-    try {
-      const parsed = JSON.parse(currentPlan.featuresText || '{}')
-      if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-        errors.featuresText = 'Features must be a valid JSON object.'
+    // Range checks for monthly_price based on plan type
+    const planType = currentPlan.name
+    const monthly = Number(currentPlan.monthly_price)
+
+    if (planType === 'FREE' && monthly !== 0) {
+      errors.monthly_price = 'FREE plan must have monthly price 0.'
+    } else if (planType === 'STANDARD') {
+      if (monthly < 500 || monthly > 1500) {
+        errors.monthly_price = 'STANDARD monthly price must be between ₹500 and ₹1500.'
       }
-    } catch (error) {
-      errors.featuresText = 'Features must be valid JSON.'
+    } else if (planType === 'PREMIUM') {
+      if (monthly < 1500 || monthly > 3000) {
+        errors.monthly_price = 'PREMIUM monthly price must be between ₹1500 and ₹3000.'
+      }
     }
 
     return errors
   }
 
-  const buildPayload = () => ({
-    name: currentPlan.name,
-    display_name: String(currentPlan.display_name || '').trim(),
-    description: String(currentPlan.description || '').trim(),
-    monthly_price: Number(currentPlan.monthly_price || 0),
-    yearly_price: Number(currentPlan.yearly_price || 0),
-    max_doctors: Number(currentPlan.max_doctors || 0),
-    max_patients: Number(currentPlan.max_patients || 0),
-    max_appointments_per_month: Number(currentPlan.max_appointments_per_month || 0),
-    max_storage_gb: Number(currentPlan.max_storage_gb || 1),
-    features: JSON.parse(currentPlan.featuresText || '{}')
-  })
+  const buildPayload = () => {
+    const payload = {
+      name: currentPlan.name,
+      display_name: String(currentPlan.display_name || '').trim(),
+      description: String(currentPlan.description || '').trim(),
+      monthly_price: Number(currentPlan.monthly_price || 0),
+      yearly_price: Number(currentPlan.yearly_price || 0),
+      max_doctors: Number(currentPlan.max_doctors || 0),
+      max_patients: Number(currentPlan.max_patients || 0),
+      max_appointments_per_month: Number(currentPlan.max_appointments_per_month || 0),
+      max_storage_gb: Number(currentPlan.max_storage_gb || 1)
+    }
+    
+    return payload
+  }
 
   const handleSubmit = async (event) => {
     event.preventDefault()
@@ -285,6 +346,8 @@ const PlatformSettings = () => {
         ? `${API_BASE_URL}${SUPER_ADMIN_SUBSCRIPTION_PLANS}/${currentPlan.id}`
         : `${API_BASE_URL}${SUPER_ADMIN_SUBSCRIPTION_PLANS}`
 
+      const payload = buildPayload()
+
       const res = await fetch(url, {
         method: isEdit ? 'PUT' : 'POST',
         headers: {
@@ -292,18 +355,25 @@ const PlatformSettings = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify(buildPayload())
+        body: JSON.stringify(payload)
       })
+      
       const data = await res.json().catch(() => ({}))
 
       if (!res.ok) {
-        setSubmitError(extractApiErrorMessage(data, `Failed to ${isEdit ? 'update' : 'create'} plan (${res.status})`))
+        const errorMessage = extractApiErrorMessage(data, `Failed to ${isEdit ? 'update' : 'create'} plan (${res.status})`)
+        setSubmitError(errorMessage)
+        
+        if (data.errors) {
+          setFieldErrors(data.errors)
+        }
         return
       }
 
       closeModal()
       fetchPlans()
     } catch (error) {
+      console.error('Submit error:', error)
       setSubmitError(error?.message || 'Unable to save subscription plan.')
     } finally {
       setSubmitLoading(false)
@@ -373,10 +443,10 @@ const PlatformSettings = () => {
           <p className="text-sm text-gray-500">Yearly Revenue</p>
           <p className="text-2xl font-bold text-emerald-700 mt-1">{formatCurrency(stats.yearlyRevenuePotential)}</p>
         </div>
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+        {/* <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
           <p className="text-sm text-gray-500">Storage Capacity</p>
           <p className="text-2xl font-bold text-purple-700 mt-1">{stats.totalStorage} GB</p>
-        </div>
+        </div> */}
       </div>
 
       {listError && (
@@ -642,7 +712,7 @@ const PlatformSettings = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-700">Plan Name *</label>
+              <label className="block text-sm font-semibold text-gray-700">Plan Type *</label>
               <select
                 name="name"
                 value={currentPlan.name}
@@ -661,11 +731,15 @@ const PlatformSettings = () => {
               <input
                 type="text"
                 name="display_name"
-                value={currentPlan.display_name}
+                value={currentPlan.display_name || ''}
                 onChange={handleInputChange}
+                maxLength={500}
                 className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${fieldErrors.display_name ? 'border-red-400' : 'border-gray-200'}`}
-                placeholder="e.g. Standard Growth Plan"
+                placeholder="e.g. Standard Growth Plan (max 500 characters)"
               />
+              <div className="text-right text-xs text-gray-500">
+                {currentPlan.display_name?.length || 0} / 500 characters
+              </div>
               {fieldErrors.display_name && <p className="text-sm text-red-600">{fieldErrors.display_name}</p>}
             </div>
 
@@ -676,9 +750,13 @@ const PlatformSettings = () => {
                 value={currentPlan.description}
                 onChange={handleInputChange}
                 rows="3"
+                maxLength={500}
                 className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none ${fieldErrors.description ? 'border-red-400' : 'border-gray-200'}`}
-                placeholder="Describe the plan benefits and intended customer type"
+                placeholder="Describe the plan benefits and intended customer type (max 500 characters)"
               />
+              <div className="text-right text-xs text-gray-500">
+                {currentPlan.description?.length || 0} / 500 characters
+              </div>
               {fieldErrors.description && <p className="text-sm text-red-600">{fieldErrors.description}</p>}
             </div>
 
@@ -689,8 +767,14 @@ const PlatformSettings = () => {
                 name="monthly_price"
                 value={currentPlan.monthly_price}
                 onChange={handleInputChange}
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                  }
+                }}
                 min="0"
-                className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${fieldErrors.monthly_price ? 'border-red-400' : 'border-gray-200'}`}
+                step="1"
+                className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${fieldErrors.monthly_price ? 'border-red-400' : 'border-gray-200'}`}
               />
               {fieldErrors.monthly_price && <p className="text-sm text-red-600">{fieldErrors.monthly_price}</p>}
             </div>
@@ -702,8 +786,14 @@ const PlatformSettings = () => {
                 name="yearly_price"
                 value={currentPlan.yearly_price}
                 onChange={handleInputChange}
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                  }
+                }}
                 min="0"
-                className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${fieldErrors.yearly_price ? 'border-red-400' : 'border-gray-200'}`}
+                step="1"
+                className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${fieldErrors.yearly_price ? 'border-red-400' : 'border-gray-200'}`}
               />
               {fieldErrors.yearly_price && <p className="text-sm text-red-600">{fieldErrors.yearly_price}</p>}
             </div>
@@ -715,8 +805,13 @@ const PlatformSettings = () => {
                 name="max_doctors"
                 value={currentPlan.max_doctors}
                 onChange={handleInputChange}
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                  }
+                }}
                 min="0"
-                className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${fieldErrors.max_doctors ? 'border-red-400' : 'border-gray-200'}`}
+                className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${fieldErrors.max_doctors ? 'border-red-400' : 'border-gray-200'}`}
               />
               {fieldErrors.max_doctors && <p className="text-sm text-red-600">{fieldErrors.max_doctors}</p>}
             </div>
@@ -728,8 +823,13 @@ const PlatformSettings = () => {
                 name="max_patients"
                 value={currentPlan.max_patients}
                 onChange={handleInputChange}
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                  }
+                }}
                 min="0"
-                className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${fieldErrors.max_patients ? 'border-red-400' : 'border-gray-200'}`}
+                className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${fieldErrors.max_patients ? 'border-red-400' : 'border-gray-200'}`}
               />
               {fieldErrors.max_patients && <p className="text-sm text-red-600">{fieldErrors.max_patients}</p>}
             </div>
@@ -741,8 +841,13 @@ const PlatformSettings = () => {
                 name="max_appointments_per_month"
                 value={currentPlan.max_appointments_per_month}
                 onChange={handleInputChange}
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                  }
+                }}
                 min="0"
-                className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${fieldErrors.max_appointments_per_month ? 'border-red-400' : 'border-gray-200'}`}
+                className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${fieldErrors.max_appointments_per_month ? 'border-red-400' : 'border-gray-200'}`}
               />
               {fieldErrors.max_appointments_per_month && <p className="text-sm text-red-600">{fieldErrors.max_appointments_per_month}</p>}
             </div>
@@ -754,23 +859,15 @@ const PlatformSettings = () => {
                 name="max_storage_gb"
                 value={currentPlan.max_storage_gb}
                 onChange={handleInputChange}
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                  }
+                }}
                 min="1"
-                className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${fieldErrors.max_storage_gb ? 'border-red-400' : 'border-gray-200'}`}
+                className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${fieldErrors.max_storage_gb ? 'border-red-400' : 'border-gray-200'}`}
               />
               {fieldErrors.max_storage_gb && <p className="text-sm text-red-600">{fieldErrors.max_storage_gb}</p>}
-            </div>
-
-            <div className="space-y-2 md:col-span-2">
-              <label className="block text-sm font-semibold text-gray-700">Features JSON *</label>
-              <textarea
-                name="featuresText"
-                value={currentPlan.featuresText}
-                onChange={handleInputChange}
-                rows="10"
-                className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-mono text-sm ${fieldErrors.featuresText ? 'border-red-400' : 'border-gray-200'}`}
-                placeholder={'{\n  "support": "email",\n  "analytics": true\n}'}
-              />
-              {fieldErrors.featuresText && <p className="text-sm text-red-600">{fieldErrors.featuresText}</p>}
             </div>
           </div>
 

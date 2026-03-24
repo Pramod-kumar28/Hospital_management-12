@@ -62,6 +62,23 @@ const mapPlan = (plan) => ({
   yearly_price: Number(plan?.yearly_price ?? 0)
 })
 
+/**
+ * Calculate status based solely on end date
+ * @param {string} endDate - ISO date string or YYYY-MM-DD
+ * @returns {string} 'Active', 'Inactive', or 'Unassigned'
+ */
+const calculateStatusFromEndDate = (endDate) => {
+  if (!endDate) return 'Unassigned'
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const end = new Date(endDate)
+  end.setHours(0, 0, 0, 0)
+
+  if (end < today) return 'Inactive'
+  return 'Active'
+}
+
 const mapSubscriptionFromApi = (hospital, data, plansMap) => {
   const raw = data?.data ?? data
   const planName =
@@ -73,11 +90,11 @@ const mapSubscriptionFromApi = (hospital, data, plansMap) => {
     'Unassigned'
 
   const planMeta = plansMap.get(planName) || plansMap.get(String(planName || '').toUpperCase())
-  const status =
-    raw?.billing_status ??
-    raw?.status ??
-    raw?.subscription?.status ??
-    (planName && planName !== 'Unassigned' ? 'Active' : 'Unassigned')
+  const endDate = raw?.end_date ?? raw?.subscription?.end_date ?? ''
+  const autoRenew = Boolean(raw?.auto_renew ?? raw?.subscription?.auto_renew ?? false)
+
+  // Force status based on end date (ignore any status from API)
+  const status = calculateStatusFromEndDate(endDate)
 
   return {
     id: hospital.id,
@@ -88,11 +105,11 @@ const mapSubscriptionFromApi = (hospital, data, plansMap) => {
     planNameRaw: planMeta?.name || planName,
     amount: raw?.amount ?? raw?.monthly_price ?? raw?.subscription?.monthly_price ?? planMeta?.monthly_price ?? 0,
     yearlyAmount: raw?.yearly_price ?? raw?.subscription?.yearly_price ?? planMeta?.yearly_price ?? 0,
-    renewalDate: raw?.end_date ?? raw?.subscription?.end_date ?? '',
+    renewalDate: endDate,
     startDate: raw?.start_date ?? raw?.subscription?.start_date ?? '',
-    status: String(status || 'Unassigned'),
+    status: status,
     isTrial: Boolean(raw?.is_trial ?? raw?.subscription?.is_trial ?? false),
-    autoRenew: Boolean(raw?.auto_renew ?? raw?.subscription?.auto_renew ?? false)
+    autoRenew: autoRenew
   }
 }
 
@@ -237,6 +254,8 @@ const SubscriptionsBilling = () => {
 
   const totalRevenue = filteredSubscriptions.reduce((sum, sub) => sum + Number(sub.amount || 0), 0)
   const trialHospitals = filteredSubscriptions.filter((sub) => sub.isTrial).length
+  const activeSubscriptions = filteredSubscriptions.filter((sub) => sub.status === 'Active').length
+  const inactiveSubscriptions = filteredSubscriptions.filter((sub) => sub.status === 'Inactive').length
   const renewalsThisMonth = filteredSubscriptions.filter((sub) => {
     if (!sub.renewalDate) return false
     const renewalDate = new Date(sub.renewalDate)
@@ -267,10 +286,20 @@ const SubscriptionsBilling = () => {
 
   const handleInputChange = (event) => {
     const { name, value, type, checked } = event.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }))
+    setFormData((prev) => {
+      let updated = {
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      }
+
+      if (name === 'start_date' && updated.end_date) {
+        if (new Date(updated.end_date) < new Date(value)) {
+          updated.end_date = ''
+        }
+      }
+
+      return updated
+    })
     if (fieldErrors[name]) {
       setFieldErrors((prev) => ({ ...prev, [name]: '' }))
     }
@@ -282,9 +311,12 @@ const SubscriptionsBilling = () => {
     if (!String(formData.plan_name || '').trim()) errors.plan_name = 'Plan name is required.'
     if (!String(formData.start_date || '').trim()) errors.start_date = 'Start date is required.'
     if (!String(formData.end_date || '').trim()) errors.end_date = 'End date is required.'
+
+    // No past date restriction for start date
     if (formData.start_date && formData.end_date && new Date(formData.end_date) < new Date(formData.start_date)) {
       errors.end_date = 'End date must be after start date.'
     }
+
     return errors
   }
 
@@ -359,7 +391,7 @@ const SubscriptionsBilling = () => {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4 sm:gap-6">
         <div className="relative bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
           <div className="relative flex items-center justify-between">
             <div>
@@ -375,11 +407,23 @@ const SubscriptionsBilling = () => {
         <div className="relative bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
           <div className="relative flex items-center justify-between">
             <div>
-              <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">Trial Hospitals</div>
-              <div className="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">{trialHospitals}</div>
+              <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">Active Subscriptions</div>
+              <div className="text-2xl sm:text-3xl font-bold text-green-700 mt-2">{activeSubscriptions}</div>
             </div>
-            <div className="w-12 h-12 bg-gradient-to-br from-yellow-100 to-yellow-50 rounded-xl flex items-center justify-center shadow-sm">
-              <i className="fas fa-vial text-yellow-600 text-xl"></i>
+            <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-50 rounded-xl flex items-center justify-center shadow-sm">
+              <i className="fas fa-check-circle text-green-600 text-xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <div className="relative bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+          <div className="relative flex items-center justify-between">
+            <div>
+              <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">Inactive Subscriptions</div>
+              <div className="text-2xl sm:text-3xl font-bold text-red-700 mt-2">{inactiveSubscriptions}</div>
+            </div>
+            <div className="w-12 h-12 bg-gradient-to-br from-red-100 to-red-50 rounded-xl flex items-center justify-center shadow-sm">
+              <i className="fas fa-times-circle text-red-600 text-xl"></i>
             </div>
           </div>
         </div>
@@ -406,6 +450,7 @@ const SubscriptionsBilling = () => {
           >
             <option value="">All Status</option>
             <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
             <option value="Unassigned">Unassigned</option>
           </select>
           <select
@@ -501,7 +546,13 @@ const SubscriptionsBilling = () => {
                       </span>
                     </td>
                     <td className="px-3 py-3">
-                      <span className={`px-2 py-1 rounded text-xs whitespace-nowrap ${sub.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                      <span className={`px-2 py-1 rounded text-xs whitespace-nowrap ${
+                        sub.status === 'Active' 
+                          ? 'bg-green-100 text-green-800' 
+                          : sub.status === 'Inactive'
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}>
                         {sub.status}
                       </span>
                     </td>
@@ -585,9 +636,11 @@ const SubscriptionsBilling = () => {
                 name="start_date"
                 value={formData.start_date}
                 onChange={handleInputChange}
+                // No min restriction – any date allowed
                 className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${fieldErrors.start_date ? 'border-red-400' : 'border-gray-200'}`}
               />
               {fieldErrors.start_date && <p className="text-sm text-red-600">{fieldErrors.start_date}</p>}
+              <p className="text-xs text-gray-500">Select any date (past, today, or future)</p>
             </div>
 
             <div className="space-y-2">
@@ -597,9 +650,11 @@ const SubscriptionsBilling = () => {
                 name="end_date"
                 value={formData.end_date}
                 onChange={handleInputChange}
+                min={formData.start_date || ''} // Ensure end date >= start date
                 className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${fieldErrors.end_date ? 'border-red-400' : 'border-gray-200'}`}
               />
               {fieldErrors.end_date && <p className="text-sm text-red-600">{fieldErrors.end_date}</p>}
+              <p className="text-xs text-gray-500">Must be on or after start date</p>
             </div>
 
             <label className="flex items-center gap-3 p-3 border rounded-xl bg-gray-50">

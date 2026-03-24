@@ -31,10 +31,16 @@ export const SUPER_ADMIN_HOSPITAL_ADMINS_CREATE = (hospitalId) =>
 
 /** Super Admin: GET list, GET one, PUT, PATCH status, DELETE (separate router on backend) */
 export const SUPER_ADMIN_HOSPITALS = '/api/v1/super-admin/hospitals';
-
+ 
 /** Super Admin: subscription plan management */
 export const SUPER_ADMIN_SUBSCRIPTION_PLANS = '/api/v1/super-admin/plans';
-
+ 
 /** Super Admin: hospital subscription management */
 export const SUPER_ADMIN_HOSPITAL_SUBSCRIPTION = (hospitalName) => `/api/v1/super-admin/hospitals/${encodeURIComponent(hospitalName)}/subscription`;
 export const SUPER_ADMIN_HOSPITAL_ASSIGN_PLAN = (hospitalName) => `/api/v1/super-admin/hospitals/${encodeURIComponent(hospitalName)}/assign-plan`;
+ 
+/** Analytics: GET overview (hospitals, subscriptions, revenue, patients, occupancy) */
+export const ANALYTICS_OVERVIEW = '/api/v1/analytics/overview';
+ 
+/** Analytics: GET audit logs with filters */
+export const ANALYTICS_AUDIT_LOGS = (resourceType = 1, skip = 0, limit = 50) => `/api/v1/analytics/audit-logs?resource_type=${resourceType}&skip=${skip}&limit=${limit}`;

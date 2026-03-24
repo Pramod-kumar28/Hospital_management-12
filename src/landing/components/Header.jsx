@@ -38,7 +38,7 @@ export default function Header(){
             <nav className="flex items-center gap-1">
               <NavLink to="/" className={linkCls} end>Home</NavLink>
               <NavLink to="/features" className={linkCls}>Features</NavLink>
-              <NavLink to="/solutions" className={linkCls}>Solutions</NavLink>
+              <NavLink to="/about" className={linkCls}>About</NavLink>
               <NavLink to="/pricing" className={linkCls}>Pricing</NavLink>
               <NavLink to="/contact" className={linkCls}>Contact</NavLink>
             </nav>
@@ -90,11 +90,11 @@ export default function Header(){
                 Features
               </NavLink>
               <NavLink 
-                to="/solutions" 
+                to="/about" 
                 className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-lg border-l-4 border-transparent transition-colors"
                 onClick={() => setOpen(false)}
               >
-                Solutions
+                About
               </NavLink>
               <NavLink 
                 to="/pricing" 

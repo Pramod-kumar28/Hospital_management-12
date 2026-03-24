@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import HeroSection from "../home-Sections/HeroSection/";
 import MobileAppSection from "../home-Sections/MobileAppSection";
 import FeaturesModulesSection from "../home-Sections/FeaturesModulesSection";
+import TelemedicineSection from "../home-Sections/TelemedicineSection";
+import WhyWeStandOutSection from "../home-Sections/WhyWeStandOutSection";
 import WhyChooseSection from "../home-Sections/WhyChooseSection";
 import BenefitsSection from "../home-Sections/BenefitsSection";
 
@@ -15,10 +17,12 @@ export default function Home() {
   return (
     <>
       <HeroSection isVisible={isVisible} />
-      <MobileAppSection />
       <FeaturesModulesSection />
-      <WhyChooseSection />
+      <WhyWeStandOutSection />
+      <TelemedicineSection />
       <BenefitsSection />
+      <WhyChooseSection />
+      <MobileAppSection />
     </>
   );
 }

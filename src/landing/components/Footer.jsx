@@ -83,7 +83,7 @@ const Footer = () => {
               <ul className="space-y-3 text-sm lg:text-left sm:text-left">
                 <li><Link to="/" className="text-gray-300 hover:text-white-500 transition duration-300">Home</Link></li>
                 <li><Link to="/features" className="text-gray-300 hover:text-white-500 transition duration-300">Features</Link></li>
-                <li><Link to="/solutions" className="text-gray-300 hover:text-white-500 transition duration-300">Solutions</Link></li>
+                <li><Link to="/about" className="text-gray-300 hover:text-white-500 transition duration-300">About</Link></li>
                 <li><Link to="/pricing" className="text-gray-300 hover:text-white-500 transition duration-300">Pricing</Link></li>
                 <li><Link to="/contact" className="text-gray-300 hover:text-white-500 transition duration-300">Contact</Link></li>
               </ul>
@@ -167,7 +167,7 @@ const Footer = () => {
               <ul className="space-y-2">
                 <li><Link to="/" className="text-amber-600 hover:text-amber-700 transition duration-300">Home</Link></li>
                 <li><Link to="/features" className="text-amber-600 hover:text-amber-700 transition duration-300">Features</Link></li>
-                <li><Link to="/solutions" className="text-amber-600 hover:text-amber-700 transition duration-300">Solutions</Link></li>
+                <li><Link to="/about" className="text-amber-600 hover:text-amber-700 transition duration-300">About</Link></li>
                 <li><Link to="/pricing" className="text-amber-600 hover:text-amber-700 transition duration-300">Pricing</Link></li>
                 <li><Link to="/contact" className="text-amber-600 hover:text-amber-700 transition duration-300">Contact Us</Link></li>
               </ul>

@@ -60,8 +60,8 @@ export default function Pricing() {
       {/* Page Hero */}
       <section className="py-10 mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4">
-            Simple, Transparent Pricing
+          <h1 className="mt-6 text-3xl font-bold leading-tight tracking-tight text-slate-950 md:text-5xl">
+            Simple, <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-800">Transparent</span> Pricing
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Choose the plan that fits your healthcare facility's needs
@@ -157,7 +157,7 @@ export default function Pricing() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-10 bg-gray-50">
+      {/* <section className="py-10 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -194,10 +194,10 @@ export default function Pricing() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* CTA Section */}
-      <section className="py-10 bg-gradient-to-r from-white-600 to-white-700">
+      {/* <section className="py-10 bg-gradient-to-r from-white-600 to-white-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-black mb-4">
             Ready to Get Started?
@@ -221,7 +221,7 @@ export default function Pricing() {
             </Link>
           </div>
         </div>
-      </section>
+      </section> */}
     </div>
   );
 }
@@ -347,7 +347,7 @@ function Footer() {
             <h3 className="text-white font-semibold text-lg mb-4">Product</h3>
             <ul className="space-y-3">
               <li><Link to="/features" className="text-gray-400 hover:text-white transition-colors">Features</Link></li>
-              <li><Link to="/solutions" className="text-gray-400 hover:text-white transition-colors">Solutions</Link></li>
+              <li><Link to="/about" className="text-gray-400 hover:text-white transition-colors">About</Link></li>
               <li><Link to="/pricing" className="text-gray-400 hover:text-white transition-colors">Pricing</Link></li>
             </ul>
           </div>

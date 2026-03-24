@@ -1,99 +1,163 @@
 import React, { useEffect, useState } from 'react'
 import { API_BASE_URL, API_HEADERS } from '../../../../config/api'
-
+ 
 const AnalyticsMonitoring = () => {
-  const [analytics, setAnalytics] = useState({})
+  const [analytics, setAnalytics] = useState(null)
   const [logs, setLogs] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-
-  const API_BASE = `${API_BASE_URL}/super-admin`
-
+ 
   useEffect(() => {
     fetchData()
   }, [])
-
+ 
   const fetchData = async () => {
     setLoading(true)
     setError('')
-
+ 
     try {
       const token = localStorage.getItem('token')
-
-      const headers = {
-        ...API_HEADERS,
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
-      }
-
-      const [aRes, lRes] = await Promise.all([
-        fetch(`${API_BASE}/analytics/overview`, { headers }),
-        fetch(`${API_BASE}/audit-logs?skip=0&limit=50`, { headers })
-      ])
-
-      const aData = await aRes.json().catch(() => ({}))
-      const lData = await lRes.json().catch(() => ({}))
-
-      if (!aRes.ok || !lRes.ok) {
-        setError(aData?.message || lData?.message || 'Failed to load data')
-        setAnalytics({})
+      const authToken = localStorage.getItem('authToken') // Try real JWT token first
+ 
+      // Use real JWT token if available, otherwise use demo token
+      const finalToken = authToken || token
+     
+      console.log('Token being used:', finalToken ? '✓ Token present' : '✗ No token found')
+ 
+      if (!finalToken) {
+        setError('Authentication required. Please log in again.')
+        setAnalytics(null)
         setLogs([])
+        setLoading(false)
         return
       }
-
-      setAnalytics(aData?.data ?? aData ?? {})
-
-      const logsData = Array.isArray(lData)
-        ? lData
-        : lData?.data ?? []
-
-      setLogs(logsData)
-
+ 
+      const headers = {
+        ...API_HEADERS,
+        'Authorization': `Bearer ${finalToken}`,
+        'Content-Type': 'application/json'
+      }
+ 
+      // Fetch analytics overview and audit logs
+      const [aRes, lRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/v1/analytics/overview`, { headers }),
+        fetch(`${API_BASE_URL}/api/v1/analytics/audit-logs?resource_type=1&skip=0&limit=50`, { headers })
+      ])
+ 
+      const aData = await aRes.json().catch(() => ({}))
+      const lData = await lRes.json().catch(() => ({}))
+ 
+      if (aRes.status === 401) {
+        setError('⚠️ Unauthorized - Your token is invalid or expired. Please log in again with valid credentials from your backend.')
+        console.error('401 Unauthorized - Make sure you logged in with valid backend credentials, not demo accounts.')
+        setAnalytics(null)
+      } else if (!aRes.ok) {
+        const errorMsg = aData?.message || aData?.error || `Error: ${aRes.status}`;
+        setError(`Failed to load analytics: ${errorMsg}`)
+        setAnalytics(null)
+      } else {
+        setAnalytics(aData)
+      }
+ 
+      if (lRes.status === 401) {
+        setError('⚠️ Unauthorized - Your token is invalid or expired. Please log in again with valid credentials from your backend.')
+        console.error('401 Unauthorized - Make sure you logged in with valid backend credentials, not demo accounts.')
+      } else if (!lRes.ok) {
+        const errorMsg = lData?.message || lData?.error || `Error: ${lRes.status}`;
+        setError(prev => prev ? `${prev}` : `Failed to load logs: ${errorMsg}`)
+      } else {
+        const logsData = Array.isArray(lData) ? lData : lData?.data ?? []
+        setLogs(logsData)
+      }
+ 
     } catch (err) {
-      setError('Network error')
-      setAnalytics({})
+      console.error('Fetch error:', err)
+      setError('Network error. Please check your connection.')
+      setAnalytics(null)
       setLogs([])
     } finally {
       setLoading(false)
     }
   }
-
+ 
   return (
     <div className="min-h-screen bg-gray-50 p-6 space-y-6">
-
+ 
       <div>
         <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-blue-700 bg-clip-text text-transparent">
           Analytics & Monitoring
         </h2>
         <p className="text-gray-500 mt-1">System insights and audit logs</p>
       </div>
-
+ 
       {error && (
         <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl">
           {error}
         </div>
       )}
-
+ 
       {loading ? (
         <div className="flex justify-center py-16">
           <div className="animate-spin h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full"></div>
         </div>
       ) : (
         <>
-
+ 
           {/* CARDS */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card title="Hospitals" value={analytics?.total_hospitals} icon="fa-hospital" color="blue" />
-            <Card title="Subscriptions" value={analytics?.active_subscriptions} icon="fa-credit-card" color="emerald" />
-            <Card title="Revenue" value={`₹ ${analytics?.total_revenue ?? 0}`} icon="fa-rupee-sign" color="purple" />
-            <Card title="Patients" value={analytics?.total_patients} icon="fa-user-injured" color="amber" />
+            <Card
+              title="Hospitals"
+              value={analytics?.hospitals?.total ?? 0}
+              subvalue={`${analytics?.hospitals?.active ?? 0} active`}
+              icon="fa-hospital"
+              color="blue"
+            />
+            <Card
+              title="Active Subscriptions"
+              value={analytics?.subscriptions?.active_count ?? 0}
+              icon="fa-credit-card"
+              color="emerald"
+            />
+            <Card
+              title="Total Revenue"
+              value={`₹ ${analytics?.revenue?.total ?? 0}`}
+              icon="fa-rupee-sign"
+              color="purple"
+            />
+            <Card
+              title="Total Patients"
+              value={analytics?.patients?.total ?? 0}
+              subvalue={`${analytics?.patients?.appointments_this_month ?? 0} appointments this month`}
+              icon="fa-user-injured"
+              color="amber"
+            />
           </div>
-
-          {/* TABLE */}
+ 
+          {/* Occupancy Info */}
+          {analytics?.occupancy && (
+            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Bed Occupancy</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <p className="text-sm text-gray-600">Total Beds</p>
+                  <p className="text-2xl font-bold text-gray-900">{analytics?.occupancy?.total_beds ?? 0}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Occupied Beds</p>
+                  <p className="text-2xl font-bold text-blue-600">{analytics?.occupancy?.occupied_beds ?? 0}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Occupancy Rate</p>
+                  <p className="text-2xl font-bold text-green-600">{analytics?.occupancy?.occupancy_rate_percent ?? 0}%</p>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
             <div className="px-6 py-4 border-b bg-gray-50 font-semibold text-gray-700">
               Audit Logs
             </div>
-
+ 
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
                 <thead className="bg-gray-100 text-gray-600">
@@ -133,14 +197,14 @@ const AnalyticsMonitoring = () => {
               </table>
             </div>
           </div>
-
+ 
         </>
       )}
-
+ 
     </div>
   )
 }
-
+ 
 /* ✅ UPDATED CARD (HospitalManagement style) */
 const Card = ({ title, value, icon, color }) => {
   const colorMap = {
@@ -165,33 +229,33 @@ const Card = ({ title, value, icon, color }) => {
       badge: "bg-green-500"
     }
   }
-
+ 
   const styles = colorMap[color] || colorMap.blue
-
+ 
   return (
     <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
-      
+     
       {/* background gradient */}
       <div className={`absolute inset-0 bg-gradient-to-br ${styles.bg} to-transparent pointer-events-none`} />
-
+ 
       {/* badge */}
       <span className={`absolute top-4 right-4 ${styles.badge} text-white text-xs font-semibold px-2 py-0.5 rounded`}>
         +12%
       </span>
-
+ 
       <div className="relative flex justify-between items-end">
-        
+       
         {/* LEFT */}
         <div>
           <div className={`w-10 h-10 flex items-center justify-center rounded-full ${styles.iconBg} mb-3`}>
             <i className={`fas ${icon} text-white`}></i>
           </div>
-
+ 
           <p className="text-sm text-gray-500">{title}</p>
           <p className="text-2xl font-bold text-gray-900">{value ?? 0}</p>
           <p className="text-xs text-gray-400 mt-1">Updated stats</p>
         </div>
-
+ 
         {/* RIGHT mini bars */}
         <div className="flex items-end gap-1 h-14">
           <div className="w-1.5 h-6 bg-gray-300 rounded"></div>
@@ -200,10 +264,12 @@ const Card = ({ title, value, icon, color }) => {
           <div className="w-1.5 h-12 bg-gray-500 rounded"></div>
           <div className="w-1.5 h-8 bg-gray-400 rounded"></div>
         </div>
-
+ 
       </div>
     </div>
   )
 }
-
+ 
 export default AnalyticsMonitoring
+ 
+ 

@@ -11,6 +11,7 @@ import ReportsAnalytics from './pages/ReportsAnalytics'
 import AuditLogs from './pages/AuditLogs'
 import AnalyticsMonitoring from './pages/AnalyticsMonitoring'
 import SupportManagement from './pages/SupportManagement'
+import Notifications from './pages/Notifications'
 // import SuperAdminProfile from './pages/SuperAdminProfile'
 
 const SuperAdminDashboard = () => {
@@ -41,6 +42,8 @@ const SuperAdminDashboard = () => {
         return <AuditLogs />
         case 'analytics':
           return <AnalyticsMonitoring />
+          case 'notifications':
+    return <Notifications />;
       
       // case 'profile':
       //   return <SuperAdminProfile />

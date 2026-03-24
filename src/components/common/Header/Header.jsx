@@ -162,7 +162,7 @@ const Header = ({ onMenuToggle = () => {}, onSidebarToggle = () => {}, isSidebar
         {/* Right: notifications + profile */}
         <div className="flex items-center gap-2">
           {/* Notifications with smooth dropdown - Only mobile fixed */}
-          <div className="relative" ref={notifRef}>
+          {/* <div className="relative" ref={notifRef}>
             <button
               onClick={(e) => {
                 e.stopPropagation()
@@ -186,7 +186,7 @@ const Header = ({ onMenuToggle = () => {}, onSidebarToggle = () => {}, isSidebar
               )}
             </button>
 
-            {/* Desktop Notifications dropdown - Keep original */}
+            
             <div
               className={`hidden md:block absolute right-0 mt-2 w-80 bg-white border rounded-lg shadow-lg z-50 transition-all duration-300 ease-in-out transform origin-top-right ${
                 showNotifications 
@@ -221,16 +221,16 @@ const Header = ({ onMenuToggle = () => {}, onSidebarToggle = () => {}, isSidebar
               </div>
             </div>
 
-            {/* Mobile Notifications dropdown - Centered */}
+           
             {showNotifications && (
               <>
-                {/* Mobile overlay */}
+               
                 <div 
                   className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" 
                   onClick={() => setShowNotifications(false)}
                 />
                 
-                {/* Mobile dropdown content - Centered */}
+               
                 <div
                   className={`fixed md:hidden mt-2 w-[calc(100vw-2rem)] max-w-md bg-white border rounded-lg shadow-lg z-50 transition-all duration-300 ease-in-out transform origin-center ${
                     showNotifications 
@@ -279,7 +279,7 @@ const Header = ({ onMenuToggle = () => {}, onSidebarToggle = () => {}, isSidebar
                 </div>
               </>
             )}
-          </div>
+          </div> */}
 
           {/* Profile with smooth dropdown */}
           <div className="relative" ref={profileRef}>

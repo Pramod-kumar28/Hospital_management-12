@@ -1,3 +1,4 @@
+// apiConfig.js - Add support endpoints
 /**
  * Backend API base URL (`BASE_URL` + paths = e.g. http://localhost:8060/api/v1/...).
  * In dev: empty string so requests use the Vite dev server origin and `/api` is proxied to the backend (avoids CORS).
@@ -44,3 +45,9 @@ export const ANALYTICS_OVERVIEW = '/api/v1/analytics/overview';
  
 /** Analytics: GET audit logs with filters */
 export const ANALYTICS_AUDIT_LOGS = (resourceType = 1, skip = 0, limit = 50) => `/api/v1/analytics/audit-logs?resource_type=${resourceType}&skip=${skip}&limit=${limit}`;
+// SUPPORT MANAGEMENT ENDPOINTS
+/** Super Admin: Support Tickets */
+export const SUPER_ADMIN_SUPPORT_TICKETS = '/api/v1/super-admin/support/tickets';
+export const SUPER_ADMIN_SUPPORT_TICKET_STATUS = (ticketId) => `/api/v1/super-admin/support/tickets/${ticketId}/status`;
+export const SUPER_ADMIN_SUPPORT_TICKET_DETAILS = (ticketId) => `/api/v1/super-admin/support/tickets/${ticketId}`;
+

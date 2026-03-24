@@ -97,6 +97,7 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
     { id: 'reports', label: 'Reports & Analytics', icon: 'fa-chart-pie' },
     { id: 'audit', label: 'Audit Logs', icon: 'fa-clipboard-check' },
     { id: 'analytics', label: 'Analytics & Monitoring', icon: 'fa-chart-line' },
+    { id: 'notifications', label: 'Notifications', icon: 'fa-bell' },
 
 
   ]

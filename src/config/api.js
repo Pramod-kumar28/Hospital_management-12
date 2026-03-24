@@ -35,7 +35,10 @@ export const SUPER_ADMIN_HOSPITALS = '/api/v1/super-admin/hospitals';
  
 /** Super Admin: subscription plan management */
 export const SUPER_ADMIN_SUBSCRIPTION_PLANS = '/api/v1/super-admin/plans';
- 
+
+/** Super Admin: notifications to hospital admins */
+export const SUPER_ADMIN_NOTIFY_HOSPITAL_ADMINS = '/api/v1/super-admin/notifications/send-to-hospital-admins';
+
 /** Super Admin: hospital subscription management */
 export const SUPER_ADMIN_HOSPITAL_SUBSCRIPTION = (hospitalName) => `/api/v1/super-admin/hospitals/${encodeURIComponent(hospitalName)}/subscription`;
 export const SUPER_ADMIN_HOSPITAL_ASSIGN_PLAN = (hospitalName) => `/api/v1/super-admin/hospitals/${encodeURIComponent(hospitalName)}/assign-plan`;

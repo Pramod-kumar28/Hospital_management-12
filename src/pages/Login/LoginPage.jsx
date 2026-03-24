@@ -1,212 +1,293 @@
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { useNavigate, Link } from 'react-router-dom';
-import { loginStart, loginSuccess, loginFailure } from '../../redux/slices/authSlice';
-import { API_BASE_URL, API_HEADERS } from '../../config/api';
-import { 
-  Eye, EyeOff, Mail, Lock, Zap, 
-  Building2, Users, Stethoscope, Shield, CheckCircle 
-} from 'lucide-react';
+import React, { useState } from 'react'
+import { useDispatch } from 'react-redux'
+import { useNavigate, Link } from 'react-router-dom'
+import { toast } from 'react-toastify'
+import { loginStart, loginSuccess, loginFailure } from '../../redux/slices/authSlice'
+import { API_BASE_URL, API_HEADERS, AUTH_SUPER_ADMIN_LOGIN, AUTH_HOSPITAL_ADMIN_LOGIN } from '../../config/api'
+import { shouldRequireHospitalAdminPasswordChange } from '../../utils/authFlow'
+import { buildUserPayloadFromApiUser } from '../../utils/authLoginPayload'
+import { PASSWORD_MIN_LENGTH, isValidEmail } from '../../utils/validation'
+import { Eye, EyeOff, Mail, Lock, Zap, Shield, Building2 } from 'lucide-react'
 
-// Backend auth base and endpoints (v1)
-const AUTH_BASE = '/api/v1/auth';
-const SUPER_ADMIN_LOGIN = `${AUTH_BASE}/super-admin/login`;
+const DEMO_USERS = [
+  { email: 'admin@dcm.demo', password: 'admin123', role: 'ADMIN', name: 'Admin User' },
+  { email: 'doctor@dcm.demo', password: 'doc123', role: 'DOCTOR', name: 'Dr. Aparna' },
+  { email: 'nurse@dcm.demo', password: 'nurse123', role: 'NURSE', name: 'Nurse Staff' },
+  { email: 'reception@dcm.demo', password: 'reception123', role: 'RECEPTIONIST', name: 'Receptionist' },
+  { email: 'super@dcm.demo', password: 'sup123', role: 'SUPER_ADMIN', name: 'Super Admin' },
+  { email: 'lab@dcm.demo', password: 'lab123', role: 'LAB', name: 'Lab Technician' },
+  { email: 'patient@dcm.demo', password: 'patient123', role: 'PATIENT', name: 'Patient User' },
+  { email: 'pharmacy@dcm.demo', password: 'pharma123', role: 'PHARMACY', name: 'Pharmacy Staff' },
+  { email: 'telemedicine@dcm.demo', password: 'tele123', role: 'TELEMEDICINE', name: 'Telemedicine Staff' },
+]
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    rememberMe: false
-  });
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-
-  // Demo users data
-  const demoUsers = [
-    { email: 'admin@dcm.demo', password: 'admin123', role: 'ADMIN', name: 'Admin User' },
-    { email: 'doctor@dcm.demo', password: 'doc123', role: 'DOCTOR', name: 'Dr. Aparna' },
-    { email: 'nurse@dcm.demo', password: 'nurse123', role: 'NURSE', name: 'Nurse Staff' },
-    { email: 'reception@dcm.demo', password: 'reception123', role: 'RECEPTIONIST', name: 'Receptionist' },
-    { email: 'super@dcm.demo', password: 'sup123', role: 'SUPER_ADMIN', name: 'Super Admin' },
-    { email: 'lab@dcm.demo', password: 'lab123', role: 'LAB', name: 'Lab Technician' },
-    {email: 'patient@dcm.demo', password: 'patient123', role: 'PATIENT', name: 'Patient User' },
-    { email: 'pharmacy@dcm.demo', password: 'pharma123', role: 'PHARMACY', name: 'Pharmacy'},
-    { email: 'telemedicine@dcm.demo', password: 'tele123', role: 'TELEMEDICINE', name: 'Telemedicine'},
-
-  ];
+    rememberMe: false,
+  })
+  const [adminRole, setAdminRole] = useState('super_admin')
+  const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    const { name, value, type, checked } = e.target
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-    if (error) setError('');
-  };
+      [name]: type === 'checkbox' ? checked : value,
+    }))
+    if (error) setError('')
+  }
 
-  // Auto-fill form when demo user is clicked
-  const fillDemoCredentials = (user) => {
-    setFormData({
-      email: user.email,
-      password: user.password,
-      rememberMe: true
-    });
-    setError('');
-  };
+  const navigateByAppRole = (appRole, requiresPasswordChange) => {
+    if (appRole === 'SUPER_ADMIN') navigate('/super-admin', { replace: true })
+    else if (appRole === 'ADMIN') {
+      if (requiresPasswordChange) navigate('/admin/change-password', { replace: true })
+      else navigate('/admin', { replace: true })
+    } else if (appRole === 'DOCTOR') navigate('/doctor', { replace: true })
+    else if (appRole === 'NURSE') navigate('/nurse', { replace: true })
+    else if (appRole === 'RECEPTIONIST') navigate('/receptionist', { replace: true })
+    else if (appRole === 'LAB') navigate('/lab', { replace: true })
+    else if (appRole === 'PATIENT') navigate('/patient', { replace: true })
+    else if (appRole === 'PHARMACY') navigate('/pharmacy', { replace: true })
+    else if (appRole === 'TELEMEDICINE') navigate('/telemedicine', { replace: true })
+    else if (appRole === 'USER') navigate('/login', { replace: true })
+    else if (!appRole) navigate('/login', { replace: true })
+    else if (appRole && appRole.includes('ADMIN')) {
+      navigate('/admin', { replace: true })
+    } else {
+      setError('Your account role is not supported on this sign-in page.')
+      dispatch(loginFailure('Unsupported role'))
+    }
+  }
 
-  const navigateByRole = (role) => {
-    const routes = {
-      ADMIN: '/admin',
-      DOCTOR: '/doctor',
-      NURSE: '/nurse',
-      RECEPTIONIST: '/receptionist',
-      SUPER_ADMIN: '/super-admin',
-      LAB: '/lab',
-      PATIENT: '/patient',
-      PHARMACY: '/pharmacy',
-      TELEMEDICINE: '/telemedicine',
-    };
-    navigate(routes[role] || '/login');
-  };
+  const tryDemoLogin = (email, password) => {
+    const demo = DEMO_USERS.find(
+      (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+    )
+    if (!demo) return false
+
+    dispatch(
+      loginSuccess({
+        user: {
+          id: `demo-${demo.role.toLowerCase()}`,
+          name: demo.name,
+          email: demo.email,
+          role: demo.role,
+          roles: [demo.role],
+        },
+        token: `demo-token-${Date.now()}`,
+        refreshToken: `demo-refresh-${Date.now()}`,
+        requiresPasswordChange: false,
+      })
+    )
+    toast.success(`Demo login successful (${demo.role})`)
+    navigateByAppRole(demo.role, false)
+    return true
+  }
+
+  const fillDemoCredentials = (demoUser) => {
+    setFormData((prev) => ({
+      ...prev,
+      email: demoUser.email,
+      password: demoUser.password,
+      rememberMe: true,
+    }))
+    if (error) setError('')
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    dispatch(loginStart());
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+    dispatch(loginStart())
+
+    const email = formData.email.trim()
+    const password = formData.password
+
+    if (!isValidEmail(email)) {
+      setError('Enter a valid email address.')
+      dispatch(loginFailure('Invalid email'))
+      setLoading(false)
+      return
+    }
+    if (!password || password.length < PASSWORD_MIN_LENGTH) {
+      setError(`Password must be at least ${PASSWORD_MIN_LENGTH} characters.`)
+      dispatch(loginFailure('Invalid password'))
+      setLoading(false)
+      return
+    }
+
+    const loginPath = adminRole === 'super_admin' ? AUTH_SUPER_ADMIN_LOGIN : AUTH_HOSPITAL_ADMIN_LOGIN
+    const loginUrl = `${API_BASE_URL}${loginPath}`
 
     try {
-      // 1) Try backend API first (super-admin login: POST /api/v1/auth/super-admin/login)
-      const loginUrl = `${API_BASE_URL}${SUPER_ADMIN_LOGIN}`;
       const res = await fetch(loginUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...API_HEADERS },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
-      });
+        body: JSON.stringify({ email, password }),
+      })
 
-      if (res.ok) {
-        const response = await res.json();
-        // Backend shape: { success, message, data: { access_token, refresh_token, user: { id, email, first_name, last_name, roles, hospital_id } } }
-        const data = response.data ?? response;
-        const token = data.access_token ?? data.token ?? data.accessToken ?? data.jwt;
-        const user = data.user ?? data;
-        const role = user.roles?.[0] ?? user.role ?? user.authorities?.[0];
-        const name = [user.first_name, user.last_name].filter(Boolean).join(' ') || user.name || user.username || user.email;
-        if (token && user) {
-          dispatch(loginSuccess({
-            user: {
-              id: user.id,
-              name,
-              email: user.email,
-              role,
-              hospital_id: user.hospital_id,
-            },
-            token,
-          }));
-          navigateByRole(role);
-          return;
+      const response = await res.json().catch(() => ({}))
+      const msg = response.message || response?.detail?.message || `Request failed (${res.status})`
+
+      if (!res.ok) {
+        if (tryDemoLogin(email, password)) {
+          setLoading(false)
+          return
         }
+        setError(msg)
+        dispatch(loginFailure(msg))
+        toast.error(msg)
+        setLoading(false)
+        return
       }
 
-      // 2) Fallback: demo users (when backend is down or returns 401)
-      const user = demoUsers.find(
-        (u) => u.email === formData.email && u.password === formData.password
-      );
-      if (user) {
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        dispatch(loginSuccess({
-          user: { id: 1, name: user.name, email: user.email, role: user.role },
-          token: 'demo-token-' + Date.now(),
-        }));
-        navigateByRole(user.role);
-        return;
+      const data = response.data ?? response
+      const accessToken = data.access_token ?? data.token ?? data.accessToken
+      const refreshToken = data.refresh_token ?? data.refreshToken ?? null
+      const user = data.user ?? {}
+
+      if (!accessToken || !user || typeof user !== 'object') {
+        const err = 'Invalid response: missing token or user.'
+        setError(err)
+        dispatch(loginFailure(err))
+        toast.error(err)
+        setLoading(false)
+        return
       }
 
-      const errMsg = res.status === 401 || res.status === 400
-        ? (await res.json().catch(() => ({})))?.message || 'Invalid email or password.'
-        : 'Invalid email or password. Try again or use demo accounts below.';
-      setError(errMsg);
-      dispatch(loginFailure(errMsg));
-    } catch (err) {
-      console.error('Login failed:', err);
-      const user = demoUsers.find(
-        (u) => u.email === formData.email && u.password === formData.password
-      );
-      if (user) {
-        dispatch(loginSuccess({
-          user: { id: 1, name: user.name, email: user.email, role: user.role },
-          token: 'demo-token-' + Date.now(),
-        }));
-        navigateByRole(user.role);
+      const userPayload = buildUserPayloadFromApiUser(user)
+      if (!userPayload) {
+        const err = 'Invalid response: user could not be parsed.'
+        setError(err)
+        dispatch(loginFailure(err))
+        toast.error(err)
+        setLoading(false)
+        return
+      }
+
+      const requiresPasswordChange =
+        userPayload.role === 'ADMIN' &&
+        adminRole === 'hospital_admin' &&
+        shouldRequireHospitalAdminPasswordChange(user, response)
+
+      dispatch(
+        loginSuccess({
+          user: userPayload,
+          token: accessToken,
+          refreshToken,
+          requiresPasswordChange,
+        })
+      )
+
+      if (requiresPasswordChange) {
+        toast.info('Set a new password to continue — use the temporary password from your hospital as the current password.')
       } else {
-        setError('Cannot reach backend. Check that it is running at ' + API_BASE_URL + ' or use demo accounts.');
-        dispatch(loginFailure(err?.message || 'Network error'));
+        toast.success(response.message || 'Signed in successfully')
       }
+      navigateByAppRole(userPayload.role, requiresPasswordChange)
+    } catch (err) {
+      console.error('Login failed:', err)
+      if (tryDemoLogin(email, password)) {
+        setLoading(false)
+        return
+      }
+      const fallback = err?.message || 'Network error. Is the API running at the configured base URL?'
+      setError(fallback)
+      dispatch(loginFailure(fallback))
+      toast.error(fallback)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  }
 
   return (
     <>
-      {/* Header Section */}
       <section className="py-12 bg-gradient-to-br from-blue-50 to-cyan-50 border-b border-gray-200 mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2 text-gray-900 text-center">Sign In to Your Account</h1>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2 text-gray-900 text-center">
+            Admin sign in
+          </h1>
           <p className="text-gray-600 text-center max-w-2xl mx-auto">
-            Access your hospital management dashboard and streamline healthcare operations
+            Sign in as <strong className="font-semibold text-gray-800">Super Admin</strong> (platform) or{' '}
+            <strong className="font-semibold text-gray-800">Hospital Admin</strong> (your hospital). Use the email and password
+            provided for your account.
           </p>
         </div>
       </section>
 
-      {/* Main Content */}
       <section className="py-12 bg-gray-50 min-h-screen">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto">
             <div className="grid lg:grid-cols-2 gap-12 items-start">
-              
-              {/* Login Form */}
               <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-6 md:p-8">
                 <div className="text-center mb-8">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h2>
-                  <p className="text-gray-600">Sign in to access your dashboard</p>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome back</h2>
+                  <p className="text-gray-600">Select your role, then enter your email and password.</p>
                 </div>
 
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                  <button
+                    type="button"
+                    onClick={() => setAdminRole('super_admin')}
+                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all ${
+                      adminRole === 'super_admin'
+                        ? 'border-blue-600 bg-blue-50 text-blue-900 font-semibold'
+                        : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                    }`}
+                  >
+                    <Shield className="w-5 h-5" />
+                    Super Admin
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAdminRole('hospital_admin')}
+                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all ${
+                      adminRole === 'hospital_admin'
+                        ? 'border-blue-600 bg-blue-50 text-blue-900 font-semibold'
+                        : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                    }`}
+                  >
+                    <Building2 className="w-5 h-5" />
+                    Hospital Admin
+                  </button>
+                </div>
+
+                {adminRole === 'hospital_admin' && (
+                  <p className="text-sm text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-6">
+                    First visit: sign in with the <strong>temporary password</strong> from your Super Admin, then you&apos;ll set a new password. After that, use your{' '}
+                    <strong>new password only</strong> — the temporary one will not be used for the dashboard session.
+                  </p>
+                )}
+
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* Email Field */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="email">
-                      Email Address
+                      Email
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <Mail className="h-5 w-5 text-gray-400" />
                       </div>
-                      <input 
+                      <input
                         id="email"
                         name="email"
                         type="email"
                         autoComplete="email"
                         required
                         className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                        placeholder="your.email@hospital.com"
+                        placeholder="admin@hospital.com"
                         value={formData.email}
                         onChange={handleChange}
                       />
                     </div>
                   </div>
 
-                  {/* Password Field */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="password">
                       Password
@@ -215,21 +296,22 @@ const LoginPage = () => {
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <Lock className="h-5 w-5 text-gray-400" />
                       </div>
-                      <input 
+                      <input
                         id="password"
                         name="password"
-                        type={showPassword ? "text" : "password"}
+                        type={showPassword ? 'text' : 'password'}
                         autoComplete="current-password"
                         required
+                        minLength={PASSWORD_MIN_LENGTH}
                         className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                        placeholder="Enter your password"
+                        placeholder={`At least ${PASSWORD_MIN_LENGTH} characters`}
                         value={formData.password}
                         onChange={handleChange}
                       />
                       <button
                         type="button"
                         className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                        onClick={togglePasswordVisibility}
+                        onClick={() => setShowPassword(!showPassword)}
                       >
                         {showPassword ? (
                           <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
@@ -240,7 +322,6 @@ const LoginPage = () => {
                     </div>
                   </div>
 
-                  {/* Remember Me & Forgot Password */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <input
@@ -255,93 +336,58 @@ const LoginPage = () => {
                         Remember me
                       </label>
                     </div>
-
-                    <div className="text-sm">
-                      <Link to="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500 transition-colors">
-                        Forgot your password?
-                      </Link>
-                    </div>
+                    <Link
+                      to="/forgot-password"
+                      className="text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors"
+                    >
+                      Forgot password?
+                    </Link>
                   </div>
 
-                  {/* Error Message */}
                   {error && (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0">
-                          <Shield className="h-5 w-5 text-red-400" />
-                        </div>
-                        <div className="ml-3">
-                          <p className="text-sm text-red-700">{error}</p>
-                        </div>
+                        <Shield className="h-5 w-5 text-red-400 flex-shrink-0" />
+                        <p className="ml-3 text-sm text-red-700">{error}</p>
                       </div>
                     </div>
                   )}
 
-                  {/* Submit Button */}
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     disabled={loading}
-                    className="w-full px-4 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold hover:from-blue-700 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center gap-2"
+                    className="w-full px-4 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold hover:from-blue-700 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
                   >
                     {loading ? (
                       <>
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
                         Signing in...
                       </>
                     ) : (
                       <>
-                        Sign In to Dashboard
+                        Sign in
                         <Zap className="w-4 h-4" />
                       </>
                     )}
                   </button>
 
-                  {/* Divider */}
-                  <div className="my-4">
-                    <div className="relative">
-                      <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-gray-300"></div>
-                      </div>
-                      <div className="relative flex justify-center text-sm">
-                        <span className="px-2 bg-white text-gray-500">Or</span>
-                      </div>
-                    </div>
-                  </div>
+                  <p className="text-center text-sm text-gray-500">
+                    API login works for admin roles. Demo logins for Doctor/Lab/Patient/etc are available below.
+                  </p>
 
-                  <button className='w-full px-4 py-3 rounded-lg bg-gray-50 text-gray-600 font-semibold hover:bg-gray-100 flex items-center justify-center gap-2 border border-gray-200 hover:border-gray-300 transition-all duration-200'
-                    onClick={() => navigate('/signup')}
-                  >
-                    don't have an account? Sign up
-                  </button>
-
-                  {/* Demo Accounts Section */}
-                  <div className="mt-8 pt-6 border-t border-gray-200">
-                    <h3 className="text-sm font-medium text-gray-600 mb-4 text-center">
-                      Try our demo accounts:
-                    </h3>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {demoUsers.map((user, index) => (
+                  <div className="mt-6 pt-5 border-t border-gray-200">
+                    <h3 className="text-sm font-medium text-gray-700 text-center mb-3">Demo Accounts (click to fill)</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {DEMO_USERS.map((user) => (
                         <button
-                          key={index}
+                          key={`${user.role}-${user.email}`}
                           type="button"
                           onClick={() => fillDemoCredentials(user)}
-                          className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 text-left group"
+                          className="text-left p-2.5 rounded-lg border border-gray-200 bg-gray-50 hover:bg-blue-50 hover:border-blue-200 transition-colors"
                         >
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-gray-900 text-sm truncate">{user.name}</div>
-                            <div className="text-xs text-gray-500 truncate">{user.email}</div>
-                          </div>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            user.role === 'ADMIN' ? 'bg-red-100 text-red-800' :
-                            user.role === 'DOCTOR' ? 'bg-blue-100 text-blue-800' :
-                            user.role === 'NURSE' ? 'bg-green-100 text-green-800' :
-                            user.role === 'SUPER_ADMIN' ? 'bg-purple-100 text-purple-800' :
-                            user.role === 'LAB' ? 'bg-indigo-100 text-indigo-800' :
-                            'bg-orange-100 text-orange-800'
-                          }`}>
-                            {user.role}
-                          </span>
+                          <p className="text-xs font-semibold text-gray-900 truncate">{user.name}</p>
+                          <p className="text-[11px] text-gray-600 truncate">{user.email}</p>
+                          <p className="text-[11px] text-blue-700 font-medium">{user.role}</p>
                         </button>
                       ))}
                     </div>
@@ -349,383 +395,24 @@ const LoginPage = () => {
                 </form>
               </div>
 
-              {/* Feature Showcase */}
               <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-8 text-white">
-                <div className="mb-8">
-                  <h3 className="text-2xl font-bold mb-4">Complete Hospital Management Suite</h3>
-                  <p className="text-blue-100 text-lg">
-                    Everything you need to streamline operations, enhance patient care, and grow your healthcare practice
-                  </p>
-                </div>
-
-                {/* Feature Highlights */}
-                <div className="space-y-6">
-                  {[
-                    { icon: Users, title: "Patient Management", desc: "Complete patient journey management" },
-                    { icon: Stethoscope, title: "Doctor Portal", desc: "Streamlined clinical workflows" },
-                    { icon: Building2, title: "Hospital Admin", desc: "Centralized management dashboard" },
-                    { icon: Shield, title: "Secure & Compliant", desc: "HIPAA compliant security" }
-                  ].map((feature, index) => (
-                    <div key={index} className="flex items-center gap-4 group">
-                      <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                        <feature.icon className="w-6 h-6" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-white">{feature.title}</h4>
-                        <p className="text-blue-200 text-sm">{feature.desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Stats */}
-                <div className="mt-8 grid grid-cols-3 gap-4 text-center">
-                  <div>
-                    <div className="text-2xl font-bold">50+</div>
-                    <div className="text-blue-200 text-sm">Hospitals</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold">2000+</div>
-                    <div className="text-blue-200 text-sm">Professionals</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold">99.9%</div>
-                    <div className="text-blue-200 text-sm">Uptime</div>
-                  </div>
-                </div>
-
-                {/* Trust Badges */}
-                <div className="mt-8 pt-6 border-t border-blue-500">
-                  <div className="flex items-center justify-center gap-2 text-blue-200 text-sm">
-                    <CheckCircle className="w-4 h-4" />
-                    <span>HIPAA Compliant • GDPR Ready • 24/7 Support</span>
-                  </div>
-                </div>
+                <h3 className="text-2xl font-bold mb-4">Who signs in here?</h3>
+                <p className="text-blue-100 text-lg mb-6">
+                  <strong className="text-white">Super Admin</strong> manages the whole platform (hospitals, plans, etc.).{' '}
+                  <strong className="text-white">Hospital Admin</strong> runs day-to-day operations for one hospital.
+                </p>
+                <ul className="space-y-3 text-blue-100 text-sm">
+                  <li>• New hospital admins may be asked to set a new password on first sign-in.</li>
+                  <li>• Use the temporary password you were given until you change it.</li>
+                  <li>• Forgot your password? Use your hospital’s reset process or contact support.</li>
+                </ul>
               </div>
             </div>
           </div>
         </div>
       </section>
     </>
-  );
-};
+  )
+}
 
-export default LoginPage;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// import React, { useState } from 'react';
-// import { useDispatch } from 'react-redux';
-// import { useNavigate, Link } from 'react-router-dom';
-// import { loginSuccess } from '../../redux/slices/authSlice';
-
-// const LoginPage = () => {
-//   const [formData, setFormData] = useState({
-//     email: '',
-//     password: ''
-//   });
-//   const [loading, setLoading] = useState(false);
-//   const dispatch = useDispatch();
-//   const navigate = useNavigate();
-
-//   // Demo users data - UPDATED: Added PATIENT user
-//   const demoUsers = [
-//     { email: 'admin@dcm.demo', password: 'admin123', role: 'ADMIN', name: 'Admin User' },
-//     { email: 'doctor@dcm.demo', password: 'doc123', role: 'DOCTOR', name: 'Dr. Aparna' },
-//     { email: 'nurse@dcm.demo', password: 'nurse123', role: 'NURSE', name: 'Nurse Staff' },
-//     { email: 'reception@dcm.demo', password: 'reception123', role: 'RECEPTIONIST', name: 'Receptionist' },
-//     { email: 'super@dcm.demo', password: 'sup123', role: 'SUPER_ADMIN', name: 'Super Admin' },
-//     { email: 'patient@dcm.demo', password: 'patient123', role: 'PATIENT', name: 'Ravi Kumar' } // NEW: Patient user
-//   ];
-
-//   const handleChange = (e) => {
-//     setFormData({
-//       ...formData,
-//       [e.target.name]: e.target.value
-//     });
-//   };
-
-//   // Auto-fill form when demo user is clicked
-//   const fillDemoCredentials = (user) => {
-//     setFormData({
-//       email: user.email,
-//       password: user.password
-//     });
-//   };
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     setLoading(true);
-    
-//     try {
-//       console.log('Login attempt:', formData);
-      
-//       // Find the user from demo users
-//       const user = demoUsers.find(u => 
-//         u.email === formData.email && u.password === formData.password
-//       );
-      
-//       if (user) {
-//         // Simulate API delay
-//         await new Promise(resolve => setTimeout(resolve, 1000));
-        
-//         // Dispatch login success to Redux
-//         dispatch(loginSuccess({
-//           user: {
-//             id: 1,
-//             name: user.name,
-//             email: user.email,
-//             role: user.role
-//           },
-//           token: 'demo-token-' + Date.now()
-//         }));
-        
-//         // Redirect to role-specific dashboard - UPDATED: Added PATIENT case
-//         switch(user.role) {
-//           case 'ADMIN':
-//             navigate('/admin');
-//             break;
-//           case 'DOCTOR':
-//             navigate('/doctor');
-//             break;
-//           case 'NURSE':
-//             navigate('/nurse');
-//             break;
-//           case 'RECEPTIONIST':
-//             navigate('/receptionist');
-//             break;
-//           case 'SUPER_ADMIN':
-//             navigate('/super-admin');
-//             break;
-//           case 'PATIENT': // NEW: Patient case
-//             navigate('/patient');
-//             break;
-//           default:
-//             navigate('/dashboard');
-//         }
-//       } else {
-//         alert('Invalid credentials! Use demo accounts below.');
-//       }
-//     } catch (error) {
-//       console.error('Login failed:', error);
-//       alert('Login failed!');
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   return (
-//     <div className="bg-slate-50 text-slate-900 min-h-screen">
-//       <main className="max-w-7xl mx-auto px-6 md:px-8 py-10 grid lg:grid-cols-2 gap-8 items-center">
-//         {/* Left Side - Welcome & Demo Accounts */}
-//         <div className="hidden lg:block">
-//           <h1 className="text-3xl md:text-4xl font-extrabold leading-tight">Welcome back</h1>
-//           <p className="mt-3 text-slate-600 max-w-prose">
-//             Sign in to access your dashboard. Your role decides which page opens.
-//           </p>
-//           <div className="mt-6 grid sm:grid-cols-2 gap-4 text-sm">
-//             {demoUsers.map((user, index) => (
-//               <div 
-//                 key={index}
-//                 className={`border border-gray-200 rounded-[18px] bg-white p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer ${
-//                   user.role === 'PATIENT' ? 'border-blue-300 bg-blue-50' : ''
-//                 }`}
-//                 onClick={() => fillDemoCredentials(user)}
-//               >
-//                 <div className="font-semibold">{user.name}</div>
-//                 <div className="text-slate-600 mt-1">{user.email} / {user.password}</div>
-//                 <div className="mt-2">
-//                   <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-//                     user.role === 'ADMIN' ? 'bg-red-100 text-red-800' :
-//                     user.role === 'DOCTOR' ? 'bg-blue-100 text-blue-800' :
-//                     user.role === 'NURSE' ? 'bg-green-100 text-green-800' :
-//                     user.role === 'RECEPTIONIST' ? 'bg-yellow-100 text-yellow-800' :
-//                     user.role === 'SUPER_ADMIN' ? 'bg-purple-100 text-purple-800' :
-//                     'bg-teal-100 text-teal-800' // Patient color
-//                   }`}>
-//                     {user.role}
-//                   </span>
-//                 </div>
-//               </div>
-//             ))}
-//           </div>
-          
-//           {/* Patient Feature Highlight */}
-//           <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-//             <h3 className="font-semibold text-blue-800 mb-2">👋 Welcome Patients!</h3>
-//             <p className="text-sm text-blue-700">
-//               Patient users can now access their complete medical history, book appointments, 
-//               view test results, and communicate with doctors directly.
-//             </p>
-//           </div>
-//         </div>
-
-//         {/* Right Side - Login Form */}
-//         <form onSubmit={handleSubmit} className="border border-gray-200 rounded-[18px] bg-white p-6 md:p-8 shadow-sm">
-//           <div className="flex items-center gap-3 mb-6">
-//             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center text-white font-bold shadow-md">
-//               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-//                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-//               </svg>
-//             </div>
-//             <div>
-//               <h2 className="text-xl font-bold">Sign in to SmartMedi Hub</h2>
-//               <p className="text-sm text-gray-600">Hospital Management System</p>
-//             </div>
-//           </div>
-          
-//           <div className="mt-5 space-y-4">
-//             {/* Email Field */}
-//             <label className="block">
-//               <span className="text-sm text-slate-700">Email</span>
-//               <input
-//                 id="email"
-//                 name="email"
-//                 type="email"
-//                 autoComplete="email"
-//                 required
-//                 className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-//                 placeholder="Email address"
-//                 value={formData.email}
-//                 onChange={handleChange}
-//               />
-//             </label>
-
-//             {/* Password Field */}
-//             <label className="block">
-//               <span className="text-sm text-slate-700">Password</span>
-//               <input
-//                 id="password"
-//                 name="password"
-//                 type="password"
-//                 autoComplete="current-password"
-//                 required
-//                 className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-//                 placeholder="Password"
-//                 value={formData.password}
-//                 onChange={handleChange}
-//               />
-//             </label>
-
-//             <div className="flex items-center justify-between">
-//               <label className="inline-flex items-center gap-2 text-sm text-slate-600">
-//                 <input
-//                   id="remember-me"
-//                   name="remember-me"
-//                   type="checkbox"
-//                   className="rounded border-slate-300 text-blue-500 focus:ring-blue-500"
-//                 />
-//                 Remember me
-//               </label>
-
-//               <div className="text-sm">
-//                 <a href="#" className="text-slate-600 hover:text-slate-900">
-//                   Forgot your password?
-//                 </a>
-//               </div>
-//             </div>
-
-//             <button
-//               type="submit"
-//               disabled={loading}
-//               className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg py-2.5 font-semibold hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg"
-//             >
-//               {loading ? (
-//                 <span className="flex items-center justify-center">
-//                   <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-//                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-//                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-//                   </svg>
-//                   Signing in...
-//                 </span>
-//               ) : (
-//                 'Sign in'
-//               )}
-//             </button>
-            
-//             <div className="text-center text-sm text-gray-600">
-//               <p>Don't have an account?{' '}
-//                 <Link to="/signup" className="text-blue-600 hover:text-blue-800 font-medium">
-//                   Sign up here
-//                 </Link>
-//               </p>
-//             </div>
-//           </div>
-//         </form>
-
-//         {/* Mobile Demo Accounts */}
-//         <div className="lg:hidden mt-8">
-//           <h3 className="text-lg font-semibold mb-4">Demo Accounts - Click to auto-fill</h3>
-//           <div className="grid grid-cols-1 gap-3 text-sm">
-//             {demoUsers.map((user, index) => (
-//               <button
-//                 key={index}
-//                 type="button"
-//                 onClick={() => fillDemoCredentials(user)}
-//                 className={`w-full text-left p-4 bg-white border rounded-lg hover:bg-gray-50 hover:border-blue-300 transition-colors ${
-//                   user.role === 'PATIENT' ? 'border-blue-300 bg-blue-50' : 'border-gray-200'
-//                 }`}
-//               >
-//                 <div className="flex justify-between items-center">
-//                   <div>
-//                     <div className="font-medium text-gray-900">{user.name}</div>
-//                     <div className="text-sm text-gray-500">{user.email}</div>
-//                   </div>
-//                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-//                     user.role === 'ADMIN' ? 'bg-red-100 text-red-800' :
-//                     user.role === 'DOCTOR' ? 'bg-blue-100 text-blue-800' :
-//                     user.role === 'NURSE' ? 'bg-green-100 text-green-800' :
-//                     user.role === 'RECEPTIONIST' ? 'bg-yellow-100 text-yellow-800' :
-//                     user.role === 'SUPER_ADMIN' ? 'bg-purple-100 text-purple-800' :
-//                     'bg-teal-100 text-teal-800' // Patient color
-//                   }`}>
-//                     {user.role}
-//                   </span>
-//                 </div>
-//                 <div className="mt-2 text-xs text-gray-600">
-//                   Password: <span className="font-mono">{user.password}</span>
-//                 </div>
-//               </button>
-//             ))}
-//           </div>
-          
-//           {/* Mobile Patient Highlight */}
-//           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-//             <div className="flex items-start gap-2">
-//               <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
-//                 <i className="fas fa-user text-sm"></i>
-//               </div>
-//               <div>
-//                 <h4 className="font-medium text-blue-800 mb-1">Patient Portal Features</h4>
-//                 <p className="text-sm text-blue-700">
-//                   View medical records, book appointments, check test results, and message doctors.
-//                 </p>
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-//       </main>
-//     </div>
-//   );
-// };
-
-// export default LoginPage;
+export default LoginPage

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import Modal from '../../../../components/common/Modal/Modal';
-import { API_BASE_URL, SUPER_ADMIN_HOSPITALS, SUPER_ADMIN_HOSPITALS_CREATE, API_HEADERS } from '../../../../config/api';
+import { SUPER_ADMIN_HOSPITALS, SUPER_ADMIN_HOSPITALS_CREATE } from '../../../../config/api';
+import { apiFetch } from '../../../../services/apiClient';
 
 // Map backend status (ACTIVE/SUSPENDED/INACTIVE) to display label
 const statusToDisplay = (s) => (s === 'ACTIVE' ? 'Active' : s === 'SUSPENDED' ? 'Suspended' : s === 'INACTIVE' ? 'Inactive' : s || '');
@@ -96,10 +97,7 @@ const HospitalManagement = () => {
       if (filters.plan) params.set('subscription', displayToSubscription(filters.plan) || filters.plan);
       if (filters.city) params.set('city', filters.city);
       if (filters.state) params.set('state', filters.state);
-      const url = `${API_BASE_URL}${SUPER_ADMIN_HOSPITALS}?${params.toString()}`;
-      const res = await fetch(url, {
-        headers: { ...API_HEADERS, ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-      });
+      const res = await apiFetch(`${SUPER_ADMIN_HOSPITALS}?${params.toString()}`);
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setListError(data?.message || data?.detail?.message || `Failed to load hospitals (${res.status})`);
@@ -217,7 +215,6 @@ const HospitalManagement = () => {
       }
       setSubmitLoading(true);
       try {
-        const url = `${API_BASE_URL}${SUPER_ADMIN_HOSPITALS_CREATE}`;
         const payload = {
           name: (currentHospital.name || '').trim(),
           registration_number: (currentHospital.registration_number || '').trim(),
@@ -229,14 +226,9 @@ const HospitalManagement = () => {
           country: (currentHospital.country || '').trim(),
           pincode: (currentHospital.pincode || '').trim()
         };
-        const res = await fetch(url, {
+        const res = await apiFetch(SUPER_ADMIN_HOSPITALS_CREATE, {
           method: 'POST',
-          headers: {
-            ...API_HEADERS,
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify(payload)
+          body: payload,
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
@@ -282,7 +274,6 @@ const HospitalManagement = () => {
       }
       setSubmitLoading(true);
       try {
-        const url = `${API_BASE_URL}${SUPER_ADMIN_HOSPITALS}/${currentHospital.id}`;
         const payload = {
           name: (currentHospital.name || '').trim() || undefined,
           registration_number: (currentHospital.registration_number || '').trim() || undefined,
@@ -295,10 +286,9 @@ const HospitalManagement = () => {
           pincode: (currentHospital.pincode || '').trim() || undefined
         };
         const body = Object.fromEntries(Object.entries(payload).filter(([, v]) => v != null && v !== ''));
-        const res = await fetch(url, {
+        const res = await apiFetch(`${SUPER_ADMIN_HOSPITALS}/${currentHospital.id}`, {
           method: 'PUT',
-          headers: { ...API_HEADERS, 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify(body)
+          body,
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
@@ -323,11 +313,9 @@ const HospitalManagement = () => {
     const nextStatus = hospital.status === 'Active' ? 'SUSPENDED' : 'ACTIVE';
     if (!token || !hospital.id) return;
     try {
-      const url = `${API_BASE_URL}${SUPER_ADMIN_HOSPITALS}/${hospital.id}/status`;
-      const res = await fetch(url, {
+      const res = await apiFetch(`${SUPER_ADMIN_HOSPITALS}/${hospital.id}/status`, {
         method: 'PATCH',
-        headers: { ...API_HEADERS, 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ status: nextStatus })
+        body: { status: nextStatus },
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -345,10 +333,8 @@ const HospitalManagement = () => {
     if (!window.confirm('Are you sure you want to delete this hospital? This will soft-delete (set inactive) and block all users.')) return;
     if (!token) return;
     try {
-      const url = `${API_BASE_URL}${SUPER_ADMIN_HOSPITALS}/${hospitalId}?confirm=true`;
-      const res = await fetch(url, {
+      const res = await apiFetch(`${SUPER_ADMIN_HOSPITALS}/${hospitalId}?confirm=true`, {
         method: 'DELETE',
-        headers: { ...API_HEADERS, Authorization: `Bearer ${token}` }
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {

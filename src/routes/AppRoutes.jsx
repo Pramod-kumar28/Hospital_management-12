@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux'
 import ProtectedRoute from '../components/auth/ProtectedRoute/ProtectedRoute'
 // import Dashboard from '../pages/Dashboard/Dashboard'
 import LoginPage from '../pages/Login/LoginPage'
+import HospitalAdminChangePassword from '../pages/Login/HospitalAdminChangePassword'
 
 // Import dashboard components
 import DoctorDashboard from '../pages/dashboards/DoctorDashboard/DoctorDashboard'
@@ -32,21 +33,23 @@ import PrivacyPolicy from '../landing/components/PrivacyPolicy.jsx'
 import TermsOfService from '../landing/components/TermsOfService.jsx'
 
 const AppRoutes = () => {
-  const { isAuthenticated, user } = useSelector(state => state.auth)
+  const { isAuthenticated, user, requiresPasswordChange } = useSelector((state) => state.auth)
 
   const getDefaultRoute = () => {
     if (!isAuthenticated) return '/'
-    
+    if (user?.role === 'ADMIN' && requiresPasswordChange) return '/admin/change-password'
+
     switch (user?.role) {
       case 'DOCTOR': return '/doctor'
       case 'ADMIN': return '/admin'
       case 'NURSE': return '/nurse'
       case 'RECEPTIONIST': return '/receptionist'
       case 'SUPER_ADMIN': return '/super-admin'
-      case 'PATIENT': return '/patient' // NEW: Patient route
+      case 'PATIENT': return '/patient'
       case 'LAB': return '/lab'
       case 'PHARMACY': return '/pharmacy'
       case 'TELEMEDICINE': return '/telemedicine'
+      case 'USER':
       default: return '/login'
     }
   }
@@ -88,7 +91,16 @@ const AppRoutes = () => {
           <DoctorDashboard />
         </ProtectedRoute>
       } />
-      
+
+      <Route
+        path="/admin/change-password"
+        element={
+          <ProtectedRoute requiredRole="ADMIN">
+            <HospitalAdminChangePassword />
+          </ProtectedRoute>
+        }
+      />
+
       <Route path="/admin/*" element={
         <ProtectedRoute requiredRole="ADMIN">
           <AdminDashboard />

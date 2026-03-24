@@ -1,11 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
+import { toast } from 'react-toastify'
 import Modal from '../../../../components/common/Modal/Modal'
-import { API_BASE_URL, API_HEADERS, SUPER_ADMIN_HOSPITALS } from '../../../../config/api'
+import { SUPER_ADMIN_HOSPITALS, SUPER_ADMIN_HOSPITAL_ADMINS_CREATE } from '../../../../config/api'
+import { apiFetch } from '../../../../services/apiClient'
+import { PHONE_REGEX, PASSWORD_MIN_LENGTH } from '../../../../utils/validation'
 
 const HOSPITAL_ADMIN_ENDPOINTS = {
   list: (hospitalId) => `/api/v1/super-admin/hospitals/${hospitalId}/admins`,
-  create: (hospitalId) => `/api/v1/super-admin/hospitals/${hospitalId}/admins`,
+  create: (hospitalId) => SUPER_ADMIN_HOSPITAL_ADMINS_CREATE(hospitalId),
   updateStatus: (adminId) => `/api/v1/super-admin/hospital-admins/${adminId}/status`,
   resetPassword: (adminId) => `/api/v1/super-admin/hospital-admins/${adminId}/reset-password`
 }
@@ -141,12 +144,7 @@ const HospitalAdministratorManagement = () => {
     setHospitalError('')
 
     try {
-      const res = await fetch(`${API_BASE_URL}${SUPER_ADMIN_HOSPITALS}?page=1&limit=100`, {
-        headers: {
-          ...API_HEADERS,
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        }
-      })
+      const res = await apiFetch(`${SUPER_ADMIN_HOSPITALS}?page=1&limit=100`)
       const data = await res.json().catch(() => ({}))
 
       if (!res.ok) {
@@ -179,12 +177,7 @@ const HospitalAdministratorManagement = () => {
     setListError('')
 
     try {
-      const res = await fetch(`${API_BASE_URL}${HOSPITAL_ADMIN_ENDPOINTS.list(hospitalId)}`, {
-        headers: {
-          ...API_HEADERS,
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        }
-      })
+      const res = await apiFetch(HOSPITAL_ADMIN_ENDPOINTS.list(hospitalId))
       const data = await res.json().catch(() => ({}))
 
       if (!res.ok) {
@@ -250,8 +243,10 @@ const HospitalAdministratorManagement = () => {
     if (!email) errors.email = 'Email is required.'
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = 'Enter a valid email address.'
     if (!phone) errors.phone = 'Phone number is required.'
-    else if (!/^\+?[\d\s\-()]{7,20}$/.test(phone)) errors.phone = 'Enter a valid phone number.'
-    if (!password || password.length < 6) errors.password = 'Password must be at least 6 characters.'
+    else if (!PHONE_REGEX.test(phone)) errors.phone = 'Phone must match 10–20 characters (digits, spaces, -, parentheses).'
+    if (!password || password.length < PASSWORD_MIN_LENGTH) {
+      errors.password = `Password must be at least ${PASSWORD_MIN_LENGTH} characters.`
+    }
     if (!formData.hospital_id) errors.hospital_id = 'Please select a hospital.'
 
     return errors
@@ -282,18 +277,12 @@ const HospitalAdministratorManagement = () => {
         phone: formData.phone.trim(),
         first_name: formData.first_name.trim(),
         last_name: formData.last_name.trim(),
-        password: formData.password,
-        hospital_id: hospitalId
+        password: formData.password
       }
 
-      const res = await fetch(`${API_BASE_URL}${HOSPITAL_ADMIN_ENDPOINTS.create(hospitalId)}`, {
+      const res = await apiFetch(HOSPITAL_ADMIN_ENDPOINTS.create(hospitalId), {
         method: 'POST',
-        headers: {
-          ...API_HEADERS,
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(payload)
+        body: payload
       })
       const data = await res.json().catch(() => ({}))
 
@@ -302,6 +291,7 @@ const HospitalAdministratorManagement = () => {
         return
       }
 
+      toast.success(data?.message || 'Hospital administrator created')
       closeCreateModal()
       setPasswordResetResult(null)
       fetchAdmins(hospitalId)
@@ -319,14 +309,9 @@ const HospitalAdministratorManagement = () => {
     setActionLoading((current) => ({ ...current, [loadingKey]: true }))
 
     try {
-      const res = await fetch(requestConfig.url, {
+      const res = await apiFetch(requestConfig.path, {
         method: requestConfig.method || 'POST',
-        headers: {
-          ...API_HEADERS,
-          ...(requestConfig.hasJsonBody ? { 'Content-Type': 'application/json' } : {}),
-          Authorization: `Bearer ${token}`
-        },
-        ...(requestConfig.body ? { body: JSON.stringify(requestConfig.body) } : {})
+        ...(requestConfig.body ? { body: requestConfig.body } : {})
       })
       const data = await res.json().catch(() => ({}))
 
@@ -348,9 +333,8 @@ const HospitalAdministratorManagement = () => {
       adminId,
       'status',
       {
-        url: `${API_BASE_URL}${HOSPITAL_ADMIN_ENDPOINTS.updateStatus(adminId)}`,
+        path: HOSPITAL_ADMIN_ENDPOINTS.updateStatus(adminId),
         method: 'PATCH',
-        hasJsonBody: true,
         body: { status }
       },
       () => {
@@ -369,7 +353,7 @@ const HospitalAdministratorManagement = () => {
       admin.id,
       'reset',
       {
-        url: `${API_BASE_URL}${HOSPITAL_ADMIN_ENDPOINTS.resetPassword(admin.id)}`,
+        path: HOSPITAL_ADMIN_ENDPOINTS.resetPassword(admin.id),
         method: 'POST'
       },
       (data) => {

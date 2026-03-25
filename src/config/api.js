@@ -6,16 +6,16 @@
  */
 export const API_BASE_URL = import.meta.env.DEV
   ? ''
-  : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8060');
+  : (import.meta.env.VITE_API_BASE_URL || 'https://hospital-backend-9mg3.onrender.com');
 
 /** When using ngrok, skip browser warning so API returns JSON instead of HTML interstitial. Empty object when not ngrok = no impact. */
 export const API_HEADERS = (API_BASE_URL && API_BASE_URL.includes('ngrok')) ? { 'ngrok-skip-browser-warning': 'true' } : {};
 
 /** Auth: super-admin login */
-export const AUTH_SUPER_ADMIN_LOGIN = '/api/v1/auth/super-admin/login';
+export const AUTH_SUPER_ADMIN_LOGIN = '/api/v1/auth/login';
 
 /** Auth: hospital-admin login */
-export const AUTH_HOSPITAL_ADMIN_LOGIN = '/api/v1/auth/hospital-admin/login';
+export const AUTH_HOSPITAL_ADMIN_LOGIN = '/api/v1/auth/login';
 
 /** Auth: hospital-admin change password (e.g. after first login with temp password) */
 export const AUTH_HOSPITAL_ADMIN_CHANGE_PASSWORD = '/api/v1/auth/hospital-admin/change-password';

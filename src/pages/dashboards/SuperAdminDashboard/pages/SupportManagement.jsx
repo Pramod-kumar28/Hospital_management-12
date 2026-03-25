@@ -17,6 +17,7 @@ const SupportManagement = () => {
   const [loadingHospitals, setLoadingHospitals] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [showClosedOnly, setShowClosedOnly] = useState(false); // New state for showing only closed tickets
   
   // Form Data States
   const [formData, setFormData] = useState({
@@ -973,6 +974,18 @@ const SupportManagement = () => {
     }
   };
 
+  // Function to handle showing only closed tickets
+  const handleShowClosedTickets = () => {
+    setShowClosedOnly(true);
+    setSearchTerm(''); // Clear search term when showing closed tickets
+  };
+
+  // Function to handle showing all tickets (reset to normal view)
+  const handleShowAllTickets = () => {
+    setShowClosedOnly(false);
+    setSearchTerm('');
+  };
+
   const getStatusBadgeClass = (status) => {
     const statusMap = {
       'OPEN': 'bg-yellow-100 text-yellow-800',
@@ -1008,9 +1021,16 @@ const SupportManagement = () => {
     return hospital ? hospital.name : hospitalId;
   };
 
-  // Filter tickets based on search term
+  // Filter tickets based on search term and closed status filter
   const filteredTickets = tickets.filter(ticket => {
+    // First filter by closed status if showClosedOnly is true
+    if (showClosedOnly && ticket.status !== 'CLOSED') {
+      return false;
+    }
+    
+    // Then filter by search term
     if (!searchTerm) return true;
+    
     const searchLower = searchTerm.toLowerCase();
     const pureNumericId = getPureNumericTicketId(ticket.id);
     const equalFormattedId = formatEqualNumericId(ticket.id);
@@ -1051,9 +1071,13 @@ const SupportManagement = () => {
     <div className="p-6 bg-gray-50 min-h-screen">
       <ToastContainer position="top-right" autoClose={5000} />
       
-      {/* Header */}
+      {/* Header with Buttons */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Support Management</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold text-gray-800">Support Management</h1>
+        
+         
+        </div>
         <button
           onClick={() => setShowCreateModal(true)}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
@@ -1065,6 +1089,30 @@ const SupportManagement = () => {
         </button>
       </div>
 
+      {/* Status Banner - Shows when viewing closed tickets */}
+      {showClosedOnly && (
+        <div className="bg-gray-100 border-l-4 border-gray-500 p-4 mb-6 rounded-r-lg">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-gray-700">
+                Showing only <span className="font-semibold">CLOSED</span> tickets. 
+                <button 
+                  onClick={handleShowAllTickets}
+                  className="ml-2 text-blue-600 hover:text-blue-800 underline font-medium"
+                >
+                  Click here to view all tickets
+                </button>
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Search Bar */}
       <div className="bg-white p-4 rounded-lg border border-gray-200 mb-6">
         <div className="relative">
@@ -1075,7 +1123,7 @@ const SupportManagement = () => {
           </div>
           <input
             type="text"
-            placeholder="Search tickets by ID (12-digit format), subject, status, or hospital..."
+            placeholder={showClosedOnly ? "Search closed tickets by ID, subject, or hospital..." : "Search tickets by ID (12-digit format), subject, status, or hospital..."}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -1141,29 +1189,55 @@ const SupportManagement = () => {
         </div>
       </div>
 
-      {/* Priority Legend */}
-      <div className="bg-white p-3 rounded-lg border border-gray-200 mb-6">
-        <div className="flex items-center gap-4 text-sm">
-          <span className="font-medium text-gray-700">Priority Order:</span>
-          <span className="flex items-center gap-1">
-            <span className="w-3 h-3 rounded-full bg-red-500"></span>
-            <span>URGENT</span>
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-3 h-3 rounded-full bg-orange-500"></span>
-            <span>HIGH</span>
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-3 h-3 rounded-full bg-blue-500"></span>
-            <span>NORMAL</span>
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-3 h-3 rounded-full bg-gray-500"></span>
-            <span>LOW</span>
-          </span>
-        </div>
-      </div>
+    {/* Priority Legend */}
+<div className="bg-white p-3 rounded-lg border border-gray-200 mb-6">
+  <div className="flex items-center gap-4 text-sm">
+    <span className="font-medium text-gray-700">Priority Order:</span>
+    <span className="flex items-center gap-1">
+      <span className="w-3 h-3 rounded-full bg-red-500"></span>
+      <span>URGENT</span>
+    </span>
+    <span className="flex items-center gap-1">
+      <span className="w-3 h-3 rounded-full bg-orange-500"></span>
+      <span>HIGH</span>
+    </span>
+    <span className="flex items-center gap-1">
+      <span className="w-3 h-3 rounded-full bg-blue-500"></span>
+      <span>NORMAL</span>
+    </span>
+    <span className="flex items-center gap-1">
+      <span className="w-3 h-3 rounded-full bg-gray-500"></span>
+      <span>LOW</span>
+    </span>
+  </div>
+</div>
 
+{/* Header with Buttons on Right Side */}
+<div className="flex justify-between items-center mb-6">
+  <h1 className="text-2xl font-bold text-gray-800">Support Management</h1>
+  <div className="flex items-center gap-3">
+    <button
+      onClick={handleShowClosedTickets}
+      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+      title="Show only closed tickets"
+    >
+    
+      Closed Tickets
+    </button>
+    {/* Show All Tickets button - appears when showing closed tickets */}
+    {showClosedOnly && (
+      <button
+        onClick={handleShowAllTickets}
+        className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+        title="Show all tickets"
+      >
+        
+        Show All Tickets
+      </button>
+    )}
+    
+  </div>
+</div>
       {/* Tickets Table */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         {loading ? (
@@ -1172,13 +1246,19 @@ const SupportManagement = () => {
           </div>
         ) : filteredTickets.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500">No support tickets found</p>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="mt-4 text-blue-600 hover:text-blue-800"
-            >
-              Create your first ticket
-            </button>
+            <p className="text-gray-500">
+              {showClosedOnly 
+                ? "No closed tickets found" 
+                : "No support tickets found"}
+            </p>
+            {!showClosedOnly && (
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="mt-4 text-blue-600 hover:text-blue-800"
+              >
+                Create your first ticket
+              </button>
+            )}
           </div>
         ) : (
           <>
@@ -1248,22 +1328,24 @@ const SupportManagement = () => {
                         >
                           View
                         </button>
-                        <button
-                          onClick={() => {
-                            setSelectedTicket(ticket);
-                            setStatusUpdateData({
-                              status: ticket.status || '',
-                              resolution_notes: ticket.resolution_notes || '',
-                              assigned_to_user_id: ticket.assigned_to_user_id || '',
-                              send_email: true,
-                              additional_message: ''
-                            });
-                            setShowEditModal(true);
-                          }}
-                          className="text-green-600 hover:text-green-900"
-                        >
-                          Update Status
-                        </button>
+                        {ticket.status !== 'CLOSED' && (
+                          <button
+                            onClick={() => {
+                              setSelectedTicket(ticket);
+                              setStatusUpdateData({
+                                status: ticket.status || '',
+                                resolution_notes: ticket.resolution_notes || '',
+                                assigned_to_user_id: ticket.assigned_to_user_id || '',
+                                send_email: true,
+                                additional_message: ''
+                              });
+                              setShowEditModal(true);
+                            }}
+                            className="text-green-600 hover:text-green-900"
+                          >
+                            Update Status
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}

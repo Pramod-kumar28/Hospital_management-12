@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 import { motion, useScroll, useSpring, useTransform } from "framer-motion";
-import { ArrowRight, CheckCircle2, Zap } from "lucide-react";
+import { Activity, CheckCircle2, Pill, Stethoscope, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const fadeUp = {
@@ -15,6 +15,24 @@ const fadeUp = {
     },
   }),
 };
+
+const floatingIcons = [
+  {
+    Icon: Stethoscope,
+    className: "hidden md:flex top-24 right-[14%] lg:right-[18%]",
+    delay: 0,
+  },
+  {
+    Icon: Activity,
+    className: "hidden md:flex top-[42%] right-[8%] lg:right-[11%]",
+    delay: 0.8,
+  },
+  {
+    Icon: Pill,
+    className: "hidden md:flex bottom-28 right-[20%] lg:right-[24%]",
+    delay: 1.4,
+  },
+];
 
 const HeroSection = ({ isVisible }) => {
   const sectionRef = useRef(null);
@@ -33,7 +51,7 @@ const HeroSection = ({ isVisible }) => {
   const lineY = useTransform(smoothProgress, [0, 1], [30, -30]);
 
   return (
-    <section ref={sectionRef} className="relative overflow-hidden bg-white pt-4 md:pt-5">
+    <section ref={sectionRef} className="relative overflow-hidden bg-white pt-20 md:pt-[82px]">
       <div className="relative min-h-[640px] overflow-hidden shadow-[0_30px_80px_rgba(0,41,91,0.18)] sm:min-h-[700px] md:min-h-[760px]">
           <img
             src="/assets/images/Hero2.jpg"
@@ -43,6 +61,22 @@ const HeroSection = ({ isVisible }) => {
 
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(1,27,53,0.84)_0%,rgba(1,27,53,0.68)_42%,rgba(1,27,53,0.3)_100%)] sm:bg-[linear-gradient(90deg,rgba(1,27,53,0.86)_0%,rgba(1,27,53,0.72)_34%,rgba(1,27,53,0.38)_58%,rgba(1,27,53,0.12)_100%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(0,94,184,0.35),transparent_28%)]" />
+
+          {floatingIcons.map(({ Icon, className, delay }, index) => (
+            <motion.div
+              key={index}
+              className={`absolute z-10 h-14 w-14 items-center justify-center rounded-2xl border border-white/15 bg-white/10 text-white/85 shadow-[0_18px_45px_rgba(2,34,78,0.16)] backdrop-blur-md ${className}`}
+              animate={{ y: [0, -10, 0], rotate: [0, 1.5, 0] }}
+              transition={{
+                duration: 4.6,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay,
+              }}
+            >
+              <Icon className="h-6 w-6" />
+            </motion.div>
+          ))}
 
           <motion.div
             style={{ y: lineY }}

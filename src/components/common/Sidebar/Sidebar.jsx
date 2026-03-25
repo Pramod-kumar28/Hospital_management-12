@@ -52,6 +52,7 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
     { id: 'doctors', label: 'Doctor Management', icon: 'fa-user-md' },
     { id: 'staff', label: 'Staff Management', icon: 'fa-users' },
     { id: 'departments', label: 'Department Management', icon: 'fa-building' },
+    { id: 'assign-departments', label: 'Department Assignment', icon: 'fa-briefcase' },
     { id: 'appointments', label: 'Appointment Management', icon: 'fa-clipboard-list' },
     { id: 'billing', label: 'Billing & Finance', icon: 'fa-money-bill-wave' },
     { id: 'inpatient', label: 'Inpatient Management', icon: 'fa-bed' },

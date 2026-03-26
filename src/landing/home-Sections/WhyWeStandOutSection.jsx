@@ -90,13 +90,13 @@ export default function WhyWeStandOutSection() {
         </div>
 
         <div className="mt-9 rounded-[1.75rem] border border-sky-100 bg-[#eef6fd] p-2.5 shadow-[0_20px_40px_rgba(0,94,184,0.06)] md:mt-10 md:p-3">
-          <div className="grid gap-2 md:grid-cols-5">
+          <div className="flex gap-2 overflow-x-auto pb-1 md:grid md:grid-cols-5 md:overflow-visible md:pb-0">
             {items.map((item, index) => (
               <button
                 key={item.title}
                 type="button"
                 onClick={() => setActiveIndex(index)}
-                className={`rounded-[1.1rem] px-3 py-3 text-center text-base font-semibold leading-tight transition md:min-h-[82px] md:px-4 md:py-4 md:text-[1rem] ${
+                className={`min-w-[220px] rounded-[1.1rem] px-3 py-3 text-center text-sm font-semibold leading-tight transition md:min-h-[82px] md:min-w-0 md:px-4 md:py-4 md:text-[1rem] ${
                   activeIndex === index
                     ? "bg-white text-[#005EB8] shadow-[0_12px_28px_rgba(0,94,184,0.12)]"
                     : "bg-transparent text-slate-800 hover:bg-white/65"
@@ -126,8 +126,8 @@ export default function WhyWeStandOutSection() {
                 />
               </div>
 
-              <div>
-                <h3 className="text-3xl font-bold leading-tight text-blue-900 md:text-4xl">
+              <div className="min-w-0">
+                <h3 className="text-2xl font-bold leading-tight text-blue-900 md:text-4xl">
                   {activeItem.title}
                 </h3>
 
@@ -135,7 +135,7 @@ export default function WhyWeStandOutSection() {
                   {activeItem.points.map((point) => (
                     <div key={point} className="flex items-start gap-4">
                       <span className="mt-2 h-3 w-3 shrink-0 rounded-full bg-slate-500" />
-                      <p className="text-base leading-6 text-slate-600 md:text-lg md:leading-7">
+                      <p className="text-sm leading-6 text-slate-600 sm:text-base md:text-lg md:leading-7">
                         {point}
                       </p>
                     </div>

@@ -7,6 +7,7 @@ import {
   Send,
   ChevronDown,
 } from "lucide-react";
+import { API_HEADERS, CONTACT_SEND, PUBLIC_API_BASE_URL } from "../../config/api";
 
 const contactCards = [
   {
@@ -88,6 +89,8 @@ export default function Contact() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [openFaq, setOpenFaq] = useState(0);
+  const [submitError, setSubmitError] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -100,10 +103,40 @@ export default function Contact() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitError("");
 
-    setTimeout(() => {
+    const payload = {
+      name: formData.name,
+      fullName: formData.name,
+      full_name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      company: formData.company,
+      hospitalName: formData.company,
+      hospital_name: formData.company,
+      message: formData.message,
+    };
+
+    try {
+      const res = await fetch(`${PUBLIC_API_BASE_URL}${CONTACT_SEND}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...API_HEADERS,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(
+          data?.message || data?.detail || "Unable to send your message right now."
+        );
+      }
+
       setIsSubmitting(false);
-      alert("Thank you for your message! We will get back to you within 24 hours.");
+      setIsSubmitted(true);
       setFormData({
         name: "",
         email: "",
@@ -111,7 +144,10 @@ export default function Contact() {
         company: "",
         message: "",
       });
-    }, 1000);
+    } catch (error) {
+      setIsSubmitting(false);
+      setSubmitError(error.message || "Something went wrong. Please try again.");
+    }
   };
 
   return (
@@ -208,6 +244,7 @@ export default function Contact() {
               </p>
             </div>
 
+            {!isSubmitted ? (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid gap-6 md:grid-cols-2">
                 <Field
@@ -266,6 +303,12 @@ export default function Contact() {
                 />
               </div>
 
+              {submitError ? (
+                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {submitError}
+                </div>
+              ) : null}
+
               <div className="flex flex-col items-start gap-4 pt-2 sm:flex-row sm:items-center sm:justify-between">
                 <button
                   type="submit"
@@ -295,6 +338,17 @@ export default function Contact() {
                 </p>
               </div>
             </form>
+            ) : (
+              <div className="rounded-[1.6rem] border border-emerald-200 bg-emerald-50 p-8 text-center">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-white shadow-[0_16px_32px_rgba(16,185,129,0.24)]">
+                  <Send className="h-7 w-7" />
+                </div>
+                <h3 className="mt-5 text-2xl font-bold text-slate-900">Message Sent Successfully</h3>
+                <p className="mt-3 text-base leading-7 text-slate-600">
+                  Thank you for contacting us. Our team will get back to you within 24 hours.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </section>

@@ -4,9 +4,11 @@
  * In dev: empty string so requests use the Vite dev server origin and `/api` is proxied to the backend (avoids CORS).
  * In production: set `VITE_API_BASE_URL` (e.g. http://localhost:8060).
  */
+// In local dev, use Vite proxy (/api -> Render backend) to avoid browser CORS.
+// In production builds, call backend directly.
 export const API_BASE_URL = import.meta.env.DEV
   ? ''
-  : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8060');
+  : (import.meta.env.VITE_API_BASE_URL || 'https://hospital-backend-9mg3.onrender.com').replace(/\/$/, '');
 
 export const PUBLIC_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://hospital-backend-9mg3.onrender.com';
 
@@ -16,10 +18,10 @@ export const PUBLIC_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https:/
 export const API_HEADERS = (API_BASE_URL && API_BASE_URL.includes('ngrok')) ? { 'ngrok-skip-browser-warning': 'true' } : {};
 
 /** Auth: super-admin login */
-export const AUTH_SUPER_ADMIN_LOGIN = '/api/v1/auth/super-admin/login';
+export const AUTH_SUPER_ADMIN_LOGIN = '/api/v1/auth/login';
 
 /** Auth: hospital-admin login */
-export const AUTH_HOSPITAL_ADMIN_LOGIN = '/api/v1/auth/hospital-admin/login';
+export const AUTH_HOSPITAL_ADMIN_LOGIN = '/api/v1/auth/login';
 
 /** Auth: hospital-admin change password (e.g. after first login with temp password) */
 export const AUTH_HOSPITAL_ADMIN_CHANGE_PASSWORD = '/api/v1/auth/hospital-admin/change-password';
@@ -63,3 +65,8 @@ export const DEMO_REQUEST = '/demo/request';
 
 /** Public contact form */
 export const CONTACT_SEND = '/contact/send';
+/** Hospital Admin: dashboard endpoints */
+export const HOSPITAL_ADMIN_DASHBOARD_OVERVIEW = '/api/v1/hospital-admin/dashboard/overview';
+export const HOSPITAL_ADMIN_DASHBOARD_APPOINTMENT_STATS = '/api/v1/hospital-admin/dashboard/appointment-stats';
+export const HOSPITAL_ADMIN_DASHBOARD_STAFF_STATS = '/api/v1/hospital-admin/dashboard/staff-stats';
+

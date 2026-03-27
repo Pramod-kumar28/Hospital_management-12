@@ -206,16 +206,16 @@ export default function PremiumHMSOrbit() {
                   </div>
                 </div>
 
-                <div className="p-7 md:p-8">
+                <div className="p-5 sm:p-6 md:p-8">
                   <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#005EB8] md:text-lg">
                     {activeModule.label} Module
                   </p>
 
-                  <p className="mt-5 text-base leading-8 text-slate-600 md:text-[1.05rem]">
+                  <p className="mt-4 text-sm leading-7 text-slate-600 sm:text-base md:mt-5 md:text-[1.05rem] md:leading-8">
                     {activeModule.description}
                   </p>
 
-                  <div className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                  <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                     {activeModule.points.map((point) => (
                       <div
                         key={point}
@@ -230,8 +230,8 @@ export default function PremiumHMSOrbit() {
             </AnimatePresence>
           </div>
 
-          <div className="flex justify-center lg:justify-end">
-            <div className="relative h-[280px] w-[280px] sm:h-[360px] sm:w-[360px] md:h-[460px] md:w-[460px] lg:h-[560px] lg:w-[560px] xl:h-[680px] xl:w-[680px]">
+          <div className="hidden justify-center md:flex lg:justify-end">
+            <div className="relative h-[420px] w-[420px] lg:h-[560px] lg:w-[560px] xl:h-[680px] xl:w-[680px]">
               <svg viewBox={`0 0 ${size} ${size}`} className="absolute inset-0 h-full w-full">
                 <circle
                   cx={center}
@@ -302,6 +302,66 @@ export default function PremiumHMSOrbit() {
                         {item.label}
                       </p>
                       <p className="text-[11px] text-gray-500 lg:text-sm">{item.sub}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex justify-center md:hidden">
+            <div className="relative h-[300px] w-[300px]">
+              <svg viewBox={`0 0 ${size} ${size}`} className="absolute inset-0 h-full w-full">
+                <circle
+                  cx={center}
+                  cy={center}
+                  r={radius}
+                  fill="none"
+                  stroke="#cbd5e1"
+                  strokeWidth="3"
+                  strokeDasharray="6 6"
+                />
+              </svg>
+
+              <div
+                className="absolute z-10 flex items-center justify-center"
+                style={{
+                  left: "50%",
+                  top: "50%",
+                  width: "34%",
+                  height: "34%",
+                  transform: "translate(-50%, -50%)",
+                }}
+              >
+                <div className="flex h-full w-full flex-col items-center justify-center rounded-full border border-gray-100 bg-white px-2 text-center shadow-[0_20px_50px_rgba(0,0,0,0.1)]">
+                  <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-blue-50">
+                    <UserCog className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <h3 className="text-[10px] font-bold leading-tight text-blue-900">
+                    HMS Control Hub
+                  </h3>
+                </div>
+              </div>
+
+              {modules.map((item, i) => {
+                const point = getOrbitPoint(i, modules.length);
+                const Icon = item.icon;
+                const isActive = activeIndex === i;
+
+                return (
+                  <button
+                    key={item.label}
+                    type="button"
+                    onClick={() => setActiveIndex(i)}
+                    className="absolute flex flex-col items-center"
+                    style={{
+                      left: point.left,
+                      top: point.top,
+                      transform: "translate(-50%, -50%)",
+                    }}
+                  >
+                    <div className={`flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br ${item.color} shadow-lg transition-all duration-300 ${isActive ? "scale-110 ring-4 ring-white" : ""}`}>
+                      <Icon className="h-5 w-5 text-white" />
                     </div>
                   </button>
                 );

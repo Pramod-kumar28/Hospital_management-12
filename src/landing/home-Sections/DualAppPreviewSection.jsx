@@ -60,13 +60,13 @@ function DeviceMock({ accent, accentSoft, feature, slideKey }) {
   return (
     <div className="flex flex-col items-center">
       <div
-        className="relative flex h-[360px] w-[188px] justify-center rounded-[2rem] border-4 border-slate-900 bg-slate-50 shadow-[10px_10px_12px_2px_rgba(209,218,218,0.9)]"
+        className="relative flex h-[330px] w-[172px] justify-center rounded-[2rem] border-4 border-slate-900 bg-slate-50 shadow-[10px_10px_12px_2px_rgba(209,218,218,0.9)] sm:h-[360px] sm:w-[188px]"
       >
         <span className="absolute top-0 h-3 w-24 rounded-b-2xl bg-slate-900" />
         <span className="absolute -right-[10px] top-20 h-8 rounded-md border-4 border-slate-900" />
         <span className="absolute -right-[10px] bottom-28 h-10 rounded-md border-4 border-slate-900" />
 
-        <div className="mt-6 flex h-[318px] w-[164px] flex-col overflow-hidden rounded-[1.5rem] bg-white">
+        <div className="mt-5 flex h-[292px] w-[148px] flex-col overflow-hidden rounded-[1.5rem] bg-white sm:mt-6 sm:h-[318px] sm:w-[164px]">
           <div className="relative flex-1 overflow-hidden bg-[linear-gradient(180deg,#ffffff_0%,#f3f9ff_55%,#edf7ff_100%)]">
             <AnimatePresence mode="wait">
               <motion.div
@@ -75,21 +75,21 @@ function DeviceMock({ accent, accentSoft, feature, slideKey }) {
                 animate={{ x: 0, opacity: 1 }}
                 exit={{ x: -64, opacity: 0 }}
                 transition={{ duration: 0.52, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute inset-0 flex h-full flex-col px-4 pb-4 pt-5"
+                className="absolute inset-0 flex h-full flex-col px-3.5 pb-3.5 pt-4 sm:px-4 sm:pb-4 sm:pt-5"
               >
                 <div className="mt-2">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-sky-500">
                     Digital care
                   </p>
-                  <h3 className="mt-3 text-[17px] font-bold leading-6 text-slate-900">
+                  <h3 className="mt-2.5 text-[15px] font-bold leading-5 text-slate-900 sm:text-[17px] sm:leading-6">
                     {feature.title}
                   </h3>
-                  <p className="mt-4 text-[12px] leading-6 text-slate-600">
+                  <p className="mt-3 text-[11px] leading-5 text-slate-600 sm:mt-4 sm:text-[12px] sm:leading-6">
                     {feature.text}
                   </p>
                 </div>
 
-                <div className="mt-5 grid grid-cols-2 gap-2">
+                <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-5">
                   {feature.tags?.map((tag) => (
                     <div
                       key={tag}
@@ -100,7 +100,7 @@ function DeviceMock({ accent, accentSoft, feature, slideKey }) {
                   ))}
                 </div>
 
-                <div className="mt-4 space-y-2.5">
+                <div className="mt-3.5 space-y-2 sm:mt-4 sm:space-y-2.5">
                   <div className="rounded-2xl bg-white/95 px-3 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.06)]">
                     <div className={`h-2 rounded-full ${accentSoft}`} />
                     <div className="mt-2 h-2 w-4/5 rounded-full bg-slate-100" />
@@ -111,7 +111,7 @@ function DeviceMock({ accent, accentSoft, feature, slideKey }) {
                   </div>
                 </div>
 
-                <div className="mt-auto pt-3">
+                <div className="mt-auto pt-2.5 sm:pt-3">
                   <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
                     <span>Connected</span>
                     <span>Care Flow</span>

@@ -10,6 +10,10 @@ export const API_BASE_URL = import.meta.env.DEV
   ? ''
   : (import.meta.env.VITE_API_BASE_URL || 'https://hospital-backend-9mg3.onrender.com').replace(/\/$/, '');
 
+export const PUBLIC_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://hospital-backend-9mg3.onrender.com';
+
+
+
 /** When using ngrok, skip browser warning so API returns JSON instead of HTML interstitial. Empty object when not ngrok = no impact. */
 export const API_HEADERS = (API_BASE_URL && API_BASE_URL.includes('ngrok')) ? { 'ngrok-skip-browser-warning': 'true' } : {};
 
@@ -56,6 +60,11 @@ export const SUPER_ADMIN_SUPPORT_TICKETS = '/api/v1/super-admin/support/tickets'
 export const SUPER_ADMIN_SUPPORT_TICKET_STATUS = (ticketId) => `/api/v1/super-admin/support/tickets/${ticketId}/status`;
 export const SUPER_ADMIN_SUPPORT_TICKET_DETAILS = (ticketId) => `/api/v1/super-admin/support/tickets/${ticketId}`;
 
+/** Public demo request form */
+export const DEMO_REQUEST = '/demo/request';
+
+/** Public contact form */
+export const CONTACT_SEND = '/contact/send';
 /** Hospital Admin: dashboard endpoints */
 export const HOSPITAL_ADMIN_DASHBOARD_OVERVIEW = '/api/v1/hospital-admin/dashboard/overview';
 export const HOSPITAL_ADMIN_DASHBOARD_APPOINTMENT_STATS = '/api/v1/hospital-admin/dashboard/appointment-stats';

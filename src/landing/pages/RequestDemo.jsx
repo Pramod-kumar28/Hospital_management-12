@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { CalendarDays, Building2, Users, Stethoscope, CheckCircle2, MonitorSmartphone } from "lucide-react";
+import { API_HEADERS, DEMO_REQUEST, PUBLIC_API_BASE_URL } from "../../config/api";
 
 const modules = [
   "Patient Management",
@@ -34,6 +35,7 @@ export default function RequestDemo() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -49,14 +51,55 @@ export default function RequestDemo() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitError("");
 
-    window.setTimeout(() => {
+    const payload = {
+      fullName: formData.fullName,
+      full_name: formData.fullName,
+      workEmail: formData.workEmail,
+      work_email: formData.workEmail,
+      email: formData.workEmail,
+      phone: formData.phone,
+      hospitalName: formData.hospitalName,
+      hospital_name: formData.hospitalName,
+      role: formData.role,
+      teamSize: formData.teamSize,
+      team_size: formData.teamSize,
+      preferredDate: formData.preferredDate,
+      preferred_date: formData.preferredDate,
+      preferredMode: formData.preferredMode,
+      preferred_mode: formData.preferredMode,
+      message: formData.message,
+      modules: formData.modules,
+    };
+
+    try {
+      const res = await fetch(`${PUBLIC_API_BASE_URL}${DEMO_REQUEST}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...API_HEADERS,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(
+          data?.message || data?.detail || "Unable to submit your demo request right now."
+        );
+      }
+
       setIsSubmitting(false);
       setIsSubmitted(true);
-    }, 900);
+    } catch (error) {
+      setIsSubmitting(false);
+      setSubmitError(error.message || "Something went wrong. Please try again.");
+    }
   };
 
   return (
@@ -248,6 +291,12 @@ export default function RequestDemo() {
                     className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
                   />
                 </Field>
+
+                {submitError ? (
+                  <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {submitError}
+                  </div>
+                ) : null}
 
                 <button
                   type="submit"

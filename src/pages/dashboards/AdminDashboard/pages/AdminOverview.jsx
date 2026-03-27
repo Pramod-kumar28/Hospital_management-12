@@ -1,82 +1,319 @@
-import React, { useState, useEffect } from 'react'
-import LoadingSpinner from '../../../../components/common/LoadingSpinner/LoadingSpinner'
+import React, { useState, useEffect } from 'react';
+import LoadingSpinner from '../../../../components/common/LoadingSpinner/LoadingSpinner';
+import { apiFetch } from '../../../../services/apiClient';
 
 const AdminOverview = ({ setActivePage }) => {
-  const [loading, setLoading] = useState(true)
-  const [dashboardData, setDashboardData] = useState({})
+  const [loading, setLoading] = useState(true);
+  const [warning, setWarning] = useState('');
+  const [dashboardData, setDashboardData] = useState({
+    // Will be filled from /overview
+    dashboard_type: '',
+    total_hospitals: 0,
+    active_hospitals: 0,
+    total_admins: 0,
+    active_admins: 0,
+    total_patients: 0,
+
+    // Hospital Admin dashboard OVERVIEW (nested metrics)
+    patient_metrics: {
+      total_patients: 0,
+      active_patients: 0,
+      patient_activity_rate: 0,
+    },
+    staff_metrics: {
+      total_staff: 0,
+      total_doctors: 0,
+      active_doctors: 0,
+      doctor_utilization_rate: 0,
+    },
+    appointment_metrics: {
+      todays_appointments: 0,
+      monthly_appointments: 0,
+      completed_appointments: 0,
+      appointment_completion_rate: 0,
+    },
+    bed_metrics: {
+      total_beds: 0,
+      occupied_beds: 0,
+      available_beds: 0,
+      bed_occupancy_rate: 0,
+      current_admissions: 0,
+      todays_admissions: 0,
+      todays_discharges: 0,
+    },
+    facility_metrics: {
+      total_departments: 0,
+      total_wards: 0,
+    },
+    revenue_metrics: {
+      monthly_consultation_revenue: 0,
+      monthly_payments: 0,
+      total_monthly_revenue: 0,
+    },
+    recent_activity: [],
+
+    // Will be filled from /appointment-stats
+    appointment_report_type: '',
+    total_appointments: 0,
+    appointments_today: 0,
+    appointments_this_week: 0,
+    appointments_by_status: {},
+    appointments_by_department: {},
+    // Will be filled from /staff-stats
+    staff_report_type: '',
+    total_staff: 0,
+    active_staff: 0,
+    staff_by_role: {},
+    staff_by_department: {},
+    // Keep mock critical alerts
+    criticalAlerts: [
+      { id: 1, type: 'bed', severity: 'high', message: 'ICU beds at 95% capacity', time: '2 hours ago' },
+      { id: 2, type: 'staff', severity: 'medium', message: '3 nurses on leave tomorrow', time: '4 hours ago' },
+      { id: 3, type: 'equipment', severity: 'low', message: 'MRI maintenance due in 3 days', time: '1 day ago' }
+    ],
+  });
 
   useEffect(() => {
-    loadDashboardData()
-  }, [])
+    loadDashboardData();
+  }, []);
 
   const loadDashboardData = async () => {
-    setLoading(true)
-    setTimeout(() => {
-      setDashboardData({
-        metrics: {
-          totalPatientsToday: 42,
-          totalPatientsMonth: 1250,
-          activeDoctors: 28,
-          appointmentsScheduled: 156,
-          revenue: 125000,
-          bedOccupancy: 78,
-          availableBeds: 22,
-          pendingBills: 85000,
-          avgWaitTime: 24,
-          emergencyCases: 8
-        },
-        criticalAlerts: [
-          { id: 1, type: 'bed', severity: 'high', message: 'ICU beds at 95% capacity', time: '2 hours ago' },
-          { id: 2, type: 'staff', severity: 'medium', message: '3 nurses on leave tomorrow', time: '4 hours ago' },
-          { id: 3, type: 'equipment', severity: 'low', message: 'MRI maintenance due in 3 days', time: '1 day ago' }
-        ],
-        appointments: [
-          { id: 'APT-3001', patient: 'Patient 1', doctor: 'Dr. Meena Rao', dateTime: '2023-10-15 10:30 AM', status: 'Confirmed', reason: 'Routine Checkup' },
-          { id: 'APT-3002', patient: 'Patient 2', doctor: 'Dr. Sharma', dateTime: '2023-10-15 11:00 AM', status: 'Pending', reason: 'Fever' }
-        ],
-        departments: [
-          { id: 'DEPT-001', icon: "fas fa-heartbeat", name: 'Cardiology', head: 'Dr. Meena Rao', doctors: 5, staff: 12, occupancy: 92 },
-          { id: 'DEPT-002', icon: "fas fa-bone", name: 'Orthopedics', head: 'Dr. Vivek Sharma', doctors: 4, staff: 8, occupancy: 65 },
-          
-        ],
-        financialSummary: {
-          revenueToday: 125000,
-          expensesToday: 85000,
-          pendingClaims: 120000,
-          collectedToday: 75000
-        },
-        staffStatus: {
-          onDuty: 145,
-          onLeave: 12,
-          availableShifts: 8,
-          pendingRequests: 5
+    setLoading(true);
+    setWarning('');
+
+    try {
+      const unwrap = (json) => json?.data ?? json ?? {};
+
+      const toDictOfNumbers = (maybeObj) => {
+        if (!maybeObj || typeof maybeObj !== 'object' || Array.isArray(maybeObj)) return {};
+        return Object.fromEntries(
+          Object.entries(maybeObj).map(([k, v]) => [k, typeof v === 'number' ? v : Number(v) || 0])
+        );
+      };
+
+      const parseAppointmentStats = (raw) => {
+        const reportType = raw?.report_type ?? raw?.reportType ?? '';
+
+        // Flat shape
+        if (raw?.total_appointments !== undefined || raw?.appointments_today !== undefined) {
+          return {
+            appointment_report_type: reportType,
+            total_appointments: raw?.total_appointments ?? 0,
+            appointments_today: raw?.appointments_today ?? 0,
+            appointments_this_week: raw?.appointments_this_week ?? 0,
+            appointments_by_status: toDictOfNumbers(raw?.appointments_by_status),
+            appointments_by_department: toDictOfNumbers(raw?.appointments_by_department),
+          };
         }
-      })
-      setLoading(false)
-    }, 1000)
-  }
+
+        // Nested shape (as seen in your validation error)
+        const overall = raw?.overall_statistics ?? {};
+        const time = raw?.time_period_breakdown ?? {};
+        const departmentBreakdown = raw?.department_breakdown;
+
+        const appointments_by_status = {
+          completed: overall?.completed_appointments ?? 0,
+          cancelled: overall?.cancelled_appointments ?? 0,
+          no_show: overall?.no_show_appointments ?? 0,
+          pending: overall?.pending_appointments ?? 0,
+          emergency: overall?.emergency_appointments ?? 0,
+        };
+
+        let appointments_by_department = {};
+        if (departmentBreakdown) {
+          if (typeof departmentBreakdown === 'object' && !Array.isArray(departmentBreakdown)) {
+            // Already a dict
+            appointments_by_department = toDictOfNumbers(departmentBreakdown);
+          } else if (Array.isArray(departmentBreakdown)) {
+            // Array entries
+            appointments_by_department = Object.fromEntries(
+              departmentBreakdown
+                .map((item) => {
+                  const dept =
+                    item?.department ??
+                    item?.department_name ??
+                    item?.name ??
+                    item?.dept ??
+                    item?.department_id;
+                  const count = item?.total_appointments ?? item?.total ?? item?.count ?? 0;
+                  return dept ? [String(dept), Number(count) || 0] : null;
+                })
+                .filter(Boolean)
+            );
+          }
+        }
+
+        return {
+          appointment_report_type: reportType,
+          total_appointments: overall?.total_appointments ?? 0,
+          appointments_today: time?.today?.total ?? 0,
+          appointments_this_week: time?.this_week?.total ?? 0,
+          appointments_by_status,
+          appointments_by_department,
+        };
+      };
+
+      const parseStaffStats = (raw) => {
+        const reportType = raw?.report_type ?? raw?.reportType ?? '';
+        const summary = raw?.summary ?? {};
+        const roleBreakdown = Array.isArray(raw?.role_breakdown) ? raw.role_breakdown : [];
+        const departmentDistribution = Array.isArray(raw?.department_distribution) ? raw.department_distribution : [];
+
+        const staff_by_role = Object.fromEntries(
+          roleBreakdown
+            .map((item) => {
+              const role = item?.role ?? item?.name ?? item?.position ?? null;
+              const count = item?.active_count ?? item?.total_count ?? item?.total ?? item?.count ?? 0;
+              return role ? [String(role), Number(count) || 0] : null;
+            })
+            .filter(Boolean)
+        );
+
+        const staff_by_department = Object.fromEntries(
+          departmentDistribution
+            .map((item) => {
+              const dept = item?.department ?? item?.department_name ?? item?.name ?? null;
+              const count = item?.active_count ?? item?.total_count ?? item?.total ?? item?.count ?? 0;
+              return dept ? [String(dept), Number(count) || 0] : null;
+            })
+            .filter(Boolean)
+        );
+
+        return {
+          staff_report_type: reportType,
+          total_staff: summary?.total_staff ?? 0,
+          active_staff: summary?.active_staff ?? 0,
+          staff_by_role,
+          staff_by_department,
+        };
+      };
+
+      const [overviewRes, appointmentRes, staffRes] = await Promise.allSettled([
+        apiFetch('/api/v1/hospital-admin/dashboard/overview'),
+        apiFetch('/api/v1/hospital-admin/dashboard/appointment-stats'),
+        apiFetch('/api/v1/hospital-admin/dashboard/staff-stats'),
+      ]);
+
+      const warnings = [];
+      let overview = {};
+      let appointmentRaw = null;
+      let staffRaw = null;
+
+      if (overviewRes.status === 'fulfilled') {
+        if (overviewRes.value.ok) {
+          overview = unwrap(await overviewRes.value.json().catch(() => ({})));
+        } else {
+          warnings.push(`Overview failed (${overviewRes.value.status})`);
+        }
+      } else {
+        warnings.push('Overview request failed');
+      }
+
+      if (appointmentRes.status === 'fulfilled') {
+        if (appointmentRes.value.ok) {
+          appointmentRaw = unwrap(await appointmentRes.value.json().catch(() => ({})));
+        } else {
+          warnings.push(`Appointment stats failed (${appointmentRes.value.status})`);
+        }
+      } else {
+        warnings.push('Appointment stats request failed');
+      }
+
+      if (staffRes.status === 'fulfilled') {
+        if (staffRes.value.ok) {
+          staffRaw = unwrap(await staffRes.value.json().catch(() => ({})));
+        } else {
+          warnings.push(`Staff stats failed (${staffRes.value.status})`);
+        }
+      } else {
+        warnings.push('Staff stats request failed');
+      }
+
+      const appointmentParsed = appointmentRaw ? parseAppointmentStats(appointmentRaw) : null;
+      const staffParsed = staffRaw ? parseStaffStats(staffRaw) : null;
+
+      setDashboardData((prev) => ({
+        ...prev,
+        // Overview fields
+        dashboard_type: overview?.dashboard_type ?? '',
+        total_hospitals: overview?.total_hospitals ?? 0, // not provided by your current backend overview payload
+        active_hospitals: overview?.active_hospitals ?? 0, // not provided by your current backend overview payload
+        total_admins: overview?.total_admins ?? 0, // not provided by your current backend overview payload
+        active_admins: overview?.active_admins ?? 0, // not provided by your current backend overview payload
+
+        total_patients: overview?.patient_metrics?.total_patients ?? 0,
+
+        patient_metrics: overview?.patient_metrics ?? prev.patient_metrics,
+        staff_metrics: overview?.staff_metrics ?? prev.staff_metrics,
+        appointment_metrics: overview?.appointment_metrics ?? prev.appointment_metrics,
+        bed_metrics: overview?.bed_metrics ?? prev.bed_metrics,
+        facility_metrics: overview?.facility_metrics ?? prev.facility_metrics,
+        revenue_metrics: overview?.revenue_metrics ?? prev.revenue_metrics,
+        recent_activity: Array.isArray(overview?.recent_activity) ? overview.recent_activity : prev.recent_activity,
+
+        // Appointment fields
+        appointment_report_type: appointmentParsed?.appointment_report_type ?? '',
+        total_appointments: appointmentParsed?.total_appointments ?? 0,
+        // Fallback to overview metrics if the appointment-stats parsing fails/changes
+        appointments_today: appointmentParsed?.appointments_today ?? overview?.appointment_metrics?.todays_appointments ?? 0,
+        appointments_this_week: appointmentParsed?.appointments_this_week ?? 0,
+        appointments_by_status: appointmentParsed?.appointments_by_status ?? {},
+        appointments_by_department: appointmentParsed?.appointments_by_department ?? {},
+
+        // Staff fields
+        staff_report_type: staffParsed?.staff_report_type ?? '',
+        total_staff: staffParsed?.total_staff ?? overview?.staff_metrics?.total_staff ?? 0,
+        active_staff: staffParsed?.active_staff ?? overview?.staff_metrics?.total_staff ?? 0,
+        staff_by_role: staffParsed?.staff_by_role ?? {},
+        staff_by_department: staffParsed?.staff_by_department ?? {},
+      }));
+
+      if (warnings.length) setWarning(warnings.join(' • '));
+    } catch (err) {
+      setWarning(err.message || 'An error occurred while loading dashboard data.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handlePageChange = (page) => {
-    setActivePage(page)
-  }
+    setActivePage(page);
+  };
 
   const handleAlertClick = (alertType) => {
     switch (alertType) {
       case 'bed':
-        setActivePage('inpatient')
-        break
+        setActivePage('inpatient');
+        break;
       case 'staff':
-        setActivePage('staff')
-        break
+        setActivePage('staff');
+        break;
       case 'equipment':
-        setActivePage('settings')
-        break
+        setActivePage('settings');
+        break;
       default:
-        setActivePage('dashboard')
+        setActivePage('dashboard');
     }
-  }
+  };
 
-  if (loading) return <LoadingSpinner />
+  if (loading) return <LoadingSpinner />;
+
+  // Compute derived values
+  const staffOnLeave = dashboardData.total_staff - dashboardData.active_staff;
+  const topStaffRoles = Object.entries(dashboardData.staff_by_role)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3);
+  const topStaffDepts = Object.entries(dashboardData.staff_by_department)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3);
+  const totalAppointments = dashboardData.total_appointments;
+  const appointmentsToday = dashboardData.appointments_today;
+  const appointmentsThisWeek = dashboardData.appointments_this_week;
+  const statusBreakdown = Object.entries(dashboardData.appointments_by_status);
+  const topAppointmentDepts = Object.entries(dashboardData.appointments_by_department)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3);
+  const percent = (num, den) => (den > 0 ? Math.min(100, Math.max(0, (num / den) * 100)) : 0);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -86,7 +323,29 @@ const AdminOverview = ({ setActivePage }) => {
           <h2 className="text-2xl font-semibold text-gray-700">
             Dashboard Overview
           </h2>
-            
+          {dashboardData.dashboard_type ? (
+            <p className="text-sm text-gray-500 mt-1">
+              Type: <span className="font-medium text-gray-700">{dashboardData.dashboard_type}</span>
+            </p>
+          ) : null}
+          {(dashboardData.staff_report_type || dashboardData.appointment_report_type) ? (
+            <p className="text-xs text-gray-500 mt-1">
+              {dashboardData.staff_report_type ? `Staff: ${dashboardData.staff_report_type}` : null}
+              {dashboardData.staff_report_type && dashboardData.appointment_report_type ? ' • ' : null}
+              {dashboardData.appointment_report_type ? `Appointments: ${dashboardData.appointment_report_type}` : null}
+            </p>
+          ) : null}
+          {warning ? (
+            <div className="mt-2 flex items-center gap-3">
+              <p className="text-sm text-amber-700">{warning}</p>
+              <button
+                onClick={loadDashboardData}
+                className="px-3 py-1.5 bg-amber-100 text-amber-800 rounded-lg hover:bg-amber-200 transition-colors text-xs font-medium"
+              >
+                Retry
+              </button>
+            </div>
+          ) : null}
         </div>
         <div className="flex gap-2">
           <button
@@ -106,8 +365,10 @@ const AdminOverview = ({ setActivePage }) => {
 
       {/* Critical Alerts Banner */}
       {dashboardData.criticalAlerts && dashboardData.criticalAlerts.length > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 cursor-pointer hover:bg-red-100 transition-colors"
-             onClick={() => handleAlertClick(dashboardData.criticalAlerts[0].type)}>
+        <div
+          className="bg-red-50 border border-red-200 rounded-xl p-4 cursor-pointer hover:bg-red-100 transition-colors"
+          onClick={() => handleAlertClick(dashboardData.criticalAlerts[0].type)}
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <i className="fas fa-exclamation-triangle text-red-500 text-xl mr-3"></i>
@@ -118,10 +379,10 @@ const AdminOverview = ({ setActivePage }) => {
                 </p>
               </div>
             </div>
-            <button 
+            <button
               onClick={(e) => {
-                e.stopPropagation()
-                handlePageChange('reports')
+                e.stopPropagation();
+                handlePageChange('reports');
               }}
               className="text-red-600 hover:text-red-800 text-sm font-medium"
             >
@@ -131,209 +392,151 @@ const AdminOverview = ({ setActivePage }) => {
         </div>
       )}
 
-      {/* Metrics Grid with New Card Styling */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Emergency Cases */}
-        <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-             onClick={() => handlePageChange('inpatient')}>
-          <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-transparent pointer-events-none" />
-          
-          <span className="absolute top-4 right-4 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded">
-            +2
-          </span>
-          
+      {/* Metrics Grid (6 fields) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Total Hospitals */}
+        <div
+          className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => handlePageChange('hospitals')}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent pointer-events-none" />
           <div className="relative flex justify-between items-end">
             <div>
-              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-red-500 mb-3">
-                <i className="fas fa-ambulance text-white"></i>
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-500 mb-3">
+                <i className="fas fa-hospital text-white"></i>
               </div>
-              <p className="text-sm text-gray-500">Emergency Cases</p>
-              <p className="text-2xl font-bold text-gray-900">{dashboardData.metrics.emergencyCases}</p>
-              <p className="text-xs text-gray-400 mt-1">from yesterday</p>
+              <p className="text-sm text-gray-500">Total Hospitals</p>
+              <p className="text-2xl font-bold text-gray-900">{dashboardData.total_hospitals}</p>
+              <p className="text-xs text-gray-400 mt-1">across network</p>
             </div>
-            
-            {/* mini line chart */}
             <svg width="70" height="40" viewBox="0 0 70 40">
               <polyline
                 points="0,30 12,25 24,28 36,22 48,24 60,20"
                 fill="none"
-                stroke="#f87171"
+                stroke="#3b82f6"
                 strokeWidth="2"
               />
             </svg>
           </div>
         </div>
 
-        {/* Available Beds */}
-        <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-             onClick={() => handlePageChange('inpatient')}>
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent pointer-events-none" />
-          
+        {/* Active Hospitals */}
+        <div
+          className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => handlePageChange('hospitals')}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent pointer-events-none" />
           <div className="relative flex justify-between items-end">
             <div>
-              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-500 mb-3">
-                <i className="fas fa-procedures text-white"></i>
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-green-500 mb-3">
+                <i className="fas fa-check-circle text-white"></i>
               </div>
-              <p className="text-sm text-gray-500">Available Beds</p>
-              <p className="text-2xl font-bold text-gray-900">{dashboardData.metrics.availableBeds}</p>
-              <p className="text-xs text-gray-400 mt-1">of 100 beds</p>
+              <p className="text-sm text-gray-500">Active Hospitals</p>
+              <p className="text-2xl font-bold text-gray-900">{dashboardData.active_hospitals}</p>
+              <p className="text-xs text-gray-400 mt-1">currently operational</p>
             </div>
-            
-            {/* mini bars */}
             <div className="flex items-end gap-1 h-14">
-              <div className="w-1.5 h-8 bg-blue-300 rounded"></div>
-              <div className="w-1.5 h-10 bg-blue-400 rounded"></div>
-              <div className="w-1.5 h-6 bg-blue-300 rounded"></div>
-              <div className="w-1.5 h-12 bg-blue-500 rounded"></div>
-              <div className="w-1.5 h-9 bg-blue-400 rounded"></div>
+              <div className="w-1.5 h-8 bg-green-300 rounded"></div>
+              <div className="w-1.5 h-10 bg-green-400 rounded"></div>
+              <div className="w-1.5 h-6 bg-green-300 rounded"></div>
+              <div className="w-1.5 h-12 bg-green-500 rounded"></div>
+              <div className="w-1.5 h-9 bg-green-400 rounded"></div>
             </div>
           </div>
         </div>
 
-        {/* Avg Wait Time */}
-        <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-yellow-50 to-transparent pointer-events-none" />
-          
-          <span className="absolute top-4 right-4 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded">
-            -5 min
-          </span>
-          
+        {/* Total Admins */}
+        <div
+          className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => handlePageChange('admins')}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent pointer-events-none" />
           <div className="relative flex justify-between items-end">
             <div>
-              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-yellow-500 mb-3">
-                <i className="fas fa-clock text-white"></i>
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-purple-500 mb-3">
+                <i className="fas fa-user-shield text-white"></i>
               </div>
-              <p className="text-sm text-gray-500">Avg Wait Time</p>
-              <p className="text-2xl font-bold text-gray-900">{dashboardData.metrics.avgWaitTime} min</p>
-              <p className="text-xs text-gray-400 mt-1">from last week</p>
+              <p className="text-sm text-gray-500">Total Admins</p>
+              <p className="text-2xl font-bold text-gray-900">{dashboardData.total_admins}</p>
+              <p className="text-xs text-gray-400 mt-1">system wide</p>
             </div>
-            
-            {/* mini line chart */}
             <svg width="70" height="40" viewBox="0 0 70 40">
               <polyline
                 points="0,28 12,30 24,26 36,24 48,20 60,18"
                 fill="none"
-                stroke="#eab308"
+                stroke="#a855f7"
                 strokeWidth="2"
               />
             </svg>
           </div>
         </div>
 
-        {/* Pending Bills */}
-        <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-             onClick={() => handlePageChange('billing')}>
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent pointer-events-none" />
-          
-          <span className="absolute top-4 right-4 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded">
-            Action
-          </span>
-          
+        {/* Active Admins */}
+        <div
+          className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => handlePageChange('admins')}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-yellow-50 to-transparent pointer-events-none" />
           <div className="relative flex justify-between items-end">
             <div>
-              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-purple-500 mb-3">
-                <i className="fas fa-file-invoice-dollar text-white"></i>
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-yellow-500 mb-3">
+                <i className="fas fa-user-check text-white"></i>
               </div>
-              <p className="text-sm text-gray-500">Pending Bills</p>
-              <p className="text-2xl font-bold text-gray-900">₹{(dashboardData.metrics.pendingBills/1000).toFixed(1)}K</p>
-              <p className="text-xs text-gray-400 mt-1">requires follow-up</p>
+              <p className="text-sm text-gray-500">Active Admins</p>
+              <p className="text-2xl font-bold text-gray-900">{dashboardData.active_admins}</p>
+              <p className="text-xs text-gray-400 mt-1">currently online</p>
             </div>
-            
-            {/* mini bars */}
             <div className="flex items-end gap-1 h-14">
-              <div className="w-1.5 h-10 bg-purple-400 rounded"></div>
-              <div className="w-1.5 h-8 bg-purple-300 rounded"></div>
-              <div className="w-1.5 h-12 bg-purple-500 rounded"></div>
-              <div className="w-1.5 h-6 bg-purple-400 rounded"></div>
-              <div className="w-1.5 h-11 bg-purple-300 rounded"></div>
+              <div className="w-1.5 h-10 bg-yellow-400 rounded"></div>
+              <div className="w-1.5 h-8 bg-yellow-300 rounded"></div>
+              <div className="w-1.5 h-12 bg-yellow-500 rounded"></div>
+              <div className="w-1.5 h-6 bg-yellow-400 rounded"></div>
+              <div className="w-1.5 h-11 bg-yellow-300 rounded"></div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Second Row Metrics with New Styling */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Total Patients Today */}
-        <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-             onClick={() => handlePageChange('inpatient')}>
-          <div className="absolute inset-0 bg-gradient-to-br from-sky-50 to-transparent pointer-events-none" />
-          
-          <span className="absolute top-4 right-4 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded">
-            +5
-          </span>
-          
+        {/* Total Patients */}
+        <div
+          className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => handlePageChange('patients')}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-transparent pointer-events-none" />
           <div className="relative flex justify-between items-end">
             <div>
-              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-sky-500 mb-3">
-                <i className="fas fa-user-injured text-white"></i>
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-red-500 mb-3">
+                <i className="fas fa-users text-white"></i>
               </div>
-              <p className="text-sm text-gray-500">Patients (Today)</p>
-              <p className="text-2xl font-bold text-gray-900">{dashboardData.metrics.totalPatientsToday}</p>
-              <p className="text-xs text-gray-400 mt-1">from yesterday</p>
+              <p className="text-sm text-gray-500">Total Patients</p>
+              <p className="text-2xl font-bold text-gray-900">{dashboardData.total_patients}</p>
+              <p className="text-xs text-gray-400 mt-1">registered lifetime</p>
             </div>
-            
-            {/* mini bars */}
-            <div className="flex items-end gap-1 h-14">
-              <div className="w-1.5 h-9 bg-sky-400 rounded"></div>
-              <div className="w-1.5 h-6 bg-sky-300 rounded"></div>
-              <div className="w-1.5 h-11 bg-sky-500 rounded"></div>
-              <div className="w-1.5 h-7 bg-sky-400 rounded"></div>
-              <div className="w-1.5 h-10 bg-sky-300 rounded"></div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Active Doctors */}
-        <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-             onClick={() => handlePageChange('doctors')}>
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-transparent pointer-events-none" />
-          
-          <span className="absolute top-4 right-4 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded">
-            All present
-          </span>
-          
-          <div className="relative flex justify-between items-end">
-            <div>
-              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-emerald-500 mb-3">
-                <i className="fas fa-user-md text-white"></i>
-              </div>
-              <p className="text-sm text-gray-500">Active Doctors</p>
-              <p className="text-2xl font-bold text-gray-900">{dashboardData.metrics.activeDoctors}</p>
-              <p className="text-xs text-gray-400 mt-1">currently on duty</p>
-            </div>
-            
-            {/* mini line chart */}
             <svg width="70" height="40" viewBox="0 0 70 40">
               <polyline
                 points="0,25 12,22 24,26 36,20 48,23 60,20"
                 fill="none"
-                stroke="#10b981"
+                stroke="#ef4444"
                 strokeWidth="2"
               />
             </svg>
           </div>
         </div>
-        
-        {/* Appointments Scheduled */}
-        <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-             onClick={() => handlePageChange('appointments')}>
+
+        {/* Total Appointments */}
+        <div
+          className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => handlePageChange('appointments')}
+        >
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 to-transparent pointer-events-none" />
-          
-          <span className="absolute top-4 right-4 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded">
-            +12%
-          </span>
-          
           <div className="relative flex justify-between items-end">
             <div>
               <div className="w-10 h-10 flex items-center justify-center rounded-full bg-indigo-500 mb-3">
                 <i className="fas fa-calendar-check text-white"></i>
               </div>
-              <p className="text-sm text-gray-500">Appointments</p>
-              <p className="text-2xl font-bold text-gray-900">{dashboardData.metrics.appointmentsScheduled}</p>
-              <p className="text-xs text-gray-400 mt-1">from last week</p>
+              <p className="text-sm text-gray-500">Total Appointments</p>
+              <p className="text-2xl font-bold text-gray-900">{totalAppointments}</p>
+              <p className="text-xs text-gray-400 mt-1">all time</p>
             </div>
-            
-            {/* mini bars */}
             <div className="flex items-end gap-1 h-14">
               <div className="w-1.5 h-7 bg-indigo-400 rounded"></div>
               <div className="w-1.5 h-10 bg-indigo-300 rounded"></div>
@@ -345,96 +548,11 @@ const AdminOverview = ({ setActivePage }) => {
         </div>
       </div>
 
-      {/* Three Column Layout with New Card Styling */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-        {/* Financial Snapshot */}
-        <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent pointer-events-none" />
-          
-          <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center">
-                <div className="w-10 h-10 flex items-center justify-center rounded-full bg-green-500 mr-3">
-                  <i className="fas fa-rupee-sign text-white"></i>
-                </div>
-                <h3 className="font-semibold text-lg">Financial Snapshot</h3>
-              </div>
-              <button 
-                onClick={() => handlePageChange('billing')}
-                className="text-blue-600 text-sm hover:underline hover:text-blue-800"
-              >
-                Details →
-              </button>
-            </div>
-            
-            <div className="space-y-4">
-              {/* Revenue */}
-              <div className="relative bg-white rounded-lg p-4 border border-gray-200 cursor-pointer hover:border-green-300 hover:shadow-sm transition-all"
-                   onClick={() => handlePageChange('billing')}>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <div className="text-sm text-gray-600">Revenue Today</div>
-                    <div className="font-bold text-gray-800 text-lg">
-                      ₹{(dashboardData.financialSummary?.revenueToday/1000).toFixed(1)}K
-                    </div>
-                  </div>
-                  <div className="w-8 h-8 bg-green-100 rounded flex items-center justify-center">
-                    <i className="fas fa-arrow-up text-green-600"></i>
-                  </div>
-                </div>
-                {/* mini progress bar */}
-                <div className="mt-3 h-1 bg-gray-200 rounded-full overflow-hidden">
-                  <div className="h-full bg-green-500" style={{ width: '85%' }}></div>
-                </div>
-              </div>
-              
-              {/* Expenses */}
-              <div className="relative bg-white rounded-lg p-4 border border-gray-200 cursor-pointer hover:border-red-300 hover:shadow-sm transition-all"
-                   onClick={() => handlePageChange('billing')}>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <div className="text-sm text-gray-600">Expenses Today</div>
-                    <div className="font-bold text-gray-800 text-lg">
-                      ₹{(dashboardData.financialSummary?.expensesToday/1000).toFixed(1)}K
-                    </div>
-                  </div>
-                  <div className="w-8 h-8 bg-red-100 rounded flex items-center justify-center">
-                    <i className="fas fa-arrow-down text-red-600"></i>
-                  </div>
-                </div>
-                {/* mini progress bar */}
-                <div className="mt-3 h-1 bg-gray-200 rounded-full overflow-hidden">
-                  <div className="h-full bg-red-500" style={{ width: '68%' }}></div>
-                </div>
-              </div>
-              
-              {/* Pending Claims */}
-              <div className="relative bg-white rounded-lg p-4 border border-gray-200 cursor-pointer hover:border-yellow-300 hover:shadow-sm transition-all"
-                   onClick={() => handlePageChange('billing')}>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <div className="text-sm text-gray-600">Pending Claims</div>
-                    <div className="font-bold text-gray-800 text-lg">
-                      ₹{(dashboardData.financialSummary?.pendingClaims/1000).toFixed(1)}K
-                    </div>
-                  </div>
-                  <div className="w-8 h-8 bg-yellow-100 rounded flex items-center justify-center">
-                    <i className="fas fa-clock text-yellow-600"></i>
-                  </div>
-                </div>
-                {/* mini progress bar */}
-                <div className="mt-3 h-1 bg-gray-200 rounded-full overflow-hidden">
-                  <div className="h-full bg-yellow-500" style={{ width: '55%' }}></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
+      {/* Two Column Layout: Staff Status & Quick Actions */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         {/* Staff Status */}
         <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent pointer-events-none" />
-          
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
@@ -443,74 +561,107 @@ const AdminOverview = ({ setActivePage }) => {
                 </div>
                 <h3 className="font-semibold text-lg">Staff Status</h3>
               </div>
-              <button 
+              <button
                 onClick={() => handlePageChange('staff')}
                 className="text-blue-600 text-sm hover:underline hover:text-blue-800"
               >
                 Manage →
               </button>
             </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              {/* On Duty */}
-              <div className="relative bg-white rounded-lg p-4 border border-gray-200 cursor-pointer hover:border-blue-300 hover:shadow-sm transition-all"
-                   onClick={() => handlePageChange('staff')}>
+
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div
+                className="relative bg-white rounded-lg p-4 border border-gray-200 cursor-pointer hover:border-blue-300 hover:shadow-sm transition-all"
+                onClick={() => handlePageChange('staff')}
+              >
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">{dashboardData.staffStatus?.onDuty}</div>
-                  <div className="text-sm text-gray-600 mt-1">On Duty</div>
+                  <div className="text-2xl font-bold text-blue-600">{dashboardData.total_staff}</div>
+                  <div className="text-sm text-gray-600 mt-1">Total Staff</div>
                 </div>
-                {/* mini progress bar */}
                 <div className="mt-3 h-1 bg-gray-200 rounded-full overflow-hidden">
-                  <div className="h-full bg-blue-500" style={{ width: '92%' }}></div>
+                  <div className="h-full bg-blue-500" style={{ width: '100%' }}></div>
                 </div>
               </div>
-              
-              {/* On Leave */}
-              <div className="relative bg-white rounded-lg p-4 border border-gray-200 cursor-pointer hover:border-yellow-300 hover:shadow-sm transition-all"
-                   onClick={() => handlePageChange('staff')}>
+              <div
+                className="relative bg-white rounded-lg p-4 border border-gray-200 cursor-pointer hover:border-green-300 hover:shadow-sm transition-all"
+                onClick={() => handlePageChange('staff')}
+              >
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-yellow-600">{dashboardData.staffStatus?.onLeave}</div>
+                  <div className="text-2xl font-bold text-green-600">{dashboardData.active_staff}</div>
+                  <div className="text-sm text-gray-600 mt-1">Active Staff</div>
+                </div>
+                <div className="mt-3 h-1 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-green-500"
+                    style={{ width: `${percent(dashboardData.active_staff, dashboardData.total_staff)}%` }}
+                  ></div>
+                </div>
+              </div>
+              <div
+                className="relative bg-white rounded-lg p-4 border border-gray-200 cursor-pointer hover:border-yellow-300 hover:shadow-sm transition-all"
+                onClick={() => handlePageChange('staff')}
+              >
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-yellow-600">{staffOnLeave}</div>
                   <div className="text-sm text-gray-600 mt-1">On Leave</div>
                 </div>
-                {/* mini progress bar */}
                 <div className="mt-3 h-1 bg-gray-200 rounded-full overflow-hidden">
-                  <div className="h-full bg-yellow-500" style={{ width: '8%' }}></div>
+                  <div
+                    className="h-full bg-yellow-500"
+                    style={{ width: `${percent(staffOnLeave, dashboardData.total_staff)}%` }}
+                  ></div>
                 </div>
               </div>
-              
-              {/* Available Shifts */}
-              <div className="relative bg-white rounded-lg p-4 border border-gray-200 cursor-pointer hover:border-green-300 hover:shadow-sm transition-all"
-                   onClick={() => handlePageChange('staff')}>
+              <div
+                className="relative bg-white rounded-lg p-4 border border-gray-200 cursor-pointer hover:border-purple-300 hover:shadow-sm transition-all"
+                onClick={() => handlePageChange('staff')}
+              >
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">{dashboardData.staffStatus?.availableShifts}</div>
-                  <div className="text-sm text-gray-600 mt-1">Shifts Available</div>
+                  <div className="text-2xl font-bold text-purple-600">{Object.keys(dashboardData.staff_by_role).length}</div>
+                  <div className="text-sm text-gray-600 mt-1">Roles</div>
                 </div>
-                {/* mini progress bar */}
                 <div className="mt-3 h-1 bg-gray-200 rounded-full overflow-hidden">
-                  <div className="h-full bg-green-500" style={{ width: '42%' }}></div>
-                </div>
-              </div>
-              
-              {/* Pending Requests */}
-              <div className="relative bg-white rounded-lg p-4 border border-gray-200 cursor-pointer hover:border-red-300 hover:shadow-sm transition-all"
-                   onClick={() => handlePageChange('staff')}>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-red-600">{dashboardData.staffStatus?.pendingRequests}</div>
-                  <div className="text-sm text-gray-600 mt-1">Pending Requests</div>
-                </div>
-                {/* mini progress bar */}
-                <div className="mt-3 h-1 bg-gray-200 rounded-full overflow-hidden">
-                  <div className="h-full bg-red-500" style={{ width: '12%' }}></div>
+                  <div
+                    className="h-full bg-purple-500"
+                    style={{ width: `${(Object.keys(dashboardData.staff_by_role).length / 10) * 100}%` }}
+                  ></div>
                 </div>
               </div>
             </div>
+
+            {topStaffRoles.length > 0 && (
+              <div className="mt-4 border-t pt-3">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Top Roles</h4>
+                <div className="space-y-2">
+                  {topStaffRoles.map(([role, count]) => (
+                    <div key={role} className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600 capitalize">{role}</span>
+                      <span className="font-medium text-gray-800">{count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {topStaffDepts.length > 0 && (
+              <div className="mt-4 border-t pt-3">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Top Departments</h4>
+                <div className="space-y-2">
+                  {topStaffDepts.map(([dept, count]) => (
+                    <div key={dept} className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600 capitalize">{dept}</span>
+                      <span className="font-medium text-gray-800">{count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Quick Actions */}
         <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent pointer-events-none" />
-          
           <div className="relative">
             <div className="flex items-center mb-4">
               <div className="w-10 h-10 flex items-center justify-center rounded-full bg-purple-500 mr-3">
@@ -518,7 +669,6 @@ const AdminOverview = ({ setActivePage }) => {
               </div>
               <h3 className="font-semibold text-lg">Quick Actions</h3>
             </div>
-            
             <div className="space-y-3">
               <button
                 onClick={() => handlePageChange('inpatient')}
@@ -532,7 +682,6 @@ const AdminOverview = ({ setActivePage }) => {
                 </div>
                 <i className="fas fa-chevron-right text-gray-400"></i>
               </button>
-              
               <button
                 onClick={() => handlePageChange('staff')}
                 className="w-full flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 hover:shadow-sm transition-all text-left"
@@ -545,7 +694,6 @@ const AdminOverview = ({ setActivePage }) => {
                 </div>
                 <i className="fas fa-chevron-right text-gray-400"></i>
               </button>
-              
               <button
                 onClick={() => handlePageChange('pharmacy')}
                 className="w-full flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 hover:shadow-sm transition-all text-left"
@@ -558,7 +706,6 @@ const AdminOverview = ({ setActivePage }) => {
                 </div>
                 <i className="fas fa-chevron-right text-gray-400"></i>
               </button>
-              
               <button
                 onClick={() => handlePageChange('settings')}
                 className="w-full flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 hover:shadow-sm transition-all text-left"
@@ -576,10 +723,9 @@ const AdminOverview = ({ setActivePage }) => {
         </div>
       </div>
 
-      {/* Appointments Section */}
+      {/* Appointments Overview */}
       <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-sky-50 to-transparent pointer-events-none" />
-        
         <div className="relative">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center">
@@ -587,174 +733,95 @@ const AdminOverview = ({ setActivePage }) => {
                 <i className="fas fa-calendar-check text-white"></i>
               </div>
               <div>
-                <h3 className="font-semibold text-lg">Today's Appointments</h3>
-                <p className="text-gray-500 text-sm">Upcoming appointments for today</p>
+                <h3 className="font-semibold text-lg">Appointments Overview</h3>
+                <p className="text-gray-500 text-sm">Real‑time appointment metrics</p>
               </div>
             </div>
-            <button 
+            <button
               onClick={() => handlePageChange('appointments')}
               className="text-blue-600 text-sm hover:underline hover:text-blue-800"
             >
               View All →
             </button>
           </div>
-          
-          <div className="space-y-3">
-            {dashboardData.appointments.map(apt => (
-              <div key={apt.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:shadow-sm transition-all cursor-pointer"
-                   onClick={() => handlePageChange('appointments')}>
-                <div className="flex items-center">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-4 ${
-                    apt.status === 'Confirmed' ? 'bg-green-100' : 'bg-yellow-100'
-                  }`}>
-                    <i className={`fas ${
-                      apt.status === 'Confirmed' ? 'fa-check-circle text-green-600' : 'fa-clock text-yellow-600'
-                    }`}></i>
-                  </div>
-                  <div>
-                    <div className="font-medium">{apt.patient}</div>
-                    <div className="text-sm text-gray-500">Dr. {apt.doctor.split('Dr. ')[1]}</div>
-                    <div className="text-xs text-gray-400 mt-1">{apt.reason}</div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="font-medium text-gray-700">{apt.dateTime}</div>
-                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-2 ${
-                    apt.status === 'Confirmed' 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {apt.status}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
 
-      {/* Departments Section */}
-      <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent pointer-events-none" />
-        
-        <div className="relative">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center">
-              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-500 mr-3">
-                <i className="fas fa-building text-white"></i>
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg">Department Status</h3>
-                <p className="text-gray-500 text-sm">Real-time bed occupancy by department</p>
-              </div>
-            </div>
-            <button 
-              onClick={() => handlePageChange('departments')}
-              className="text-blue-600 text-sm hover:underline hover:text-blue-800"
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div
+              className="relative bg-white rounded-lg p-4 border border-gray-200 cursor-pointer hover:border-sky-300 hover:shadow-sm transition-all"
+              onClick={() => handlePageChange('appointments')}
             >
-              View All →
-            </button>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-sky-600">{appointmentsToday}</div>
+                <div className="text-sm text-gray-600 mt-1">Appointments Today</div>
+              </div>
+              <div className="mt-3 h-1 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-sky-500"
+                  style={{ width: `${percent(appointmentsToday, totalAppointments)}%` }}
+                ></div>
+              </div>
+            </div>
+            <div
+              className="relative bg-white rounded-lg p-4 border border-gray-200 cursor-pointer hover:border-sky-300 hover:shadow-sm transition-all"
+              onClick={() => handlePageChange('appointments')}
+            >
+              <div className="text-center">
+                <div className="text-2xl font-bold text-sky-600">{appointmentsThisWeek}</div>
+                <div className="text-sm text-gray-600 mt-1">This Week</div>
+              </div>
+              <div className="mt-3 h-1 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-sky-500"
+                  style={{ width: `${percent(appointmentsThisWeek, totalAppointments)}%` }}
+                ></div>
+              </div>
+            </div>
+            <div
+              className="relative bg-white rounded-lg p-4 border border-gray-200 cursor-pointer hover:border-sky-300 hover:shadow-sm transition-all"
+              onClick={() => handlePageChange('appointments')}
+            >
+              <div className="text-center">
+                <div className="text-2xl font-bold text-sky-600">{totalAppointments}</div>
+                <div className="text-sm text-gray-600 mt-1">Total Appointments</div>
+              </div>
+              <div className="mt-3 h-1 bg-gray-200 rounded-full overflow-hidden">
+                <div className="h-full bg-sky-500" style={{ width: '100%' }}></div>
+              </div>
+            </div>
           </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {dashboardData.departments.map(dept => (
-              <div key={dept.id} 
-                   className="relative bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
-                   onClick={() => handlePageChange('departments')}>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="bg-blue-100 p-2 rounded-lg">
-                    <i className={`${dept.icon} text-blue-600`}></i>
-                  </div>
-                  <div className={`px-2 py-1 rounded text-xs font-medium ${
-                    dept.occupancy > 90 ? 'bg-red-100 text-red-700' :
-                    dept.occupancy > 75 ? 'bg-yellow-100 text-yellow-700' :
-                    'bg-green-100 text-green-700'
-                  }`}>
-                    {dept.occupancy}% occupied
-                  </div>
-                </div>
-                <div className="font-medium">{dept.name}</div>
-                <div className="text-xs text-gray-500 mt-1">Head: {dept.head}</div>
-                <div className="mt-3">
-                  <div className="flex justify-between text-xs text-gray-500 mb-1">
-                    <span>Occupancy</span>
-                    <span>{dept.occupancy}%</span>
-                  </div>
-                  <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full ${
-                        dept.occupancy > 90 ? 'bg-red-500' :
-                        dept.occupancy > 75 ? 'bg-yellow-500' :
-                        'bg-green-500'
-                      }`}
-                      style={{ width: `${dept.occupancy}%` }}
-                    ></div>
-                  </div>
-                </div>
-                <div className="flex justify-between mt-3 text-xs text-gray-600">
-                  <span>
-                    <i className="fas fa-user-md mr-1"></i>
-                    {dept.doctors} doctors
-                  </span>
-                  <span>
-                    <i className="fas fa-users mr-1"></i>
-                    {dept.staff} staff
-                  </span>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {statusBreakdown.length > 0 && (
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <h4 className="text-sm font-semibold text-gray-700 mb-3">By Status</h4>
+                <div className="space-y-2">
+                  {statusBreakdown.map(([status, count]) => (
+                    <div key={status} className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600 capitalize">{status}</span>
+                      <span className="font-medium text-gray-800">{count}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
-            
-            {/* Additional departments */}
-            <div className="relative bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
-                 onClick={() => handlePageChange('departments')}>
-              <div className="flex items-center justify-between mb-3">
-                <div className="bg-green-100 p-2 rounded-lg">
-                  <i className="fas fa-brain text-green-600"></i>
-                </div>
-                <div className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">
-                  72% occupied
-                </div>
-              </div>
-              <div className="font-medium">Neurology</div>
-              <div className="text-xs text-gray-500 mt-1">Head: Dr. Priya Singh</div>
-              <div className="mt-3">
-                <div className="flex justify-between text-xs text-gray-500 mb-1">
-                  <span>Occupancy</span>
-                  <span>72%</span>
-                </div>
-                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div className="h-full bg-green-500" style={{ width: '72%' }}></div>
+            )}
+            {topAppointmentDepts.length > 0 && (
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <h4 className="text-sm font-semibold text-gray-700 mb-3">Top Departments</h4>
+                <div className="space-y-2">
+                  {topAppointmentDepts.map(([dept, count]) => (
+                    <div key={dept} className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600 capitalize">{dept}</span>
+                      <span className="font-medium text-gray-800">{count}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
-            
-            <div className="relative bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
-                 onClick={() => handlePageChange('departments')}>
-              <div className="flex items-center justify-between mb-3">
-                <div className="bg-purple-100 p-2 rounded-lg">
-                  <i className="fas fa-baby text-purple-600"></i>
-                </div>
-                <div className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs font-medium">
-                  84% occupied
-                </div>
-              </div>
-              <div className="font-medium">Pediatrics</div>
-              <div className="text-xs text-gray-500 mt-1">Head: Dr. Anil Kumar</div>
-              <div className="mt-3">
-                <div className="flex justify-between text-xs text-gray-500 mb-1">
-                  <span>Occupancy</span>
-                  <span>84%</span>
-                </div>
-                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div className="h-full bg-yellow-500" style={{ width: '84%' }}></div>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default AdminOverview
+export default AdminOverview;

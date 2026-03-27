@@ -125,7 +125,7 @@ const MobileAppSection = () => {
                 alt="Hospital Management Mobile App"
                 className="rounded-3xl border-8 border-white shadow-2xl"
               />
-              <div className="absolute -bottom-1 -right-1 rounded-2xl bg-white p-2 shadow-2xl">
+              <div className="mt-4 rounded-2xl bg-white p-2 shadow-2xl md:absolute md:-bottom-1 md:-right-1 md:mt-0">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
                     <Smartphone className="text-white w-6 h-6" />

@@ -60,7 +60,6 @@ export const SUPER_ADMIN_SUPPORT_TICKETS = '/api/v1/super-admin/support/tickets'
 export const SUPER_ADMIN_SUPPORT_TICKET_STATUS = (ticketId) => `/api/v1/super-admin/support/tickets/${ticketId}/status`;
 export const SUPER_ADMIN_SUPPORT_TICKET_DETAILS = (ticketId) => `/api/v1/super-admin/support/tickets/${ticketId}`;
 
-<<<<<<< Updated upstream
 /** Public demo request form */
 export const DEMO_REQUEST = '/demo/request';
 
@@ -70,11 +69,9 @@ export const CONTACT_SEND = '/contact/send';
 export const HOSPITAL_ADMIN_DASHBOARD_OVERVIEW = '/api/v1/hospital-admin/dashboard/overview';
 export const HOSPITAL_ADMIN_DASHBOARD_APPOINTMENT_STATS = '/api/v1/hospital-admin/dashboard/appointment-stats';
 export const HOSPITAL_ADMIN_DASHBOARD_STAFF_STATS = '/api/v1/hospital-admin/dashboard/staff-stats';
-=======
 // HOSPITAL ADMIN - STAFF MANAGEMENT ENDPOINTS
 export const HOSPITAL_ADMIN_STAFF = '/api/v1/hospital-admin/staff';
 export const HOSPITAL_ADMIN_STAFF_DETAILS = (staffId) => `/api/v1/hospital-admin/staff/${encodeURIComponent(staffId)}`;
 export const HOSPITAL_ADMIN_STAFF_STATUS = (staffId) => `/api/v1/hospital-admin/staff/${encodeURIComponent(staffId)}/status`;
 export const HOSPITAL_ADMIN_STAFF_RESET_PASSWORD = (staffId) => `/api/v1/hospital-admin/staff/${encodeURIComponent(staffId)}/reset-password`;
->>>>>>> Stashed changes
 

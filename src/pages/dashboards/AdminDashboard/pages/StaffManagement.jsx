@@ -1,163 +1,274 @@
-import React, { useState, useEffect } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import LoadingSpinner from '../../../../components/common/LoadingSpinner/LoadingSpinner'
 import Modal from '../../../../components/common/Modal/Modal'
+import {
+  HOSPITAL_ADMIN_STAFF,
+  HOSPITAL_ADMIN_STAFF_DETAILS,
+  HOSPITAL_ADMIN_STAFF_STATUS,
+  HOSPITAL_ADMIN_STAFF_RESET_PASSWORD
+} from '../../../../config/api'
+import { apiFetch } from '../../../../services/apiClient'
+
+const ROLE_OPTIONS = ['DOCTOR', 'LAB_TECH', 'PHARMACIST']
+const SHIFT_OPTIONS = ['Morning (7AM-3PM)', 'Evening (3PM-11PM)', 'Night (11PM-7AM)', 'Flexible', 'Part-time']
+
+const EMPTY_FORM = {
+  email: '',
+  phone: '',
+  first_name: '',
+  last_name: '',
+  role: '',
+  password: '',
+  emergency_contact: '',
+  shift_timing: SHIFT_OPTIONS[0],
+  joining_date: '',
+  address: '',
+  doctor_specialization: ''
+}
+
+const getStaffItems = (data) => {
+  const raw = data?.data ?? data
+  if (Array.isArray(raw?.items)) return raw.items
+  if (Array.isArray(raw?.staff)) return raw.staff
+  if (Array.isArray(raw)) return raw
+  return []
+}
+
+const toDisplayRole = (role) => {
+  const value = String(role || '').toUpperCase()
+  if (value === 'LAB_TECH') return 'Lab Tech'
+  if (value === 'PHARMACIST') return 'Pharmacist'
+  if (value === 'DOCTOR') return 'Doctor'
+  return value || 'Unknown'
+}
+
+const mapStaff = (item) => {
+  const role = item?.role ?? item?.user_role ?? ''
+  const firstName = item?.first_name ?? item?.firstName ?? ''
+  const lastName = item?.last_name ?? item?.lastName ?? ''
+  const fullName = `${firstName} ${lastName}`.trim()
+  return {
+    id: item?.id ?? item?.staff_id ?? item?.user_id ?? '',
+    email: item?.email ?? '',
+    phone: item?.phone ?? '',
+    first_name: firstName,
+    last_name: lastName,
+    name: fullName || item?.name || 'Unnamed Staff',
+    role,
+    roleLabel: toDisplayRole(role),
+    shift_timing: item?.shift_timing ?? item?.shiftTiming ?? '-',
+    joining_date: item?.joining_date ?? item?.joiningDate ?? '',
+    address: item?.address ?? '',
+    emergency_contact: item?.emergency_contact ?? item?.emergencyContact ?? '',
+    doctor_specialization: item?.doctor_specialization ?? item?.doctorSpecialization ?? '',
+    status: item?.is_active === false ? 'Inactive' : 'Active',
+    is_active: item?.is_active !== false
+  }
+}
 
 const StaffManagement = () => {
   const [loading, setLoading] = useState(true)
   const [staff, setStaff] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
-  const [departmentFilter, setDepartmentFilter] = useState('')
+  const [roleFilter, setRoleFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
-  const [modalState, setModalState] = useState({ 
-    add: false, 
-    edit: false, 
-    delete: false 
-  })
-  const [currentStaff, setCurrentStaff] = useState(null)
-  const [formData, setFormData] = useState({
-    name: '', role: '', email: '', phone: '', department: '', 
-    shift: 'Morning (7AM-3PM)', address: '', emergencyContact: '', joiningDate: ''
-  })
+  const [listError, setListError] = useState('')
+  const [submitLoading, setSubmitLoading] = useState(false)
+  const [actionLoading, setActionLoading] = useState({})
+  const [passwordResetResult, setPasswordResetResult] = useState(null)
+  const [modalState, setModalState] = useState({ add: false })
+  const [staffDetails, setStaffDetails] = useState(null)
+  const [formData, setFormData] = useState(EMPTY_FORM)
+  const [fieldErrors, setFieldErrors] = useState({})
 
-  // Data constants
-  const STAFF_ROLES = ['Nurse', 'Receptionist', 'Lab Technician', 'Pharmacist', 'Ward Boy', 'Housekeeping', 'Security Guard', 'Accountant', 'IT Support', 'HR Manager']
-  const DEPARTMENTS = ['Emergency', 'OPD', 'Lab', 'Pharmacy', 'ICU', 'Ward', 'Administration', 'HR', 'IT', 'Housekeeping']
-  const SHIFT_OPTIONS = ['Morning (7AM-3PM)', 'Evening (3PM-11PM)', 'Night (11PM-7AM)', 'Flexible', 'Part-time']
-
-  useEffect(() => { loadStaff() }, [])
-
-  const loadStaff = async () => {
+  const fetchStaff = async () => {
     setLoading(true)
-    setTimeout(() => {
-      setStaff([
-        { id: 'STAFF-2001', name: 'Kavya Patel', role: 'Nurse', contact: '+91 98765 43214', shift: 'Morning (7AM-3PM)', department: 'Emergency', status: 'Active', image: 'https://i.pravatar.cc/100?img=5', email: 'kavya.patel@hospital.com', address: '123 Main St, Mumbai', emergencyContact: '+91 98765 43200', joiningDate: '2023-01-15' },
-        { id: 'STAFF-2002', name: 'Arjun Kumar', role: 'Receptionist', contact: '+91 98765 43215', shift: 'Evening (3PM-11PM)', department: 'OPD', status: 'Active', image: 'https://i.pravatar.cc/100?img=6', email: 'arjun.kumar@hospital.com', address: '456 Park Ave, Delhi', emergencyContact: '+91 98765 43201', joiningDate: '2023-03-20' },
-        { id: 'STAFF-2003', name: 'Priya Sharma', role: 'Lab Technician', contact: '+91 98765 43216', shift: 'Morning (7AM-3PM)', department: 'Lab', status: 'Active', image: 'https://i.pravatar.cc/100?img=7', email: 'priya.sharma@hospital.com', address: '789 MG Road, Bangalore', emergencyContact: '+91 98765 43202', joiningDate: '2023-02-10' },
-        { id: 'STAFF-2004', name: 'Rahul Verma', role: 'Pharmacist', contact: '+91 98765 43217', shift: 'Night (11PM-7AM)', department: 'Pharmacy', status: 'Active', image: 'https://i.pravatar.cc/100?img=8', email: 'rahul.verma@hospital.com', address: '321 Central Ave, Chennai', emergencyContact: '+91 98765 43203', joiningDate: '2023-04-05' },
-        { id: 'STAFF-2005', name: 'Anjali Desai', role: 'Nurse', contact: '+91 98765 43218', shift: 'Evening (3PM-11PM)', department: 'ICU', status: 'Active', image: 'https://i.pravatar.cc/100?img=9', email: 'anjali.desai@hospital.com', address: '654 Gandhi Road, Kolkata', emergencyContact: '+91 98765 43204', joiningDate: '2023-05-12' },
-        { id: 'STAFF-2006', name: 'Vikram Singh', role: 'Security Guard', contact: '+91 98765 43219', shift: 'Night (11PM-7AM)', department: 'Security', status: 'Active', image: 'https://i.pravatar.cc/100?img=10', email: 'vikram.singh@hospital.com', address: '987 Nehru Nagar, Pune', emergencyContact: '+91 98765 43205', joiningDate: '2023-06-18' }
-      ])
+    setListError('')
+    try {
+      const params = new URLSearchParams()
+      params.set('page', '1')
+      params.set('limit', '100')
+      if (roleFilter) params.set('role', roleFilter)
+      if (statusFilter === 'Active') params.set('active_only', 'true')
+      const res = await apiFetch(`${HOSPITAL_ADMIN_STAFF}?${params.toString()}`)
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setListError(data?.message || data?.detail?.message || `Failed to load staff (${res.status})`)
+        setStaff([])
+        return
+      }
+      setStaff(getStaffItems(data).map(mapStaff))
+    } catch (error) {
+      setListError(error?.message || 'Unable to load staff users.')
+      setStaff([])
+    } finally {
       setLoading(false)
-    }, 1000)
-  }
-
-  // Modal handlers
-  const openModal = (type, staffMember = null) => {
-    setModalState(prev => ({ ...prev, [type]: true }))
-    if (type === 'edit' && staffMember) {
-      setCurrentStaff(staffMember)
-      setFormData({
-        name: staffMember.name, role: staffMember.role, email: staffMember.email,
-        phone: staffMember.contact, department: staffMember.department, shift: staffMember.shift,
-        address: staffMember.address, emergencyContact: staffMember.emergencyContact, 
-        joiningDate: staffMember.joiningDate
-      })
-    } else if (type === 'delete' && staffMember) {
-      setCurrentStaff(staffMember)
     }
   }
 
-  const closeModal = (type) => {
-    setModalState(prev => ({ ...prev, [type]: false }))
-    if (type !== 'delete') resetForm()
-    if (type === 'delete') setCurrentStaff(null)
+  useEffect(() => {
+    fetchStaff()
+  }, [roleFilter, statusFilter])
+
+  const openModal = () => {
+    setModalState({ add: true })
+    setFormData(EMPTY_FORM)
+    setFieldErrors({})
   }
 
-  // Core functions
-  const handleAddStaff = () => {
-    if (!validateForm()) return
-    const staffMember = { 
-      id: `STAFF-${Math.floor(2000 + Math.random() * 9000)}`,
-      ...formData, contact: formData.phone, status: 'Active',
-      image: `https://i.pravatar.cc/100?img=${Math.floor(Math.random() * 70) + 1}`
-    }
-    setStaff(prev => [staffMember, ...prev])
-    closeModal('add')
+  const closeModal = () => {
+    setModalState({ add: false })
+    setFormData(EMPTY_FORM)
+    setFieldErrors({})
   }
 
-  const handleEditStaff = () => {
-    if (!validateForm()) return
-    setStaff(prev => prev.map(s => 
-      s.id === currentStaff.id ? { ...s, ...formData, contact: formData.phone } : s
-    ))
-    closeModal('edit')
-  }
-
-  const handleToggleStatus = (staffId) => {
-    setStaff(prev => prev.map(s => 
-      s.id === staffId ? { ...s, status: s.status === 'Active' ? 'Inactive' : 'Active' } : s
-    ))
-  }
-
-  const handleDeleteStaff = () => {
-    setStaff(prev => prev.filter(s => s.id !== currentStaff.id))
-    closeModal('delete')
-  }
-
-  const resetForm = () => {
-    setFormData({
-      name: '', role: '', email: '', phone: '', department: '', 
-      shift: 'Morning (7AM-3PM)', address: '', emergencyContact: '', joiningDate: ''
-    })
-    setCurrentStaff(null)
-  }
+  const closeDetailsModal = () => setStaffDetails(null)
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+    setFormData((prev) => ({ ...prev, [field]: value }))
+    if (fieldErrors[field]) {
+      setFieldErrors((prev) => ({ ...prev, [field]: '' }))
+    }
   }
 
   const validateForm = () => {
-    const required = ['name', 'email', 'phone', 'role', 'department', 'shift', 'emergencyContact', 'joiningDate', 'address']
-    const missing = required.find(field => !formData[field])
-    if (missing) {
-      alert(`Please fill in the ${missing} field`)
-      return false
+    const errors = {}
+    const required = ['email', 'phone', 'first_name', 'last_name', 'role', 'password', 'emergency_contact', 'shift_timing', 'joining_date', 'address']
+    required.forEach((field) => {
+      if (!String(formData[field] || '').trim()) {
+        errors[field] = 'This field is required.'
+      }
+    })
+    if (formData.role === 'DOCTOR' && !String(formData.doctor_specialization || '').trim()) {
+      errors.doctor_specialization = 'Doctor specialization is required for doctors.'
     }
-    return true
+    setFieldErrors(errors)
+    return Object.keys(errors).length === 0
   }
 
-  // Filter staff
-  const filteredStaff = staff.filter(staffMember => {
-    const matchesSearch = !searchTerm || 
-      [staffMember.name, staffMember.role, staffMember.department].some(field => 
-        field.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    const matchesDepartment = !departmentFilter || staffMember.department === departmentFilter
-    const matchesStatus = !statusFilter || staffMember.status === statusFilter
-    return matchesSearch && matchesDepartment && matchesStatus
-  })
-
-  // Statistics
-  const stats = [
-    { 
-      label: 'Total Staff', 
-      value: staff.length, 
-      color: 'blue',
-      icon: 'fas fa-users',
-      change: '+2 this month'
-    },
-    { 
-      label: 'Nurses', 
-      value: staff.filter(s => s.role === 'Nurse').length, 
-      color: 'green',
-      icon: 'fas fa-user-nurse',
-      change: '+1 this month'
-    },
-    { 
-      label: 'Technicians', 
-      value: staff.filter(s => s.role === 'Lab Technician').length, 
-      color: 'purple',
-      icon: 'fas fa-microscope',
-      change: 'No change'
-    },
-    { 
-      label: 'Pharmacists', 
-      value: staff.filter(s => s.role === 'Pharmacist').length, 
-      color: 'orange',
-      icon: 'fas fa-pills',
-      change: '+1 this month'
+  const handleAddStaff = async () => {
+    if (!validateForm()) return
+    setSubmitLoading(true)
+    try {
+      const payload = {
+        email: formData.email.trim(),
+        phone: formData.phone.trim(),
+        first_name: formData.first_name.trim(),
+        last_name: formData.last_name.trim(),
+        role: formData.role,
+        password: formData.password,
+        emergency_contact: formData.emergency_contact.trim(),
+        shift_timing: formData.shift_timing.trim(),
+        joining_date: formData.joining_date,
+        address: formData.address.trim(),
+        doctor_specialization: formData.role === 'DOCTOR'
+          ? formData.doctor_specialization.trim()
+          : ''
+      }
+      const res = await apiFetch(HOSPITAL_ADMIN_STAFF, { method: 'POST', body: payload })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        window.alert(data?.message || data?.detail?.message || `Failed to create staff (${res.status})`)
+        return
+      }
+      closeModal()
+      fetchStaff()
+    } catch (error) {
+      window.alert(error?.message || 'Unable to create staff user.')
+    } finally {
+      setSubmitLoading(false)
     }
-  ]
+  }
+
+  const handleToggleStatus = async (staffItem) => {
+    const nextValue = !staffItem.is_active
+    const loadingKey = `status-${staffItem.id}`
+    setActionLoading((prev) => ({ ...prev, [loadingKey]: true }))
+    try {
+      const res = await apiFetch(HOSPITAL_ADMIN_STAFF_STATUS(staffItem.id), {
+        method: 'PATCH',
+        body: { is_active: nextValue }
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        window.alert(data?.message || data?.detail?.message || `Failed to update status (${res.status})`)
+        return
+      }
+      fetchStaff()
+    } catch (error) {
+      window.alert(error?.message || 'Unable to update staff status.')
+    } finally {
+      setActionLoading((prev) => ({ ...prev, [loadingKey]: false }))
+    }
+  }
+
+  const handleResetPassword = async (staffItem) => {
+    if (!window.confirm(`Reset password for ${staffItem.name}?`)) return
+    const loadingKey = `reset-${staffItem.id}`
+    setActionLoading((prev) => ({ ...prev, [loadingKey]: true }))
+    try {
+      const res = await apiFetch(HOSPITAL_ADMIN_STAFF_RESET_PASSWORD(staffItem.id), { method: 'POST' })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        window.alert(data?.message || data?.detail?.message || `Failed to reset password (${res.status})`)
+        return
+      }
+      const tempPassword =
+        data?.temporary_password ||
+        data?.password ||
+        data?.data?.temporary_password ||
+        data?.data?.password ||
+        ''
+      setPasswordResetResult({ name: staffItem.name, password: tempPassword })
+    } catch (error) {
+      window.alert(error?.message || 'Unable to reset password.')
+    } finally {
+      setActionLoading((prev) => ({ ...prev, [loadingKey]: false }))
+    }
+  }
+
+  const handleGetDetails = async (staffItem) => {
+    try {
+      const res = await apiFetch(HOSPITAL_ADMIN_STAFF_DETAILS(staffItem.id))
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        window.alert(data?.message || data?.detail?.message || `Failed to fetch staff details (${res.status})`)
+        return
+      }
+      const detail = data?.data ?? data
+      setStaffDetails({
+        name: staffItem.name,
+        id: detail?.id || detail?.staff_id || detail?.user_id || staffItem.id || '-',
+        email: detail?.email || staffItem.email || '-',
+        phone: detail?.phone || staffItem.phone || '-',
+        role: toDisplayRole(detail?.role || staffItem.role),
+        active: detail?.is_active === false ? 'No' : 'Yes',
+        shift_timing: detail?.shift_timing || staffItem.shift_timing || '-',
+        joining_date: detail?.hire_date || '-',
+        address: detail?.address || '-',
+        emergency_contact: detail?.emergency_contact || '-',
+        doctor_specialization: detail?.doctor_specialization || '-'
+      })
+    } catch (error) {
+      window.alert(error?.message || 'Unable to load staff details.')
+    }
+  }
+
+  const filteredStaff = useMemo(() => {
+    return staff.filter((staffMember) => {
+      const query = searchTerm.trim().toLowerCase()
+      const matchesSearch = !query || [staffMember.name, staffMember.email, staffMember.phone, staffMember.roleLabel]
+        .some((field) => String(field || '').toLowerCase().includes(query))
+      return matchesSearch
+    })
+  }, [staff, searchTerm])
+
+  const stats = useMemo(() => [
+    { label: 'Total Staff', value: staff.length, color: 'blue', icon: 'fas fa-users', change: 'Hospital users' },
+    { label: 'Doctors', value: staff.filter((s) => s.role === 'DOCTOR').length, color: 'green', icon: 'fas fa-user-md', change: 'Medical staff' },
+    { label: 'Lab Tech', value: staff.filter((s) => s.role === 'LAB_TECH').length, color: 'purple', icon: 'fas fa-microscope', change: 'Diagnostics team' },
+    { label: 'Pharmacists', value: staff.filter((s) => s.role === 'PHARMACIST').length, color: 'orange', icon: 'fas fa-pills', change: 'Pharmacy team' }
+  ], [staff])
 
   if (loading) return <LoadingSpinner />
 
@@ -170,10 +281,10 @@ const StaffManagement = () => {
             <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
               Staff Management
             </h2>
-            <p className="text-gray-500 mt-1">Manage and organize hospital staff members</p>
+            <p className="text-gray-500 mt-1">Manage hospital staff users using backend APIs</p>
           </div>
           <button 
-            onClick={() => openModal('add')}
+            onClick={openModal}
             className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-2 font-medium"
           >
             <i className="fas fa-plus-circle text-lg"></i>
@@ -189,7 +300,7 @@ const StaffManagement = () => {
             <i className="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
             <input 
               type="text" 
-              placeholder="Search staff by name, role or department..." 
+              placeholder="Search staff by name, role, email or phone..." 
               className="pl-12 pr-4 py-3 w-full border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -198,11 +309,11 @@ const StaffManagement = () => {
           <div className="flex gap-2">
             <select 
               className="px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-              value={departmentFilter}
-              onChange={(e) => setDepartmentFilter(e.target.value)}
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
             >
-              <option value="">All Departments</option>
-              {DEPARTMENTS.map(dept => <option key={dept} value={dept}>{dept}</option>)}
+              <option value="">All Roles</option>
+              {ROLE_OPTIONS.map((role) => <option key={role} value={role}>{toDisplayRole(role)}</option>)}
             </select>
             <select 
               className="px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
@@ -217,7 +328,25 @@ const StaffManagement = () => {
         </div>
       </div>
 
-      {/* Statistics - Matching Department Management Style */}
+      {listError && (
+        <div className="mb-4 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 flex items-center justify-between gap-3">
+          <span><i className="fas fa-exclamation-circle mr-2"></i>{listError}</span>
+          <button onClick={fetchStaff} className="px-3 py-1.5 rounded-lg bg-red-100 hover:bg-red-200 text-sm font-medium">
+            Retry
+          </button>
+        </div>
+      )}
+
+      {passwordResetResult && (
+        <div className="mb-4 p-4 rounded-xl bg-blue-50 border border-blue-200 text-blue-800">
+          <i className="fas fa-key mr-2"></i>
+          Temporary password for <span className="font-semibold">{passwordResetResult.name}</span>:
+          {' '}
+          <span className="font-semibold">{passwordResetResult.password || 'Check backend response payload.'}</span>
+        </div>
+      )}
+
+      {/* Statistics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
         {stats.map(({ label, value, color, icon, change }) => {
           const colorConfigs = {
@@ -267,9 +396,10 @@ const StaffManagement = () => {
           <StaffCard 
             key={staffMember.id} 
             staffMember={staffMember} 
-            onEdit={() => openModal('edit', staffMember)}
-            onToggleStatus={() => handleToggleStatus(staffMember.id)}
-            onDelete={() => openModal('delete', staffMember)}
+            onDetails={() => handleGetDetails(staffMember)}
+            onToggleStatus={() => handleToggleStatus(staffMember)}
+            onResetPassword={() => handleResetPassword(staffMember)}
+            actionLoading={actionLoading}
           />
         ))}
       </div>
@@ -282,7 +412,7 @@ const StaffManagement = () => {
           <h3 className="text-xl font-semibold text-gray-700 mb-2">No staff members found</h3>
           <p className="text-gray-500 mb-6">Try adjusting your search or filter criteria</p>
           <button 
-            onClick={() => { setSearchTerm(''); setDepartmentFilter(''); setStatusFilter(''); }}
+            onClick={() => { setSearchTerm(''); setRoleFilter(''); setStatusFilter(''); }}
             className="text-blue-600 hover:text-blue-800 font-medium flex items-center justify-center gap-2 mx-auto"
           >
             <i className="fas fa-redo"></i>
@@ -294,41 +424,28 @@ const StaffManagement = () => {
       {/* Modals */}
       <StaffFormModal
         isOpen={modalState.add}
-        onClose={() => closeModal('add')}
+        onClose={closeModal}
         title="Add New Staff Member"
         onSubmit={handleAddStaff}
         formData={formData}
         onInputChange={handleInputChange}
         submitText="Create Staff"
         submitIcon="plus-circle"
-        onCancel={() => closeModal('add')}
+        onCancel={closeModal}
+        fieldErrors={fieldErrors}
+        submitLoading={submitLoading}
       />
-
-      <StaffFormModal
-        isOpen={modalState.edit}
-        onClose={() => closeModal('edit')}
-        title="Edit Staff Member"
-        onSubmit={handleEditStaff}
-        formData={formData}
-        onInputChange={handleInputChange}
-        submitText="Save Changes"
-        submitIcon="save"
-        onCancel={() => closeModal('edit')}
-      />
-
-      <DeleteConfirmationModal
-        isOpen={modalState.delete}
-        onClose={() => closeModal('delete')}
-        onConfirm={handleDeleteStaff}
-        name={currentStaff?.name}
-        type="Staff"
+      <StaffDetailsModal
+        isOpen={Boolean(staffDetails)}
+        details={staffDetails}
+        onClose={closeDetailsModal}
       />
     </div>
   )
 }
 
 // Compact Staff Card Component
-const StaffCard = ({ staffMember, onEdit, onToggleStatus, onDelete }) => {
+const StaffCard = ({ staffMember, onDetails, onToggleStatus, onResetPassword, actionLoading }) => {
   const statusConfig = {
     Active: { color: 'text-green-600', bg: 'bg-green-100', border: 'border-green-200', icon: 'fas fa-check-circle' },
     Inactive: { color: 'text-red-600', bg: 'bg-red-100', border: 'border-red-200', icon: 'fas fa-pause-circle' }
@@ -337,16 +454,9 @@ const StaffCard = ({ staffMember, onEdit, onToggleStatus, onDelete }) => {
   const status = statusConfig[staffMember.status] || statusConfig.Active
   
   const roleConfig = {
-    Nurse: { bg: 'bg-blue-50', text: 'text-blue-600', icon: 'fas fa-user-nurse' },
-    Receptionist: { bg: 'bg-purple-50', text: 'text-purple-600', icon: 'fas fa-headset' },
-    'Lab Technician': { bg: 'bg-green-50', text: 'text-green-600', icon: 'fas fa-microscope' },
-    Pharmacist: { bg: 'bg-orange-50', text: 'text-orange-600', icon: 'fas fa-pills' },
-    'Security Guard': { bg: 'bg-gray-50', text: 'text-gray-600', icon: 'fas fa-shield-alt' },
-    Housekeeping: { bg: 'bg-teal-50', text: 'text-teal-600', icon: 'fas fa-broom' },
-    'Ward Boy': { bg: 'bg-indigo-50', text: 'text-indigo-600', icon: 'fas fa-hands-helping' },
-    Accountant: { bg: 'bg-yellow-50', text: 'text-yellow-600', icon: 'fas fa-calculator' },
-    'IT Support': { bg: 'bg-cyan-50', text: 'text-cyan-600', icon: 'fas fa-laptop-code' },
-    'HR Manager': { bg: 'bg-pink-50', text: 'text-pink-600', icon: 'fas fa-user-tie' }
+    DOCTOR: { bg: 'bg-blue-50', text: 'text-blue-600', icon: 'fas fa-user-md' },
+    LAB_TECH: { bg: 'bg-green-50', text: 'text-green-600', icon: 'fas fa-microscope' },
+    PHARMACIST: { bg: 'bg-orange-50', text: 'text-orange-600', icon: 'fas fa-pills' }
   }
   
   const roleStyle = roleConfig[staffMember.role] || { bg: 'bg-gray-50', text: 'text-gray-600', icon: 'fas fa-user' }
@@ -377,45 +487,43 @@ const StaffCard = ({ staffMember, onEdit, onToggleStatus, onDelete }) => {
           <span className={`${roleStyle.text} font-medium`}>{staffMember.role}</span>
         </div>
         <div className="flex justify-between">
-          <span className="font-medium text-gray-700">Department:</span>
-          <span className="text-gray-900">{staffMember.department}</span>
-        </div>
-        <div className="flex justify-between">
           <span className="font-medium text-gray-700">Shift:</span>
-          <span className="text-gray-900">{staffMember.shift}</span>
+          <span className="text-gray-900">{staffMember.shift_timing || '-'}</span>
         </div>
         <div className="flex justify-between">
           <span className="font-medium text-gray-700">Contact:</span>
-          <span className="text-gray-900">{staffMember.contact}</span>
+          <span className="text-gray-900">{staffMember.phone || '-'}</span>
         </div>
       </div>
       
       <div className="flex items-center justify-between pt-4 border-t">
         <span className={`px-3 py-1 rounded-full text-xs font-medium ${roleStyle.bg} ${roleStyle.text}`}>
           <i className={`${roleStyle.icon} mr-1`}></i>
-          {staffMember.role}
+          {staffMember.roleLabel}
         </span>
         <div className="flex gap-2">
           <button
-            onClick={onEdit}
+            onClick={onDetails}
             className="text-blue-600 hover:text-blue-800 p-2 rounded-full hover:bg-blue-50 transition-colors"
-            title="Edit Staff"
+            title="View Details"
           >
-            <i className="fas fa-edit"></i>
+            <i className="fas fa-info-circle"></i>
           </button>
           <button
             onClick={onToggleStatus}
+            disabled={actionLoading?.[`status-${staffMember.id}`]}
             className={`${staffMember.status === 'Active' ? 'text-yellow-600 hover:text-yellow-800 hover:bg-yellow-50' : 'text-green-600 hover:text-green-800 hover:bg-green-50'} p-2 rounded-full transition-colors`}
             title={staffMember.status === 'Active' ? 'Deactivate' : 'Activate'}
           >
             <i className={`fas fa-${staffMember.status === 'Active' ? 'pause' : 'play'}`}></i>
           </button>
           <button
-            onClick={onDelete}
-            className="text-red-600 hover:text-red-800 p-2 rounded-full hover:bg-red-50 transition-colors"
-            title="Delete Staff"
+            onClick={onResetPassword}
+            disabled={actionLoading?.[`reset-${staffMember.id}`]}
+            className="text-red-600 hover:text-red-800 p-2 rounded-full hover:bg-red-50 transition-colors disabled:opacity-50"
+            title="Reset Password"
           >
-            <i className="fas fa-trash"></i>
+            <i className="fas fa-key"></i>
           </button>
         </div>
       </div>
@@ -433,7 +541,9 @@ const StaffFormModal = ({
   onInputChange, 
   submitText, 
   submitIcon,
-  onCancel
+  onCancel,
+  fieldErrors,
+  submitLoading
 }) => (
   <Modal isOpen={isOpen} onClose={onClose} title={title} size="lg">
     <StaffForm 
@@ -443,27 +553,65 @@ const StaffFormModal = ({
       onSubmit={onSubmit}
       submitText={submitText}
       submitIcon={submitIcon}
+      fieldErrors={fieldErrors}
+      submitLoading={submitLoading}
     />
   </Modal>
 )
 
-// StaffForm component - Updated to match Department Management style
-const StaffForm = ({ formData, onInputChange, onCancel, onSubmit, submitText, submitIcon }) => {
-  const STAFF_ROLES = ['Nurse', 'Receptionist', 'Lab Technician', 'Pharmacist', 'Ward Boy', 'Housekeeping', 'Security Guard', 'Accountant', 'IT Support', 'HR Manager']
-  const DEPARTMENTS = ['Emergency', 'OPD', 'Lab', 'Pharmacy', 'ICU', 'Ward', 'Administration', 'HR', 'IT', 'Housekeeping']
-  const SHIFT_OPTIONS = ['Morning (7AM-3PM)', 'Evening (3PM-11PM)', 'Night (11PM-7AM)', 'Flexible', 'Part-time']
+const StaffDetailsModal = ({ isOpen, details, onClose }) => (
+  <Modal isOpen={isOpen} onClose={onClose} title="Staff Details" size="md">
+    <div className="space-y-4">
+      <div className="pb-3 border-b border-gray-200">
+        <h4 className="text-lg font-semibold text-gray-800">{details?.name || '-'}</h4>
+        <p className="text-sm text-gray-500">{details?.id || '-'}</p>
+      </div>
 
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+        <div><span className="font-medium text-gray-700">Email:</span> <span className="text-gray-900">{details?.email || '-'}</span></div>
+        <div><span className="font-medium text-gray-700">Phone:</span> <span className="text-gray-900">{details?.phone || '-'}</span></div>
+        <div><span className="font-medium text-gray-700">Role:</span> <span className="text-gray-900">{details?.role || '-'}</span></div>
+        <div><span className="font-medium text-gray-700">Active:</span> <span className="text-gray-900">{details?.active || '-'}</span></div>
+        <div><span className="font-medium text-gray-700">Shift:</span> <span className="text-gray-900">{details?.shift_timing || '-'}</span></div>
+        <div><span className="font-medium text-gray-700">Joining Date:</span> <span className="text-gray-900">{details?.joining_date || '-'}</span></div>
+      </div>
+
+      <div className="text-sm">
+        <p className="font-medium text-gray-700 mb-1">Address</p>
+        <p className="text-gray-900 bg-gray-50 rounded-lg p-2">{details?.address || '-'}</p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+        <div><span className="font-medium text-gray-700">Emergency Contact:</span> <span className="text-gray-900">{details?.emergency_contact || '-'}</span></div>
+        <div><span className="font-medium text-gray-700">Doctor Specialization:</span> <span className="text-gray-900">{details?.doctor_specialization || '-'}</span></div>
+      </div>
+
+      <div className="flex justify-end pt-2 border-t border-gray-200">
+        <button
+          type="button"
+          onClick={onClose}
+          className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </Modal>
+)
+
+const StaffForm = ({ formData, onInputChange, onCancel, onSubmit, submitText, submitIcon, fieldErrors, submitLoading }) => {
   const formFields = [
-    { type: 'text', name: 'name', label: 'Full Name *', placeholder: 'Enter full name', icon: 'fas fa-user' },
+    { type: 'text', name: 'first_name', label: 'First Name *', placeholder: 'Enter first name', icon: 'fas fa-user' },
+    { type: 'text', name: 'last_name', label: 'Last Name *', placeholder: 'Enter last name', icon: 'fas fa-user' },
     { type: 'email', name: 'email', label: 'Email Address *', placeholder: 'staff@hospital.com', icon: 'fas fa-envelope' },
     { type: 'tel', name: 'phone', label: 'Phone Number *', placeholder: '+91 98765 43210', icon: 'fas fa-phone' },
-    { type: 'tel', name: 'emergencyContact', label: 'Emergency Contact *', placeholder: '+91 98765 43210', icon: 'fas fa-phone-alt' },
+    { type: 'password', name: 'password', label: 'Password *', placeholder: 'Enter password', icon: 'fas fa-lock' },
+    { type: 'tel', name: 'emergency_contact', label: 'Emergency Contact *', placeholder: '+91 98765 43210', icon: 'fas fa-phone-alt' },
   ]
 
   const selectFields = [
-    { name: 'role', label: 'Role *', options: STAFF_ROLES, icon: 'fas fa-briefcase' },
-    { name: 'department', label: 'Department *', options: DEPARTMENTS, icon: 'fas fa-building' },
-    { name: 'shift', label: 'Shift Timing *', options: SHIFT_OPTIONS, icon: 'fas fa-clock' },
+    { name: 'role', label: 'Role *', options: ROLE_OPTIONS, icon: 'fas fa-briefcase' },
+    { name: 'shift_timing', label: 'Shift Timing *', options: SHIFT_OPTIONS, icon: 'fas fa-clock' },
   ]
 
   return (
@@ -481,10 +629,11 @@ const StaffForm = ({ formData, onInputChange, onCancel, onSubmit, submitText, su
                 required
                 value={formData[field.name]}
                 onChange={(e) => onInputChange(field.name, e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className={`w-full pl-12 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${fieldErrors[field.name] ? 'border-red-400' : 'border-gray-300'}`}
                 placeholder={field.placeholder}
               />
             </div>
+            {fieldErrors[field.name] && <p className="text-sm text-red-600 mt-1">{fieldErrors[field.name]}</p>}
           </div>
         ))}
       </div>
@@ -504,7 +653,11 @@ const StaffForm = ({ formData, onInputChange, onCancel, onSubmit, submitText, su
                 className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
               >
                 <option value="">Select {field.label.replace(' *', '')}</option>
-                {field.options.map(option => <option key={option} value={option}>{option}</option>)}
+                {field.options.map(option => (
+                  <option key={option} value={option}>
+                    {field.name === 'role' ? toDisplayRole(option) : option}
+                  </option>
+                ))}
               </select>
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
                 <i className="fas fa-chevron-down"></i>
@@ -522,12 +675,33 @@ const StaffForm = ({ formData, onInputChange, onCancel, onSubmit, submitText, su
             <input
               type="date"
               required
-              value={formData.joiningDate}
-              onChange={(e) => onInputChange('joiningDate', e.target.value)}
+              value={formData.joining_date}
+              onChange={(e) => onInputChange('joining_date', e.target.value)}
               className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
+          {fieldErrors.joining_date && <p className="text-sm text-red-600 mt-1">{fieldErrors.joining_date}</p>}
         </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Doctor Specialization {formData.role === 'DOCTOR' ? '*' : '(Optional)'}</label>
+        <div className="relative">
+          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+            <i className="fas fa-stethoscope"></i>
+          </div>
+          <input
+            type="text"
+            value={formData.doctor_specialization}
+            onChange={(e) => onInputChange('doctor_specialization', e.target.value)}
+            className={`w-full pl-12 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${fieldErrors.doctor_specialization ? 'border-red-400' : 'border-gray-300'}`}
+            placeholder="Enter specialization"
+          />
+        </div>
+        {formData.role !== 'DOCTOR' && (
+          <p className="text-xs text-gray-500 mt-1">Required only when role is Doctor.</p>
+        )}
+        {fieldErrors.doctor_specialization && <p className="text-sm text-red-600 mt-1">{fieldErrors.doctor_specialization}</p>}
       </div>
 
       <div>
@@ -541,10 +715,11 @@ const StaffForm = ({ formData, onInputChange, onCancel, onSubmit, submitText, su
             required
             value={formData.address}
             onChange={(e) => onInputChange('address', e.target.value)}
-            className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className={`w-full pl-12 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${fieldErrors.address ? 'border-red-400' : 'border-gray-300'}`}
             placeholder="Enter complete address"
           />
         </div>
+        {fieldErrors.address && <p className="text-sm text-red-600 mt-1">{fieldErrors.address}</p>}
       </div>
 
       <div className="flex justify-end gap-3 pt-6 border-t">
@@ -558,48 +733,15 @@ const StaffForm = ({ formData, onInputChange, onCancel, onSubmit, submitText, su
         <button
           type="button"
           onClick={onSubmit}
-          disabled={!formData.name || !formData.email || !formData.role || !formData.department}
+          disabled={submitLoading}
           className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-md hover:shadow-lg"
         >
           <i className={`fas fa-${submitIcon} mr-2`}></i>
-          {submitText}
+          {submitLoading ? 'Creating...' : submitText}
         </button>
       </div>
     </div>
   )
 }
-
-// DeleteConfirmationModal component - Matching Department Management style
-const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, name, type }) => (
-  <Modal isOpen={isOpen} onClose={onClose} title={`Delete ${type}`} size="md">
-    <div className="text-center p-8">
-      <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-red-50 to-pink-50 rounded-full flex items-center justify-center">
-        <i className="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
-      </div>
-      <h3 className="text-xl font-bold text-gray-800 mb-3">Are you sure?</h3>
-      <p className="text-gray-600 mb-2">
-        You are about to delete <span className="font-semibold text-gray-800">{name}</span>
-      </p>
-      <p className="text-sm text-gray-500 mb-8">
-        This action will permanently remove the staff member and all associated data.
-      </p>
-      <div className="flex justify-center gap-4">
-        <button 
-          onClick={onClose}
-          className="px-8 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-all duration-200 font-medium"
-        >
-          Cancel
-        </button>
-        <button 
-          onClick={onConfirm}
-          className="px-8 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:from-red-700 hover:to-red-800 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
-        >
-          <i className="fas fa-trash mr-2"></i>
-          Delete Permanently
-        </button>
-      </div>
-    </div>
-  </Modal>
-)
 
 export default StaffManagement

@@ -115,7 +115,7 @@ export default function RequestDemo() {
           </div>
 
           <h1 className="mt-6 text-3xl font-bold tracking-tight text-slate-900 md:text-5xl">
-            See How DCM{" "}
+            See How Levitica{" "}
             <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
               Fits Your Hospital Workflow
             </span>
@@ -142,7 +142,7 @@ export default function RequestDemo() {
             <InfoCard
               icon={Users}
               title="Built For Real Hospital Teams"
-              body="From administrators and doctors to front-desk teams, we show how DCM supports daily hospital operations end to end."
+              body="From administrators and doctors to front-desk teams, we show how Levitica supports daily hospital operations end to end."
             />
           </div>
 

@@ -8,7 +8,7 @@ export default function Download() {
 
             {/* ---------------- HERO SECTION ---------------- */}
             <div className="bg-gradient-to-r from-blue-900 to-blue-600 py-20 text-center text-white">
-                <h1 className="text-4xl font-bold">Download DCM Hospital App</h1>
+                <h1 className="text-4xl font-bold">Download Levitica Hospital App</h1>
             </div>
 
             {/* ---------------- MAIN SECTION ---------------- */}
@@ -17,7 +17,7 @@ export default function Download() {
                 {/* LEFT CONTENT */}
                 <div>
                     <h2 className="text-3xl font-semibold mb-4">
-                        Manage Your Hospital Faster With DCM App
+                        Manage Your Hospital Faster With Levitica App
                     </h2>
 
                     <p className="text-gray-600 leading-relaxed mb-4">
@@ -60,7 +60,7 @@ export default function Download() {
                 <div className="flex justify-center">
                     <img
                         src="./assets/images/image.png"
-                        alt="DCM Hospital App"
+                        alt="Levitica Hospital App"
                         className="w-80 drop-shadow-2xl"
                     />
                 </div>

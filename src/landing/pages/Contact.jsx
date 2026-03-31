@@ -13,11 +13,11 @@ const contactCards = [
   {
     icon: Mail,
     title: "Email Us",
-    primary: "hr@designcareermetrics.com",
-    secondary: "support@careermetrics.com",
+    primary: "hr@leviticatechnologies.com",
+    secondary: "support@leviticatechnologies.com",
     actionLabel: "Send Email",
     onClick: () => {
-      window.location.href = "mailto:hr@designcareermetrics.com";
+      window.location.href = "mailto:hr@leviticatechnologies.com";
     },
   },
   {
@@ -70,7 +70,7 @@ const faqItems = [
   {
     question: "Do you support both hospitals and smaller clinics?",
     answer:
-      "Yes. DCM HMS is designed for growing clinics, speciality centers and larger hospitals that need connected operational and clinical workflows.",
+      "Yes. Levitica HMS is designed for growing clinics, speciality centers and larger hospitals that need connected operational and clinical workflows.",
   },
   {
     question: "Can we discuss implementation, migration and onboarding before choosing a plan?",
@@ -157,7 +157,7 @@ export default function Contact() {
         <div className="relative mx-auto max-w-5xl text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white px-4 py-2 text-sm font-semibold text-[#005EB8]">
             <Mail className="h-4 w-4" />
-            <span>Contact DCM HMS</span>
+            <span>Contact Levitica HMS</span>
           </div>
 
           <h1 className="mt-6 text-3xl font-bold leading-tight tracking-tight text-slate-950 md:text-5xl">
@@ -169,7 +169,7 @@ export default function Contact() {
 
           <p className="mx-auto mt-5 max-w-3xl text-base leading-8 text-slate-600 md:text-lg">
             Reach out for product guidance, implementation discussions, hospital workflow support,
-            pricing details, or a personalized DCM HMS walkthrough.
+            pricing details, or a personalized Levitica HMS walkthrough.
           </p>
 
           <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-4">

@@ -191,7 +191,7 @@ const SignupPage = () => {
               Healthcare Institution Registration
             </h1>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Register your healthcare facility to access the complete DCM Hospital Management Suite
+              Register your healthcare facility to access the complete Levitica Hospital Management Suite
             </p>
           </div>
         </div>
@@ -210,7 +210,7 @@ const SignupPage = () => {
                   </div>
                   <h2 className="text-2xl font-bold text-gray-900 mb-3">Registration Successful!</h2>
                   <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                    Thank you for registering your healthcare institution with DCM HMS.
+                    Thank you for registering your healthcare institution with Levitica HMS.
                   </p>
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8 max-w-md mx-auto">
                     <p className="text-sm text-blue-700">
@@ -593,7 +593,7 @@ const SignupPage = () => {
                             are authorized to represent the healthcare institution listed.
                           </p>
                           <p>
-                            DCM HMS is HIPAA compliant and meets all healthcare data security standards.
+                            Levitica HMS is HIPAA compliant and meets all healthcare data security standards.
                             You agree to maintain confidentiality and report any security incidents.
                           </p>
                           <p>
@@ -768,7 +768,7 @@ const SignupPage = () => {
                     </div>
                   </div>
                   <p className="text-gray-700 italic">
-                    "DCM HMS transformed our hospital operations. Patient care coordination improved dramatically while reducing administrative workload."
+                    "Levitica HMS transformed our hospital operations. Patient care coordination improved dramatically while reducing administrative workload."
                   </p>
                   <div className="mt-4 flex gap-1">
                     {[1, 2, 3, 4, 5].map((star) => (

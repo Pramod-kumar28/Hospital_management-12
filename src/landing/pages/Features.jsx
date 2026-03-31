@@ -384,7 +384,7 @@ const Solutions = () => {
                   Ready to Transform Your Healthcare Facility?
                 </h3>
                 <p className="text-white/85 text-base sm:text-lg mb-4 sm:mb-6 leading-relaxed">
-                  Join 50+ healthcare facilities that have streamlined their operations and improved patient care with DCM Hospital Management System.
+                  Join 50+ healthcare facilities that have streamlined their operations and improved patient care with Levitica Hospital Management System.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                   <Link
@@ -447,7 +447,7 @@ const Solutions = () => {
             Start Your Digital <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">Transformation Journey</span> 
           </h2>
           {/* <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 max-w-2xl mx-auto">
-            Schedule a personalized demo to see how DCM Hospital Management can transform your healthcare facility operations and patient care delivery.
+            Schedule a personalized demo to see how Levitica Hospital Management can transform your healthcare facility operations and patient care delivery.
           </p> */}
           <div className="mb-6 flex flex-col items-center justify-center gap-3 sm:mb-8 sm:flex-row sm:gap-4">
             <Link to="/download" className="transition-transform duration-300 hover:-translate-y-1">

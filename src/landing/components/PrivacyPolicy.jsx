@@ -53,7 +53,7 @@ const PrivacyPolicy = () => {
                   Privacy Policy
                 </h1>
                 <p className="text-blue-200 text-xl">
-                  DCM Hospital Management System
+                  Levitica Hospital Management System
                 </p>
               </div>
             </div>
@@ -87,7 +87,7 @@ const PrivacyPolicy = () => {
 
           <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
             <p className="text-gray-700 text-lg leading-relaxed mb-6">
-              At DCM Hospital Management System, we understand the sensitivity of healthcare information 
+              At Levitica Hospital Management System, we understand the sensitivity of healthcare information 
               and are committed to maintaining the highest standards of data protection. This Privacy Policy 
               describes how we collect, use, disclose, and safeguard your personal health information 
               when you use our hospital management platform and related services.
@@ -459,7 +459,7 @@ const PrivacyPolicy = () => {
                   <ul className="space-y-3">
                     <li className="flex items-start gap-2">
                       <Mail size={16} className="text-blue-600 mt-1" />
-                      <span>Email: privacy@dcmhospital.com</span>
+                      <span>Email: privacy@Leviticahospital.com</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Phone size={16} className="text-blue-600 mt-1" />
@@ -516,7 +516,7 @@ const PrivacyPolicy = () => {
                     <div>
                       <h4 className="font-bold text-lg text-gray-800 mb-2">Corporate Headquarters</h4>
                       <p className="text-gray-700">
-                        DCM Hospital Management Systems<br />
+                        Levitica Hospital Management Systems<br />
                         Data Protection Office<br />
                         123 Medical Tower, Bandra Kurla Complex<br />
                         Mumbai, Maharashtra 400051<br />
@@ -533,11 +533,11 @@ const PrivacyPolicy = () => {
                       <h4 className="font-bold text-lg text-gray-800 mb-2">Email Contacts</h4>
                       <p className="text-gray-700">
                         <strong>General Privacy Inquiries:</strong><br />
-                        privacy@dcmhospital.com<br /><br />
+                        privacy@Leviticahospital.com<br /><br />
                         <strong>Data Protection Officer:</strong><br />
-                        dpo@dcmhospital.com<br /><br />
+                        dpo@Leviticahospital.com<br /><br />
                         <strong>Security Incidents:</strong><br />
-                        security@dcmhospital.com
+                        security@Leviticahospital.com
                       </p>
                     </div>
                   </div>

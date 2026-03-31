@@ -21,8 +21,8 @@ export default function Header(){
               {/* LOGO IMAGE - LARGER SIZE */}
               <div className="h-14 w-14 md:h-16 md:w-16">
                 <img 
-                  src="./assets/images/DCM-Logo.png" 
-                  alt="DCM Hospital Logo" 
+                  src="./assets/images/Levitica.png" 
+                  alt="Levitica Hospital Logo" 
                   className="h-14 w-auto object-contain md:h-16"
                 /> 
               </div>

@@ -7,7 +7,7 @@ const doctorFeatures = [
     icon: Hospital,
     title: "OPD & IPD Management",
     text: "Track consultations, admissions, discharges and ward coordination from one connected workflow.",
-    tags: ["Admissions", "Ward Flow"],
+    tags: ["Admissions", "Discharges" ],
   },
   {
     icon: CalendarCheck2,
@@ -23,7 +23,7 @@ const doctorFeatures = [
   },
   {
     icon: ClipboardList,
-    title: "Clinical Workflow Control",
+    title: "Clinical Workflow",
     text: "Manage prescriptions, orders, progress notes and treatment coordination without switching systems.",
     tags: ["Orders", "Care Notes"],
   },
@@ -50,7 +50,7 @@ const patientFeatures = [
   },
   {
     icon: Activity,
-    title: "Care Updates & Follow-ups",
+    title: "Updates & Follow-ups",
     text: "Support reminders, follow-up communication and a smoother patient experience after every visit.",
     tags: ["Reminders", "Recovery"],
   },
@@ -60,13 +60,13 @@ function DeviceMock({ accent, accentSoft, feature, slideKey }) {
   return (
     <div className="flex flex-col items-center">
       <div
-        className="relative flex h-[330px] w-[172px] justify-center rounded-[2rem] border-4 border-slate-900 bg-slate-50 shadow-[10px_10px_12px_2px_rgba(209,218,218,0.9)] sm:h-[360px] sm:w-[188px]"
+        className="relative flex h-[310px] w-[164px] justify-center rounded-[2rem] border-4 border-slate-900 bg-slate-50 shadow-[10px_10px_12px_2px_rgba(209,218,218,0.9)] sm:h-[340px] sm:w-[180px]"
       >
         <span className="absolute top-0 h-3 w-24 rounded-b-2xl bg-slate-900" />
         <span className="absolute -right-[10px] top-20 h-8 rounded-md border-4 border-slate-900" />
         <span className="absolute -right-[10px] bottom-28 h-10 rounded-md border-4 border-slate-900" />
 
-        <div className="mt-5 flex h-[292px] w-[148px] flex-col overflow-hidden rounded-[1.5rem] bg-white sm:mt-6 sm:h-[318px] sm:w-[164px]">
+        <div className="mt-4 flex h-[276px] w-[140px] flex-col overflow-hidden rounded-[1.5rem] bg-white sm:mt-5 sm:h-[300px] sm:w-[156px]">
           <div className="relative flex-1 overflow-hidden bg-[linear-gradient(180deg,#ffffff_0%,#f3f9ff_55%,#edf7ff_100%)]">
             <AnimatePresence mode="wait">
               <motion.div
@@ -75,32 +75,29 @@ function DeviceMock({ accent, accentSoft, feature, slideKey }) {
                 animate={{ x: 0, opacity: 1 }}
                 exit={{ x: -64, opacity: 0 }}
                 transition={{ duration: 0.52, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute inset-0 flex h-full flex-col px-3.5 pb-3.5 pt-4 sm:px-4 sm:pb-4 sm:pt-5"
+                className="absolute inset-0 flex h-full flex-col px-3.5 pb-3 pt-4 sm:px-4 sm:pb-4 sm:pt-5"
               >
                 <div className="mt-2">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-sky-500">
-                    Digital care
-                  </p>
-                  <h3 className="mt-2.5 text-[15px] font-bold leading-5 text-slate-900 sm:text-[17px] sm:leading-6">
+                  <h3 className="mt-2 text-[15px] font-bold leading-5 text-blue-900 sm:text-[17px] sm:leading-5">
                     {feature.title}
                   </h3>
-                  <p className="mt-3 text-[11px] leading-5 text-slate-600 sm:mt-4 sm:text-[12px] sm:leading-6">
+                  <p className="mt-2 text-[11px] leading-3 text-slate-600 sm:mt-4 sm:text-[12px] sm:leading-5">
                     {feature.text}
                   </p>
                 </div>
 
-                <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-5">
+                <div className="mt-3 grid grid-cols-1 gap-1 sm:mt-4">
                   {feature.tags?.map((tag) => (
                     <div
                       key={tag}
-                      className="rounded-2xl bg-white/95 px-2 py-2.5 text-center text-[10px] font-semibold text-slate-700 shadow-[0_8px_18px_rgba(15,23,42,0.05)]"
+                      className="rounded-2xl bg-white/95 px-2 py-1.5 text-center text-[10px] font-semibold text-slate-700 shadow-[0_8px_18px_rgba(15,23,42,0.05)]"
                     >
                       {tag}
                     </div>
                   ))}
                 </div>
 
-                <div className="mt-3.5 space-y-2 sm:mt-4 sm:space-y-2.5">
+                <div className="mt-3 space-y-2 sm:mt-4 sm:space-y-2.5">
                   <div className="rounded-2xl bg-white/95 px-3 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.06)]">
                     <div className={`h-2 rounded-full ${accentSoft}`} />
                     <div className="mt-2 h-2 w-4/5 rounded-full bg-slate-100" />
@@ -111,7 +108,7 @@ function DeviceMock({ accent, accentSoft, feature, slideKey }) {
                   </div>
                 </div>
 
-                <div className="mt-auto pt-2.5 sm:pt-3">
+                <div className="mt-auto pt-2 sm:pt-3">
                   <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
                     <span>Connected</span>
                     <span>Care Flow</span>
@@ -160,14 +157,14 @@ export default function DualAppPreviewSection() {
             </span>
           </h2>
           <p className="mt-4 text-base leading-8 text-slate-600 md:text-lg">
-            Designed for both doctors and patients, DCM HMS creates a smoother digital experience
+            Designed for both doctors and patients, Levitica HMS creates a smoother digital experience
             from appointments and records to consultations and follow-ups.
           </p>
         </div>
 
         <div className="mt-12 grid items-center gap-10 lg:grid-cols-[1fr_auto_1fr]">
           <div className="order-2 lg:order-1">
-            <div className="mx-auto max-w-md rounded-[2rem] border border-slate-200 bg-[linear-gradient(180deg,#f8fbff_0%,#ffffff_100%)] p-6 shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
+            <div className="mx-auto max-w-md rounded-[2rem] border border-slate-200 bg-[linear-gradient(180deg,#f8fbff_0%,#ffffff_100%)] p-6 shadow-[0_18px_40px_rgba(15,23,42,0.06)] sm:min-h-[620px]">
               <p className="text-center text-sm font-semibold uppercase tracking-[0.24em] text-sky-500">
                 Doctor Side
               </p>
@@ -176,7 +173,7 @@ export default function DualAppPreviewSection() {
                 From OPD and IPD coordination to patient records and appointments, the doctor view
                 keeps high-priority actions easier to manage.
               </p>
-              <div className="mt-6 flex justify-center">
+              <div className="mt-8 flex justify-center">
                 <DeviceMock accent="bg-[#005EB8]" accentSoft="bg-sky-100" feature={doctorFeatures[doctorIndex]} slideKey={`doctor-${doctorIndex}`} />
               </div>
             </div>
@@ -190,7 +187,7 @@ export default function DualAppPreviewSection() {
           </div>
 
           <div className="order-3">
-            <div className="mx-auto max-w-md rounded-[2rem] border border-slate-200 bg-[linear-gradient(180deg,#f8fbff_0%,#ffffff_100%)] p-6 shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
+            <div className="mx-auto max-w-md rounded-[2rem] border border-slate-200 bg-[linear-gradient(180deg,#f8fbff_0%,#ffffff_100%)] p-6 shadow-[0_18px_40px_rgba(15,23,42,0.06)] sm:min-h-[620px]">
               <p className="text-center text-sm font-semibold uppercase tracking-[0.24em] text-cyan-500">
                 Patient Side
               </p>
@@ -199,7 +196,7 @@ export default function DualAppPreviewSection() {
                 Help patients book appointments, access records, join tele-consultations and stay
                 better connected to their treatment journey.
               </p>
-              <div className="mt-6 flex justify-center">
+              <div className="mt-8 flex justify-center">
                 <DeviceMock accent="bg-[#1597E5]" accentSoft="bg-cyan-100" feature={patientFeatures[patientIndex]} slideKey={`patient-${patientIndex}`} />
               </div>
             </div>

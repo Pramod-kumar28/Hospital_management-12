@@ -38,7 +38,7 @@ const TermsOfService = () => {
               Terms of Service
             </h1>
             <p className="text-xl text-blue-100 max-w-3xl mx-auto">
-              Last updated: December 15, 2024 • Effective for all DCM Hospital Management System users
+              Last updated: December 15, 2024 • Effective for all Levitica Hospital Management System users
             </p>
           </div>
         </div>
@@ -103,7 +103,7 @@ const TermsOfService = () => {
                   <Building2 className="w-6 h-6 text-blue-600" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to DCM Hospital Management System</h2>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to Levitica Hospital Management System</h2>
                   <p className="text-gray-600">
                     These Terms of Service govern your use of our hospital management platform, services, 
                     and applications. By accessing or using our services, you agree to be bound by these terms.
@@ -149,7 +149,7 @@ const TermsOfService = () => {
                   <div className="px-6 pb-6 pt-2 border-t border-gray-100">
                     <div className="prose prose-blue max-w-none">
                       <p className="text-gray-600 mb-4">
-                        By accessing or using the DCM Hospital Management System ("Service"), you agree to be bound by these Terms of Service ("Terms"). If you disagree with any part of the terms, you may not access the Service.
+                        By accessing or using the Levitica Hospital Management System ("Service"), you agree to be bound by these Terms of Service ("Terms"). If you disagree with any part of the terms, you may not access the Service.
                       </p>
                       
                       <div className="bg-gray-50 rounded-lg p-4 mb-4">
@@ -354,7 +354,7 @@ const TermsOfService = () => {
                         <div>
                           <h5 className="font-semibold text-gray-900 mb-2">Service Limitations</h5>
                           <p>
-                            The DCM Hospital Management System is a software tool to assist healthcare operations. 
+                            The Levitica Hospital Management System is a software tool to assist healthcare operations. 
                             It does not replace professional medical judgment, diagnosis, or treatment.
                           </p>
                         </div>
@@ -396,7 +396,7 @@ const TermsOfService = () => {
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">Acknowledgement</h3>
               <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-                By using the DCM Hospital Management System, you acknowledge that you have read, understood, 
+                By using the Levitica Hospital Management System, you acknowledge that you have read, understood, 
                 and agree to be bound by these Terms of Service.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -431,12 +431,12 @@ const TermsOfService = () => {
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="text-center text-gray-600 text-sm">
             <p className="mb-2">
-              DCM Hospital Management System • Terms of Service Version 3.2 • Effective December 15, 2024
+              Levitica Hospital Management System • Terms of Service Version 3.2 • Effective December 15, 2024
             </p>
             <p>
               For questions about these terms, please contact our legal department at{' '}
-              <a href="mailto:legal@dcmhealthcare.com" className="text-blue-600 hover:text-blue-700">
-                legal@dcmhealthcare.com
+              <a href="mailto:legal@Leviticahealthcare.com" className="text-blue-600 hover:text-blue-700">
+                legal@Leviticahealthcare.com
               </a>
             </p>
           </div>

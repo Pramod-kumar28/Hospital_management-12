@@ -46,17 +46,17 @@ const Footer = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {/* Company Info */}
             <div>
-              <div className="flex items-center mb-6">
-                <div className="h-12 w-22 shadow-lg overflow-hidden mr-3"> {/* Increased width from w-19 to w-22 */}
+              <div className="mb-6 flex flex-col items-start">
+                <div className="h-12 w-22 shadow-lg overflow-hidden">
                   <img
-                    src="./assets/images/DCM-Logo.png"
+                    src="./assets/images/Levitica1.png"
                     alt="Logo"
                     className="h-12 w-20" 
                   />
                 </div>
-                <div>
-                  <h2 className="text-xl font-bold"><span className='text-white-500'>Hospital Management system</span></h2>
-                </div>
+                <h2 className="mt-2 text-lg font-bold leading-none">
+                  <span className='text-white-500'>Hospital Management system</span>
+                </h2>
               </div>
               <p className="text-gray-300 mb-6 text-sm">
                 Transforming healthcare delivery through innovative technology solutions. Trusted by hospitals across Hyderabad and beyond.
@@ -118,7 +118,7 @@ const Footer = () => {
                 </div>
                 <div className="flex items-center space-x-3">
                   <i className="fas fa-envelope text-white-500" />
-                  <span className="text-gray-300">info@dcmhospital.com</span>
+                  <span className="text-gray-300">info@Leviticahospital.com</span>
                 </div>
               </div>
             </div>
@@ -128,10 +128,10 @@ const Footer = () => {
           <div className="border-t border-blue-800 pt-8 mt-8">
             <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
               <p className="text-gray-400 text-sm">
-                &copy; 2025 DCM Hospital Management. All rights reserved.
+                &copy; 2025 Levitica Hospital Management. All rights reserved.
               </p>
               <p className="text-gray-400 text-sm">
-                &copy; Developed by <a href="https://designcareermetrics.com/" className="hover:text-amber-500 transition duration-300">Designcareermetrics</a>
+                &copy; Developed by <a href="https://Leviticatechnologies.com/" className="hover:text-amber-500 transition duration-300">Levitica Technologies</a>
               </p>
               <div className="flex space-x-6 text-sm">
                 <Link 

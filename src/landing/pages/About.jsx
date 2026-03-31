@@ -89,7 +89,7 @@ export default function Features() {
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white px-4 py-2 text-sm font-semibold text-[#005EB8] shadow-[0_10px_30px_rgba(0,94,184,0.08)]">
                 <Zap className="h-4 w-4 text-red-500" />
-                <span>About DCM HMS</span>
+                <span>About Levitica HMS</span>
               </div>
 
               <h1 className="mt-6 max-w-4xl text-3xl font-bold leading-[1.05] tracking-tight text-slate-950 md:text-5xl lg:text-6xl">
@@ -100,7 +100,7 @@ export default function Features() {
               </h1>
 
               <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600 md:text-lg">
-                DCM Hospital Management System brings patients, doctors, labs, pharmacy, billing,
+                Levitica Hospital Management System brings patients, doctors, labs, pharmacy, billing,
                 reporting and telemedicine into one modern digital ecosystem designed for real
                 healthcare teams and everyday hospital workflows.
               </p>
@@ -129,7 +129,7 @@ export default function Features() {
               <div className="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-[linear-gradient(180deg,#f8fbff_0%,#eef7ff_100%)] p-5 shadow-[0_20px_55px_rgba(2,34,78,0.12)]">
                 <img
                   src="/assets/images/About.jpeg"
-                  alt="About DCM hospital management system"
+                  alt="About Levitica hospital management system"
                   className="h-[260px] w-full rounded-[1.5rem] object-cover object-center md:h-[320px]"
                 />
 

@@ -5,42 +5,42 @@ import { Link } from "react-router-dom";
 const desktopComparison = [
   {
     feature: "Cloud-Based Architecture",
-    dcm: { status: "yes", text: "Multi-tenant SaaS" },
+    Levitica: { status: "yes", text: "Multi-tenant SaaS" },
     others: { status: "no", text: "On-premise only" },
   },
   {
     feature: "Real-time Analytics",
-    dcm: { status: "yes", text: "Live dashboards" },
+    Levitica: { status: "yes", text: "Live dashboards" },
     others: { status: "partial", text: "Basic reports only" },
   },
   {
     feature: "Mobile App Access",
-    dcm: { status: "yes", text: "iOS & Android" },
+    Levitica: { status: "yes", text: "iOS & Android" },
     others: { status: "partial", text: "Web only" },
   },
   {
     feature: "Telemedicine Integration",
-    dcm: { status: "yes", text: "Built-in video calls" },
+    Levitica: { status: "yes", text: "Built-in video calls" },
     others: { status: "no", text: "Third-party needed" },
   },
   {
     feature: "AI-Powered Insights",
-    dcm: { status: "yes", text: "Predictive analytics" },
+    Levitica: { status: "yes", text: "Predictive analytics" },
     others: { status: "no", text: "Not available" },
   },
   {
     feature: "Multi-branch Support",
-    dcm: { status: "yes", text: "Unlimited branches" },
+    Levitica: { status: "yes", text: "Unlimited branches" },
     others: { status: "limited", text: "Extra cost" },
   },
   {
     feature: "24/7 Support",
-    dcm: { status: "yes", text: "Dedicated team" },
+    Levitica: { status: "yes", text: "Dedicated team" },
     others: { status: "limited", text: "Business hours" },
   },
   {
     feature: "HIPAA Compliance",
-    dcm: { status: "yes", text: "Fully certified" },
+    Levitica: { status: "yes", text: "Fully certified" },
     others: { status: "partial", text: "Basic security" },
   },
 ];
@@ -48,37 +48,37 @@ const desktopComparison = [
 const mobileComparison = [
   {
     feature: "Cloud Architecture",
-    dcm: "Multi-tenant SaaS",
+    Levitica: "Multi-tenant SaaS",
     traditional: "On-premise only",
-    dcmIcon: <CheckCircle className="h-4 w-4 text-green-600" />,
+    LeviticaIcon: <CheckCircle className="h-4 w-4 text-green-600" />,
     traditionalIcon: <X className="h-4 w-4 text-red-600" />,
   },
   {
     feature: "Real-time Analytics",
-    dcm: "Live dashboards",
+    Levitica: "Live dashboards",
     traditional: "Basic reports",
-    dcmIcon: <CheckCircle className="h-4 w-4 text-green-600" />,
+    LeviticaIcon: <CheckCircle className="h-4 w-4 text-green-600" />,
     traditionalIcon: <AlertCircle className="h-4 w-4 text-yellow-600" />,
   },
   {
     feature: "Mobile App Access",
-    dcm: "iOS & Android",
+    Levitica: "iOS & Android",
     traditional: "Web only",
-    dcmIcon: <CheckCircle className="h-4 w-4 text-green-600" />,
+    LeviticaIcon: <CheckCircle className="h-4 w-4 text-green-600" />,
     traditionalIcon: <AlertCircle className="h-4 w-4 text-yellow-600" />,
   },
   {
     feature: "Telemedicine",
-    dcm: "Built-in",
+    Levitica: "Built-in",
     traditional: "Third-party",
-    dcmIcon: <CheckCircle className="h-4 w-4 text-green-600" />,
+    LeviticaIcon: <CheckCircle className="h-4 w-4 text-green-600" />,
     traditionalIcon: <X className="h-4 w-4 text-red-600" />,
   },
   {
     feature: "24/7 Support",
-    dcm: "Dedicated team",
+    Levitica: "Dedicated team",
     traditional: "Business hours",
-    dcmIcon: <CheckCircle className="h-4 w-4 text-green-600" />,
+    LeviticaIcon: <CheckCircle className="h-4 w-4 text-green-600" />,
     traditionalIcon: <AlertCircle className="h-4 w-4 text-yellow-600" />,
   },
 ];
@@ -97,14 +97,14 @@ const BenefitsSection = () => {
           </div>
 
           <h2 className="mt-6 text-3xl font-bold tracking-tight text-slate-900 md:text-5xl">
-            Why DCM{" "}
+            Why Levitica{" "}
             <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
               Outperforms Traditional Systems
             </span>
           </h2>
 
           <p className="mx-auto mt-5 max-w-3xl text-base leading-8 text-slate-600 md:text-lg">
-            See how DCM Hospital Management System compares with legacy platforms across cloud
+            See how Levitica Hospital Management System compares with legacy platforms across cloud
             architecture, mobility, analytics, telemedicine and long-term operational value.
           </p>
         </div>
@@ -116,7 +116,7 @@ const BenefitsSection = () => {
                 <h3 className="text-xl font-bold">Capabilities</h3>
               </div>
               <div className="text-center">
-                <h3 className="text-xl font-bold">DCM Hospital Management</h3>
+                <h3 className="text-xl font-bold">Levitica Hospital Management</h3>
                 <p className="mt-1 text-sm text-blue-100">Modern cloud solution</p>
               </div>
               <div className="text-center">
@@ -138,10 +138,10 @@ const BenefitsSection = () => {
                   </div>
 
                   <div className="text-center">
-                    {item.dcm.status === "yes" && (
+                    {item.Levitica.status === "yes" && (
                       <div className="inline-flex items-center justify-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-emerald-700">
                         <CheckCircle className="h-5 w-5" />
-                        <span className="text-sm font-semibold">{item.dcm.text}</span>
+                        <span className="text-sm font-semibold">{item.Levitica.text}</span>
                       </div>
                     )}
                   </div>
@@ -203,11 +203,11 @@ const BenefitsSection = () => {
                 <div className="p-4">
                   <div className="mb-3 flex items-center justify-between border-b border-sky-100 pb-3">
                     <div className="flex items-center gap-2">
-                      {item.dcmIcon}
-                      <span className="text-sm font-medium text-slate-700">DCM</span>
+                      {item.LeviticaIcon}
+                      <span className="text-sm font-medium text-slate-700">Levitica</span>
                     </div>
                     <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-semibold text-green-700">
-                      {item.dcm}
+                      {item.Levitica}
                     </span>
                   </div>
 

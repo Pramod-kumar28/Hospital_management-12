@@ -29,7 +29,7 @@ export default function Pricing() {
 
   const faqs = [
     {
-      question: "Is DCM Hospital Management suitable for small clinics?",
+      question: "Is Levitica Hospital Management suitable for small clinics?",
       answer: "Absolutely! We offer a Free plan perfect for small clinics with up to 50 patients. You can upgrade as your practice grows."
     },
     {
@@ -38,14 +38,14 @@ export default function Pricing() {
     },
     {
       question: "Can I access the system on mobile devices?",
-      answer: "Yes! DCM is available on iOS, Android, and Web platforms. Standard and Premium plans include mobile app access."
+      answer: "Yes! Levitica is available on iOS, Android, and Web platforms. Standard and Premium plans include mobile app access."
     },
     {
       question: "Do you provide training and support?",
       answer: "Yes, we provide comprehensive onboarding, training materials, and support via email, phone (24/7 for Premium), and dedicated account managers."
     },
     {
-      question: "Can I integrate DCM with existing systems?",
+      question: "Can I integrate Levitica with existing systems?",
       answer: "Premium plans include custom integration support. We can integrate with payment gateways, lab equipment, and other healthcare systems."
     },
     {
@@ -203,7 +203,7 @@ export default function Pricing() {
             Ready to Get Started?
           </h2>
           <p className="text-xl text-black-100 mb-8 max-w-3xl mx-auto">
-            Join 50+ healthcare facilities already using DCM Hospital Management
+            Join 50+ healthcare facilities already using Levitica Hospital Management
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link 
@@ -321,7 +321,7 @@ function Footer() {
               <div className="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center">
                 <Activity className="w-5 h-5" />
               </div>
-              DCM Hospital
+              Levitica Hospital
             </Link>
             <p className="text-gray-400 mb-6 max-w-md">
               Modern, secure, and scalable hospital management system trusted by healthcare professionals worldwide.
@@ -329,7 +329,7 @@ function Footer() {
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm">
                 <Mail className="w-4 h-4" />
-                <span>info@dcmhospital.com</span>
+                <span>info@Leviticahospital.com</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Phone className="w-4 h-4" />
@@ -378,11 +378,11 @@ function Footer() {
         {/* Bottom */}
         <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-gray-700">
           <p className="text-gray-400 text-sm mb-4 md:mb-0">
-            © 2025 DCM Hospital Management. All rights reserved.
+            © 2025 Levitica Hospital Management. All rights reserved.
           </p>
           <div className="flex gap-3">
             <a 
-              href="https://facebook.com/dcmhospital" 
+              href="https://facebook.com/Leviticahospital" 
               className="w-10 h-10 bg-gray-800 text-gray-400 rounded-full flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all duration-300 hover:scale-110"
               target="_blank"
               rel="noopener noreferrer"
@@ -390,7 +390,7 @@ function Footer() {
               <Facebook className="w-4 h-4" />
             </a>
             <a 
-              href="https://twitter.com/dcmhospital" 
+              href="https://twitter.com/Leviticahospital" 
               className="w-10 h-10 bg-gray-800 text-gray-400 rounded-full flex items-center justify-center hover:bg-blue-400 hover:text-white transition-all duration-300 hover:scale-110"
               target="_blank"
               rel="noopener noreferrer"
@@ -398,7 +398,7 @@ function Footer() {
               <Twitter className="w-4 h-4" />
             </a>
             <a 
-              href="https://linkedin.com/company/dcmhospital" 
+              href="https://linkedin.com/company/Leviticahospital" 
               className="w-10 h-10 bg-gray-800 text-gray-400 rounded-full flex items-center justify-center hover:bg-blue-700 hover:text-white transition-all duration-300 hover:scale-110"
               target="_blank"
               rel="noopener noreferrer"
@@ -406,7 +406,7 @@ function Footer() {
               <Linkedin className="w-4 h-4" />
             </a>
             <a 
-              href="https://instagram.com/dcmhospital" 
+              href="https://instagram.com/Leviticahospital" 
               className="w-10 h-10 bg-gray-800 text-gray-400 rounded-full flex items-center justify-center hover:bg-pink-600 hover:text-white transition-all duration-300 hover:scale-110"
               target="_blank"
               rel="noopener noreferrer"
@@ -414,7 +414,7 @@ function Footer() {
               <Instagram className="w-4 h-4" />
             </a>
             <a 
-              href="https://youtube.com/dcmhospital" 
+              href="https://youtube.com/Leviticahospital" 
               className="w-10 h-10 bg-gray-800 text-gray-400 rounded-full flex items-center justify-center hover:bg-red-600 hover:text-white transition-all duration-300 hover:scale-110"
               target="_blank"
               rel="noopener noreferrer"

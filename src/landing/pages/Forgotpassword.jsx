@@ -258,7 +258,7 @@ const PasswordResetPage = () => {
               <i className="fas fa-hospital text-xl md:text-2xl"></i>
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">DCMS Hospital</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">LeviticaS Hospital</h1>
               <p className="text-gray-600 text-sm md:text-base">Secure Password Recovery</p>
             </div>
           </div>
@@ -725,7 +725,7 @@ const PasswordResetPage = () => {
         <div className="mt-6 md:mt-8 text-center">
           <p className="text-gray-500 text-xs md:text-sm">
             <i className="fas fa-shield-alt mr-1"></i>
-            DCMS Hospital System • HIPAA Compliant • Secure Recovery
+            LeviticaS Hospital System • HIPAA Compliant • Secure Recovery
           </p>
         </div>
       </div>

@@ -14,6 +14,7 @@ import PharmacyManagement from './pages/PharmacyManagement'
 import LabManagement from './pages/LabManagement'
 import Reports from './pages/Reports'
 import Settings from './pages/Settings'
+import Raiseticket from './pages/Raiseticket'
 
 const AdminDashboard = () => {
   const [activePage, setActivePage] = useState('dashboard')
@@ -75,6 +76,9 @@ const AdminDashboard = () => {
         return <Reports />
       case 'settings':
         return <Settings />
+      case 'raise-ticket':
+        return <Raiseticket />
+    
       default:
         return <AdminOverview setActivePage={handlePageChange} />
     }

@@ -59,7 +59,7 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
     { id: 'pharmacy', label: 'Pharmacy Management', icon: 'fa-prescription-bottle-alt' },
     { id: 'lab', label: 'Lab Management', icon: 'fa-microscope' },
     { id: 'reports', label: 'Reports', icon: 'fa-chart-bar' },
-    { id: 'settings', label: 'Settings', icon: 'fa-cog' }
+    { id: 'settings', label: 'Settings', icon: 'fa-cog' },{ id: 'raise-ticket', label: 'Raise Ticket', icon: 'fa-envelope-open-text' }
   ]
 
   const nurseMenu = [

@@ -7,6 +7,10 @@ const LabManagement = () => {
   const [loading, setLoading] = useState(true)
   const [labTests, setLabTests] = useState([])
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
+  const [selectedTest, setSelectedTest] = useState(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedFilter, setSelectedFilter] = useState('All')
   const [newTest, setNewTest] = useState({
     patient: '',
     testType: '',
@@ -26,10 +30,10 @@ const LabManagement = () => {
     setLoading(true)
     setTimeout(() => {
       setLabTests([
-        { id: 'LAB-6001', patient: 'Ravi Kumar', testType: 'Blood Test', result: 'Normal', date: '2023-10-10', reportFile: 'report_1.pdf', status: 'Completed', doctor: 'Dr. Meena Rao', priority: 'Normal', sampleType: 'Blood' },
-        { id: 'LAB-6002', patient: 'Anita Sharma', testType: 'MRI Scan', result: 'Normal', date: '2023-10-08', reportFile: 'report_2.pdf', status: 'Completed', doctor: 'Dr. Sharma', priority: 'Normal', sampleType: 'NA' },
-        { id: 'LAB-6003', patient: 'Suresh Patel', testType: 'X-Ray', result: 'Fracture Detected', date: '2023-10-12', reportFile: 'report_3.pdf', status: 'Processing', doctor: 'Dr. Menon', priority: 'Urgent', sampleType: 'NA' },
-        { id: 'LAB-6004', patient: 'Priya Singh', testType: 'CT Scan', result: 'Pending', date: '2023-10-13', reportFile: '', status: 'Pending', doctor: 'Dr. Desai', priority: 'Normal', sampleType: 'NA' }
+        { id: 'LAB-6001', patient: 'Ravi Kumar', testType: 'Blood Test', result: 'Normal', date: '2023-10-10', reportFile: 'report_1.pdf', status: 'Completed', doctor: 'Dr. Meena Rao',  sampleType: 'Blood' },
+        { id: 'LAB-6002', patient: 'Anita Sharma', testType: 'MRI Scan', result: 'Normal', date: '2023-10-08', reportFile: 'report_2.pdf', status: 'Completed', doctor: 'Dr. Sharma',  sampleType: 'NA' },
+        { id: 'LAB-6003', patient: 'Suresh Patel', testType: 'X-Ray', result: 'Fracture Detected', date: '2023-10-12', reportFile: 'report_3.pdf', status: 'Processing', doctor: 'Dr. Menon',  sampleType: 'NA' },
+        { id: 'LAB-6004', patient: 'Priya Singh', testType: 'CT Scan', result: 'Pending', date: '2023-10-13', reportFile: '', status: 'Pending', doctor: 'Dr. Desai',  sampleType: 'NA' }
       ])
       setLoading(false)
     }, 1000)
@@ -58,11 +62,9 @@ const LabManagement = () => {
 
   const handleViewReport = (testId) => {
     const test = labTests.find(t => t.id === testId)
-    if (test && test.reportFile) {
-      alert(`Opening report: ${test.reportFile}`)
-      // In real app, this would open the PDF file
-    } else {
-      alert('Report not available yet')
+    if (test) {
+      setSelectedTest(test)
+      setIsViewModalOpen(true)
     }
   }
 
@@ -107,6 +109,29 @@ const LabManagement = () => {
     })
   }
 
+  const getFilteredTests = () => {
+    let filtered = labTests
+
+    // Apply status filter
+    if (selectedFilter !== 'All') {
+      filtered = filtered.filter(test => test.status === selectedFilter)
+    }
+
+    // Apply search filter (name, test ID, test name)
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      filtered = filtered.filter(test =>
+        test.patient.toLowerCase().includes(query) ||
+        test.id.toLowerCase().includes(query) ||
+        test.testType.toLowerCase().includes(query)
+      )
+    }
+
+    return filtered
+  }
+
+  const filteredTests = getFilteredTests()
+
   const handleInputChange = (field, value) => {
     setNewTest(prev => ({
       ...prev,
@@ -150,11 +175,7 @@ const LabManagement = () => {
     'Colonoscopy'
   ]
 
-  const priorities = [
-    'Normal',
-    'Urgent',
-    'Emergency'
-  ]
+  
 
   const sampleTypes = [
     'Blood',
@@ -189,12 +210,7 @@ const LabManagement = () => {
         <h2 className="text-2xl font-semibold text-gray-700">
           Lab Management
         </h2>
-        <button 
-          onClick={() => setIsAddModalOpen(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-        >
-          <i className="fas fa-plus mr-2"></i>Add Test
-        </button>
+       
       </div>
 
       {/* Lab Statistics - Compact Cards */}
@@ -271,112 +287,144 @@ const LabManagement = () => {
   })}
 </div>
 
-      {/* Lab Tests Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {labTests.map(test => (
-          <div key={test.id} className="bg-white rounded-xl card-shadow border p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="font-semibold text-blue-700">{test.testType}</h3>
-                <p className="text-xs text-gray-500">{test.id}</p>
-              </div>
-              <span className={`status-${test.status.toLowerCase()} px-2 py-1 rounded text-xs`}>
-                {test.status}
-              </span>
-            </div>
-            
-            <div className="space-y-2 text-sm text-gray-600 mb-4">
-              <div className="flex justify-between">
-                <span>Patient:</span>
-                <span className="font-medium">{test.patient}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Doctor:</span>
-                <span className="text-gray-500">{test.doctor}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Date:</span>
-                <span className="text-gray-500">{test.date}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Priority:</span>
-                <span className={`font-medium ${
-                  test.priority === 'Emergency' ? 'text-red-600' : 
-                  test.priority === 'Urgent' ? 'text-orange-600' : 'text-green-600'
+      {/* Lab Tests List */}
+      <div className="space-y-4">
+        {/* Filter Bar */}
+        <div className="flex flex-wrap gap-2 items-center mb-6">
+          <div className="flex-1 min-w-64">
+            <input
+              type="text"
+              placeholder="Search by Test Name, Lab ID, or Patient Name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+            />
+          </div>
+          <button
+            onClick={() => setSelectedFilter('All')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              selectedFilter === 'All'
+                ? 'bg-blue-600 text-white'
+                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            All
+          </button>
+          <button
+            onClick={() => setSelectedFilter('Completed')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              selectedFilter === 'Completed'
+                ? 'bg-blue-600 text-white'
+                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            Completed
+          </button>
+          <button
+            onClick={() => setSelectedFilter('Processing')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              selectedFilter === 'Processing'
+                ? 'bg-blue-600 text-white'
+                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            Processing
+          </button>
+          <button
+            onClick={() => setSelectedFilter('Pending')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              selectedFilter === 'Pending'
+                ? 'bg-blue-600 text-white'
+                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            Pending
+          </button>
+
+          
+          
+          
+        </div>
+
+        {/* Labs List */}
+        {filteredTests.map(test => (
+          <div 
+            key={test.id} 
+            className="bg-white rounded-3xl border border-gray-200  p-5 hover:shadow-lg transition-all duration-300 hover:border-blue-300"
+          >
+            <div className="flex items-center justify-between">
+              {/* Left Side - Test Info */}
+              <div className="flex-1 flex items-center gap-4">
+                <div className={`flex items-center justify-center w-14 h-14 rounded-full ${
+                  test.status === 'Completed' ? 'bg-green-100' :
+                  test.status === 'Processing' ? 'bg-blue-100' :
+                  test.status === 'Pending' ? 'bg-yellow-100' : 'bg-purple-100'
                 }`}>
-                  {test.priority}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span>Result:</span>
-                <span className={`font-medium ${
-                  test.result === 'Normal' ? 'text-green-600' : 
-                  test.result === 'Pending' ? 'text-yellow-600' : 
-                  test.result === 'Abnormal' ? 'text-orange-600' : 'text-red-600'
-                }`}>
-                  {test.result}
-                </span>
-              </div>
-              {test.sampleType && test.sampleType !== 'NA' && (
-                <div className="flex justify-between">
-                  <span>Sample:</span>
-                  <span className="text-gray-500">{test.sampleType}</span>
+                  <i className={`fas fa-${
+                    test.testType === 'Blood Test' ? 'droplet' :
+                    test.testType === 'X-Ray' ? 'x' :
+                    test.testType === 'MRI Scan' ? 'brain' :
+                    test.testType === 'CT Scan' ? 'cube' : 'flask'
+                  } ${
+                    test.status === 'Completed' ? 'text-green-600' :
+                    test.status === 'Processing' ? 'text-blue-600' :
+                    test.status === 'Pending' ? 'text-yellow-600' : 'text-purple-600'
+                  } text-xl`}></i>
                 </div>
-              )}
-            </div>
-            
-            <div className="flex justify-between items-center pt-4 border-t">
-              <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">
-                {test.testType}
-              </span>
-              <div className="flex gap-2">
-                <button 
-                  onClick={() => handleViewReport(test.id)}
-                  className="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50"
-                  title="View Report"
-                >
-                  <i className="fas fa-eye"></i>
-                </button>
-                <button 
-                  onClick={() => handleDownloadReport(test.id)}
-                  className="text-green-600 hover:text-green-800 p-1 rounded hover:bg-green-50"
-                  title="Download Report"
-                >
-                  <i className="fas fa-download"></i>
-                </button>
-                <div className="relative group">
-                  <button className="text-purple-600 hover:text-purple-800 p-1 rounded hover:bg-purple-50">
-                    <i className="fas fa-edit"></i>
-                  </button>
-                  <div className="absolute right-0 bottom-full mb-2 hidden group-hover:block bg-white border rounded-lg shadow-lg z-10 p-2 min-w-32">
-                    <div className="space-y-1">
-                      <select 
-                        value={test.status}
-                        onChange={(e) => handleUpdateStatus(test.id, e.target.value)}
-                        className="w-full p-1 text-xs border rounded"
-                      >
-                        {statusOptions.map(status => (
-                          <option key={status} value={status}>{status}</option>
-                        ))}
-                      </select>
-                      <select 
-                        value={test.result}
-                        onChange={(e) => handleUpdateResult(test.id, e.target.value)}
-                        className="w-full p-1 text-xs border rounded"
-                      >
-                        {resultOptions.map(result => (
-                          <option key={result} value={result}>{result}</option>
-                        ))}
-                      </select>
+                
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-lg text-gray-900">{test.patient}</h3>
+                  <p className="text-sm text-gray-500 font-medium">{test.testType}</p>
+                  <p className="text-xs text-gray-400 mt-1">{test.id}</p>
+                  <div className="flex gap-6 mt-2 text-sm text-gray-600">
+                    <div className="flex items-center gap-1">
+                      <span className="text-gray-500">👨‍⚕️</span>
+                      <span>{test.doctor}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-gray-500">📅</span>
+                      <span>{test.date}</span>
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Status & Result Section */}
+              <div className="text-right mr-4">
+                <div className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
+                  test.status === 'Completed' ? 'bg-green-100 text-green-700' :
+                  test.status === 'Processing' ? 'bg-blue-100 text-blue-700' :
+                  test.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700'
+                }`}>
+                  {test.status.toUpperCase()}
+                </div>
+              
+               
+                
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 items-center">
+                <button 
+                  onClick={() => handleViewReport(test.id)}
+                  className="text-gray-500 hover:text-blue-600 p-2 rounded hover:bg-blue-50 transition-colors"
+                  title="View Report"
+                >
+                  <i className="fas fa-eye text-lg"></i>
+                </button>
+                <button 
+                  onClick={() => handleDownloadReport(test.id)}
+                  className="text-gray-500 hover:text-green-600 p-2 rounded hover:bg-green-50 transition-colors"
+                  title="Download Report"
+                >
+                  <i className="fas fa-download text-lg"></i>
+                </button>
                 <button 
                   onClick={() => handleDeleteTest(test.id)}
-                  className="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50"
+                  className="text-gray-500 hover:text-red-600 p-2 rounded hover:bg-red-50 transition-colors"
                   title="Delete Test"
                 >
-                  <i className="fas fa-trash"></i>
+                  <i className="fas fa-trash text-lg"></i>
                 </button>
               </div>
             </div>
@@ -384,173 +432,135 @@ const LabManagement = () => {
         ))}
       </div>
 
-      {/* Add Test Modal - Defined in the same file */}
+      {/* View Report Modal */}
       <Modal 
-        isOpen={isAddModalOpen} 
+        isOpen={isViewModalOpen} 
         onClose={() => {
-          setIsAddModalOpen(false)
-          resetForm()
+          setIsViewModalOpen(false)
+          setSelectedTest(null)
         }} 
-        title="Add New Lab Test"
+        title="Patient Report Information"
         size="lg"
       >
-        <div className="space-y-6">
-          {/* Patient and Doctor Selection */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Select Patient *
-              </label>
-              <select
-                required
-                value={newTest.patient}
-                onChange={(e) => handleInputChange('patient', e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+        {selectedTest && (
+          <div className="space-y-6">
+            {/* Patient Information */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h3 className="font-semibold text-blue-900 mb-3">Patient Information</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs text-gray-600">Patient Name</label>
+                  <p className="text-sm font-medium text-gray-900">{selectedTest.patient}</p>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-600">Test ID</label>
+                  <p className="text-sm font-medium text-gray-900">{selectedTest.id}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Test Details */}
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+              <h3 className="font-semibold text-purple-900 mb-3">Test Details</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs text-gray-600">Test Type</label>
+                  <p className="text-sm font-medium text-gray-900">{selectedTest.testType}</p>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-600">Referring Doctor</label>
+                  <p className="text-sm font-medium text-gray-900">{selectedTest.doctor}</p>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-600">Collection Date</label>
+                  <p className="text-sm font-medium text-gray-900">{selectedTest.date}</p>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-600">Sample Type</label>
+                  <p className="text-sm font-medium text-gray-900">{selectedTest.sampleType || 'N/A'}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Test Results */}
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <h3 className="font-semibold text-green-900 mb-3">Test Results</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs text-gray-600">Status</label>
+                  <p className={`text-sm font-medium ${
+                    selectedTest.status === 'Completed' ? 'text-green-600' :
+                    selectedTest.status === 'Processing' ? 'text-blue-600' :
+                    selectedTest.status === 'Pending' ? 'text-yellow-600' : 'text-gray-600'
+                  }`}>
+                    {selectedTest.status}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-600">Result</label>
+                  <p className={`text-sm font-medium ${
+                    selectedTest.result === 'Normal' ? 'text-green-600' :
+                    selectedTest.result === 'Pending' ? 'text-yellow-600' :
+                    selectedTest.result === 'Abnormal' ? 'text-orange-600' :
+                    selectedTest.result === 'Critical' ? 'text-red-600' : 'text-gray-600'
+                  }`}>
+                    {selectedTest.result}
+                  </p>
+                </div>
+                
+                <div>
+                  <label className="text-xs text-gray-600">Report File</label>
+                  <p className="text-sm font-medium text-gray-900">{selectedTest.reportFile || 'Not uploaded'}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Additional Notes */}
+            {(selectedTest.instructions || selectedTest.notes) && (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <h3 className="font-semibold text-gray-900 mb-3">Additional Information</h3>
+                {selectedTest.instructions && (
+                  <div className="mb-3">
+                    <label className="text-xs text-gray-600">Special Instructions</label>
+                    <p className="text-sm text-gray-700">{selectedTest.instructions}</p>
+                  </div>
+                )}
+                {selectedTest.notes && (
+                  <div>
+                    <label className="text-xs text-gray-600">Notes</label>
+                    <p className="text-sm text-gray-700">{selectedTest.notes}</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              {selectedTest.reportFile && (
+                <button
+                  onClick={() => handleDownloadReport(selectedTest.id)}
+                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                >
+                  <i className="fas fa-download"></i>
+                  Download Report
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  setIsViewModalOpen(false)
+                  setSelectedTest(null)
+                }}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-                <option value="">Select Patient</option>
-                {patients.map(patient => (
-                  <option key={patient} value={patient}>{patient}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Referring Doctor *
-              </label>
-              <select
-                required
-                value={newTest.doctor}
-                onChange={(e) => handleInputChange('doctor', e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-              >
-                <option value="">Select Doctor</option>
-                {doctors.map(doctor => (
-                  <option key={doctor} value={doctor}>{doctor}</option>
-                ))}
-              </select>
+                Close
+              </button>
             </div>
           </div>
-
-          {/* Test Details */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Test Type *
-              </label>
-              <select
-                required
-                value={newTest.testType}
-                onChange={(e) => handleInputChange('testType', e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-              >
-                <option value="">Select Test Type</option>
-                {testTypes.map(testType => (
-                  <option key={testType} value={testType}>{testType}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Priority *
-              </label>
-              <select
-                required
-                value={newTest.priority}
-                onChange={(e) => handleInputChange('priority', e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-              >
-                {priorities.map(priority => (
-                  <option key={priority} value={priority}>{priority}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Sample and Collection */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Sample Type
-              </label>
-              <select
-                value={newTest.sampleType}
-                onChange={(e) => handleInputChange('sampleType', e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-              >
-                <option value="">Select Sample Type</option>
-                {sampleTypes.map(sampleType => (
-                  <option key={sampleType} value={sampleType}>{sampleType}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Collection Date *
-              </label>
-              <input
-                type="date"
-                required
-                value={newTest.collectionDate}
-                onChange={(e) => handleInputChange('collectionDate', e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-              />
-            </div>
-          </div>
-
-          {/* Instructions and Notes */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Special Instructions
-            </label>
-            <textarea
-              rows="2"
-              value={newTest.instructions}
-              onChange={(e) => handleInputChange('instructions', e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-              placeholder="Any special instructions for sample collection or testing..."
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Additional Notes
-            </label>
-            <textarea
-              rows="2"
-              value={newTest.notes}
-              onChange={(e) => handleInputChange('notes', e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-              placeholder="Any additional notes or observations..."
-            />
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-3 pt-4 border-t">
-            <button
-              type="button"
-              onClick={() => {
-                setIsAddModalOpen(false)
-                resetForm()
-              }}
-              className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleAddTest}
-              disabled={!newTest.patient || !newTest.doctor || !newTest.testType || !newTest.collectionDate}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <i className="fas fa-flask mr-2"></i>
-              Add Test
-            </button>
-          </div>
-        </div>
+        )}
       </Modal>
+
+      {/* Add Test Modal - Defined in the same file */}
+     
     </div>
   )
 }

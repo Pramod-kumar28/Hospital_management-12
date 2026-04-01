@@ -2,6 +2,18 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { API_BASE_URL, API_HEADERS, SUPER_ADMIN_HOSPITALS, SUPER_ADMIN_SUBSCRIPTION_PLANS } from '../../../../config/api'
+import LocalHospitalIcon from '@mui/icons-material/LocalHospital'
+import GroupIcon from '@mui/icons-material/Group'
+import CreditCardIcon from '@mui/icons-material/CreditCard'
+import HotelIcon from '@mui/icons-material/Hotel'
+import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee'
+import RefreshIcon from '@mui/icons-material/Refresh'
+import MailIcon from '@mui/icons-material/Mail'
+import LayersIcon from '@mui/icons-material/Layers'
+import ListIcon from '@mui/icons-material/List'
+import TrendingUpIcon from '@mui/icons-material/TrendingUp'
+import PaymentsIcon from '@mui/icons-material/Payments'
+import SettingsIcon from '@mui/icons-material/Settings'
 
 const API_ENDPOINT = '/api/v1/analytics/overview'
 
@@ -12,7 +24,7 @@ const ensureArray = (value) => {
   return []
 }
 
-const SuperAdminOverview = () => {
+const SuperAdminOverview = ({ onPageChange }) => {
   const navigate = useNavigate()
   const authState = useSelector((state) => state?.auth) || {}
   const token = authState?.token || localStorage.getItem('token')
@@ -28,6 +40,7 @@ const SuperAdminOverview = () => {
     totalAppointments: 0,
     totalBeds: 0,
     occupiedBeds: 0,
+    activeSubscriptionsCount: 0,
     hospitalGrowth: 0,
     patientGrowth: 0,
     appointmentGrowth: 0,
@@ -199,14 +212,14 @@ const SuperAdminOverview = () => {
 
     setHospitalsLoading(true)
     try {
-      const url = `${API_BASE_URL}${SUPER_ADMIN_HOSPITALS}?page=1&limit=10`
+      const url = `${API_BASE_URL}${SUPER_ADMIN_HOSPITALS}`
       const headers = {
         ...API_HEADERS,
         'Authorization': `Bearer ${finalToken}`,
         'Content-Type': 'application/json'
       }
 
-      console.log(' Fetching recent hospitals from:', url)
+      console.log(' Fetching all hospitals from:', url)
 
       const res = await fetch(url, { headers })
       const data = await res.json().catch(() => ({}))
@@ -240,7 +253,7 @@ const SuperAdminOverview = () => {
                   ? data
                   : []
 
-      console.log(' Recent hospitals fetched:', hospitals.length)
+      console.log(' All hospitals fetched:', hospitals.length)
 
       // Map hospitals data
       const mappedHospitals = hospitals.map((h) => ({
@@ -277,6 +290,7 @@ const SuperAdminOverview = () => {
       const totalRevenue = data?.revenue?.total ?? 0
       const occupiedBeds = data?.occupancy?.occupied_beds ?? 0
       const totalBeds = data?.occupancy?.total_beds ?? 0
+      const activeSubscriptionsCount = data?.subscriptions?.active_count ?? 0
 
       console.log(' Analytics Data Extracted:', {
         hospitalCount,
@@ -285,7 +299,8 @@ const SuperAdminOverview = () => {
         appointmentsThisMonth,
         totalRevenue,
         occupiedBeds,
-        totalBeds
+        totalBeds,
+        activeSubscriptionsCount
       })
 
       setState(prev => ({
@@ -299,6 +314,8 @@ const SuperAdminOverview = () => {
         totalAppointments: appointmentsThisMonth,
         totalBeds: totalBeds,
         occupiedBeds: occupiedBeds,
+        activeSubscriptionsCount: activeSubscriptionsCount,
+        revenue: totalRevenue,
         hospitalGrowth: data.hospitalGrowth || 12,
         patientGrowth: data.patientGrowth || 8,
         appointmentGrowth: data.appointmentGrowth || 15,
@@ -330,9 +347,9 @@ const SuperAdminOverview = () => {
 
   const totalHospitals = state.hospitals?.total ?? ensureArray(state.hospitals).length ?? 0
   const activeHospitalCount = state.hospitals?.active ?? 0
-  const activeSubscriptions = ensureArray(state.subscriptions).filter(s => s.status === 'Paid').length
+  const activeSubscriptions = state.activeSubscriptionsCount ?? 0
   const totalUsers = ensureArray(state.users).length
-  const monthlyRevenue = state.revenue ?? ensureArray(state.subscriptions)
+  const monthlyRevenue = state.revenue || ensureArray(state.subscriptions)
     .filter(s => s.status === 'Paid')
     .reduce((sum, sub) => sum + (sub.amount || 0), 0)
 
@@ -363,155 +380,176 @@ const SuperAdminOverview = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <h2 className="text-2xl font-semibold text-gray-700 mb-6">
-        Dashboard Overview
-      </h2>
+      {/* Premium Header */}
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">Dashboard Overview</h1>
+        <p className="text-gray-500 text-sm mt-2">Real-time analytics and hospital management metrics</p>
+      </div>
 
       {/* Metrics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
 
         {/* Total Hospitals */}
-        
         <div onClick={()=>navigate('users')}
-         className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent pointer-events-none" />
+         className="group relative bg-gradient-to-br from-blue-500/10 via-blue-400/5 to-cyan-500/10 backdrop-blur-xl rounded-2xl p-4 border border-blue-400/20 shadow-xl overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-2xl hover:border-blue-400/40">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/0 via-transparent to-cyan-600/0 pointer-events-none group-hover:from-blue-600/5" />
+          <div className="absolute -top-20 -right-20 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
 
-          <span className="absolute top-4 right-4 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded">
+          <span className="absolute top-4 right-4 bg-gradient-to-r from-emerald-400 to-cyan-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
             +{state.hospitalGrowth || 0}%
           </span>
 
-          <div className="relative flex justify-between items-end">
-            <div>
-              <div className="w-10 h-8 flex items-center justify-center rounded-full bg-indigo-600 mb-3">
-                <i className="fas fa-hospital text-white"></i>
-              </div>
-              <p className="text-sm text-gray-500">Total Hospitals</p>
-              <p className="text-2xl font-bold text-gray-900">{totalHospitals}</p>
-              <p className="text-xs text-gray-400 mt-1">Currently operational</p>
+          <div className="relative">
+            <div className="w-10 h-10 flex items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-600 mb-2 shadow-lg group-hover:shadow-xl transition-shadow">
+              <LocalHospitalIcon className="text-white" sx={{ fontSize: 20 }} />
             </div>
-
-            <div className="flex items-end gap-1 h-14">
-              <div className="w-1.5 h-5 bg-indigo-300 rounded"></div>
-              <div className="w-1.5 h-8 bg-indigo-400 rounded"></div>
-              <div className="w-1.5 h-11 bg-indigo-500 rounded"></div>
-              <div className="w-1.5 h-7 bg-indigo-400 rounded"></div>
-              <div className="w-1.5 h-13 bg-indigo-600 rounded"></div>
+            <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Total Hospitals</p>
+            <p className="text-3xl font-bold text-gray-900 mt-1">{totalHospitals}</p>
+            <p className="text-xs text-gray-500 mt-1">Currently operational</p>
+            <div className="flex items-end gap-1 h-10 mt-2">
+              <div className="w-1.5 h-4 bg-gradient-to-t from-blue-600 to-blue-400 rounded-full blur-sm"></div>
+              <div className="w-1.5 h-6 bg-gradient-to-t from-blue-500 to-cyan-400 rounded-full blur-sm"></div>
+              <div className="w-1.5 h-10 bg-gradient-to-t from-blue-600 to-blue-400 rounded-full"></div>
+              <div className="w-1.5 h-7 bg-gradient-to-t from-blue-500 to-cyan-400 rounded-full blur-sm"></div>
+              <div className="w-1.5 h-11 bg-gradient-to-t from-blue-600 to-blue-400 rounded-full blur-sm"></div>
             </div>
           </div>
         </div>
 
         {/* Total Patients (All Hospitals) */}
-        <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-transparent pointer-events-none" />
+        <div className="group relative bg-gradient-to-br from-red-500/10 via-rose-400/5 to-pink-500/10 backdrop-blur-xl rounded-2xl p-4 border border-red-400/20 shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:border-red-400/40">
+          <div className="absolute inset-0 bg-gradient-to-br from-red-600/0 via-transparent to-pink-600/0 pointer-events-none group-hover:from-red-600/5" />
+          <div className="absolute -top-20 -right-20 w-40 h-40 bg-red-500/20 rounded-full blur-3xl pointer-events-none" />
 
-          <span className="absolute top-4 right-4 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded">
+          <span className="absolute top-4 right-4 bg-gradient-to-r from-emerald-400 to-cyan-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
             +{state.patientGrowth}%
           </span>
 
-          <div className="relative flex justify-between items-end">
-            <div>
-              <div className="w-10 h-8 flex items-center justify-center rounded-full bg-red-500 mb-3">
-                <i className="fas fa-users text-white"></i>
-              </div>
-              <p className="text-sm text-gray-500">Total Patients</p>
-              <p className="text-2xl font-bold text-gray-900">{(state.totalPatients || 0).toLocaleString()}</p>
-              <p className="text-xs text-gray-400 mt-1">Across all hospitals</p>
+          <div className="relative">
+            <div className="w-10 h-10 flex items-center justify-center rounded-2xl bg-gradient-to-br from-red-500 to-pink-600 mb-2 shadow-lg group-hover:shadow-xl transition-shadow">
+              <GroupIcon className="text-white" sx={{ fontSize: 20 }} />
             </div>
-
-            <svg width="70" height="40" viewBox="0 0 70 40">
-              <polyline
-                points="0,30 12,22 24,26 36,18 48,20 60,12"
-                fill="none"
-                stroke="#fb7185"
-                strokeWidth="2"
-              />
-            </svg>
+            <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Total Patients</p>
+            <p className="text-3xl font-bold text-gray-900 mt-1">{state.totalPatients || 0}</p>
+            <p className="text-xs text-gray-500 mt-1">Across all hospitals</p>
+            <div className="mt-2">
+              <svg width="100%" height="32" viewBox="0 0 100 40" className="opacity-60">
+                <defs>
+                  <linearGradient id="lineGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style={{stopColor: '#ef4444', stopOpacity: 0.3}} />
+                    <stop offset="100%" style={{stopColor: '#ec4899', stopOpacity: 1}} />
+                  </linearGradient>
+                </defs>
+                <polyline
+                  points="0,30 15,22 30,26 45,18 60,20 75,12 90,15"
+                  fill="none"
+                  stroke="url(#lineGradient1)"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
           </div>
         </div>
 
-        {/* Total Appointments */}
-        <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent pointer-events-none" />
+        {/* Active Subscriptions */}
+        <div className="group relative bg-gradient-to-br from-purple-500/10 via-violet-400/5 to-indigo-500/10 backdrop-blur-xl rounded-2xl p-4 border border-purple-400/20 shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:border-purple-400/40">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-600/0 via-transparent to-indigo-600/0 pointer-events-none group-hover:from-purple-600/5" />
+          <div className="absolute -top-20 -right-20 w-40 h-40 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
 
-          <span className="absolute top-4 right-4 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded">
+          <span className="absolute top-4 right-4 bg-gradient-to-r from-emerald-400 to-cyan-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
             +{state.appointmentGrowth}%
           </span>
 
-          <div className="relative flex justify-between items-end">
-            <div>
-              <div className="w-10 h-8 flex items-center justify-center rounded-full bg-blue-500 mb-3">
-                <i className="fas fa-calendar-check text-white"></i>
-              </div>
-              <p className="text-sm text-gray-500">Appointments</p>
-              <p className="text-2xl font-bold text-gray-900">{(state.totalAppointments || 0).toLocaleString()}</p>
-              <p className="text-xs text-gray-400 mt-1">Last 30 days</p>
+          <div className="relative">
+            <div className="w-10 h-10 flex items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 mb-2 shadow-lg group-hover:shadow-xl transition-shadow">
+              <CreditCardIcon className="text-white" sx={{ fontSize: 20 }} />
             </div>
-
-            <div className="flex items-end gap-1 h-14">
-              <div className="w-1.5 h-9 bg-sky-400 rounded"></div>
-              <div className="w-1.5 h-6 bg-sky-300 rounded"></div>
-              <div className="w-1.5 h-12 bg-sky-500 rounded"></div>
-              <div className="w-1.5 h-8 bg-sky-400 rounded"></div>
-              <div className="w-1.5 h-10 bg-sky-300 rounded"></div>
+            <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Active Plans</p>
+            <p className="text-3xl font-bold text-gray-900 mt-1">{activeSubscriptions}</p>
+            <p className="text-xs text-gray-500 mt-1">Paid subscriptions</p>
+            <div className="flex items-end gap-1.5 h-10 mt-2">
+              <div className="w-1.5 h-7 bg-gradient-to-t from-purple-600 to-purple-400 rounded-full blur-sm"></div>
+              <div className="w-1.5 h-5 bg-gradient-to-t from-purple-500 to-violet-400 rounded-full blur-sm"></div>
+              <div className="w-1.5 h-9 bg-gradient-to-t from-purple-600 to-purple-400 rounded-full"></div>
+              <div className="w-1.5 h-6 bg-gradient-to-t from-purple-500 to-violet-400 rounded-full blur-sm"></div>
+              <div className="w-1.5 h-8 bg-gradient-to-t from-purple-600 to-purple-400 rounded-full blur-sm"></div>
             </div>
           </div>
         </div>
 
-          {/* Total Beds */}
-          <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-transparent pointer-events-none" />
+        {/* Total Beds */}
+        <div className="group relative bg-gradient-to-br from-amber-500/10 via-orange-400/5 to-yellow-500/10 backdrop-blur-xl rounded-2xl p-4 border border-amber-400/20 shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:border-amber-400/40">
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-600/0 via-transparent to-orange-600/0 pointer-events-none group-hover:from-amber-600/5" />
+          <div className="absolute -top-20 -right-20 w-40 h-40 bg-amber-500/20 rounded-full blur-3xl pointer-events-none" />
 
-          <span className="absolute top-4 right-4 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded">
+          <span className="absolute top-4 right-4 bg-gradient-to-r from-emerald-400 to-cyan-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
             +{state.revenueGrowth}%
           </span>
 
-          <div className="relative flex justify-between items-end">
-            <div>
-              <div className="w-10 h-8 flex items-center justify-center rounded-full bg-orange-500 mb-3">
-                <i className="fas fa-bed text-white"></i>
-              </div>
-              <p className="text-sm text-gray-500">Total Beds</p>
-              <p className="text-2xl font-bold text-gray-900">{(state.totalBeds || 0).toLocaleString()}</p>
-              <p className="text-xs text-gray-400 mt-1">Across all hospitals</p>
+          <div className="relative">
+            <div className="w-10 h-10 flex items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 mb-2 shadow-lg group-hover:shadow-xl transition-shadow">
+              <HotelIcon className="text-white" sx={{ fontSize: 20 }} />
             </div>
-
-            <svg width="70" height="40" viewBox="0 0 70 40">
-              <polyline
-                points="0,28 12,26 24,20 36,22 48,16 60,10"
-                fill="none"
-                stroke="#c59a22"
-                strokeWidth="2"
-              />
-            </svg>
+            <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Total Beds</p>
+            <p className="text-3xl font-bold text-gray-900 mt-1">{state.totalBeds || 0}</p>
+            <p className="text-xs text-gray-500 mt-1">Across all hospitals</p>
+            <div className="mt-2">
+              <svg width="100%" height="32" viewBox="0 0 100 40" className="opacity-60">
+                <defs>
+                  <linearGradient id="lineGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style={{stopColor: '#f59e0b', stopOpacity: 0.3}} />
+                    <stop offset="100%" style={{stopColor: '#d97706', stopOpacity: 1}} />
+                  </linearGradient>
+                </defs>
+                <polyline
+                  points="0,28 15,26 30,20 45,22 60,16 75,10 90,14"
+                  fill="none"
+                  stroke="url(#lineGradient2)"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
           </div>
         </div>
 
         {/* Platform Revenue */}
-        <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent pointer-events-none" />
+        <div className="group relative bg-gradient-to-br from-emerald-500/10 via-green-400/5 to-teal-500/10 backdrop-blur-xl rounded-2xl p-4 border border-emerald-400/20 shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:border-emerald-400/40">
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/0 via-transparent to-teal-600/0 pointer-events-none group-hover:from-emerald-600/5" />
+          <div className="absolute -top-20 -right-20 w-40 h-40 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
 
-          <span className="absolute top-4 right-4 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded">
+          <span className="absolute top-4 right-4 bg-gradient-to-r from-emerald-400 to-cyan-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
             +{state.revenueGrowth}%
           </span>
 
-          <div className="relative flex justify-between items-end">
-            <div>
-              <div className="w-10 h-8 flex items-center justify-center rounded-full bg-green-500 mb-3">
-                <i className="fas fa-indian-rupee-sign text-white"></i>
-              </div>
-              <p className="text-sm text-gray-500">Platform Revenue</p>
-              <p className="text-2xl font-bold text-gray-900">₹{(monthlyRevenue / 10000000).toFixed(1)} Cr</p>
-              <p className="text-xs text-gray-400 mt-1">All hospitals combined</p>
+          <div className="relative">
+            <div className="w-10 h-10 flex items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 mb-2 shadow-lg group-hover:shadow-xl transition-shadow">
+              <CurrencyRupeeIcon className="text-white" sx={{ fontSize: 20 }} />
             </div>
-
-            <svg width="70" height="40" viewBox="0 0 70 40">
-              <polyline
-                points="0,28 12,26 24,20 36,22 48,16 60,10"
-                fill="none"
-                stroke="#22c55e"
-                strokeWidth="2"
-              />
-            </svg>
+            <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Platform Revenue</p>
+            <p className="text-3xl font-bold text-gray-900 mt-1">{monthlyRevenue || 0}</p>
+            <p className="text-xs text-gray-500 mt-1">All hospitals combined</p>
+            <div className="mt-2">
+              <svg width="100%" height="32" viewBox="0 0 100 40" className="opacity-60">
+                <defs>
+                  <linearGradient id="lineGradient3" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style={{stopColor: '#10b981', stopOpacity: 0.3}} />
+                    <stop offset="100%" style={{stopColor: '#059669', stopOpacity: 1}} />
+                  </linearGradient>
+                </defs>
+                <polyline
+                  points="0,28 15,26 30,20 45,22 60,16 75,10 90,14"
+                  fill="none"
+                  stroke="url(#lineGradient3)"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
           </div>
         </div>
 
@@ -520,73 +558,80 @@ const SuperAdminOverview = () => {
 
 
       {/* Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <div className="flex items-center justify-between mb-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+        <div className="relative bg-white/50 backdrop-blur-xl rounded-2xl border border-gray-300 shadow-xl p-6 overflow-hidden hover:shadow-2xl transition-shadow">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent pointer-events-none" />
+          <div className="relative flex items-center justify-between mb-6 pb-4 border-b border-white/20">
             <div>
-              <h3 className="font-semibold text-lg text-gray-800 flex items-center gap-2">
-                <i className="fas fa-hospital text-blue-500"></i>
-                Recent Hospitals
+              <h3 className="font-bold text-xl text-gray-900 flex items-center gap-3">
+                <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 shadow-lg">
+                  <LocalHospitalIcon className="text-white" sx={{ fontSize: 20 }} />
+                </div>
+                All Hospitals
               </h3>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-400 mt-2">
                 {state.recentHospitals?.length || 0} hospitals in system
               </p>
             </div>
             <button
               onClick={fetchRecentHospitals}
               disabled={hospitalsLoading}
-              className="p-2 hover:bg-gray-100 rounded-lg transition disabled:opacity-50"
+              className="p-2.5 hover:bg-white/20 rounded-xl transition disabled:opacity-50"
               title="Refresh hospitals list"
             >
-              <i className={`fas fa-sync-alt ${hospitalsLoading ? 'animate-spin' : ''} text-gray-600`}></i>
+              <RefreshIcon className={`${hospitalsLoading ? 'animate-spin' : ''} text-gray-600`} sx={{ fontSize: 20 }} />
             </button>
           </div>
 
-          <div className="divide-y">
+            <div className="relative max-h-[350px] overflow-y-auto scroll-smooth space-y-2">
             {hospitalsLoading ? (
-              <div className="py-6 text-center">
+              <div className="py-8 text-center">
                 <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-blue-500 border-t-transparent"></div>
-                <p className="text-sm text-gray-500 mt-2">Loading hospitals...</p>
+                <p className="text-sm text-gray-500 mt-3">Loading hospitals...</p>
               </div>
             ) : ensureArray(state.recentHospitals).length > 0 ? (
-              ensureArray(state.recentHospitals).map((h) => (
+              ensureArray(state.recentHospitals).map((h, idx) => (
                 <div
                   key={h.id}
-                  className="flex items-center justify-between py-3 hover:bg-gray-50 px-2 rounded-lg transition cursor-pointer"
+                  className="relative flex items-center justify-between py-4 px-4 hover:bg-white/40 transition-all duration-200 cursor-pointer group border border-gray-300 rounded-xl mb-3 bg-white/30"
                   onClick={() => navigate('/super-admin/hospital-management')}
                   title={`Click to manage ${h.name}`}
                 >
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <img
-                      src={h.logo}
-                      className="w-11 h-11 rounded-lg border border-gray-200 object-cover flex-shrink-0"
-                      alt={h.name}
-                      onError={(e) => {
-                        e.target.src = `https://picsum.photos/seed/${h.id}/80/80`
-                      }}
-                    />
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-transparent to-cyan-500/0 opacity-0 group-hover:opacity-5 transition-opacity pointer-events-none" />
+                  <div className="relative flex items-center gap-3 flex-1 min-w-0">
+                    <div className="relative">
+                      <img
+                        src={h.logo}
+                        className="w-11 h-11 rounded-xl border border-white/30 object-cover flex-shrink-0 shadow-md"
+                        alt={h.name}
+                        onError={(e) => {
+                          e.target.src = `https://picsum.photos/seed/${h.id}/80/80`
+                        }}
+                      />
+                      <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-white/20 to-transparent pointer-events-none" />
+                    </div>
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-gray-900 truncate">
+                      <p className="font-semibold text-gray-900 truncate group-hover:text-blue-600 transition">
                         {h.name}
                       </p>
-                      <p className="text-xs text-gray-500 truncate">
+                      <p className="text-xs text-gray-400 truncate">
                         {h.email}
                       </p>
                     </div>
                   </div>
 
                   <span
-                    className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0 ml-2 whitespace-nowrap
+                    className={`relative flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg flex-shrink-0 ml-2 whitespace-nowrap backdrop-blur-sm transition-all
               ${h.status === 'ACTIVE' || h.status === 'Active'
-                        ? 'bg-green-100 text-green-700'
+                        ? 'bg-emerald-500/20 border border-emerald-400/30 text-emerald-700'
                         : h.status === 'SUSPENDED' || h.status === 'Suspended'
-                          ? 'bg-yellow-100 text-yellow-700'
-                          : 'bg-gray-100 text-gray-700'}`}
+                          ? 'bg-yellow-500/20 border border-yellow-400/30 text-yellow-700'
+                          : 'bg-gray-500/20 border border-gray-400/30 text-gray-700'}`}
                   >
                     <span
-                      className={`w-1.5 h-1.5 rounded-full
+                      className={`w-2 h-2 rounded-full
                 ${h.status === 'ACTIVE' || h.status === 'Active'
-                        ? 'bg-green-500'
+                        ? 'bg-emerald-500'
                         : h.status === 'SUSPENDED' || h.status === 'Suspended'
                           ? 'bg-yellow-500'
                           : 'bg-gray-500'}`}
@@ -596,86 +641,102 @@ const SuperAdminOverview = () => {
                 </div>
               ))
             ) : (
-              <div className="py-8 text-center text-gray-500">
-                <i className="fas fa-inbox text-2xl mb-2 opacity-30"></i>
+              <div className="py-8 text-center text-gray-400">
+                <LocalHospitalIcon sx={{ fontSize: 32, opacity: 0.3 }} className="mb-3" />
                 <p className="text-sm">No hospitals available</p>
               </div>
             )}
           </div>
         </div>
 
-  <div className="bg-white rounded-xl card-shadow border p-6">
-          <div className="flex items-center justify-between mb-5">
+  <div className="relative bg-white/50 backdrop-blur-xl rounded-2xl border border-gray-300 shadow-xl p-6 overflow-hidden hover:shadow-2xl transition-shadow">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent pointer-events-none" />
+          <div className="relative flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
             <div>
-              <h3 className="font-semibold text-lg flex items-center gap-2">
-                <i className="fas fa-layer-group text-purple-500"></i>
-                Subscription Plans Overview
+              <h3 className="font-bold text-xl text-gray-900 flex items-center gap-3">
+                <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg">
+                  <LayersIcon className="text-white" sx={{ fontSize: 20 }} />
+                </div>
+                Subscription Plans
               </h3>
-              <p className="text-xs text-gray-500 mt-1">Platform pricing configuration metrics</p>
+              <p className="text-xs text-gray-400 mt-2">Platform pricing configuration metrics</p>
             </div>
             <button
               onClick={fetchPlanStats}
               disabled={planStatsLoading}
-              className="p-2 hover:bg-gray-100 rounded-lg transition disabled:opacity-50"
+              className="p-2.5 hover:bg-white/20 rounded-xl transition disabled:opacity-50"
               title="Refresh plans stats"
             >
-              <i className={`fas fa-sync-alt ${planStatsLoading ? 'animate-spin' : ''} text-gray-600`}></i>
+              <RefreshIcon className={`${planStatsLoading ? 'animate-spin' : ''} text-gray-600`} sx={{ fontSize: 20 }} />
             </button>
           </div>
 
-          <div className="divide-y">
+            <div className="relative divide-y divide-white/20">
             {planStatsLoading ? (
-              <div className="py-6 text-center">
+              <div className="py-8 text-center">
                 <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-purple-500 border-t-transparent"></div>
-                <p className="text-sm text-gray-500 mt-2">Loading plan stats...</p>
+                <p className="text-sm text-gray-500 mt-3">Loading plan stats...</p>
               </div>
             ) : (
               <>
                 {/* Total Plans */}
-                <div className="flex items-center justify-between py-4 px-2 hover:bg-gray-50 rounded-lg transition">
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-purple-100">
-                      <i className="fas fa-list text-purple-600"></i>
+                <div className="relative flex items-center justify-between py-4 px-4 hover:bg-white/40 transition-all duration-200 group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-transparent to-indigo-500/0 opacity-0 group-hover:opacity-5 transition-opacity pointer-events-none" />
+                  <div className="relative flex items-center gap-3 flex-1">
+                    <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/20 border border-purple-400/20 shadow-md">
+                      <ListIcon className="text-purple-600" sx={{ fontSize: 20 }} />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold text-gray-900">Total Plans</p>
-                      <p className="text-xs text-gray-500">Available subscription plans</p>
+                      <p className="text-xs text-gray-400">Available subscription plans</p>
                     </div>
                   </div>
-                  <div className="text-right ml-2">
-                    <p className="text-2xl font-bold text-gray-900">{state.planStats?.totalPlans || 0}</p>
+                  <div className="text-right ml-4">
+                    <p className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">{state.planStats?.totalPlans || 0}</p>
                   </div>
                 </div>
 
                 {/* Monthly Revenue */}
-                <div className="flex items-center justify-between py-4 px-2 hover:bg-gray-50 rounded-lg transition">
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-blue-100">
-                      <i className="fas fa-chart-line text-blue-600"></i>
+                <div className="relative py-4 px-4 hover:bg-white/40 transition-all duration-200 group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-transparent to-cyan-500/0 opacity-0 group-hover:opacity-5 transition-opacity pointer-events-none" />
+                  <div className="relative flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 border border-blue-400/20 shadow-md">
+                        <TrendingUpIcon className="text-blue-600" sx={{ fontSize: 20 }} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-semibold text-gray-900">Monthly Revenue</p>
+                        <p className="text-xs text-gray-400">Potential recurring income</p>
+                      </div>
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-gray-900">Monthly Revenue</p>
-                      <p className="text-xs text-gray-500">Potential recurring income</p>
+                    <div className="text-right ml-4">
+                      <p className="text-lg font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">₹{(state.planStats?.monthlyRevenuePotential || 0).toLocaleString('en-IN')}</p>
                     </div>
                   </div>
-                  <div className="text-right ml-2">
-                    <p className="text-2xl font-bold text-blue-600">₹{(state.planStats?.monthlyRevenuePotential || 0).toLocaleString('en-IN')}</p>
+                  <div className="w-full bg-gray-200/40 rounded-full h-2.5 overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full transition-all duration-300" style={{width: `${Math.min(((state.planStats?.monthlyRevenuePotential || 0) / 100000) * 100, 100)}%`}}></div>
                   </div>
                 </div>
 
                 {/* Yearly Revenue */}
-                <div className="flex items-center justify-between py-4 px-2 hover:bg-gray-50 rounded-lg transition">
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-green-100">
-                      <i className="fas fa-coins text-green-600"></i>
+                <div className="relative py-4 px-4 hover:bg-white/40 transition-all duration-200 group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/0 via-transparent to-teal-500/0 opacity-0 group-hover:opacity-5 transition-opacity pointer-events-none" />
+                  <div className="relative flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/20 border border-emerald-400/20 shadow-md">
+                        <PaymentsIcon className="text-emerald-600" sx={{ fontSize: 20 }} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-semibold text-gray-900">Yearly Revenue</p>
+                        <p className="text-xs text-gray-400">Annual revenue potential</p>
+                      </div>
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-gray-900">Yearly Revenue</p>
-                      <p className="text-xs text-gray-500">Annual revenue potential</p>
+                    <div className="text-right ml-4">
+                      <p className="text-lg font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">₹{(state.planStats?.yearlyRevenuePotential || 0).toLocaleString('en-IN')}</p>
                     </div>
                   </div>
-                  <div className="text-right ml-2">
-                    <p className="text-2xl font-bold text-green-600">₹{(state.planStats?.yearlyRevenuePotential || 0).toLocaleString('en-IN')}</p>
+                  <div className="w-full bg-gray-200/40 rounded-full h-2.5 overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-300" style={{width: `${Math.min(((state.planStats?.yearlyRevenuePotential || 0) / 500000) * 100, 100)}%`}}></div>
                   </div>
                 </div>
               </>
@@ -683,11 +744,12 @@ const SuperAdminOverview = () => {
           </div>
 
           <button
-            onClick={() => navigate('/Platform Settings')}
-            className="w-full mt-4 px-4 py-2.5 bg-gradient-to-r from-purple-50 to-transparent border border-purple-200 text-purple-700 rounded-lg hover:bg-purple-50 transition font-medium text-sm flex items-center justify-center gap-2"
+            onClick={() => onPageChange?.('settings')}
+            className="relative w-full mt-6 px-4 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl hover:shadow-lg transition-all duration-300 font-semibold text-sm flex items-center justify-center gap-2 group overflow-hidden"
           >
-            <i className="fas fa-cog"></i>
-            Manage Plans
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-cyan-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <SettingsIcon sx={{ fontSize: 18 }} className="relative" />
+            <span className="relative">Manage Plans</span>
           </button>
         </div>
         

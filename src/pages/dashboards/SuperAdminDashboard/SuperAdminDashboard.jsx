@@ -23,7 +23,7 @@ const SuperAdminDashboard = () => {
   const renderPage = () => {
     switch (activePage) {
       case 'dashboard':
-        return <SuperAdminOverview />
+        return <SuperAdminOverview onPageChange={setActivePage} />
       case 'hospitals':
         return <HospitalManagement />
       case 'hospital-admins':

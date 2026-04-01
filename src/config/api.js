@@ -75,3 +75,8 @@ export const HOSPITAL_ADMIN_STAFF_DETAILS = (staffId) => `/api/v1/hospital-admin
 export const HOSPITAL_ADMIN_STAFF_STATUS = (staffId) => `/api/v1/hospital-admin/staff/${encodeURIComponent(staffId)}/status`;
 export const HOSPITAL_ADMIN_STAFF_RESET_PASSWORD = (staffId) => `/api/v1/hospital-admin/staff/${encodeURIComponent(staffId)}/reset-password`;
 
+// HOSPITAL ADMIN - DEPARTMENT MANAGEMENT ENDPOINTS
+export const HOSPITAL_ADMIN_DEPARTMENTS = '/api/v1/hospital-admin/departments';
+export const HOSPITAL_ADMIN_DEPARTMENT_DETAILS = (departmentId) => `/api/v1/hospital-admin/departments/${encodeURIComponent(departmentId)}`;
+export const HOSPITAL_ADMIN_DEPARTMENT_STATUS = (departmentId) => `/api/v1/hospital-admin/departments/${encodeURIComponent(departmentId)}/status`;
+

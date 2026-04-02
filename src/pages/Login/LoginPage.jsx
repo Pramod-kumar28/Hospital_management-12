@@ -11,7 +11,7 @@ import { Eye, EyeOff, Mail, Lock, Zap, Shield, Building2 } from 'lucide-react'
 
 const DEMO_USERS = [
   { email: 'admin@dcm.demo', password: 'admin123', role: 'ADMIN', name: 'Admin User' },
-  { email: 'doctor@dcm.demo', password: 'doc123', role: 'DOCTOR', name: 'Dr. Aparna' },
+  { email: 'doctor@dcm.demo', password: 'doc@1234', role: 'DOCTOR', name: 'Dr. Aparna' },
   { email: 'nurse@dcm.demo', password: 'nurse123', role: 'NURSE', name: 'Nurse Staff' },
   { email: 'reception@dcm.demo', password: 'reception123', role: 'RECEPTIONIST', name: 'Receptionist' },
   { email: 'super@dcm.demo', password: 'sup123', role: 'SUPER_ADMIN', name: 'Super Admin' },

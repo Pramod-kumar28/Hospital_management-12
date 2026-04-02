@@ -54,7 +54,7 @@ export const DEMO_USERS = [
   },
   {
     email: "doctor@dcm.demo",
-    password: "doc123",
+    password: "doc@1234",
     role: "DOCTOR",
     name: "Dr. Aparna Sharma",
     permissions: PERMISSIONS.DOCTOR

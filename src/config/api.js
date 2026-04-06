@@ -80,3 +80,12 @@ export const HOSPITAL_ADMIN_DEPARTMENTS = '/api/v1/hospital-admin/departments';
 export const HOSPITAL_ADMIN_DEPARTMENT_DETAILS = (departmentId) => `/api/v1/hospital-admin/departments/${encodeURIComponent(departmentId)}`;
 export const HOSPITAL_ADMIN_DEPARTMENT_STATUS = (departmentId) => `/api/v1/hospital-admin/departments/${encodeURIComponent(departmentId)}/status`;
 
+/** Hospital Admin: assign / unassign staff to departments (by names) */
+export const HOSPITAL_ADMIN_DEPARTMENTS_ASSIGN_STAFF = '/api/v1/hospital-admin/departments/assign-staff';
+export const HOSPITAL_ADMIN_DEPARTMENTS_UNASSIGN_STAFF = '/api/v1/hospital-admin/departments/unassign-staff';
+/** GET staff assigned to a department (path uses department name) */
+export const HOSPITAL_ADMIN_DEPARTMENT_STAFF_BY_NAME = (departmentName) =>
+  `/api/v1/hospital-admin/departments/${encodeURIComponent(departmentName)}/staff`;
+/** GET departments for a staff member (path uses staff display name) */
+export const HOSPITAL_ADMIN_STAFF_DEPARTMENTS_BY_NAME = (staffName) =>
+  `/api/v1/hospital-admin/staff/${encodeURIComponent(staffName)}/departments`;

@@ -36,9 +36,7 @@ const SuperAdminOverview = ({ onPageChange }) => {
     users: [],
     auditLogs: [],
     reports: [],
-    totalPatients: 0,
     totalAppointments: 0,
-    totalBeds: 0,
     occupiedBeds: 0,
     activeSubscriptionsCount: 0,
     hospitalGrowth: 0,
@@ -69,11 +67,8 @@ const SuperAdminOverview = ({ onPageChange }) => {
     if (!finalToken) {
       const errorMsg = ' Authentication required. Please log in again.'
       setError(errorMsg)
-      console.warn(errorMsg)
       return null
     }
-
-    console.log(' Token being used:', finalToken ? '✓ Token present' : '✗ No token found')
 
     try {
       const url = `${API_BASE_URL}${API_ENDPOINT}`
@@ -83,8 +78,6 @@ const SuperAdminOverview = ({ onPageChange }) => {
         'Content-Type': 'application/json'
       }
 
-      console.log(' Fetching analytics from:', url)
-
       const res = await fetch(url, { headers })
       const data = await res.json().catch(() => ({}))
 
@@ -92,7 +85,6 @@ const SuperAdminOverview = ({ onPageChange }) => {
       if (res.status === 401) {
         const errorMsg = ' Unauthorized - Your token is invalid or expired. Please log in again with valid credentials.'
         setError(errorMsg)
-        console.error(' 401 Unauthorized - Token may be invalid or expired')
         return null
       }
 
@@ -100,17 +92,14 @@ const SuperAdminOverview = ({ onPageChange }) => {
       if (!res.ok) {
         const errorMsg = data?.message || data?.detail?.message || data?.error?.message || `Failed to fetch analytics (${res.status})`
         setError(`Failed to load analytics: ${errorMsg}`)
-        console.error(' Analytics API error:', errorMsg, data)
         return null
       }
 
-      console.log(' Analytics data fetched successfully')
       setError('')
       return data
     } catch (err) {
       const errorMsg = err?.message || 'Network error: Unable to fetch analytics data'
       setError(` ${errorMsg}`)
-      console.error(' Failed to fetch analytics data:', err)
       return null
     }
   }
@@ -124,7 +113,6 @@ const SuperAdminOverview = ({ onPageChange }) => {
     const finalToken = authToken || reduxToken || demoToken
 
     if (!finalToken) {
-      console.warn(' No token available for plan stats fetch')
       return
     }
 
@@ -137,22 +125,15 @@ const SuperAdminOverview = ({ onPageChange }) => {
         'Content-Type': 'application/json'
       }
 
-      console.log(' Fetching subscription plans from:', url)
-
       const res = await fetch(url, { headers })
       const data = await res.json().catch(() => ({}))
 
-      console.log('  API Response Status:', res.status)
-      console.log('  API Response Data:', data)
-
       if (res.status === 401) {
-        console.error(' 401 Unauthorized - Plan token may be invalid')
         setPlanStatsLoading(false)
         return
       }
 
       if (!res.ok) {
-        console.error(' Failed to fetch plans:', res.status, data?.message || data?.error)
         setPlanStatsLoading(false)
         return
       }
@@ -168,18 +149,10 @@ const SuperAdminOverview = ({ onPageChange }) => {
               ? data
               : []
 
-      console.log('  Extracted Plans Array:', { length: plans.length, plans })
-
       // Calculate stats
       const totalPlans = plans.length
       const monthlyRevenuePotential = plans.reduce((sum, plan) => sum + Number(plan?.monthly_price || 0), 0)
       const yearlyRevenuePotential = plans.reduce((sum, plan) => sum + Number(plan?.yearly_price || 0), 0)
-
-      console.log('  Plan Stats Calculated:', {
-        totalPlans,
-        monthlyRevenuePotential,
-        yearlyRevenuePotential
-      })
 
       setState(prev => ({
         ...prev,
@@ -190,7 +163,6 @@ const SuperAdminOverview = ({ onPageChange }) => {
         }
       }))
     } catch (err) {
-      console.error(' Error fetching plan stats:', err?.message || err)
     } finally {
       setPlanStatsLoading(false)
     }
@@ -206,7 +178,6 @@ const SuperAdminOverview = ({ onPageChange }) => {
     const finalToken = authToken || reduxToken || demoToken
 
     if (!finalToken) {
-      console.warn(' No token available for hospitals fetch')
       return
     }
 
@@ -219,21 +190,17 @@ const SuperAdminOverview = ({ onPageChange }) => {
         'Content-Type': 'application/json'
       }
 
-      console.log(' Fetching all hospitals from:', url)
-
       const res = await fetch(url, { headers })
       const data = await res.json().catch(() => ({}))
 
       // Handle 401 Unauthorized
       if (res.status === 401) {
-        console.error(' 401 Unauthorized - Hospital token may be invalid')
         setHospitalsLoading(false)
         return
       }
 
       // Handle other errors
       if (!res.ok) {
-        console.error(' Failed to fetch hospitals:', res.status, data?.message || data?.error)
         setHospitalsLoading(false)
         return
       }
@@ -253,8 +220,6 @@ const SuperAdminOverview = ({ onPageChange }) => {
                   ? data
                   : []
 
-      console.log(' All hospitals fetched:', hospitals.length)
-
       // Map hospitals data
       const mappedHospitals = hospitals.map((h) => ({
         id: h?.id ?? h?.hospital_id ?? '',
@@ -272,7 +237,6 @@ const SuperAdminOverview = ({ onPageChange }) => {
         recentHospitals: mappedHospitals
       }))
     } catch (err) {
-      console.error(' Error fetching recent hospitals:', err?.message || err)
     } finally {
       setHospitalsLoading(false)
     }
@@ -285,23 +249,10 @@ const SuperAdminOverview = ({ onPageChange }) => {
       // Extract hospital count from analytics data
       const hospitalCount = data?.hospitals?.total ?? data?.hospitals?.count ?? 0
       const activeHospitals = data?.hospitals?.active ?? 0
-      const totalPatients = data?.patients?.total ?? 0
       const appointmentsThisMonth = data?.patients?.appointments_this_month ?? 0
       const totalRevenue = data?.revenue?.total ?? 0
       const occupiedBeds = data?.occupancy?.occupied_beds ?? 0
-      const totalBeds = data?.occupancy?.total_beds ?? 0
       const activeSubscriptionsCount = data?.subscriptions?.active_count ?? 0
-
-      console.log(' Analytics Data Extracted:', {
-        hospitalCount,
-        activeHospitals,
-        totalPatients,
-        appointmentsThisMonth,
-        totalRevenue,
-        occupiedBeds,
-        totalBeds,
-        activeSubscriptionsCount
-      })
 
       setState(prev => ({
         ...prev,
@@ -310,9 +261,7 @@ const SuperAdminOverview = ({ onPageChange }) => {
         users: data.users || [],
         auditLogs: data.auditLogs || [],
         reports: data.reports || [],
-        totalPatients: totalPatients,
         totalAppointments: appointmentsThisMonth,
-        totalBeds: totalBeds,
         occupiedBeds: occupiedBeds,
         activeSubscriptionsCount: activeSubscriptionsCount,
         revenue: totalRevenue,
@@ -353,17 +302,6 @@ const SuperAdminOverview = ({ onPageChange }) => {
     .filter(s => s.status === 'Paid')
     .reduce((sum, sub) => sum + (sub.amount || 0), 0)
 
-  // Debug logging
-  console.log(' Component State:', {
-    loading,
-    error: error ? 'Present' : 'None',
-    token: token ? 'Present' : 'Missing',
-    hospitalCount: totalHospitals,
-    activeHospitals: activeHospitalCount,
-    totalPatients: state.totalPatients,
-    totalAppointments: state.totalAppointments
-  })
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -387,7 +325,7 @@ const SuperAdminOverview = ({ onPageChange }) => {
       </div>
 
       {/* Metrics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
         {/* Total Hospitals */}
         <div onClick={()=>navigate('users')}
@@ -412,43 +350,6 @@ const SuperAdminOverview = ({ onPageChange }) => {
               <div className="w-1.5 h-10 bg-gradient-to-t from-blue-600 to-blue-400 rounded-full"></div>
               <div className="w-1.5 h-7 bg-gradient-to-t from-blue-500 to-cyan-400 rounded-full blur-sm"></div>
               <div className="w-1.5 h-11 bg-gradient-to-t from-blue-600 to-blue-400 rounded-full blur-sm"></div>
-            </div>
-          </div>
-        </div>
-
-        {/* Total Patients (All Hospitals) */}
-        <div className="group relative bg-gradient-to-br from-red-500/10 via-rose-400/5 to-pink-500/10 backdrop-blur-xl rounded-2xl p-4 border border-red-400/20 shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:border-red-400/40">
-          <div className="absolute inset-0 bg-gradient-to-br from-red-600/0 via-transparent to-pink-600/0 pointer-events-none group-hover:from-red-600/5" />
-          <div className="absolute -top-20 -right-20 w-40 h-40 bg-red-500/20 rounded-full blur-3xl pointer-events-none" />
-
-          <span className="absolute top-4 right-4 bg-gradient-to-r from-emerald-400 to-cyan-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-            +{state.patientGrowth}%
-          </span>
-
-          <div className="relative">
-            <div className="w-10 h-10 flex items-center justify-center rounded-2xl bg-gradient-to-br from-red-500 to-pink-600 mb-2 shadow-lg group-hover:shadow-xl transition-shadow">
-              <GroupIcon className="text-white" sx={{ fontSize: 20 }} />
-            </div>
-            <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Total Patients</p>
-            <p className="text-3xl font-bold text-gray-900 mt-1">{state.totalPatients || 0}</p>
-            <p className="text-xs text-gray-500 mt-1">Across all hospitals</p>
-            <div className="mt-2">
-              <svg width="100%" height="32" viewBox="0 0 100 40" className="opacity-60">
-                <defs>
-                  <linearGradient id="lineGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" style={{stopColor: '#ef4444', stopOpacity: 0.3}} />
-                    <stop offset="100%" style={{stopColor: '#ec4899', stopOpacity: 1}} />
-                  </linearGradient>
-                </defs>
-                <polyline
-                  points="0,30 15,22 30,26 45,18 60,20 75,12 90,15"
-                  fill="none"
-                  stroke="url(#lineGradient1)"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
             </div>
           </div>
         </div>
@@ -479,42 +380,7 @@ const SuperAdminOverview = ({ onPageChange }) => {
           </div>
         </div>
 
-        {/* Total Beds */}
-        <div className="group relative bg-gradient-to-br from-amber-500/10 via-orange-400/5 to-yellow-500/10 backdrop-blur-xl rounded-2xl p-4 border border-amber-400/20 shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:border-amber-400/40">
-          <div className="absolute inset-0 bg-gradient-to-br from-amber-600/0 via-transparent to-orange-600/0 pointer-events-none group-hover:from-amber-600/5" />
-          <div className="absolute -top-20 -right-20 w-40 h-40 bg-amber-500/20 rounded-full blur-3xl pointer-events-none" />
-
-          <span className="absolute top-4 right-4 bg-gradient-to-r from-emerald-400 to-cyan-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-            +{state.revenueGrowth}%
-          </span>
-
-          <div className="relative">
-            <div className="w-10 h-10 flex items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 mb-2 shadow-lg group-hover:shadow-xl transition-shadow">
-              <HotelIcon className="text-white" sx={{ fontSize: 20 }} />
-            </div>
-            <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Total Beds</p>
-            <p className="text-3xl font-bold text-gray-900 mt-1">{state.totalBeds || 0}</p>
-            <p className="text-xs text-gray-500 mt-1">Across all hospitals</p>
-            <div className="mt-2">
-              <svg width="100%" height="32" viewBox="0 0 100 40" className="opacity-60">
-                <defs>
-                  <linearGradient id="lineGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" style={{stopColor: '#f59e0b', stopOpacity: 0.3}} />
-                    <stop offset="100%" style={{stopColor: '#d97706', stopOpacity: 1}} />
-                  </linearGradient>
-                </defs>
-                <polyline
-                  points="0,28 15,26 30,20 45,22 60,16 75,10 90,14"
-                  fill="none"
-                  stroke="url(#lineGradient2)"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
-          </div>
-        </div>
+    
 
         {/* Platform Revenue */}
         <div className="group relative bg-gradient-to-br from-emerald-500/10 via-green-400/5 to-teal-500/10 backdrop-blur-xl rounded-2xl p-4 border border-emerald-400/20 shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:border-emerald-400/40">

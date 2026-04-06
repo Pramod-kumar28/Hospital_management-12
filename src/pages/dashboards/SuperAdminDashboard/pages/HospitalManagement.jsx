@@ -85,6 +85,8 @@ const HospitalManagement = () => {
   });
   const [loading, setLoading] = useState(true);
   const [listError, setListError] = useState('');
+  const [touchedFields, setTouchedFields] = useState({});
+  const [deleteLoading, setDeleteLoading] = useState({});
 
   const fetchHospitals = async (page = pagination.page, limit = pagination.limit) => {
     setLoading(true);
@@ -97,14 +99,17 @@ const HospitalManagement = () => {
       if (filters.plan) params.set('subscription', displayToSubscription(filters.plan) || filters.plan);
       if (filters.city) params.set('city', filters.city);
       if (filters.state) params.set('state', filters.state);
+      
       const res = await apiFetch(`${SUPER_ADMIN_HOSPITALS}?${params.toString()}`);
       const data = await res.json().catch(() => ({}));
+      
       if (!res.ok) {
         setListError(data?.message || data?.detail?.message || `Failed to load hospitals (${res.status})`);
         setHospitals([]);
         setLoading(false);
         return;
       }
+      
       const raw = data?.data ?? data;
       const items = Array.isArray(raw?.items) ? raw.items : Array.isArray(raw) ? raw : raw?.hospitals ?? [];
       const total = raw?.total ?? items.length;
@@ -122,10 +127,6 @@ const HospitalManagement = () => {
     fetchHospitals(1, pagination.limit);
   }, [filters.status, filters.plan, filters.city, filters.state]);
 
-  const onApplyFilters = () => {
-    fetchHospitals(1, pagination.limit);
-  };
-
   const filteredHospitals = hospitals.filter(hospital => {
     const matchesSearch = !filters.search ||
       [hospital.name, hospital.email, hospital.contact].some(
@@ -138,6 +139,7 @@ const HospitalManagement = () => {
     setModalMode('add');
     setSubmitError('');
     setFieldErrors({});
+    setTouchedFields({});
     setCurrentHospital({
       id: '',
       name: '',
@@ -157,7 +159,23 @@ const HospitalManagement = () => {
 
   const openEditModal = (hospital) => {
     setModalMode('edit');
-    setCurrentHospital({ ...hospital });
+    setSubmitError('');
+    setFieldErrors({});
+    setTouchedFields({});
+    setCurrentHospital({
+      id: hospital.id,
+      name: hospital.name,
+      registration_number: hospital.registration_number,
+      email: hospital.email,
+      contact: hospital.contact,
+      address: hospital.address,
+      city: hospital.city,
+      state: hospital.state,
+      country: hospital.country,
+      pincode: hospital.pincode,
+      subscriptionPlan: hospital.subscriptionPlan,
+      status: hospital.status
+    });
     setIsModalOpen(true);
   };
 
@@ -171,7 +189,19 @@ const HospitalManagement = () => {
     if (fieldErrors[name]) setFieldErrors(prev => ({ ...prev, [name]: '' }));
   };
 
-  // Backend schema: all required; name 2-255, registration_number 2-100, email, phone ^\+?[\d\s\-\(\)]{10,20}, address >=5, city/state/country 2-100, pincode 3-10
+  const handleBlur = (fieldName) => {
+    setTouchedFields(prev => ({ ...prev, [fieldName]: true }));
+  };
+
+  const getFieldBorderClass = (fieldName) => {
+    const hasError = fieldErrors[fieldName];
+    const isTouched = touchedFields[fieldName];
+    if (hasError && (isTouched || submitError)) {
+      return 'border-red-500';
+    }
+    return 'border-gray-200';
+  };
+
   const PHONE_REGEX = /^\+?[\d\s\-\(\)]{10,20}$/;
   const validateCreateForm = () => {
     const e = {};
@@ -200,7 +230,11 @@ const HospitalManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitError('');
-    setFieldErrors({});
+    
+    const allFields = ['name', 'registration_number', 'email', 'contact', 'address', 'city', 'state', 'country', 'pincode'];
+    const newTouched = {};
+    allFields.forEach(field => { newTouched[field] = true });
+    setTouchedFields(newTouched);
 
     if (modalMode === 'add') {
       if (!token) {
@@ -232,9 +266,6 @@ const HospitalManagement = () => {
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
-          if (res.status === 422) {
-            console.warn('[Create Hospital] 422 response:', JSON.stringify(data, null, 2));
-          }
           const detail = data?.detail;
           let msg = data?.message || (typeof detail === 'string' ? detail : null);
           if (!msg && Array.isArray(detail) && detail.length > 0) {
@@ -245,23 +276,8 @@ const HospitalManagement = () => {
           setSubmitError(msg || `Request failed (${res.status})`);
           return;
         }
-        const created = data?.data ?? data;
-        const newHospital = {
-          id: created?.id ?? `HSP-${1000 + hospitals.length}`,
-          name: created?.name ?? currentHospital.name,
-          address: created?.address ?? currentHospital.address,
-          email: created?.email ?? currentHospital.email,
-          contact: created?.phone ?? currentHospital.contact,
-          subscriptionPlan: 'Basic',
-          status: 'Active',
-          logo: `https://picsum.photos/seed/hospital${hospitals.length}/80/80`,
-          users: 0,
-          revenue: '₹0',
-          createdDate: new Date().toISOString().split('T')[0]
-        };
-        setHospitals(prev => [mapHospitalFromApi(created, prev.length), ...prev]);
         closeModal();
-        fetchHospitals(pagination.page, pagination.limit);
+        await fetchHospitals(1, pagination.limit);
       } catch (err) {
         setSubmitError(err?.message || 'Network error. Please try again.');
       } finally {
@@ -283,7 +299,9 @@ const HospitalManagement = () => {
           city: (currentHospital.city || '').trim() || undefined,
           state: (currentHospital.state || '').trim() || undefined,
           country: (currentHospital.country || '').trim() || undefined,
-          pincode: (currentHospital.pincode || '').trim() || undefined
+          pincode: (currentHospital.pincode || '').trim() || undefined,
+          subscription_plan: displayToSubscription(currentHospital.subscriptionPlan),
+          status: displayToStatus(currentHospital.status)
         };
         const body = Object.fromEntries(Object.entries(payload).filter(([, v]) => v != null && v !== ''));
         const res = await apiFetch(`${SUPER_ADMIN_HOSPITALS}/${currentHospital.id}`, {
@@ -297,10 +315,8 @@ const HospitalManagement = () => {
           setSubmitLoading(false);
           return;
         }
-        const updated = data?.data ?? data;
-        setHospitals(prev => prev.map(h => h.id === currentHospital.id ? { ...h, ...mapHospitalFromApi(updated), ...currentHospital } : h));
         closeModal();
-        fetchHospitals(pagination.page, pagination.limit);
+        await fetchHospitals(pagination.page, pagination.limit);
       } catch (err) {
         setSubmitError(err?.message || 'Network error.');
       } finally {
@@ -310,7 +326,15 @@ const HospitalManagement = () => {
   };
 
   const toggleStatus = async (hospital) => {
-    const nextStatus = hospital.status === 'Active' ? 'SUSPENDED' : 'ACTIVE';
+    let nextStatus;
+    if (hospital.status === 'Active') {
+      nextStatus = 'SUSPENDED';
+    } else if (hospital.status === 'Suspended') {
+      nextStatus = 'ACTIVE';
+    } else {
+      nextStatus = 'ACTIVE';
+    }
+    
     if (!token || !hospital.id) return;
     try {
       const res = await apiFetch(`${SUPER_ADMIN_HOSPITALS}/${hospital.id}/status`, {
@@ -322,37 +346,70 @@ const HospitalManagement = () => {
         alert(data?.message || data?.detail?.message || `Status update failed (${res.status})`);
         return;
       }
-      setHospitals(prev => prev.map(h => h.id === hospital.id ? { ...h, status: statusToDisplay(nextStatus), statusRaw: nextStatus } : h));
-      fetchHospitals(pagination.page, pagination.limit);
+      await fetchHospitals(pagination.page, pagination.limit);
     } catch (err) {
       alert(err?.message || 'Network error');
     }
   };
 
-  const deleteHospital = async (hospitalId) => {
-    if (!window.confirm('Are you sure you want to delete this hospital? This will soft-delete (set inactive) and block all users.')) return;
-    if (!token) return;
+  const deleteHospital = async (hospitalId, hospitalName) => {
+    const confirmed = window.confirm(`Are you sure you want to delete "${hospitalName}"? This action cannot be undone.`);
+    
+    if (!confirmed) {
+      return;
+    }
+    
+    if (!token) {
+      alert('You must be logged in to delete a hospital.');
+      return;
+    }
+    
+    setDeleteLoading(prev => ({ ...prev, [hospitalId]: true }));
+    
     try {
       const res = await apiFetch(`${SUPER_ADMIN_HOSPITALS}/${hospitalId}?confirm=true`, {
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
+      
       const data = await res.json().catch(() => ({}));
+      
       if (!res.ok) {
-        alert(data?.message || data?.detail?.message || `Delete failed (${res.status})`);
+        const errorMessage = data?.message || 
+                           data?.detail?.message || 
+                           (Array.isArray(data?.detail) && data.detail[0]?.msg) || 
+                           `Delete failed with status ${res.status}`;
+        alert(errorMessage);
         return;
       }
-      setHospitals(prev => prev.filter(h => h.id !== hospitalId));
-      fetchHospitals(pagination.page, pagination.limit);
+      
+      const successMessage = data?.message || `${hospitalName} deleted successfully`;
+      alert(successMessage);
+      
+      await fetchHospitals(1, pagination.limit);
+      
     } catch (err) {
-      alert(err?.message || 'Network error');
+      console.error('Delete error:', err);
+      alert(err?.message || 'Network error. Please try again.');
+    } finally {
+      setDeleteLoading(prev => ({ ...prev, [hospitalId]: false }));
     }
   };
 
   const stats = {
     total: pagination.total || hospitals.length,
-    active: hospitals.filter(h => h.status === 'Active' || h.statusRaw === 'ACTIVE').length,
+    active: hospitals.filter(h => h.status === 'Active').length,
+    suspended: hospitals.filter(h => h.status === 'Suspended').length,
+    inactive: hospitals.filter(h => h.status === 'Inactive').length,
     professional: hospitals.filter(h => h.subscriptionPlan === 'Basic' || h.subscriptionPlan === 'Premium').length,
     revenue: hospitals.reduce((sum, h) => sum + parseInt(String(h.revenue || '0').replace(/₹|,/g, ''), 10), 0)
+  };
+
+  // Fixed handleImageError function
+  const handleImageError = (event, index) => {
+    event.target.src = `https://picsum.photos/seed/hospital${index}/80/80`;
   };
 
   return (
@@ -360,28 +417,18 @@ const HospitalManagement = () => {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          
           <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 to-blue-800 bg-clip-text text-transparent">
-            Hospital
+            Hospital Management
           </h1>
         </div>
         <p className="text-gray-600">Manage your healthcare partners efficiently</p>
       </div>
 
-      {/* Stats Cards - Original Style */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {/* TOTAL HOSPITALS */}
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
         <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
-          {/* light background shape */}
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent pointer-events-none" />
-
-          {/* badge */}
-          <span className="absolute top-4 right-4 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded">
-            +{((stats.total / (stats.total || 1)) * 100).toFixed(0)}%
-          </span>
-
           <div className="relative flex justify-between items-end">
-            {/* left */}
             <div>
               <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-600 mb-3">
                 <i className="fas fa-hospital text-white"></i>
@@ -390,8 +437,6 @@ const HospitalManagement = () => {
               <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
               <p className="text-xs text-gray-400 mt-1">Registered hospitals</p>
             </div>
-
-            {/* mini bars */}
             <div className="flex items-end gap-1 h-14">
               <div className="w-1.5 h-4 bg-blue-300 rounded"></div>
               <div className="w-1.5 h-7 bg-blue-400 rounded"></div>
@@ -402,55 +447,68 @@ const HospitalManagement = () => {
           </div>
         </div>
 
-        {/* ACTIVE HOSPITALS */}
         <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent pointer-events-none" />
-
-          <span className="absolute top-4 right-4 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded">
-            +{((stats.active / (stats.total || 1)) * 100).toFixed(0)}%
-          </span>
-
           <div className="relative flex justify-between items-end">
             <div>
               <div className="w-10 h-10 flex items-center justify-center rounded-full bg-green-500 mb-3">
                 <i className="fas fa-check-circle text-white"></i>
               </div>
               <p className="text-sm text-gray-500">Active Hospitals</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.active}</p>
+              <p className="text-2xl font-bold text-green-700">{stats.active}</p>
               <p className="text-xs text-gray-400 mt-1">Currently operational</p>
             </div>
-
-            {/* mini line */}
             <svg width="70" height="40" viewBox="0 0 70 40">
-              <polyline
-                points="0,30 12,22 24,26 36,18 48,20 60,12"
-                fill="none"
-                stroke="#22c55e"
-                strokeWidth="2"
-              />
+              <polyline points="0,30 12,22 24,26 36,18 48,20 60,12" fill="none" stroke="#22c55e" strokeWidth="2"/>
             </svg>
           </div>
         </div>
 
-        {/* PROFESSIONAL PLAN */}
+        <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-yellow-50 to-transparent pointer-events-none" />
+          <div className="relative flex justify-between items-end">
+            <div>
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-yellow-500 mb-3">
+                <i className="fas fa-pause-circle text-white"></i>
+              </div>
+              <p className="text-sm text-gray-500">Suspended</p>
+              <p className="text-2xl font-bold text-yellow-700">{stats.suspended}</p>
+              <p className="text-xs text-gray-400 mt-1">Temporarily suspended</p>
+            </div>
+            <svg width="70" height="40" viewBox="0 0 70 40">
+              <polyline points="0,20 12,25 24,15 36,28 48,18 60,22" fill="none" stroke="#eab308" strokeWidth="2"/>
+            </svg>
+          </div>
+        </div>
+
+        <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-transparent pointer-events-none" />
+          <div className="relative flex justify-between items-end">
+            <div>
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-500 mb-3">
+                <i className="fas fa-ban text-white"></i>
+              </div>
+              <p className="text-sm text-gray-500">Inactive</p>
+              <p className="text-2xl font-bold text-gray-700">{stats.inactive}</p>
+              <p className="text-xs text-gray-400 mt-1">Permanently inactive</p>
+            </div>
+            <svg width="70" height="40" viewBox="0 0 70 40">
+              <polyline points="0,25 12,30 24,20 36,35 48,25 60,30" fill="none" stroke="#6b7280" strokeWidth="2"/>
+            </svg>
+          </div>
+        </div>
+
         <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent pointer-events-none" />
-
-          <span className="absolute top-4 right-4 bg-purple-500 text-white text-xs font-semibold px-2 py-0.5 rounded">
-            Premium
-          </span>
-
           <div className="relative flex justify-between items-end">
             <div>
               <div className="w-10 h-10 flex items-center justify-center rounded-full bg-purple-600 mb-3">
                 <i className="fas fa-crown text-white"></i>
               </div>
-              <p className="text-sm text-gray-500">Basic & Premium Plans</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.professional}</p>
+              <p className="text-sm text-gray-500">Basic & Premium</p>
+              <p className="text-2xl font-bold text-purple-700">{stats.professional}</p>
               <p className="text-xs text-gray-400 mt-1">High-value customers</p>
             </div>
-
-            {/* mini bars */}
             <div className="flex items-end gap-1 h-14">
               <div className="w-1.5 h-10 bg-purple-400 rounded"></div>
               <div className="w-1.5 h-6 bg-purple-300 rounded"></div>
@@ -458,36 +516,6 @@ const HospitalManagement = () => {
               <div className="w-1.5 h-8 bg-purple-400 rounded"></div>
               <div className="w-1.5 h-9 bg-purple-300 rounded"></div>
             </div>
-          </div>
-        </div>
-
-        {/* REVENUE */}
-        <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-amber-50 to-transparent pointer-events-none" />
-
-          <span className="absolute top-4 right-4 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded">
-            +12.5%
-          </span>
-
-          <div className="relative flex justify-between items-end">
-            <div>
-              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-amber-500 mb-3">
-                <i className="fas fa-rupee-sign text-white"></i>
-              </div>
-              <p className="text-sm text-gray-500">Total Revenue</p>
-              <p className="text-2xl font-bold text-gray-900">₹{(stats.revenue / 1000).toFixed(1)}K</p>
-              <p className="text-xs text-gray-400 mt-1">in last 7 Days</p>
-            </div>
-
-            {/* mini line */}
-            <svg width="70" height="40" viewBox="0 0 70 40">
-              <polyline
-                points="0,28 12,26 24,20 36,22 48,16 60,10"
-                fill="none"
-                stroke="#f59e0b"
-                strokeWidth="2"
-              />
-            </svg>
           </div>
         </div>
       </div>
@@ -517,9 +545,9 @@ const HospitalManagement = () => {
               onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
             >
               <option value="">All Status</option>
-              <option value="Active" className="text-green-600">● Active</option>
-              <option value="Suspended" className="text-amber-600">● Suspended</option>
-              <option value="Inactive" className="text-gray-600">● Inactive</option>
+              <option value="Active">Active</option>
+              <option value="Suspended">Suspended</option>
+              <option value="Inactive">Inactive</option>
             </select>
 
             <select
@@ -529,13 +557,13 @@ const HospitalManagement = () => {
             >
               <option value="">All Plans</option>
               <option value="Free">Free</option>
-              <option value="Basic" className="text-purple-600">Basic</option>
-              <option value="Premium" className="text-blue-600">Premium</option>
+              <option value="Basic">Basic</option>
+              <option value="Premium">Premium</option>
             </select>
 
             <button
               onClick={openAddModal}
-              className="px-5 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:shadow-lg hover:scale-[1.02] active:scale-95 transition-all duration-200 font-medium flex items-center gap-2 add-hospital-btn"
+              className="px-5 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:shadow-lg hover:scale-[1.02] active:scale-95 transition-all duration-200 font-medium flex items-center gap-2"
             >
               <i className="fas fa-plus-circle"></i>
               Add Hospital
@@ -551,7 +579,7 @@ const HospitalManagement = () => {
         </div>
       )}
 
-      {/* Hospitals Table - Simplified */}
+      {/* Hospitals Table */}
       <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
         {loading ? (
           <div className="p-12 text-center">
@@ -595,7 +623,8 @@ const HospitalManagement = () => {
                         <img
                           src={hospital.logo}
                           alt={hospital.name}
-                          className="w-10 h-10 rounded-lg"
+                          className="w-10 h-10 rounded-lg object-cover"
+                          onError={(e) => handleImageError(e, index)}
                         />
                         <div>
                           <p className="font-semibold text-gray-900">{hospital.name}</p>
@@ -605,22 +634,27 @@ const HospitalManagement = () => {
                     </td>
                     <td className="py-4 px-6">
                       <p className="font-medium text-gray-900">{hospital.contact}</p>
+                      <p className="text-xs text-gray-500">{hospital.city}, {hospital.state}</p>
                     </td>
                     <td className="py-4 px-6">
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${hospital.subscriptionPlan === 'Free'
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        hospital.subscriptionPlan === 'Free'
                           ? 'bg-gray-100 text-gray-800'
                           : hospital.subscriptionPlan === 'Basic'
                             ? 'bg-purple-100 text-purple-800'
                             : 'bg-blue-100 text-blue-800'
-                        }`}>
+                      }`}>
                         {hospital.subscriptionPlan}
                       </span>
                     </td>
                     <td className="py-4 px-6">
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${hospital.status === 'Active'
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        hospital.status === 'Active'
                           ? 'bg-green-100 text-green-800'
-                          : 'bg-yellow-100 text-yellow-800'
-                        }`}>
+                          : hospital.status === 'Suspended'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-gray-100 text-gray-800'
+                      }`}>
                         {hospital.status}
                       </span>
                     </td>
@@ -635,20 +669,30 @@ const HospitalManagement = () => {
                         </button>
                         <button
                           onClick={() => toggleStatus(hospital)}
-                          className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${hospital.status === 'Active'
+                          className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+                            hospital.status === 'Active'
                               ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200'
                               : 'bg-green-100 text-green-600 hover:bg-green-200'
-                            }`}
+                          }`}
                           title={hospital.status === 'Active' ? 'Suspend' : 'Activate'}
                         >
                           <i className="fas fa-power-off text-sm"></i>
                         </button>
                         <button
-                          onClick={() => deleteHospital(hospital.id)}
-                          className="w-8 h-8 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg flex items-center justify-center transition-colors"
+                          onClick={() => deleteHospital(hospital.id, hospital.name)}
+                          disabled={deleteLoading[hospital.id]}
+                          className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+                            deleteLoading[hospital.id]
+                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                              : 'bg-red-100 text-red-600 hover:bg-red-200'
+                          }`}
                           title="Delete"
                         >
-                          <i className="fas fa-trash text-sm"></i>
+                          {deleteLoading[hospital.id] ? (
+                            <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                          ) : (
+                            <i className="fas fa-trash text-sm"></i>
+                          )}
                         </button>
                       </div>
                     </td>
@@ -660,16 +704,17 @@ const HospitalManagement = () => {
         )}
       </div>
 
-      {/* Modal */}
+      {/* Modal for Add/Edit */}
       <Modal
         isOpen={isModalOpen}
         onClose={closeModal}
         title={
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${modalMode === 'add'
+            <div className={`p-2 rounded-lg ${
+              modalMode === 'add'
                 ? 'bg-gradient-to-r from-blue-500 to-blue-600'
                 : 'bg-gradient-to-r from-purple-500 to-purple-600'
-              }`}>
+            }`}>
               <i className={`fas ${modalMode === 'add' ? 'fa-plus' : 'fa-edit'} text-white`}></i>
             </div>
             <span className="text-xl font-bold text-gray-900">
@@ -691,16 +736,15 @@ const HospitalManagement = () => {
               <label className="block text-sm font-semibold text-gray-700">Hospital Name *</label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i className="fas fa-hospital text-gray-400 group-focus-within:text-blue-500"></i>
+                  <i className="fas fa-hospital text-gray-400"></i>
                 </div>
                 <input
                   type="text"
                   name="name"
                   value={currentHospital.name}
                   onChange={handleInputChange}
-                  minLength={2}
-                  maxLength={255}
-                  className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${fieldErrors.name ? 'border-red-400' : 'border-gray-200'}`}
+                  onBlur={() => handleBlur('name')}
+                  className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${getFieldBorderClass('name')}`}
                   placeholder="2–255 characters"
                 />
               </div>
@@ -711,16 +755,15 @@ const HospitalManagement = () => {
               <label className="block text-sm font-semibold text-gray-700">Registration Number *</label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i className="fas fa-id-card text-gray-400 group-focus-within:text-blue-500"></i>
+                  <i className="fas fa-id-card text-gray-400"></i>
                 </div>
                 <input
                   type="text"
                   name="registration_number"
                   value={currentHospital.registration_number}
                   onChange={handleInputChange}
-                  minLength={2}
-                  maxLength={100}
-                  className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${fieldErrors.registration_number ? 'border-red-400' : 'border-gray-200'}`}
+                  onBlur={() => handleBlur('registration_number')}
+                  className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${getFieldBorderClass('registration_number')}`}
                   placeholder="2–100 characters"
                 />
               </div>
@@ -731,14 +774,15 @@ const HospitalManagement = () => {
               <label className="block text-sm font-semibold text-gray-700">Email *</label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i className="fas fa-envelope text-gray-400 group-focus-within:text-blue-500"></i>
+                  <i className="fas fa-envelope text-gray-400"></i>
                 </div>
                 <input
                   type="email"
                   name="email"
                   value={currentHospital.email}
                   onChange={handleInputChange}
-                  className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${fieldErrors.email ? 'border-red-400' : 'border-gray-200'}`}
+                  onBlur={() => handleBlur('email')}
+                  className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${getFieldBorderClass('email')}`}
                   placeholder="hospital@example.com"
                 />
               </div>
@@ -749,16 +793,15 @@ const HospitalManagement = () => {
               <label className="block text-sm font-semibold text-gray-700">Phone *</label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i className="fas fa-phone text-gray-400 group-focus-within:text-blue-500"></i>
+                  <i className="fas fa-phone text-gray-400"></i>
                 </div>
                 <input
                   type="tel"
                   name="contact"
                   value={currentHospital.contact}
                   onChange={handleInputChange}
-                  minLength={10}
-                  maxLength={20}
-                  className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${fieldErrors.contact ? 'border-red-400' : 'border-gray-200'}`}
+                  onBlur={() => handleBlur('contact')}
+                  className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${getFieldBorderClass('contact')}`}
                   placeholder="+91 9876543210 (10–20 chars)"
                 />
               </div>
@@ -766,71 +809,66 @@ const HospitalManagement = () => {
             </div>
 
             {modalMode === 'edit' && (
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-700">
-                Subscription Plan *
-              </label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i className="fas fa-crown text-gray-400 group-focus-within:text-blue-500"></i>
+              <>
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">Subscription Plan *</label>
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <i className="fas fa-crown text-gray-400"></i>
+                    </div>
+                    <select
+                      name="subscriptionPlan"
+                      value={currentHospital.subscriptionPlan}
+                      onChange={handleInputChange}
+                      className="w-full pl-10 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none transition-all"
+                    >
+                      <option value="Free">Free Plan</option>
+                      <option value="Basic">Basic Plan</option>
+                      <option value="Premium">Premium Plan</option>
+                    </select>
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                      <i className="fas fa-chevron-down text-gray-400"></i>
+                    </div>
+                  </div>
                 </div>
-                <select
-                  name="subscriptionPlan"
-                  value={currentHospital.subscriptionPlan}
-                  onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none transition-all"
-                  required
-                >
-                  <option value="Free">Free Plan</option>
-                  <option value="Basic">Basic Plan</option>
-                  <option value="Premium">Premium Plan</option>
-                </select>
-                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                  <i className="fas fa-chevron-down text-gray-400"></i>
-                </div>
-              </div>
-            </div>
-            )}
 
-            {modalMode === 'edit' && (
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-700">
-                Status *
-              </label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i className="fas fa-circle text-gray-400 group-focus-within:text-blue-500"></i>
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">Status *</label>
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <i className="fas fa-circle text-gray-400"></i>
+                    </div>
+                    <select
+                      name="status"
+                      value={currentHospital.status}
+                      onChange={handleInputChange}
+                      className="w-full pl-10 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none transition-all"
+                    >
+                      <option value="Active">Active</option>
+                      <option value="Suspended">Suspended</option>
+                      <option value="Inactive">Inactive</option>
+                    </select>
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                      <i className="fas fa-chevron-down text-gray-400"></i>
+                    </div>
+                  </div>
                 </div>
-                <select
-                  name="status"
-                  value={currentHospital.status}
-                  onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none transition-all"
-                  required
-                >
-                  <option value="Active" className="text-green-600">Active</option>
-                  <option value="Suspended" className="text-amber-600">Suspended</option>
-                </select>
-                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                  <i className="fas fa-chevron-down text-gray-400"></i>
-                </div>
-              </div>
-            </div>
+              </>
             )}
 
             <div className="md:col-span-2 space-y-2">
               <label className="block text-sm font-semibold text-gray-700">Address *</label>
               <div className="relative group">
                 <div className="absolute top-3 left-3">
-                  <i className="fas fa-map-marker-alt text-gray-400 group-focus-within:text-blue-500"></i>
+                  <i className="fas fa-map-marker-alt text-gray-400"></i>
                 </div>
                 <textarea
                   name="address"
                   value={currentHospital.address}
                   onChange={handleInputChange}
+                  onBlur={() => handleBlur('address')}
                   rows="2"
-                  minLength={5}
-                  className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none transition-all ${fieldErrors.address ? 'border-red-400' : 'border-gray-200'}`}
+                  className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none transition-all ${getFieldBorderClass('address')}`}
                   placeholder="At least 5 characters"
                 />
               </div>
@@ -841,16 +879,15 @@ const HospitalManagement = () => {
               <label className="block text-sm font-semibold text-gray-700">City *</label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i className="fas fa-city text-gray-400 group-focus-within:text-blue-500"></i>
+                  <i className="fas fa-city text-gray-400"></i>
                 </div>
                 <input
                   type="text"
                   name="city"
                   value={currentHospital.city}
                   onChange={handleInputChange}
-                  minLength={2}
-                  maxLength={100}
-                  className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${fieldErrors.city ? 'border-red-400' : 'border-gray-200'}`}
+                  onBlur={() => handleBlur('city')}
+                  className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${getFieldBorderClass('city')}`}
                   placeholder="2–100 characters"
                 />
               </div>
@@ -861,16 +898,15 @@ const HospitalManagement = () => {
               <label className="block text-sm font-semibold text-gray-700">State *</label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i className="fas fa-map text-gray-400 group-focus-within:text-blue-500"></i>
+                  <i className="fas fa-map text-gray-400"></i>
                 </div>
                 <input
                   type="text"
                   name="state"
                   value={currentHospital.state}
                   onChange={handleInputChange}
-                  minLength={2}
-                  maxLength={100}
-                  className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${fieldErrors.state ? 'border-red-400' : 'border-gray-200'}`}
+                  onBlur={() => handleBlur('state')}
+                  className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${getFieldBorderClass('state')}`}
                   placeholder="2–100 characters"
                 />
               </div>
@@ -881,16 +917,15 @@ const HospitalManagement = () => {
               <label className="block text-sm font-semibold text-gray-700">Country *</label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i className="fas fa-globe text-gray-400 group-focus-within:text-blue-500"></i>
+                  <i className="fas fa-globe text-gray-400"></i>
                 </div>
                 <input
                   type="text"
                   name="country"
                   value={currentHospital.country}
                   onChange={handleInputChange}
-                  minLength={2}
-                  maxLength={100}
-                  className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${fieldErrors.country ? 'border-red-400' : 'border-gray-200'}`}
+                  onBlur={() => handleBlur('country')}
+                  className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${getFieldBorderClass('country')}`}
                   placeholder="e.g. India (2–100 chars)"
                 />
               </div>
@@ -901,16 +936,15 @@ const HospitalManagement = () => {
               <label className="block text-sm font-semibold text-gray-700">Pincode *</label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i className="fas fa-mail-bulk text-gray-400 group-focus-within:text-blue-500"></i>
+                  <i className="fas fa-mail-bulk text-gray-400"></i>
                 </div>
                 <input
                   type="text"
                   name="pincode"
                   value={currentHospital.pincode}
                   onChange={handleInputChange}
-                  minLength={3}
-                  maxLength={10}
-                  className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${fieldErrors.pincode ? 'border-red-400' : 'border-gray-200'}`}
+                  onBlur={() => handleBlur('pincode')}
+                  className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${getFieldBorderClass('pincode')}`}
                   placeholder="3–10 characters"
                 />
               </div>
@@ -934,7 +968,7 @@ const HospitalManagement = () => {
               {submitLoading ? (
                 <>
                   <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                  Creating...
+                  {modalMode === 'add' ? 'Creating...' : 'Saving...'}
                 </>
               ) : (
                 <>

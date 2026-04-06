@@ -52,13 +52,14 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
     { id: 'doctors', label: 'Doctor Management', icon: 'fa-user-md' },
     { id: 'staff', label: 'Staff Management', icon: 'fa-users' },
     { id: 'departments', label: 'Department Management', icon: 'fa-building' },
-    { id: 'assign-departments', label: 'Department Assignment', icon: 'fa-briefcase' },
+    // { id: 'assign-departments', label: 'Department Assignment', icon: 'fa-briefcase' },
     { id: 'appointments', label: 'Appointment Management', icon: 'fa-clipboard-list' },
     { id: 'billing', label: 'Billing & Finance', icon: 'fa-money-bill-wave' },
     { id: 'inpatient', label: 'Inpatient Management', icon: 'fa-bed' },
     { id: 'pharmacy', label: 'Pharmacy Management', icon: 'fa-prescription-bottle-alt' },
     { id: 'lab', label: 'Lab Management', icon: 'fa-microscope' },
     { id: 'reports', label: 'Reports', icon: 'fa-chart-bar' },
+      { id: 'audit', label: 'Audit Logs', icon: 'fa-clipboard-check' },
     { id: 'settings', label: 'Settings', icon: 'fa-cog' },{ id: 'raise-ticket', label: 'Raise Ticket', icon: 'fa-envelope-open-text' }
   ]
 
@@ -96,7 +97,7 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
     { id: 'users', label: 'User Accounts', icon: 'fa-user-cog' },
     { id: 'settings', label: 'Platform Settings', icon: 'fa-sliders-h' },
     { id: 'reports', label: 'Reports & Analytics', icon: 'fa-chart-pie' },
-    { id: 'audit', label: 'Audit Logs', icon: 'fa-clipboard-check' },
+  
     { id: 'analytics', label: 'Analytics & Monitoring', icon: 'fa-chart-line' },
     { id: 'notifications', label: 'Notifications', icon: 'fa-bell' },
 

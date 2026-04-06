@@ -392,48 +392,47 @@ const AdminOverview = ({ setActivePage }) => {
         </div>
       )}
 
-      {/* Metrics Grid (6 fields) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Total Hospitals */}
+      {/* Metrics Grid (4 fields) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Total Appointments */}
         <div
           className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => handlePageChange('hospitals')}
+          onClick={() => handlePageChange('appointments')}
         >
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent pointer-events-none" />
           <div className="relative flex justify-between items-end">
             <div>
               <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-500 mb-3">
-                <i className="fas fa-hospital text-white"></i>
+                <i className="fas fa-calendar-check text-white"></i>
               </div>
-              <p className="text-sm text-gray-500">Total Hospitals</p>
-              <p className="text-2xl font-bold text-gray-900">{dashboardData.total_hospitals}</p>
-              <p className="text-xs text-gray-400 mt-1">across network</p>
+              <p className="text-sm text-gray-500">Total Appointments</p>
+              <p className="text-2xl font-bold text-gray-900">{totalAppointments}</p>
+              <p className="text-xs text-gray-400 mt-1">all time</p>
             </div>
-            <svg width="70" height="40" viewBox="0 0 70 40">
-              <polyline
-                points="0,30 12,25 24,28 36,22 48,24 60,20"
-                fill="none"
-                stroke="#3b82f6"
-                strokeWidth="2"
-              />
-            </svg>
+            <div className="flex items-end gap-1 h-14">
+              <div className="w-1.5 h-7 bg-blue-400 rounded"></div>
+              <div className="w-1.5 h-10 bg-blue-300 rounded"></div>
+              <div className="w-1.5 h-8 bg-blue-500 rounded"></div>
+              <div className="w-1.5 h-12 bg-blue-400 rounded"></div>
+              <div className="w-1.5 h-9 bg-blue-300 rounded"></div>
+            </div>
           </div>
         </div>
 
-        {/* Active Hospitals */}
+        {/* Total Beds */}
         <div
           className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => handlePageChange('hospitals')}
+          onClick={() => handlePageChange('inpatient')}
         >
           <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent pointer-events-none" />
           <div className="relative flex justify-between items-end">
             <div>
               <div className="w-10 h-10 flex items-center justify-center rounded-full bg-green-500 mb-3">
-                <i className="fas fa-check-circle text-white"></i>
+                <i className="fas fa-bed text-white"></i>
               </div>
-              <p className="text-sm text-gray-500">Active Hospitals</p>
-              <p className="text-2xl font-bold text-gray-900">{dashboardData.active_hospitals}</p>
-              <p className="text-xs text-gray-400 mt-1">currently operational</p>
+              <p className="text-sm text-gray-500">Total Beds</p>
+              <p className="text-2xl font-bold text-gray-900">{dashboardData.bed_metrics?.total_beds || 0}</p>
+              <p className="text-xs text-gray-400 mt-1">available capacity</p>
             </div>
             <div className="flex items-end gap-1 h-14">
               <div className="w-1.5 h-8 bg-green-300 rounded"></div>
@@ -445,20 +444,20 @@ const AdminOverview = ({ setActivePage }) => {
           </div>
         </div>
 
-        {/* Total Admins */}
+        {/* Total Billing */}
         <div
           className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => handlePageChange('admins')}
+          onClick={() => handlePageChange('billing')}
         >
           <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent pointer-events-none" />
           <div className="relative flex justify-between items-end">
             <div>
               <div className="w-10 h-10 flex items-center justify-center rounded-full bg-purple-500 mb-3">
-                <i className="fas fa-user-shield text-white"></i>
+                <i className="fas fa-money-bill-wave text-white"></i>
               </div>
-              <p className="text-sm text-gray-500">Total Admins</p>
-              <p className="text-2xl font-bold text-gray-900">{dashboardData.total_admins}</p>
-              <p className="text-xs text-gray-400 mt-1">system wide</p>
+              <p className="text-sm text-gray-500">Total Billing</p>
+              <p className="text-2xl font-bold text-gray-900">₹{dashboardData.revenue_metrics?.total_monthly_revenue?.toLocaleString() || '0'}</p>
+              <p className="text-xs text-gray-400 mt-1">monthly revenue</p>
             </div>
             <svg width="70" height="40" viewBox="0 0 70 40">
               <polyline
@@ -471,78 +470,27 @@ const AdminOverview = ({ setActivePage }) => {
           </div>
         </div>
 
-        {/* Active Admins */}
+        {/* Total Doctors */}
         <div
           className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => handlePageChange('admins')}
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-yellow-50 to-transparent pointer-events-none" />
-          <div className="relative flex justify-between items-end">
-            <div>
-              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-yellow-500 mb-3">
-                <i className="fas fa-user-check text-white"></i>
-              </div>
-              <p className="text-sm text-gray-500">Active Admins</p>
-              <p className="text-2xl font-bold text-gray-900">{dashboardData.active_admins}</p>
-              <p className="text-xs text-gray-400 mt-1">currently online</p>
-            </div>
-            <div className="flex items-end gap-1 h-14">
-              <div className="w-1.5 h-10 bg-yellow-400 rounded"></div>
-              <div className="w-1.5 h-8 bg-yellow-300 rounded"></div>
-              <div className="w-1.5 h-12 bg-yellow-500 rounded"></div>
-              <div className="w-1.5 h-6 bg-yellow-400 rounded"></div>
-              <div className="w-1.5 h-11 bg-yellow-300 rounded"></div>
-            </div>
-          </div>
-        </div>
-
-        {/* Total Patients */}
-        <div
-          className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => handlePageChange('patients')}
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-transparent pointer-events-none" />
-          <div className="relative flex justify-between items-end">
-            <div>
-              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-red-500 mb-3">
-                <i className="fas fa-users text-white"></i>
-              </div>
-              <p className="text-sm text-gray-500">Total Patients</p>
-              <p className="text-2xl font-bold text-gray-900">{dashboardData.total_patients}</p>
-              <p className="text-xs text-gray-400 mt-1">registered lifetime</p>
-            </div>
-            <svg width="70" height="40" viewBox="0 0 70 40">
-              <polyline
-                points="0,25 12,22 24,26 36,20 48,23 60,20"
-                fill="none"
-                stroke="#ef4444"
-                strokeWidth="2"
-              />
-            </svg>
-          </div>
-        </div>
-
-        {/* Total Appointments */}
-        <div
-          className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => handlePageChange('appointments')}
+          onClick={() => handlePageChange('doctors')}
         >
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 to-transparent pointer-events-none" />
           <div className="relative flex justify-between items-end">
             <div>
               <div className="w-10 h-10 flex items-center justify-center rounded-full bg-indigo-500 mb-3">
-                <i className="fas fa-calendar-check text-white"></i>
+                <i className="fas fa-user-md text-white"></i>
               </div>
-              <p className="text-sm text-gray-500">Total Appointments</p>
-              <p className="text-2xl font-bold text-gray-900">{totalAppointments}</p>
-              <p className="text-xs text-gray-400 mt-1">all time</p>
+              <p className="text-sm text-gray-500">Total Doctors</p>
+              <p className="text-2xl font-bold text-gray-900">{dashboardData.staff_metrics?.total_doctors || 0}</p>
+              <p className="text-xs text-gray-400 mt-1">active physicians</p>
             </div>
             <div className="flex items-end gap-1 h-14">
-              <div className="w-1.5 h-7 bg-indigo-400 rounded"></div>
-              <div className="w-1.5 h-10 bg-indigo-300 rounded"></div>
-              <div className="w-1.5 h-8 bg-indigo-500 rounded"></div>
-              <div className="w-1.5 h-12 bg-indigo-400 rounded"></div>
-              <div className="w-1.5 h-9 bg-indigo-300 rounded"></div>
+              <div className="w-1.5 h-10 bg-indigo-400 rounded"></div>
+              <div className="w-1.5 h-8 bg-indigo-300 rounded"></div>
+              <div className="w-1.5 h-12 bg-indigo-500 rounded"></div>
+              <div className="w-1.5 h-6 bg-indigo-400 rounded"></div>
+              <div className="w-1.5 h-11 bg-indigo-300 rounded"></div>
             </div>
           </div>
         </div>

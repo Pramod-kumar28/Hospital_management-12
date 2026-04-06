@@ -1325,17 +1325,34 @@ const ViewBillModal = ({ isOpen, onClose, bill, onMarkAsPaid }) => (
 )
 
 const GenerateBillModal = ({ isOpen, onClose, onSubmit, formData, onInputChange, onServiceToggle }) => (
-  <Modal isOpen={isOpen} onClose={onClose} title="Generate New Bill" size="lg">
+ <Modal isOpen={isOpen} onClose={onClose} title="Generate New Bill" size="lg">
     <div className="space-y-6">
+      {/* Patient Details Preview */}
+      {formData.patient && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h4 className="text-sm font-semibold text-blue-800 mb-2">Patient Details</h4>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <span className="font-medium text-gray-700">Name:</span>
+              <p className="text-gray-900">{formData.patient}</p>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">Patient ID:</span>
+              <p className="text-gray-900">{formData.patient.split(' ').map(n => n[0]).join('') + Math.floor(Math.random() * 1000)}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="input-group">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Select Patient *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Select Patient <span className="text-red-500">*</span></label>
           <div className="relative">
             <select
               required
               value={formData.patient}
               onChange={(e) => onInputChange('patient', e.target.value)}
-              className="w-full px-4 py-3 pl-11 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all appearance-none"
+              className="w-full px-4 py-3 pl-11 pr-11 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all appearance-none bg-white cursor-pointer"
             >
               <option value="">Select Patient</option>
               {['Ravi Kumar', 'Anita Sharma', 'Suresh Patel', 'Priya Singh', 'Rajesh Kumar', 'Meena Gupta'].map(patient => (
@@ -1343,6 +1360,7 @@ const GenerateBillModal = ({ isOpen, onClose, onSubmit, formData, onInputChange,
               ))}
             </select>
             <i className="fas fa-user absolute left-3 top-3.5 text-gray-400"></i>
+            <i className="fas fa-chevron-down absolute right-3 top-3.5 text-gray-400 pointer-events-none"></i>
           </div>
         </div>
 
@@ -1352,19 +1370,20 @@ const GenerateBillModal = ({ isOpen, onClose, onSubmit, formData, onInputChange,
             <select
               value={formData.paymentMethod}
               onChange={(e) => onInputChange('paymentMethod', e.target.value)}
-              className="w-full px-4 py-3 pl-11 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all appearance-none"
+              className="w-full px-4 py-3 pl-11 pr-11 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all appearance-none bg-white cursor-pointer"
             >
               {['Cash', 'Card', 'UPI', 'Insurance', 'Bank Transfer'].map(method => (
                 <option key={method} value={method}>{method}</option>
               ))}
             </select>
             <i className="fas fa-credit-card absolute left-3 top-3.5 text-gray-400"></i>
+            <i className="fas fa-chevron-down absolute right-3 top-3.5 text-gray-400 pointer-events-none"></i>
           </div>
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">Services *</label>
+        <label className="block text-sm font-medium text-gray-700 mb-3">Services <span className="text-red-500">*</span></label>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           {['Consultation', 'X-Ray', 'Blood Test', 'MRI Scan', 'CT Scan', 'Medication', 'Surgery', 'Lab Test'].map(service => (
             <button
@@ -1381,11 +1400,23 @@ const GenerateBillModal = ({ isOpen, onClose, onSubmit, formData, onInputChange,
             </button>
           ))}
         </div>
+        {formData.services.length > 0 && (
+          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm font-medium text-blue-800 mb-1">Selected Services:</p>
+            <div className="flex flex-wrap gap-2">
+              {formData.services.map(service => (
+                <span key={service} className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded">
+                  {service}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="input-group">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Amount (₹) *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Amount (₹) <span className="text-red-500">*</span></label>
           <div className="relative">
             <input
               type="number"

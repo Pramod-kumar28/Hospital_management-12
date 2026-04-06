@@ -6,7 +6,7 @@ import HospitalProfile from './pages/HospitalProfile'
 import DoctorManagement from './pages/DoctorManagement'
 import StaffManagement from './pages/StaffManagement'
 import DepartmentManagement from './pages/DepartmentManagement'
-import AssignDepartment from './pages/DepartmentAssignment'
+// import AssignDepartment from './pages/DepartmentAssignment'
 import AppointmentManagement from './pages/AppointmentManagement'
 import BillingFinance from './pages/BillingFinance'
 import InpatientManagement from './pages/InpatientManagement'
@@ -15,6 +15,7 @@ import LabManagement from './pages/LabManagement'
 import Reports from './pages/Reports'
 import Settings from './pages/Settings'
 import Raiseticket from './pages/Raiseticket'
+import AuditLogs from './pages/AuditLogs'
 
 const AdminDashboard = () => {
   const [activePage, setActivePage] = useState('dashboard')
@@ -60,8 +61,8 @@ const AdminDashboard = () => {
         return <StaffManagement />
       case 'departments':
         return <DepartmentManagement />
-      case 'assign-departments':
-        return <AssignDepartment />
+      // case 'assign-departments':
+      //   return <AssignDepartment />
       case 'appointments':
         return <AppointmentManagement />
       case 'billing':
@@ -75,6 +76,8 @@ const AdminDashboard = () => {
       case 'reports':
         return <Reports />
       case 'settings':
+         case 'audit':
+        return <AuditLogs />
         return <Settings />
       case 'raise-ticket':
         return <Raiseticket />

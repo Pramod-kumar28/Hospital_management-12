@@ -8,7 +8,7 @@ import SubscriptionsBilling from './pages/SubscriptionsBilling'
 import UserManagement from './pages/UserAccounts'
 import SystemSettings from './pages/PlatformSettings'
 import ReportsAnalytics from './pages/ReportsAnalytics'
-import AuditLogs from './pages/AuditLogs'
+
 import AnalyticsMonitoring from './pages/AnalyticsMonitoring'
 import SupportManagement from './pages/SupportManagement'
 import Notifications from './pages/Notifications'
@@ -38,8 +38,7 @@ const SuperAdminDashboard = () => {
         return <SystemSettings />
       case 'reports':
         return <ReportsAnalytics />
-      case 'audit':
-        return <AuditLogs />
+     
         case 'analytics':
           return <AnalyticsMonitoring />
           case 'notifications':

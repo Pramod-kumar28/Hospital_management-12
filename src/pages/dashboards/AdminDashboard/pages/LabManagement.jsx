@@ -5,12 +5,16 @@ import Modal from '../../../../components/common/Modal/Modal' // Your existing m
 
 const LabManagement = () => {
   const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState('tests')
   const [labTests, setLabTests] = useState([])
+  const [labEquipment, setLabEquipment] = useState([])
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
+  const [isEquipmentModalOpen, setIsEquipmentModalOpen] = useState(false)
   const [selectedTest, setSelectedTest] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedFilter, setSelectedFilter] = useState('All')
+  const [dateFilter, setDateFilter] = useState('')
   const [newTest, setNewTest] = useState({
     patient: '',
     testType: '',
@@ -19,6 +23,20 @@ const LabManagement = () => {
     sampleType: '',
     collectionDate: '',
     instructions: '',
+    notes: ''
+  })
+  const [newEquipment, setNewEquipment] = useState({
+    name: '',
+    type: '',
+    model: '',
+    serialNumber: '',
+    manufacturer: '',
+    purchaseDate: '',
+    warrantyExpiry: '',
+    location: '',
+    status: 'Active',
+    lastMaintenance: '',
+    nextMaintenance: '',
     notes: ''
   })
 
@@ -30,10 +48,16 @@ const LabManagement = () => {
     setLoading(true)
     setTimeout(() => {
       setLabTests([
-        { id: 'LAB-6001', patient: 'Ravi Kumar', testType: 'Blood Test', result: 'Normal', date: '2023-10-10', reportFile: 'report_1.pdf', status: 'Completed', doctor: 'Dr. Meena Rao',  sampleType: 'Blood' },
-        { id: 'LAB-6002', patient: 'Anita Sharma', testType: 'MRI Scan', result: 'Normal', date: '2023-10-08', reportFile: 'report_2.pdf', status: 'Completed', doctor: 'Dr. Sharma',  sampleType: 'NA' },
-        { id: 'LAB-6003', patient: 'Suresh Patel', testType: 'X-Ray', result: 'Fracture Detected', date: '2023-10-12', reportFile: 'report_3.pdf', status: 'Processing', doctor: 'Dr. Menon',  sampleType: 'NA' },
-        { id: 'LAB-6004', patient: 'Priya Singh', testType: 'CT Scan', result: 'Pending', date: '2023-10-13', reportFile: '', status: 'Pending', doctor: 'Dr. Desai',  sampleType: 'NA' }
+        { id: 'LAB-6001', patient: 'Ravi Kumar', patientId: 'P001', testType: 'Blood Test', result: 'Normal', date: '2023-10-10', reportFile: 'report_1.pdf', status: 'Completed', doctor: 'Dr. Meena Rao',  sampleType: 'Blood' },
+        { id: 'LAB-6002', patient: 'Anita Sharma', patientId: 'P002', testType: 'MRI Scan', result: 'Normal', date: '2023-10-08', reportFile: 'report_2.pdf', status: 'Completed', doctor: 'Dr. Sharma',  sampleType: 'NA' },
+        { id: 'LAB-6003', patient: 'Suresh Patel', patientId: 'P003', testType: 'X-Ray', result: 'Fracture Detected', date: '2023-10-12', reportFile: 'report_3.pdf', status: 'Processing', doctor: 'Dr. Menon',  sampleType: 'NA' },
+        { id: 'LAB-6004', patient: 'Priya Singh', patientId: 'P004', testType: 'CT Scan', result: 'Pending', date: '2023-10-13', reportFile: '', status: 'Pending', doctor: 'Dr. Desai',  sampleType: 'NA' }
+      ])
+      setLabEquipment([
+        { id: 'EQ-001', name: 'MRI Machine', type: 'Imaging', model: 'Siemens MAGNETOM', serialNumber: 'SN123456', manufacturer: 'Siemens', purchaseDate: '2022-01-15', warrantyExpiry: '2025-01-15', location: 'Room 101', status: 'Active', lastMaintenance: '2023-09-10', nextMaintenance: '2024-03-10', notes: 'Regular maintenance required' },
+        { id: 'EQ-002', name: 'X-Ray Machine', type: 'Imaging', model: 'GE Healthcare', serialNumber: 'SN789012', manufacturer: 'GE', purchaseDate: '2021-06-20', warrantyExpiry: '2024-06-20', location: 'Room 102', status: 'Maintenance', lastMaintenance: '2023-10-05', nextMaintenance: '2023-11-05', notes: 'Under maintenance' },
+        { id: 'EQ-003', name: 'Blood Analyzer', type: 'Laboratory', model: 'Sysmex XN-1000', serialNumber: 'SN345678', manufacturer: 'Sysmex', purchaseDate: '2022-03-10', warrantyExpiry: '2025-03-10', location: 'Lab 1', status: 'Active', lastMaintenance: '2023-08-15', nextMaintenance: '2024-02-15', notes: 'High precision equipment' },
+        { id: 'EQ-004', name: 'Ultrasound Machine', type: 'Imaging', model: 'Philips EPIQ', serialNumber: 'SN901234', manufacturer: 'Philips', purchaseDate: '2020-11-30', warrantyExpiry: '2023-11-30', location: 'Room 103', status: 'Out of Service', lastMaintenance: '2023-07-20', nextMaintenance: '2023-10-20', notes: 'Needs repair' }
       ])
       setLoading(false)
     }, 1000)
@@ -90,23 +114,56 @@ const LabManagement = () => {
     ))
   }
 
-  const handleUpdateResult = (testId, newResult) => {
-    setLabTests(prev => prev.map(test => 
-      test.id === testId ? { ...test, result: newResult } : test
+  const handleAddEquipment = () => {
+    const equipment = {
+      id: `EQ-${String(labEquipment.length + 1).padStart(3, '0')}`,
+      name: newEquipment.name,
+      type: newEquipment.type,
+      model: newEquipment.model,
+      serialNumber: newEquipment.serialNumber,
+      manufacturer: newEquipment.manufacturer,
+      purchaseDate: newEquipment.purchaseDate,
+      warrantyExpiry: newEquipment.warrantyExpiry,
+      location: newEquipment.location,
+      status: newEquipment.status,
+      lastMaintenance: newEquipment.lastMaintenance,
+      nextMaintenance: newEquipment.nextMaintenance,
+      notes: newEquipment.notes
+    }
+    
+    setLabEquipment(prev => [equipment, ...prev])
+    setIsEquipmentModalOpen(false)
+    resetEquipmentForm()
+  }
+
+  const handleUpdateEquipmentStatus = (equipmentId, newStatus) => {
+    setLabEquipment(prev => prev.map(equipment => 
+      equipment.id === equipmentId ? { ...equipment, status: newStatus } : equipment
     ))
   }
 
-  const resetForm = () => {
-    setNewTest({
-      patient: '',
-      testType: '',
-      doctor: '',
-      priority: 'Normal',
-      sampleType: '',
-      collectionDate: '',
-      instructions: '',
+  const resetEquipmentForm = () => {
+    setNewEquipment({
+      name: '',
+      type: '',
+      model: '',
+      serialNumber: '',
+      manufacturer: '',
+      purchaseDate: '',
+      warrantyExpiry: '',
+      location: '',
+      status: 'Active',
+      lastMaintenance: '',
+      nextMaintenance: '',
       notes: ''
     })
+  }
+
+  const handleEquipmentInputChange = (field, value) => {
+    setNewEquipment(prev => ({
+      ...prev,
+      [field]: value
+    }))
   }
 
   const getFilteredTests = () => {
@@ -117,11 +174,17 @@ const LabManagement = () => {
       filtered = filtered.filter(test => test.status === selectedFilter)
     }
 
+    // Apply date filter
+    if (dateFilter) {
+      filtered = filtered.filter(test => test.date === dateFilter)
+    }
+
     // Apply search filter (name, test ID, test name)
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase()
       filtered = filtered.filter(test =>
         test.patient.toLowerCase().includes(query) ||
+        test.patientId.toLowerCase().includes(query) ||
         test.id.toLowerCase().includes(query) ||
         test.testType.toLowerCase().includes(query)
       )
@@ -202,235 +265,332 @@ const LabManagement = () => {
     'Inconclusive'
   ]
 
-  if (loading) return <LoadingSpinner />
+  // Equipment constants
+  const equipmentTypes = [
+    'Imaging',
+    'Laboratory',
+    'Surgical',
+    'Monitoring',
+    'Therapeutic',
+    'Diagnostic'
+  ]
 
-  return (
+  const manufacturers = [
+    'Siemens',
+    'GE Healthcare',
+    'Philips',
+    'Sysmex',
+    'Roche',
+    'Abbott',
+    'Thermo Fisher',
+    'Beckman Coulter'
+  ]
+
+  const equipmentStatuses = [
+    'Active',
+    'Maintenance',
+    'Out of Service',
+    'Decommissioned'
+  ]
+
+return (
     <div className="animate-fade-in">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold text-gray-700">
           Lab Management
         </h2>
-       
+        <button 
+          onClick={() => activeTab === 'tests' ? setIsAddModalOpen(true) : setIsEquipmentModalOpen(true)}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+        >
+          <i className="fas fa-plus mr-2"></i>
+          {activeTab === 'tests' ? 'Add Lab Test' : 'Add Equipment'}
+        </button>
       </div>
 
-      {/* Lab Statistics - Compact Cards */}
-<div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
-  {[
-    { 
-      value: labTests.length, 
-      label: 'Total Tests', 
-      color: 'blue', 
-      icon: 'fas fa-flask',
-      bg: 'bg-blue-50',
-      text: 'text-blue-600',
-      iconBg: 'bg-blue-100'
-    },
-    { 
-      value: labTests.filter(t => t.status === 'Completed').length, 
-      label: 'Completed', 
-      color: 'green', 
-      icon: 'fas fa-check-circle',
-      bg: 'bg-green-50',
-      text: 'text-green-600',
-      iconBg: 'bg-green-100'
-    },
-    { 
-      value: labTests.filter(t => t.status === 'Processing').length, 
-      label: 'Processing', 
-      color: 'yellow', 
-      icon: 'fas fa-spinner',
-      bg: 'bg-yellow-50',
-      text: 'text-yellow-600',
-      iconBg: 'bg-yellow-100'
-    },
-    { 
-      value: labTests.filter(t => t.status === 'Pending').length, 
-      label: 'Pending', 
-      color: 'red', 
-      icon: 'fas fa-clock',
-      bg: 'bg-red-50',
-      text: 'text-red-600',
-      iconBg: 'bg-red-100'
-    }
-  ].map((stat, index) => {
-    const percentage = (stat.value / labTests.length * 100) || 0
-    
-    return (
-      <div 
-        key={index} 
-        className={`${stat.bg} border border-gray-200 p-5 rounded-xl hover:shadow-md transition-all duration-300`}
-      >
-        <div className="flex items-center justify-between mb-3">
-          <div className={`${stat.iconBg} p-3 rounded-lg`}>
-            <i className={`${stat.icon} ${stat.text} text-lg`}></i>
-          </div>
-          <div className="text-right">
-            <div className={`text-2xl font-bold ${stat.text}`}>{stat.value}</div>
-            <div className="text-gray-800 font-medium text-sm">{stat.label}</div>
-          </div>
-        </div>
-        
-        <div className="text-xs text-gray-500">
-          <div className="flex justify-between mb-1">
-            <span>Progress</span>
-            <span>{percentage.toFixed(0)}%</span>
-          </div>
-          <div className="h-1 w-full bg-gray-200 rounded-full overflow-hidden">
-            <div 
-              className={`h-full ${stat.iconBg} rounded-full`}
-              style={{ width: `${percentage}%` }}
-            ></div>
-          </div>
-        </div>
+      {/* Tab Navigation */}
+      <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg">
+        <button
+          onClick={() => setActiveTab('tests')}
+          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+            activeTab === 'tests'
+              ? 'bg-white text-blue-600 shadow-sm'
+              : 'text-gray-600 hover:text-gray-800'
+          }`}
+        >
+          <i className="fas fa-flask mr-2"></i>
+          Lab Test Reports
+        </button>
+        <button
+          onClick={() => setActiveTab('equipment')}
+          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+            activeTab === 'equipment'
+              ? 'bg-white text-blue-600 shadow-sm'
+              : 'text-gray-600 hover:text-gray-800'
+          }`}
+        >
+          <i className="fas fa-cogs mr-2"></i>
+          Lab Equipment
+        </button>
       </div>
-    )
-  })}
-</div>
 
-      {/* Lab Tests List */}
-      <div className="space-y-4">
-        {/* Filter Bar */}
-        <div className="flex flex-wrap gap-2 items-center mb-6">
-          <div className="flex-1 min-w-64">
-            <input
-              type="text"
-              placeholder="Search by Test Name, Lab ID, or Patient Name..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-            />
-          </div>
-          <button
-            onClick={() => setSelectedFilter('All')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              selectedFilter === 'All'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setSelectedFilter('Completed')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              selectedFilter === 'Completed'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            Completed
-          </button>
-          <button
-            onClick={() => setSelectedFilter('Processing')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              selectedFilter === 'Processing'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            Processing
-          </button>
-          <button
-            onClick={() => setSelectedFilter('Pending')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              selectedFilter === 'Pending'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            Pending
-          </button>
-
-          
-          
-          
-        </div>
-
-        {/* Labs List */}
-        {filteredTests.map(test => (
-          <div 
-            key={test.id} 
-            className="bg-white rounded-3xl border border-gray-200  p-5 hover:shadow-lg transition-all duration-300 hover:border-blue-300"
-          >
-            <div className="flex items-center justify-between">
-              {/* Left Side - Test Info */}
-              <div className="flex-1 flex items-center gap-4">
-                <div className={`flex items-center justify-center w-14 h-14 rounded-full ${
-                  test.status === 'Completed' ? 'bg-green-100' :
-                  test.status === 'Processing' ? 'bg-blue-100' :
-                  test.status === 'Pending' ? 'bg-yellow-100' : 'bg-purple-100'
-                }`}>
-                  <i className={`fas fa-${
-                    test.testType === 'Blood Test' ? 'droplet' :
-                    test.testType === 'X-Ray' ? 'x' :
-                    test.testType === 'MRI Scan' ? 'brain' :
-                    test.testType === 'CT Scan' ? 'cube' : 'flask'
-                  } ${
-                    test.status === 'Completed' ? 'text-green-600' :
-                    test.status === 'Processing' ? 'text-blue-600' :
-                    test.status === 'Pending' ? 'text-yellow-600' : 'text-purple-600'
-                  } text-xl`}></i>
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-lg text-gray-900">{test.patient}</h3>
-                  <p className="text-sm text-gray-500 font-medium">{test.testType}</p>
-                  <p className="text-xs text-gray-400 mt-1">{test.id}</p>
-                  <div className="flex gap-6 mt-2 text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <span className="text-gray-500">👨‍⚕️</span>
-                      <span>{test.doctor}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span className="text-gray-500">📅</span>
-                      <span>{test.date}</span>
-                    </div>
-                  </div>
-                </div>
+      {activeTab === 'tests' ? (
+        <>
+          {/* Lab Test Reports Section */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6 shadow-sm">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Search & Filter Lab Tests</h3>
+            <div className="flex flex-col lg:flex-row gap-4">
+              <div className="flex-1 relative">
+                <input 
+                  type="text" 
+                  placeholder="Search by patient name, ID, or test type..." 
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all pl-11"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <i className="fas fa-search absolute left-3 top-3.5 text-gray-400"></i>
               </div>
-
-              {/* Status & Result Section */}
-              <div className="text-right mr-4">
-                <div className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
-                  test.status === 'Completed' ? 'bg-green-100 text-green-700' :
-                  test.status === 'Processing' ? 'bg-blue-100 text-blue-700' :
-                  test.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700'
-                }`}>
-                  {test.status.toUpperCase()}
-                </div>
-              
-               
-                
+              <div className="w-full lg:w-48 relative">
+                <input
+                  type="date"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                />
               </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-3 items-center">
-                <button 
-                  onClick={() => handleViewReport(test.id)}
-                  className="text-gray-500 hover:text-blue-600 p-2 rounded hover:bg-blue-50 transition-colors"
-                  title="View Report"
+              <div className="w-full lg:w-48 relative">
+                <select 
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all appearance-none pr-10"
+                  value={selectedFilter}
+                  onChange={(e) => setSelectedFilter(e.target.value)}
                 >
-                  <i className="fas fa-eye text-lg"></i>
-                </button>
-                <button 
-                  onClick={() => handleDownloadReport(test.id)}
-                  className="text-gray-500 hover:text-green-600 p-2 rounded hover:bg-green-50 transition-colors"
-                  title="Download Report"
-                >
-                  <i className="fas fa-download text-lg"></i>
-                </button>
-                <button 
-                  onClick={() => handleDeleteTest(test.id)}
-                  className="text-gray-500 hover:text-red-600 p-2 rounded hover:bg-red-50 transition-colors"
-                  title="Delete Test"
-                >
-                  <i className="fas fa-trash text-lg"></i>
-                </button>
+                  <option value="All">All Status</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Processing">Processing</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+                <i className="fas fa-chevron-down absolute right-3 top-3.5 text-gray-400 pointer-events-none"></i>
               </div>
             </div>
           </div>
-        ))}
-      </div>
+
+          {/* Lab Tests Table */}
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+            <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-bold text-gray-900">Lab Test Reports</h3>
+                <span className="text-sm font-semibold text-blue-600 bg-blue-100 px-3 py-1 rounded-full">
+                  {filteredTests.length} Tests
+                </span>
+              </div>
+            </div>
+            <DataTable
+              columns={[
+                { key: 'patientId', title: 'Patient ID', sortable: true },
+                { key: 'patient', title: 'Patient Name', sortable: true },
+                { 
+                  key: 'status', 
+                  title: 'Status', 
+                  sortable: true,
+                  render: (value) => (
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      value === 'Completed' ? 'bg-green-100 text-green-800' :
+                      value === 'Processing' ? 'bg-blue-100 text-blue-800' :
+                      value === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-red-100 text-red-800'
+                    }`}>
+                      {value}
+                    </span>
+                  )
+                },
+                {
+                  key: 'actions',
+                  title: 'View Details',
+                  render: (_, row) => (
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => handleViewReport(row.id)}
+                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 p-2 rounded-lg transition-all duration-200"
+                        title="View Details"
+                      >
+                        <i className="fas fa-eye"></i>
+                      </button>
+                    </div>
+                  )
+                },
+                {
+                  key: 'quickActions',
+                  title: 'Quick Actions',
+                  render: (_, row) => (
+                    <div className="flex gap-1">
+                      {row.status !== 'Completed' && (
+                        <button 
+                          onClick={() => handleUpdateStatus(row.id, 'Completed')}
+                          className="text-green-600 hover:text-green-700 hover:bg-green-50 px-2 py-1 rounded text-xs transition-all duration-200"
+                          title="Mark as Completed"
+                        >
+                          ✓
+                        </button>
+                      )}
+                      {row.status === 'Pending' && (
+                        <button 
+                          onClick={() => handleUpdateStatus(row.id, 'Processing')}
+                          className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2 py-1 rounded text-xs transition-all duration-200"
+                          title="Mark as Processing"
+                        >
+                          ⟳
+                        </button>
+                      )}
+                      <button 
+                        onClick={() => handleDownloadReport(row.id)}
+                        className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 px-2 py-1 rounded text-xs transition-all duration-200"
+                        title="Download Report"
+                      >
+                        ↓
+                      </button>
+                    </div>
+                  )
+                }
+              ]}
+              data={filteredTests}
+            />
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Lab Equipment Management Section */}
+          
+          {/* Equipment KPI Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+            {[
+              { 
+                value: labEquipment.length, 
+                label: 'Total Equipment', 
+                color: 'blue', 
+                icon: 'fas fa-cogs',
+                bg: 'bg-blue-50',
+                text: 'text-blue-600',
+                iconBg: 'bg-blue-100'
+              },
+              { 
+                value: labEquipment.filter(e => e.status === 'Active').length, 
+                label: 'Active', 
+                color: 'green', 
+                icon: 'fas fa-check-circle',
+                bg: 'bg-green-50',
+                text: 'text-green-600',
+                iconBg: 'bg-green-100'
+              },
+              { 
+                value: labEquipment.filter(e => e.status === 'Maintenance').length, 
+                label: 'Maintenance', 
+                color: 'yellow', 
+                icon: 'fas fa-tools',
+                bg: 'bg-yellow-50',
+                text: 'text-yellow-600',
+                iconBg: 'bg-yellow-100'
+              },
+              { 
+                value: labEquipment.filter(e => e.status === 'Out of Service').length, 
+                label: 'Out of Service', 
+                color: 'red', 
+                icon: 'fas fa-exclamation-triangle',
+                bg: 'bg-red-50',
+                text: 'text-red-600',
+                iconBg: 'bg-red-100'
+              }
+            ].map((stat, index) => (
+              <div 
+                key={index} 
+                className={`${stat.bg} border border-gray-200 p-5 rounded-xl hover:shadow-md transition-all duration-300`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`${stat.iconBg} p-3 rounded-lg`}>
+                    <i className={`${stat.icon} ${stat.text} text-lg`}></i>
+                  </div>
+                  <div>
+                    <div className={`text-2xl font-bold ${stat.text}`}>{stat.value}</div>
+                    <div className="text-gray-800 font-medium text-sm">{stat.label}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Equipment Table */}
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+            <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-bold text-gray-900">Lab Equipment</h3>
+                <span className="text-sm font-semibold text-blue-600 bg-blue-100 px-3 py-1 rounded-full">
+                  {labEquipment.length} Equipment
+                </span>
+              </div>
+            </div>
+            <DataTable
+              columns={[
+                { key: 'id', title: 'Equipment ID', sortable: true },
+                { key: 'name', title: 'Equipment Name', sortable: true },
+                { key: 'type', title: 'Type', sortable: true },
+                { key: 'manufacturer', title: 'Manufacturer', sortable: true },
+                { key: 'location', title: 'Location', sortable: true },
+                { 
+                  key: 'status', 
+                  title: 'Status', 
+                  sortable: true,
+                  render: (value) => (
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      value === 'Active' ? 'bg-green-100 text-green-800' :
+                      value === 'Maintenance' ? 'bg-yellow-100 text-yellow-800' :
+                      value === 'Out of Service' ? 'bg-red-100 text-red-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {value}
+                    </span>
+                  )
+                },
+                {
+                  key: 'actions',
+                  title: 'Actions',
+                  render: (_, row) => (
+                    <div className="flex gap-2">
+                      {row.status !== 'Active' && (
+                        <button 
+                          onClick={() => handleUpdateEquipmentStatus(row.id, 'Active')}
+                          className="text-green-600 hover:text-green-700 hover:bg-green-50 p-2 rounded-lg transition-all duration-200"
+                          title="Mark as Active"
+                        >
+                          <i className="fas fa-check"></i>
+                        </button>
+                      )}
+                      {row.status !== 'Maintenance' && (
+                        <button 
+                          onClick={() => handleUpdateEquipmentStatus(row.id, 'Maintenance')}
+                          className="text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 p-2 rounded-lg transition-all duration-200"
+                          title="Mark as Maintenance"
+                        >
+                          <i className="fas fa-tools"></i>
+                        </button>
+                      )}
+                      {row.status !== 'Out of Service' && (
+                        <button 
+                          onClick={() => handleUpdateEquipmentStatus(row.id, 'Out of Service')}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-all duration-200"
+                          title="Mark as Out of Service"
+                        >
+                          <i className="fas fa-exclamation-triangle"></i>
+                        </button>
+                      )}
+                    </div>
+                  )
+                }
+              ]}
+              data={labEquipment}
+            />
+          </div>
+        </>
+      )}
 
       {/* View Report Modal */}
       <Modal 
@@ -559,7 +719,387 @@ const LabManagement = () => {
         )}
       </Modal>
 
-      {/* Add Test Modal - Defined in the same file */}
+      {/* Add Test Modal */}
+      <Modal 
+        isOpen={isAddModalOpen} 
+        onClose={() => {
+          setIsAddModalOpen(false)
+          resetForm()
+        }} 
+        title="Add New Lab Test"
+        size="lg"
+      >
+        <div className="space-y-6">
+          {/* Basic Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Patient Name <span className="text-red-500">*</span>
+              </label>
+              <select
+                required
+                value={newTest.patient}
+                onChange={(e) => handleInputChange('patient', e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+              >
+                <option value="">Select Patient</option>
+                {patients.map(patient => (
+                  <option key={patient} value={patient}>{patient}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Test Type <span className="text-red-500">*</span>
+              </label>
+              <select
+                required
+                value={newTest.testType}
+                onChange={(e) => handleInputChange('testType', e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+              >
+                <option value="">Select Test Type</option>
+                {testTypes.map(testType => (
+                  <option key={testType} value={testType}>{testType}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Referring Doctor <span className="text-red-500">*</span>
+              </label>
+              <select
+                required
+                value={newTest.doctor}
+                onChange={(e) => handleInputChange('doctor', e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+              >
+                <option value="">Select Doctor</option>
+                {doctors.map(doctor => (
+                  <option key={doctor} value={doctor}>{doctor}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Collection Date <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                required
+                value={newTest.collectionDate}
+                onChange={(e) => handleInputChange('collectionDate', e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                max={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+          </div>
+
+          {/* Additional Details */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Priority
+              </label>
+              <select
+                value={newTest.priority}
+                onChange={(e) => handleInputChange('priority', e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+              >
+                <option value="Normal">Normal</option>
+                <option value="Urgent">Urgent</option>
+                <option value="Critical">Critical</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Sample Type
+              </label>
+              <select
+                value={newTest.sampleType}
+                onChange={(e) => handleInputChange('sampleType', e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+              >
+                <option value="">Select Sample Type</option>
+                {sampleTypes.map(sampleType => (
+                  <option key={sampleType} value={sampleType}>{sampleType}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Instructions and Notes */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Special Instructions
+              </label>
+              <textarea
+                rows="3"
+                value={newTest.instructions}
+                onChange={(e) => handleInputChange('instructions', e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                placeholder="Enter special instructions..."
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Notes
+              </label>
+              <textarea
+                rows="3"
+                value={newTest.notes}
+                onChange={(e) => handleInputChange('notes', e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                placeholder="Additional notes..."
+              />
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <button
+              type="button"
+              onClick={() => {
+                setIsAddModalOpen(false)
+                resetForm()
+              }}
+              className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleAddTest}
+              disabled={!newTest.patient || !newTest.testType || !newTest.doctor || !newTest.collectionDate}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <i className="fas fa-plus mr-2"></i>
+              Add Lab Test
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Add Equipment Modal */}
+      <Modal 
+        isOpen={isEquipmentModalOpen} 
+        onClose={() => {
+          setIsEquipmentModalOpen(false)
+          resetEquipmentForm()
+        }} 
+        title="Add New Equipment"
+        size="lg"
+      >
+        <div className="space-y-6">
+          {/* Basic Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Equipment Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={newEquipment.name}
+                onChange={(e) => handleEquipmentInputChange('name', e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                placeholder="Enter equipment name"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Type <span className="text-red-500">*</span>
+              </label>
+              <select
+                required
+                value={newEquipment.type}
+                onChange={(e) => handleEquipmentInputChange('type', e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+              >
+                <option value="">Select Type</option>
+                {equipmentTypes.map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Model <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={newEquipment.model}
+                onChange={(e) => handleEquipmentInputChange('model', e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                placeholder="Enter model name"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Serial Number <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={newEquipment.serialNumber}
+                onChange={(e) => handleEquipmentInputChange('serialNumber', e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                placeholder="Enter serial number"
+              />
+            </div>
+          </div>
+
+          {/* Manufacturer and Dates */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Manufacturer <span className="text-red-500">*</span>
+              </label>
+              <select
+                required
+                value={newEquipment.manufacturer}
+                onChange={(e) => handleEquipmentInputChange('manufacturer', e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+              >
+                <option value="">Select Manufacturer</option>
+                {manufacturers.map(manufacturer => (
+                  <option key={manufacturer} value={manufacturer}>{manufacturer}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Location <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={newEquipment.location}
+                onChange={(e) => handleEquipmentInputChange('location', e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                placeholder="Enter location"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Purchase Date <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                required
+                value={newEquipment.purchaseDate}
+                onChange={(e) => handleEquipmentInputChange('purchaseDate', e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                max={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Warranty Expiry
+              </label>
+              <input
+                type="date"
+                value={newEquipment.warrantyExpiry}
+                onChange={(e) => handleEquipmentInputChange('warrantyExpiry', e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+              />
+            </div>
+          </div>
+
+          {/* Maintenance and Status */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Status
+              </label>
+              <select
+                value={newEquipment.status}
+                onChange={(e) => handleEquipmentInputChange('status', e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+              >
+                {equipmentStatuses.map(status => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Last Maintenance
+              </label>
+              <input
+                type="date"
+                value={newEquipment.lastMaintenance}
+                onChange={(e) => handleEquipmentInputChange('lastMaintenance', e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                max={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Next Maintenance
+              </label>
+              <input
+                type="date"
+                value={newEquipment.nextMaintenance}
+                onChange={(e) => handleEquipmentInputChange('nextMaintenance', e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+              />
+            </div>
+          </div>
+
+          {/* Notes */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Notes
+            </label>
+            <textarea
+              rows="3"
+              value={newEquipment.notes}
+              onChange={(e) => handleEquipmentInputChange('notes', e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+              placeholder="Additional notes about the equipment..."
+            />
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <button
+              type="button"
+              onClick={() => {
+                setIsEquipmentModalOpen(false)
+                resetEquipmentForm()
+              }}
+              className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleAddEquipment}
+              disabled={!newEquipment.name || !newEquipment.type || !newEquipment.model || !newEquipment.serialNumber || !newEquipment.manufacturer || !newEquipment.location || !newEquipment.purchaseDate}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <i className="fas fa-plus mr-2"></i>
+              Add Equipment
+            </button>
+          </div>
+        </div>
+      </Modal>
      
     </div>
   )

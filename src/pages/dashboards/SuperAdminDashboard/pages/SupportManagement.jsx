@@ -270,7 +270,6 @@ const SupportManagement = () => {
               text_content: textContent || htmlContent.replace(/<[^>]*>/g, ''),
               // Include other fields your API might expect
               email: toEmail,
-              subject: subject,
               message: htmlContent,
               body: htmlContent
             })

@@ -3,11 +3,35 @@ import { useDispatch } from 'react-redux'
 import { useNavigate, Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { loginStart, loginSuccess, loginFailure } from '../../redux/slices/authSlice'
-import { API_BASE_URL, API_HEADERS, AUTH_SUPER_ADMIN_LOGIN, AUTH_HOSPITAL_ADMIN_LOGIN } from '../../config/api'
+import { API_BASE_URL, API_HEADERS, AUTH_SUPER_ADMIN_LOGIN, AUTH_STAFF_LOGIN } from '../../config/api'
 import { shouldRequireHospitalAdminPasswordChange } from '../../utils/authFlow'
 import { buildUserPayloadFromApiUser } from '../../utils/authLoginPayload'
+import { normalizeRoleForRoute } from '../../utils/authRoles'
 import { PASSWORD_MIN_LENGTH, isValidEmail } from '../../utils/validation'
-import { Eye, EyeOff, Mail, Lock, Zap, Shield, Building2 } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, Zap, Shield, ChevronDown } from 'lucide-react'
+
+/** Sign-in persona: admins use platform login; staff share one endpoint (role comes from the account). */
+const LOGIN_KIND_OPTIONS = [
+  { value: 'super_admin', label: 'Super Admin', useStaffApi: false },
+  { value: 'hospital_admin', label: 'Hospital Admin', useStaffApi: false },
+  { value: 'DOCTOR', label: 'Doctor (staff)', useStaffApi: true },
+  { value: 'PHARMACIST', label: 'Pharmacist (staff)', useStaffApi: true },
+  { value: 'LAB_TECH', label: 'Lab technician (staff)', useStaffApi: true },
+  { value: 'NURSE', label: 'Nurse (staff)', useStaffApi: true },
+  { value: 'RECEPTIONIST', label: 'Receptionist (staff)', useStaffApi: true },
+]
+
+const DEMO_ROLE_TO_LOGIN_KIND = {
+  SUPER_ADMIN: 'super_admin',
+  ADMIN: 'hospital_admin',
+  DOCTOR: 'DOCTOR',
+  NURSE: 'NURSE',
+  RECEPTIONIST: 'RECEPTIONIST',
+  LAB: 'LAB_TECH',
+  LAB_TECH: 'LAB_TECH',
+  PHARMACY: 'PHARMACIST',
+  PHARMACIST: 'PHARMACIST',
+}
 
 const DEMO_USERS = [
   { email: 'admin@dcm.demo', password: 'admin123', role: 'ADMIN', name: 'Admin User' },
@@ -19,6 +43,11 @@ const DEMO_USERS = [
   { email: 'patient@dcm.demo', password: 'patient123', role: 'PATIENT', name: 'Patient User' },
   { email: 'pharmacy@dcm.demo', password: 'pharma123', role: 'PHARMACY', name: 'Pharmacy Staff' },
   { email: 'telemedicine@dcm.demo', password: 'tele123', role: 'TELEMEDICINE', name: 'Telemedicine Staff' },
+  { email: 'doctor@seed.com', password: 'SeedUser123!', role: 'DOCTOR', name: 'Seed Doctor' },
+  { email: 'pharmacist@seed.com', password: 'SeedUser123!', role: 'PHARMACIST', name: 'Seed Pharmacist' },
+  { email: 'labtech@seed.com', password: 'SeedUser123!', role: 'LAB_TECH', name: 'Seed Lab Tech' },
+  { email: 'nurse@seed.com', password: 'SeedUser123!', role: 'NURSE', name: 'Seed Nurse' },
+  { email: 'receptionist@seed.com', password: 'SeedUser123!', role: 'RECEPTIONIST', name: 'Seed Receptionist' },
 ]
 
 const LoginPage = () => {
@@ -27,7 +56,7 @@ const LoginPage = () => {
     password: '',
     rememberMe: false,
   })
-  const [adminRole, setAdminRole] = useState('super_admin')
+  const [loginKind, setLoginKind] = useState('DOCTOR')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -51,9 +80,9 @@ const LoginPage = () => {
     } else if (appRole === 'DOCTOR') navigate('/doctor', { replace: true })
     else if (appRole === 'NURSE') navigate('/nurse', { replace: true })
     else if (appRole === 'RECEPTIONIST') navigate('/receptionist', { replace: true })
-    else if (appRole === 'LAB') navigate('/lab', { replace: true })
+    else if (appRole === 'LAB' || appRole === 'LAB_TECH') navigate('/lab', { replace: true })
     else if (appRole === 'PATIENT') navigate('/patient', { replace: true })
-    else if (appRole === 'PHARMACY') navigate('/pharmacy', { replace: true })
+    else if (appRole === 'PHARMACY' || appRole === 'PHARMACIST') navigate('/pharmacy', { replace: true })
     else if (appRole === 'TELEMEDICINE') navigate('/telemedicine', { replace: true })
     else if (appRole === 'USER') navigate('/login', { replace: true })
     else if (!appRole) navigate('/login', { replace: true })
@@ -71,13 +100,14 @@ const LoginPage = () => {
     )
     if (!demo) return false
 
+    const appRole = normalizeRoleForRoute({ roles: [demo.role], role: demo.role })
     dispatch(
       loginSuccess({
         user: {
           id: `demo-${demo.role.toLowerCase()}`,
           name: demo.name,
           email: demo.email,
-          role: demo.role,
+          role: appRole,
           roles: [demo.role],
         },
         token: `demo-token-${Date.now()}`,
@@ -86,11 +116,13 @@ const LoginPage = () => {
       })
     )
     toast.success(`Demo login successful (${demo.role})`)
-    navigateByAppRole(demo.role, false)
+    navigateByAppRole(appRole, false)
     return true
   }
 
   const fillDemoCredentials = (demoUser) => {
+    const kind = DEMO_ROLE_TO_LOGIN_KIND[demoUser.role]
+    if (kind) setLoginKind(kind)
     setFormData((prev) => ({
       ...prev,
       email: demoUser.email,
@@ -122,7 +154,9 @@ const LoginPage = () => {
       return
     }
 
-    const loginPath = adminRole === 'super_admin' ? AUTH_SUPER_ADMIN_LOGIN : AUTH_HOSPITAL_ADMIN_LOGIN
+    const kindOption = LOGIN_KIND_OPTIONS.find((o) => o.value === loginKind)
+    const useStaffApi = kindOption?.useStaffApi ?? false
+    const loginPath = useStaffApi ? AUTH_STAFF_LOGIN : AUTH_SUPER_ADMIN_LOGIN
     const loginUrl = `${API_BASE_URL}${loginPath}`
 
     try {
@@ -172,8 +206,9 @@ const LoginPage = () => {
       }
 
       const requiresPasswordChange =
+        !useStaffApi &&
         userPayload.role === 'ADMIN' &&
-        adminRole === 'hospital_admin' &&
+        loginKind === 'hospital_admin' &&
         shouldRequireHospitalAdminPasswordChange(user, response)
 
       dispatch(
@@ -211,12 +246,13 @@ const LoginPage = () => {
       <section className="py-12 bg-gradient-to-br from-blue-50 to-cyan-50 border-b border-gray-200 mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-3xl md:text-4xl font-bold mb-2 text-gray-900 text-center">
-            Admin sign in
+            Sign in
           </h1>
           <p className="text-gray-600 text-center max-w-2xl mx-auto">
-            Sign in as <strong className="font-semibold text-gray-800">Super Admin</strong> (platform) or{' '}
-            <strong className="font-semibold text-gray-800">Hospital Admin</strong> (your hospital). Use the email and password
-            provided for your account.
+            Hospital <strong className="font-semibold text-gray-800">staff</strong> use email and password (no OTP).{' '}
+            <strong className="font-semibold text-gray-800">Super Admin</strong> and{' '}
+            <strong className="font-semibold text-gray-800">Hospital Admin</strong> use the same fields with their account type
+            selected below.
           </p>
         </div>
       </section>
@@ -231,34 +267,37 @@ const LoginPage = () => {
                   <p className="text-gray-600">Select your role, then enter your email and password.</p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 mb-6">
-                  <button
-                    type="button"
-                    onClick={() => setAdminRole('super_admin')}
-                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all ${
-                      adminRole === 'super_admin'
-                        ? 'border-blue-600 bg-blue-50 text-blue-900 font-semibold'
-                        : 'border-gray-200 hover:border-gray-300 text-gray-700'
-                    }`}
-                  >
-                    <Shield className="w-5 h-5" />
-                    Super Admin
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setAdminRole('hospital_admin')}
-                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all ${
-                      adminRole === 'hospital_admin'
-                        ? 'border-blue-600 bg-blue-50 text-blue-900 font-semibold'
-                        : 'border-gray-200 hover:border-gray-300 text-gray-700'
-                    }`}
-                  >
-                    <Building2 className="w-5 h-5" />
-                    Hospital Admin
-                  </button>
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="loginKind">
+                    Account type
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="loginKind"
+                      value={loginKind}
+                      onChange={(e) => {
+                        setLoginKind(e.target.value)
+                        if (error) setError('')
+                      }}
+                      className="w-full appearance-none pl-3 pr-10 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    >
+                      {LOGIN_KIND_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown
+                      className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
+                      aria-hidden
+                    />
+                  </div>
+                  <p className="mt-2 text-xs text-gray-500">
+                    Staff sign-in calls the staff login API; your role on the account decides which dashboard opens.
+                  </p>
                 </div>
 
-                {adminRole === 'hospital_admin' && (
+                {loginKind === 'hospital_admin' && (
                   <p className="text-sm text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-6">
                     First visit: sign in with the <strong>temporary password</strong> from your Super Admin, then you&apos;ll set a new password. After that, use your{' '}
                     <strong>new password only</strong> — the temporary one will not be used for the dashboard session.
@@ -372,7 +411,7 @@ const LoginPage = () => {
                   </button>
 
                   <p className="text-center text-sm text-gray-500">
-                    API login works for admin roles. Demo logins for Doctor/Lab/Patient/etc are available below.
+                    Use your real backend when the API is running; demo and seed shortcuts below fill the form for testing.
                   </p>
 
                   <div className="mt-6 pt-5 border-t border-gray-200">
@@ -398,12 +437,14 @@ const LoginPage = () => {
               <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-8 text-white">
                 <h3 className="text-2xl font-bold mb-4">Who signs in here?</h3>
                 <p className="text-blue-100 text-lg mb-6">
-                  <strong className="text-white">Super Admin</strong> manages the whole platform (hospitals, plans, etc.).{' '}
-                  <strong className="text-white">Hospital Admin</strong> runs day-to-day operations for one hospital.
+                  <strong className="text-white">Super Admin</strong> manages the platform.{' '}
+                  <strong className="text-white">Hospital Admin</strong> manages one hospital.{' '}
+                  <strong className="text-white">Staff</strong> (doctors, nurses, lab, pharmacy, reception) use hospital-scoped
+                  access after staff login.
                 </p>
                 <ul className="space-y-3 text-blue-100 text-sm">
-                  <li>• New hospital admins may be asked to set a new password on first sign-in.</li>
-                  <li>• Use the temporary password you were given until you change it.</li>
+                  <li>• Staff JWT access tokens expire after 30 minutes; the app retries with your refresh token when possible.</li>
+                  <li>• New hospital admins may need to set a new password on first sign-in.</li>
                   <li>• Forgot your password? Use your hospital’s reset process or contact support.</li>
                 </ul>
               </div>

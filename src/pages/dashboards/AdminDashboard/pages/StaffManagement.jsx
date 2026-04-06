@@ -9,7 +9,7 @@ import {
 } from '../../../../config/api'
 import { apiFetch } from '../../../../services/apiClient'
 
-const ROLE_OPTIONS = ['DOCTOR', 'LAB_TECH', 'PHARMACIST']
+const ROLE_OPTIONS = ['DOCTOR', 'NURSE', 'RECEPTIONIST', 'LAB_TECH', 'PHARMACIST']
 const SHIFT_OPTIONS = ['Morning (7AM-3PM)', 'Evening (3PM-11PM)', 'Night (11PM-7AM)', 'Flexible', 'Part-time']
 
 const EMPTY_FORM = {
@@ -39,6 +39,8 @@ const toDisplayRole = (role) => {
   if (value === 'LAB_TECH') return 'Lab Tech'
   if (value === 'PHARMACIST') return 'Pharmacist'
   if (value === 'DOCTOR') return 'Doctor'
+  if (value === 'NURSE') return 'Nurses'
+  if (value === 'RECEPTIONIST') return 'Receptionists'
   return value || 'Unknown'
 }
 
@@ -266,6 +268,8 @@ const StaffManagement = () => {
   const stats = useMemo(() => [
     { label: 'Total Staff', value: staff.length, color: 'blue', icon: 'fas fa-users', change: 'Hospital users' },
     { label: 'Doctors', value: staff.filter((s) => s.role === 'DOCTOR').length, color: 'green', icon: 'fas fa-user-md', change: 'Medical staff' },
+    { label: 'Nurses', value: staff.filter((s) => s.role === 'NURSE').length, color: 'teal', icon: 'fas fa-user-nurse', change: 'Nursing team' },
+    { label: 'Receptionists', value: staff.filter((s) => s.role === 'RECEPTIONIST').length, color: 'rose', icon: 'fas fa-hospital-user', change: 'Front desk' },
     { label: 'Lab Tech', value: staff.filter((s) => s.role === 'LAB_TECH').length, color: 'purple', icon: 'fas fa-microscope', change: 'Diagnostics team' },
     { label: 'Pharmacists', value: staff.filter((s) => s.role === 'PHARMACIST').length, color: 'orange', icon: 'fas fa-pills', change: 'Pharmacy team' }
   ], [staff])
@@ -347,11 +351,13 @@ const StaffManagement = () => {
       )}
 
       {/* Statistics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
         {stats.map(({ label, value, color, icon, change }) => {
           const colorConfigs = {
             blue: { bg: 'bg-blue-50', text: 'text-blue-700', iconBg: 'bg-blue-100', iconColor: 'text-blue-500' },
             green: { bg: 'bg-green-50', text: 'text-green-700', iconBg: 'bg-green-100', iconColor: 'text-green-500' },
+            teal: { bg: 'bg-teal-50', text: 'text-teal-700', iconBg: 'bg-teal-100', iconColor: 'text-teal-500' },
+            rose: { bg: 'bg-rose-50', text: 'text-rose-700', iconBg: 'bg-rose-100', iconColor: 'text-rose-500' },
             purple: { bg: 'bg-purple-50', text: 'text-purple-700', iconBg: 'bg-purple-100', iconColor: 'text-purple-500' },
             orange: { bg: 'bg-orange-50', text: 'text-orange-700', iconBg: 'bg-orange-100', iconColor: 'text-orange-500' },
           }
@@ -455,6 +461,8 @@ const StaffCard = ({ staffMember, onDetails, onToggleStatus, onResetPassword, ac
   
   const roleConfig = {
     DOCTOR: { bg: 'bg-blue-50', text: 'text-blue-600', icon: 'fas fa-user-md' },
+    NURSE: { bg: 'bg-teal-50', text: 'text-teal-600', icon: 'fas fa-user-nurse' },
+    RECEPTIONIST: { bg: 'bg-rose-50', text: 'text-rose-600', icon: 'fas fa-hospital-user' },
     LAB_TECH: { bg: 'bg-green-50', text: 'text-green-600', icon: 'fas fa-microscope' },
     PHARMACIST: { bg: 'bg-orange-50', text: 'text-orange-600', icon: 'fas fa-pills' }
   }

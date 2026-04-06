@@ -33,45 +33,46 @@ import FeatureDetailPage from '../landing/pages/FeatureDetailPage.jsx'
 import Download from '../landing/pages/Download.jsx'
 import PrivacyPolicy from '../landing/components/PrivacyPolicy.jsx'
 import TermsOfService from '../landing/components/TermsOfService.jsx'
+import { shouldRedirectFromLoginPage, resolveDefaultRoute } from '../utils/authRouting'
 
 const AppRoutes = () => {
   const { isAuthenticated, user, requiresPasswordChange } = useSelector((state) => state.auth)
 
-  const getDefaultRoute = () => {
-    if (!isAuthenticated) return '/'
-    if (user?.role === 'ADMIN' && requiresPasswordChange) return '/admin/change-password'
-
-    switch (user?.role) {
-      case 'DOCTOR': return '/doctor'
-      case 'ADMIN': return '/admin'
-      case 'NURSE': return '/nurse'
-      case 'RECEPTIONIST': return '/receptionist'
-      case 'SUPER_ADMIN': return '/super-admin'
-      case 'PATIENT': return '/patient'
-      case 'LAB': return '/lab'
-      case 'PHARMACY': return '/pharmacy'
-      case 'TELEMEDICINE': return '/telemedicine'
-      case 'USER':
-      default: return '/login'
-    }
-  }
+  const getDefaultRoute = () =>
+    resolveDefaultRoute({ isAuthenticated, user, requiresPasswordChange })
 
   return (
     <Routes>
       {/* Landing Page Routes */}
       <Route element={<Layout />}>
-        <Route path="/" element={<Home />} />
+        <Route
+          path="/login"
+          element={
+            shouldRedirectFromLoginPage(isAuthenticated, user, requiresPasswordChange) ? (
+              <Navigate to={getDefaultRoute()} replace />
+            ) : (
+              <LoginPage />
+            )
+          }
+        />
+        <Route
+          path="/"
+          element={(() => {
+            if (!isAuthenticated) return <Home />
+            const dest = getDefaultRoute()
+            // Never Navigate to "/" while already on "/" — causes infinite redirects (browser throttling).
+            if (dest === '/') return <Home />
+            return <Navigate to={dest} replace />
+          })()}
+        />
         <Route path="/features" element={<Features />} />
         <Route path="/features/:featureId" element={<FeatureDetailPage />} />
-        <Route path="/about" element={<About />} />
-        
         <Route path="/about" element={<About />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/request-demo" element={<RequestDemo />} />
         <Route path="/privacy" element={<PrivacyPolicy/>}/>
         <Route path="/terms" element={<TermsOfService />} />
-        <Route path="/login" element={!isAuthenticated ? <LoginPage /> : <Navigate to={getDefaultRoute()} replace />} />
         <Route path="/signup" element={<Signup />} />
         <Route path='/forgot-password' element={<ForgotPassword />} />
         <Route path='/download' element={<Download/>} />
@@ -155,11 +156,7 @@ const AppRoutes = () => {
         </ProtectedRoute>
       } />
       
-      
-      {/* Default redirect - now goes to landing page when not authenticated */}
-      <Route path="/" element={<Navigate to={getDefaultRoute()} replace />} />
-      
-      {/* Catch all route */}
+      {/* Catch-all: unknown paths → home (guests) or dashboard (signed-in) */}
       <Route path="*" element={<Navigate to={getDefaultRoute()} replace />} />
     </Routes>
   )

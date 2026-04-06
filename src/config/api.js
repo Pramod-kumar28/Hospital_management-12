@@ -22,6 +22,9 @@ export const AUTH_SUPER_ADMIN_LOGIN = '/api/v1/auth/login';
 
 /** Auth: hospital-admin login */
 export const AUTH_HOSPITAL_ADMIN_LOGIN = '/api/v1/auth/login';
+
+/** Auth: hospital staff login (DOCTOR, PHARMACIST, LAB_TECH, NURSE, RECEPTIONIST) */
+export const AUTH_STAFF_LOGIN = '/api/v1/auth/staff/login';
  
 /** Auth: hospital-admin change password (e.g. after first login with temp password) */
 export const AUTH_HOSPITAL_ADMIN_CHANGE_PASSWORD = '/api/v1/auth/hospital-admin/change-password';

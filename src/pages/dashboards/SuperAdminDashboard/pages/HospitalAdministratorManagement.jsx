@@ -399,9 +399,59 @@ const HospitalAdministratorManagement = () => {
         </button>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-5">
-        <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-end">
-          <div className="flex-1 w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 transition-all duration-200 hover:shadow-md">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm text-gray-500">Total Admins</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+            </div>
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-slate-100 text-blue-600 flex items-center justify-center">
+              <i className="fas fa-users-cog"></i>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 transition-all duration-200 hover:shadow-md">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm text-gray-500">Active</p>
+              <p className="text-2xl font-bold text-emerald-700">{stats.active}</p>
+            </div>
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-100 to-slate-100 text-emerald-600 flex items-center justify-center">
+              <i className="fas fa-user-check"></i>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 transition-all duration-200 hover:shadow-md">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm text-gray-500">Blocked</p>
+              <p className="text-2xl font-bold text-red-700">{stats.blocked}</p>
+            </div>
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-100 to-slate-100 text-red-600 flex items-center justify-center">
+              <i className="fas fa-user-lock"></i>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 transition-all duration-200 hover:shadow-md">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm text-gray-500">Pending</p>
+              <p className="text-2xl font-bold text-amber-700">{stats.pending}</p>
+            </div>
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-100 to-slate-100 text-amber-600 flex items-center justify-center">
+              <i className="fas fa-user-clock"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
+        <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+          <div className="flex-1 min-w-0">
             <label className="block text-sm font-semibold text-gray-700 mb-2">Select Hospital</label>
             <select
               value={selectedHospitalId}
@@ -423,14 +473,34 @@ const HospitalAdministratorManagement = () => {
             )}
           </div>
 
-          <button
-            type="button"
-            onClick={() => fetchAdmins(selectedHospitalId)}
-            disabled={!selectedHospitalId || loadingAdmins}
-            className="px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium disabled:opacity-60 disabled:pointer-events-none"
+          <div className="flex flex-col gap-2 sm:w-auto">
+            <div className="h-5"></div> {/* Spacer to align with label */}
+           
+          </div>
+        </div>
+
+        <div className="mt-6 grid grid-cols-1 lg:grid-cols-[1.8fr_1fr] gap-4">
+          <div className="relative">
+            <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+            <input
+              type="text"
+              placeholder="Search by name, email, or phone..."
+              value={filters.search}
+              onChange={(event) => setFilters((current) => ({ ...current, search: event.target.value }))}
+              className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+            />
+          </div>
+
+          <select
+            value={filters.status}
+            onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value }))}
+            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
           >
-            {loadingAdmins ? 'Refreshing...' : 'Refresh List'}
-          </button>
+            <option value="">All Status</option>
+            <option value="ACTIVE">Active</option>
+            <option value="BLOCKED">Blocked</option>
+            <option value="PENDING">Pending</option>
+          </select>
         </div>
 
         {hospitalError && (
@@ -445,98 +515,6 @@ const HospitalAdministratorManagement = () => {
             </button>
           </div>
         )}
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">Total Admins</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-            </div>
-            <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
-              <i className="fas fa-users-cog"></i>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">Active</p>
-              <p className="text-2xl font-bold text-emerald-700">{stats.active}</p>
-            </div>
-            <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
-              <i className="fas fa-user-check"></i>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">Blocked</p>
-              <p className="text-2xl font-bold text-red-700">{stats.blocked}</p>
-            </div>
-            <div className="w-12 h-12 rounded-xl bg-red-100 text-red-600 flex items-center justify-center">
-              <i className="fas fa-user-lock"></i>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">Pending</p>
-              <p className="text-2xl font-bold text-amber-700">{stats.pending}</p>
-            </div>
-            <div className="w-12 h-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center">
-              <i className="fas fa-user-clock"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {passwordResetResult && (
-        <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 text-blue-800">
-          <div className="flex items-start gap-3">
-            <i className="fas fa-key mt-1"></i>
-            <div>
-              <p className="font-semibold">Password reset successful for {passwordResetResult.adminName}.</p>
-              <p className="text-sm mt-1">
-                Temporary password: <span className="font-semibold">{passwordResetResult.password || 'Check backend response for the generated password.'}</span>
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-5">
-        <div className="flex flex-col lg:flex-row gap-3">
-          <div className="flex-1">
-            <div className="relative">
-              <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-              <input
-                type="text"
-                placeholder="Search by name, email, or phone..."
-                value={filters.search}
-                onChange={(event) => setFilters((current) => ({ ...current, search: event.target.value }))}
-                className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-              />
-            </div>
-          </div>
-
-          <select
-            value={filters.status}
-            onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value }))}
-            className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-          >
-            <option value="">All Status</option>
-            <option value="ACTIVE">Active</option>
-            <option value="BLOCKED">Blocked</option>
-            <option value="PENDING">Pending</option>
-          </select>
-        </div>
       </div>
 
       {listError && (
@@ -721,7 +699,7 @@ const HospitalAdministratorManagement = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="space-y-2 md:col-span-2">
-              <label className="block text-sm font-semibold text-gray-700">Hospital *</label>
+              <label className="block text-sm font-semibold text-gray-700">Hospital <span className="text-red-500">*</span></label>
               <select
                 name="hospital_id"
                 value={formData.hospital_id}
@@ -739,7 +717,7 @@ const HospitalAdministratorManagement = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-700">First Name *</label>
+              <label className="block text-sm font-semibold text-gray-700">First Name <span className="text-red-500">*</span></label>
               <input
                 type="text"
                 name="first_name"
@@ -752,7 +730,7 @@ const HospitalAdministratorManagement = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-700">Last Name *</label>
+              <label className="block text-sm font-semibold text-gray-700">Last Name <span className="text-red-500">*</span></label>
               <input
                 type="text"
                 name="last_name"
@@ -765,7 +743,7 @@ const HospitalAdministratorManagement = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-700">Email *</label>
+              <label className="block text-sm font-semibold text-gray-700">Email <span className="text-red-500">*</span></label>
               <input
                 type="email"
                 name="email"
@@ -778,7 +756,7 @@ const HospitalAdministratorManagement = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-700">Phone *</label>
+              <label className="block text-sm font-semibold text-gray-700">Phone <span className="text-red-500">*</span></label>
               <input
                 type="tel"
                 name="phone"
@@ -791,7 +769,7 @@ const HospitalAdministratorManagement = () => {
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <label className="block text-sm font-semibold text-gray-700">Password *</label>
+              <label className="block text-sm font-semibold text-gray-700">Password <span className="text-red-500">*</span></label>
               <input
                 type="password"
                 name="password"

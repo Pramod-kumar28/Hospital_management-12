@@ -135,10 +135,11 @@ const AppointmentManagement = () => {
 
   // Statistics
   const stats = [
-    { label: 'Confirmed', value: appointments.filter(a => a.status === 'Confirmed').length, color: 'blue' },
-    { label: 'Pending', value: appointments.filter(a => a.status === 'Pending').length, color: 'orange' },
-    { label: 'Completed', value: appointments.filter(a => a.status === 'Completed').length, color: 'green' },
-    { label: 'Cancelled', value: appointments.filter(a => a.status === 'Cancelled').length, color: 'red' }
+    { label: 'Scheduled', value: appointments.length, color: 'blue', icon: 'calendar-alt' },
+    { label: 'Confirmed', value: appointments.filter(a => a.status === 'Confirmed').length, color: 'green', icon: 'check-circle' },
+    { label: 'Pending', value: appointments.filter(a => a.status === 'Pending').length, color: 'orange', icon: 'hourglass-half' },
+    { label: 'Completed', value: appointments.filter(a => a.status === 'Completed').length, color: 'purple', icon: 'tasks' },
+    { label: 'Cancelled', value: appointments.filter(a => a.status === 'Cancelled').length, color: 'red', icon: 'times-circle' }
   ]
 
   if (loading) return <LoadingSpinner />
@@ -192,57 +193,56 @@ const AppointmentManagement = () => {
         ))}
       </div> */}
 
-      {/* Statistics - Glassmorphism Design */}
-<div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
-  {stats.map(({ label, value, color }) => {
+      {/* Statistics - KPI Cards */}
+<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-10">
+  {stats.map(({ label, value, color, icon }) => {
     const colorConfigs = {
-      blue: { 
-        bg: 'bg-blue-500/10 backdrop-blur-sm', 
-        text: 'text-blue-700', 
-        icon: 'fas fa-users',
-        gradient: 'from-blue-500/20 to-blue-600/10'
-      },
-      green: { 
-        bg: 'bg-green-500/10 backdrop-blur-sm', 
-        text: 'text-green-700', 
-        icon: 'fas fa-user-nurse',
-        gradient: 'from-green-500/20 to-green-600/10'
-      },
-      red: { 
-        bg: 'bg-red-500/10 backdrop-blur-sm', 
-        text: 'text-red-700', 
-        icon: 'fas fa-microscope',
-        gradient: 'from-red-500/20 to-red-600/10'
-      },
-      orange: { 
-        bg: 'bg-orange-500/10 backdrop-blur-sm', 
-        text: 'text-orange-700', 
-        icon: 'fas fa-pills',
-        gradient: 'from-orange-500/20 to-orange-600/10'
-      }
+      blue: { bg: 'bg-blue-500', from: 'from-blue-50', to: 'to-transparent', bars: ['bg-blue-400', 'bg-blue-300', 'bg-blue-500', 'bg-blue-400', 'bg-blue-300'] },
+      green: { bg: 'bg-green-500', from: 'from-green-50', to: 'to-transparent', bars: ['bg-green-300', 'bg-green-400', 'bg-green-300', 'bg-green-500', 'bg-green-400'] },
+      orange: { bg: 'bg-orange-500', from: 'from-orange-50', to: 'to-transparent', bars: ['bg-orange-400', 'bg-orange-300', 'bg-orange-400', 'bg-orange-500', 'bg-orange-400'] },
+      purple: { bg: 'bg-purple-500', from: 'from-purple-50', to: 'to-transparent', bars: ['bg-purple-400', 'bg-purple-300', 'bg-purple-400', 'bg-purple-500', 'bg-purple-300'] },
+      red: { bg: 'bg-red-500', from: 'from-red-50', to: 'to-transparent', bars: ['bg-red-400', 'bg-red-300', 'bg-red-400', 'bg-red-500', 'bg-red-400'] }
     }
     
     const config = colorConfigs[color] || colorConfigs.blue
 
     return (
       <div 
-        key={label} 
-        className={`${config.bg} border border-white/30 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 hover:-translate-y-1 relative overflow-hidden`}
+        key={label}
+        className={`relative ${config.bg} bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow`}
       >
-        {/* Gradient Background */}
-        <div className={`absolute inset-0 bg-gradient-to-br ${config.gradient} opacity-50`}></div>
-        
-        <div className="relative z-10">
-          <div className="flex items-center justify-between mb-4">
-            <div className="bg-white/50 backdrop-blur-sm p-3 rounded-xl">
-              <i className={`${config.icon} ${config.text} text-xl`}></i>
+        <div className={`absolute inset-0 bg-gradient-to-br ${config.from} ${config.to} pointer-events-none`}></div>
+        <div className="relative flex justify-between items-end">
+          <div>
+            <div className={`w-10 h-10 flex items-center justify-center rounded-full ${config.bg} mb-3`}>
+              <i className={`fas fa-${icon} text-white`}></i>
             </div>
-            <span className="text-xs font-medium px-3 py-1 bg-white/80 backdrop-blur-sm rounded-full border border-white/30">
-              +2 this month
-            </span>
+            <p className="text-sm text-gray-500">{label}</p>
+            <p className="text-2xl font-bold text-gray-900">{value}</p>
+            <p className="text-xs text-gray-400 mt-1">appointments</p>
           </div>
-          <div className={`text-4xl font-bold ${config.text} mb-2`}>{value}</div>
-          <div className="text-gray-700 font-medium">{label}</div>
+          <div className="flex items-end gap-1 h-14">
+            {config.bars.map((barColor, idx) => (
+              <div key={idx} className={`w-1.5 rounded`} style={{ 
+                height: ['28px', '40px', '32px', '48px', '36px'][idx],
+                backgroundColor: barColor === 'bg-blue-400' ? '#60a5fa' : 
+                                barColor === 'bg-blue-300' ? '#93c5fd' :
+                                barColor === 'bg-blue-500' ? '#3b82f6' :
+                                barColor === 'bg-green-300' ? '#86efac' :
+                                barColor === 'bg-green-400' ? '#4ade80' :
+                                barColor === 'bg-green-500' ? '#22c55e' :
+                                barColor === 'bg-orange-400' ? '#fb923c' :
+                                barColor === 'bg-orange-300' ? '#fed7aa' :
+                                barColor === 'bg-orange-500' ? '#f97316' :
+                                barColor === 'bg-purple-400' ? '#c084fc' :
+                                barColor === 'bg-purple-300' ? '#d8b4fe' :
+                                barColor === 'bg-purple-500' ? '#a855f7' :
+                                barColor === 'bg-red-400' ? '#f87171' :
+                                barColor === 'bg-red-300' ? '#fca5a5' :
+                                '#ef4444'
+              }}></div>
+            ))}
+          </div>
         </div>
       </div>
     )

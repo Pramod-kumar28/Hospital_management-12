@@ -274,18 +274,6 @@ const DepartmentManagement = () => {
     })
   }, [departments, searchTerm])
 
-  const stats = useMemo(() => {
-    const totalBeds = departments.reduce((sum, department) => sum + Number(department.bed_capacity || 0), 0)
-    const emergencyCount = departments.filter((department) => department.emergency_services).length
-    const activeCount = departments.filter((department) => department.is_active).length
-    return [
-      { label: 'Total Departments', value: departments.length, color: 'blue', icon: 'fas fa-building', change: 'Registered' },
-      { label: 'Active Departments', value: activeCount, color: 'green', icon: 'fas fa-check-circle', change: 'Currently available' },
-      { label: 'Emergency Services', value: emergencyCount, color: 'purple', icon: 'fas fa-ambulance', change: 'Enabled' },
-      { label: 'Total Bed Capacity', value: totalBeds, color: 'orange', icon: 'fas fa-bed', change: 'All departments' }
-    ]
-  }, [departments])
-
   if (loading) return <LoadingSpinner />
 
   return (
@@ -296,13 +284,6 @@ const DepartmentManagement = () => {
             <h2 className="text-2xl md:text-3xl font-bold text-gray-800">Department Management</h2>
             <p className="text-gray-500 mt-1">Manage hospital departments with backend APIs</p>
           </div>
-          <button
-            onClick={openAddModal}
-            className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-2 font-medium"
-          >
-            <i className="fas fa-plus-circle text-lg"></i>
-            <span>Add New Department</span>
-          </button>
         </div>
       </div>
 
@@ -338,56 +319,112 @@ const DepartmentManagement = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        {stats.map(({ label, value, color, icon, change }) => {
-          const colorConfigs = {
-            blue: { bg: 'bg-blue-50', text: 'text-blue-700', iconBg: 'bg-blue-100', iconColor: 'text-blue-500' },
-            green: { bg: 'bg-green-50', text: 'text-green-700', iconBg: 'bg-green-100', iconColor: 'text-green-500' },
-            purple: { bg: 'bg-purple-50', text: 'text-purple-700', iconBg: 'bg-purple-100', iconColor: 'text-purple-500' },
-            orange: { bg: 'bg-orange-50', text: 'text-orange-700', iconBg: 'bg-orange-100', iconColor: 'text-orange-500' }
-          }
-          const config = colorConfigs[color] || colorConfigs.blue
-          return (
-            <div key={label} className={`${config.bg} p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300`}>
-              <div className="flex items-center justify-between mb-4">
-                <div className={`${config.iconBg} p-3 rounded-xl`}>
-                  <i className={`${icon} ${config.iconColor} text-xl`}></i>
-                </div>
-                <span className="text-sm font-medium px-3 py-1 bg-white rounded-full border border-gray-200">{change}</span>
-              </div>
-              <div className={`text-4xl font-bold ${config.text} mb-2`}>{value}</div>
-              <div className="text-gray-600">{label}</div>
-            </div>
-          )
-        })}
-      </div>
-
       <div className="mb-6 flex items-center justify-between">
         <h3 className="text-xl font-semibold text-gray-800">All Departments ({filteredDepartments.length})</h3>
+        <button
+          onClick={openAddModal}
+          className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-2 font-medium"
+        >
+          <i className="fas fa-plus-circle text-lg"></i>
+          <span>Add New Department</span>
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredDepartments.map((department) => (
-          <DepartmentCard
-            key={department.id}
-            department={department}
-            onEdit={() => openEditModal(department)}
-            onDetails={() => handleGetDetails(department)}
-            onToggleStatus={() => handleToggleStatus(department)}
-            actionLoading={actionLoading}
-          />
-        ))}
-      </div>
-
-      {filteredDepartments.length === 0 && (
-        <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-white rounded-2xl border-2 border-dashed border-gray-200 mt-6">
-          <div className="w-20 h-20 mx-auto mb-6 bg-blue-50 rounded-full flex items-center justify-center">
-            <i className="fas fa-sitemap text-blue-500 text-3xl"></i>
-          </div>
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">No departments found</h3>
-          <p className="text-gray-500 mb-6">Try adjusting your search or active filter</p>
+      {/* Departments Table */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Head</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Beds</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Emergency</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredDepartments.map((department) => (
+                <tr key={department.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">{department.name}</div>
+                      <div className="text-sm text-gray-500 line-clamp-1">{department.description}</div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{department.code || '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{department.head_of_department || '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{department.location || '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{department.phone || '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{department.bed_capacity ?? 0}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                      department.emergency_services
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {department.emergency_services ? 'Yes' : 'No'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                      department.is_active
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {department.is_active ? 'Active' : 'Inactive'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleGetDetails(department)}
+                        className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
+                        title="View Details"
+                      >
+                        <i className="fas fa-eye"></i>
+                      </button>
+                      <button
+                        onClick={() => openEditModal(department)}
+                        className="text-purple-600 hover:text-purple-900 p-1 rounded hover:bg-purple-50 transition-colors"
+                        title="Edit Department"
+                      >
+                        <i className="fas fa-edit"></i>
+                      </button>
+                      <button
+                        onClick={() => handleToggleStatus(department)}
+                        disabled={actionLoading?.[`status-${department.id}`]}
+                        className={`p-1 rounded transition-colors ${
+                          department.is_active
+                            ? 'text-yellow-600 hover:text-yellow-900 hover:bg-yellow-50'
+                            : 'text-green-600 hover:text-green-900 hover:bg-green-50'
+                        } disabled:opacity-50`}
+                        title={department.is_active ? 'Disable Department' : 'Enable Department'}
+                      >
+                        <i className={`fas fa-${department.is_active ? 'pause' : 'play'}`}></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      )}
+
+        {filteredDepartments.length === 0 && (
+          <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-white border-t border-gray-200">
+            <div className="w-20 h-20 mx-auto mb-6 bg-blue-50 rounded-full flex items-center justify-center">
+              <i className="fas fa-sitemap text-blue-500 text-3xl"></i>
+            </div>
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">No departments found</h3>
+            <p className="text-gray-500 mb-6">Try adjusting your search or active filter</p>
+          </div>
+        )}
+      </div>
 
       <DepartmentFormModal
         isOpen={modalState.add}
@@ -422,68 +459,6 @@ const DepartmentManagement = () => {
         details={details}
         onClose={() => setDetails(null)}
       />
-    </div>
-  )
-}
-
-const DepartmentCard = ({ department, onEdit, onDetails, onToggleStatus, actionLoading }) => {
-  const isActive = department.is_active
-  const loadingKey = `status-${department.id}`
-
-  return (
-    <div className="bg-white rounded-xl shadow-md border border-gray-200 p-5 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="font-semibold text-blue-700">{department.name}</h3>
-          <p className="text-xs text-gray-500">{department.code || '-'}</p>
-        </div>
-        <span className={`text-xs px-2 py-1 rounded-full ${isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-          {isActive ? 'active' : 'inactive'}
-        </span>
-      </div>
-
-      <div className="space-y-2 text-sm text-gray-600 mb-4">
-        <p><span className="font-medium text-gray-700">Head:</span> {department.head_of_department || '-'}</p>
-        <p><span className="font-medium text-gray-700">Phone:</span> {department.phone || '-'}</p>
-        <p><span className="font-medium text-gray-700">Location:</span> {department.location || '-'}</p>
-        <p className="line-clamp-2"><span className="font-medium text-gray-700">Description:</span> {department.description || '-'}</p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3 mb-4">
-        <div className="bg-blue-50 p-2 rounded-lg text-center">
-          <div className="text-sm font-bold text-blue-600">{department.bed_capacity ?? 0}</div>
-          <div className="text-xs text-gray-500">Beds</div>
-        </div>
-        <div className="bg-purple-50 p-2 rounded-lg text-center">
-          <div className="text-sm font-bold text-purple-600">{department.emergency_services ? 'Yes' : 'No'}</div>
-          <div className="text-xs text-gray-500">Emergency</div>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-end pt-4 border-t gap-2">
-        <button
-          onClick={onDetails}
-          className="text-blue-600 hover:text-blue-800 p-2 rounded-full hover:bg-blue-50 transition-colors"
-          title="View Details"
-        >
-          <i className="fas fa-info-circle"></i>
-        </button>
-        <button
-          onClick={onEdit}
-          className="text-purple-600 hover:text-purple-800 p-2 rounded-full hover:bg-purple-50 transition-colors"
-          title="Edit Department"
-        >
-          <i className="fas fa-edit"></i>
-        </button>
-        <button
-          onClick={onToggleStatus}
-          disabled={actionLoading?.[loadingKey]}
-          className={`${isActive ? 'text-yellow-600 hover:text-yellow-800 hover:bg-yellow-50' : 'text-green-600 hover:text-green-800 hover:bg-green-50'} p-2 rounded-full transition-colors disabled:opacity-50`}
-          title={isActive ? 'Disable Department' : 'Enable Department'}
-        >
-          <i className={`fas fa-${isActive ? 'pause' : 'play'}`}></i>
-        </button>
-      </div>
     </div>
   )
 }

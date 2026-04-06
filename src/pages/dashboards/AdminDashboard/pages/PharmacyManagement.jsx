@@ -7,6 +7,10 @@ const PharmacyManagement = () => {
   const [loading, setLoading] = useState(true)
   const [medicines, setMedicines] = useState([])
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [editingMedicine, setEditingMedicine] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('')
+  const [supplierFilter, setSupplierFilter] = useState('')
   const [newMedicine, setNewMedicine] = useState({
     name: '',
     category: '',
@@ -38,21 +42,43 @@ const PharmacyManagement = () => {
   }
 
   const handleAddMedicine = () => {
-    const medicine = {
-      id: `DRG-${String(medicines.length + 1).padStart(3, '0')}`,
-      name: newMedicine.name,
-      category: newMedicine.category,
-      stock: parseInt(newMedicine.stock),
-      expiry: newMedicine.expiry,
-      supplier: newMedicine.supplier,
-      price: parseFloat(newMedicine.price),
-      description: newMedicine.description,
-      dosage: newMedicine.dosage,
-      prescriptionRequired: newMedicine.prescriptionRequired
+    if (editingMedicine) {
+      // Update existing medicine
+      setMedicines(prev => prev.map(medicine => 
+        medicine.id === editingMedicine.id 
+          ? {
+              ...medicine,
+              name: newMedicine.name,
+              category: newMedicine.category,
+              stock: parseInt(newMedicine.stock),
+              expiry: newMedicine.expiry,
+              supplier: newMedicine.supplier,
+              price: parseFloat(newMedicine.price),
+              description: newMedicine.description,
+              dosage: newMedicine.dosage,
+              prescriptionRequired: newMedicine.prescriptionRequired
+            }
+          : medicine
+      ))
+    } else {
+      // Add new medicine
+      const medicine = {
+        id: `DRG-${String(medicines.length + 1).padStart(3, '0')}`,
+        name: newMedicine.name,
+        category: newMedicine.category,
+        stock: parseInt(newMedicine.stock),
+        expiry: newMedicine.expiry,
+        supplier: newMedicine.supplier,
+        price: parseFloat(newMedicine.price),
+        description: newMedicine.description,
+        dosage: newMedicine.dosage,
+        prescriptionRequired: newMedicine.prescriptionRequired
+      }
+      
+      setMedicines(prev => [medicine, ...prev])
     }
-    
-    setMedicines(prev => [medicine, ...prev])
     setIsAddModalOpen(false)
+    setEditingMedicine(null)
     resetForm()
   }
 
@@ -70,17 +96,9 @@ const PharmacyManagement = () => {
         dosage: medicine.dosage || '',
         prescriptionRequired: medicine.prescriptionRequired || false
       })
+      setEditingMedicine(medicine)
       setIsAddModalOpen(true)
-      // You might want to track if we're editing and which medicine
     }
-  }
-
-  const handleRestock = (medicineId, quantity = 10) => {
-    setMedicines(prev => prev.map(medicine => 
-      medicine.id === medicineId 
-        ? { ...medicine, stock: medicine.stock + quantity }
-        : medicine
-    ))
   }
 
   const handleDeleteMedicine = (medicineId) => {
@@ -101,6 +119,7 @@ const PharmacyManagement = () => {
       dosage: '',
       prescriptionRequired: false
     })
+    setEditingMedicine(null)
   }
 
   const handleInputChange = (field, value) => {
@@ -149,6 +168,16 @@ const PharmacyManagement = () => {
   const lowStockItems = medicines.filter(item => item.stock < 10).length
   const outOfStockItems = medicines.filter(item => item.stock === 0).length
 
+  // Filtered medicines based on search and filters
+  const filteredMedicines = medicines.filter(medicine => {
+    const matchesSearch = medicine.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         medicine.id.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesCategory = !categoryFilter || medicine.category === categoryFilter
+    const matchesSupplier = !supplierFilter || medicine.supplier === supplierFilter
+    
+    return matchesSearch && matchesCategory && matchesSupplier
+  })
+
   const getStockStatus = (stock) => {
     if (stock === 0) return 'out-of-stock'
     if (stock < 10) return 'low-stock'
@@ -179,65 +208,59 @@ const PharmacyManagement = () => {
         </button>
       </div>
 
-      {/* Pharmacy Stats - Compact Cards */}
-<div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
-  {[
-    { 
-      value: medicines.length, 
-      label: 'Total Medicines', 
-      color: 'blue', 
-      icon: 'fas fa-pills',
-      bg: 'bg-blue-50',
-      text: 'text-blue-600',
-      iconBg: 'bg-blue-100'
-    },
-    { 
-      value: medicines.filter(item => item.stock > 20).length, 
-      label: 'Good Stock', 
-      color: 'green', 
-      icon: 'fas fa-check-circle',
-      bg: 'bg-green-50',
-      text: 'text-green-600',
-      iconBg: 'bg-green-100'
-    },
-    { 
-      value: lowStockItems, 
-      label: 'Low Stock', 
-      color: 'yellow', 
-      icon: 'fas fa-exclamation-triangle',
-      bg: 'bg-yellow-50',
-      text: 'text-yellow-600',
-      iconBg: 'bg-yellow-100'
-    },
-    { 
-      value: outOfStockItems, 
-      label: 'Out of Stock', 
-      color: 'red', 
-      icon: 'fas fa-times-circle',
-      bg: 'bg-red-50',
-      text: 'text-red-600',
-      iconBg: 'bg-red-100'
-    }
-  ].map((stat, index) => (
-    <div 
-      key={index} 
-      className={`${stat.bg} border border-gray-200 p-5 rounded-xl hover:shadow-md transition-all duration-300`}
-    >
-      <div className="flex items-center gap-3">
-        <div className={`${stat.iconBg} p-3 rounded-lg`}>
-          <i className={`${stat.icon} ${stat.text} text-lg`}></i>
-        </div>
-        <div>
-          <div className={`text-2xl font-bold ${stat.text}`}>{stat.value}</div>
-          <div className="text-gray-800 font-medium text-sm">{stat.label}</div>
+      {/* Search and Filter Bar */}
+      <div className="bg-white p-6 rounded-xl border border-gray-200 mb-6 shadow-sm">
+        <h3 className="text-lg font-bold text-gray-900 mb-4">Search & Filter Medicines</h3>
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="flex-1 relative">
+            <input 
+              type="text" 
+              placeholder="Search by medicine name or ID..." 
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all pl-11"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <i className="fas fa-search absolute left-3 top-3.5 text-gray-400"></i>
+          </div>
+          <div className="w-full lg:w-48 relative">
+            <select 
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all appearance-none pr-10"
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+            >
+              <option value="">All Categories</option>
+              {categories.map(category => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+            <i className="fas fa-chevron-down absolute right-3 top-3.5 text-gray-400 pointer-events-none"></i>
+          </div>
+          <div className="w-full lg:w-48 relative">
+            <select 
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all appearance-none pr-10"
+              value={supplierFilter}
+              onChange={(e) => setSupplierFilter(e.target.value)}
+            >
+              <option value="">All Suppliers</option>
+              {suppliers.map(supplier => (
+                <option key={supplier} value={supplier}>{supplier}</option>
+              ))}
+            </select>
+            <i className="fas fa-chevron-down absolute right-3 top-3.5 text-gray-400 pointer-events-none"></i>
+          </div>
         </div>
       </div>
-    </div>
-  ))}
-</div>
 
       {/* Medicines Table */}
       <div className="bg-white rounded-xl card-shadow border overflow-hidden">
+        <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-bold text-gray-900">Medicines</h3>
+            <span className="text-sm font-semibold text-blue-600 bg-blue-100 px-3 py-1 rounded-full">
+              {filteredMedicines.length} Medicines
+            </span>
+          </div>
+        </div>
         <div className="overflow-x-auto">
           <DataTable
             columns={[
@@ -292,13 +315,6 @@ const PharmacyManagement = () => {
                       <i className="fas fa-edit"></i>
                     </button>
                     <button 
-                      onClick={() => handleRestock(row.id)}
-                      className="text-green-600 hover:text-green-800 p-1 rounded hover:bg-green-50"
-                      title="Restock"
-                    >
-                      <i className="fas fa-boxes"></i>
-                    </button>
-                    <button 
                       onClick={() => handleDeleteMedicine(row.id)}
                       className="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50"
                       title="Delete"
@@ -309,7 +325,7 @@ const PharmacyManagement = () => {
                 )
               }
             ]}
-            data={medicines}
+            data={filteredMedicines}
           />
         </div>
       </div>
@@ -344,14 +360,14 @@ const PharmacyManagement = () => {
         </div>
       )}
 
-      {/* Add Medicine Modal - Defined in the same file */}
+      {/* Add/Edit Medicine Modal */}
       <Modal 
         isOpen={isAddModalOpen} 
         onClose={() => {
           setIsAddModalOpen(false)
           resetForm()
         }} 
-        title="Add New Medicine"
+        title={editingMedicine ? "Edit Medicine" : "Add New Medicine"}
         size="lg"
       >
         <div className="space-y-6">
@@ -359,7 +375,7 @@ const PharmacyManagement = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Medicine Name *
+                Medicine Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -373,7 +389,7 @@ const PharmacyManagement = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Category *
+                Category <span className="text-red-500">*</span>
               </label>
               <select
                 required
@@ -390,7 +406,7 @@ const PharmacyManagement = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Stock Quantity *
+                Stock Quantity <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
@@ -405,7 +421,7 @@ const PharmacyManagement = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Price (₹) *
+                Price (₹) <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
@@ -424,7 +440,7 @@ const PharmacyManagement = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Supplier *
+                Supplier <span className="text-red-500">*</span>
               </label>
               <select
                 required
@@ -441,7 +457,7 @@ const PharmacyManagement = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Expiry Date *
+                Expiry Date <span className="text-red-500">*</span>
               </label>
               <input
                 type="date"
@@ -514,11 +530,11 @@ const PharmacyManagement = () => {
             <button
               type="button"
               onClick={handleAddMedicine}
-              disabled={!newMedicine.name || !newMedicine.category || !newMedicine.stock || !newMedicine.price}
+              disabled={!newMedicine.name || !newMedicine.category || !newMedicine.stock || !newMedicine.price || !newMedicine.supplier || !newMedicine.expiry}
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <i className="fas fa-plus mr-2"></i>
-              Add Medicine
+              {editingMedicine ? 'Update Medicine' : 'Add Medicine'}
             </button>
           </div>
         </div>

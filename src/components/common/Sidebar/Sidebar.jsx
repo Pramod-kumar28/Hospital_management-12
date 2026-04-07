@@ -32,7 +32,8 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
     { id: 'test-catalogue', label: 'Test Catalogue', icon: 'fas fa-book-medical' },
     { id: 'equipment-tracking', label: 'Equipment Tracking', icon: 'fas fa-microscope' },
     { id: 'quality-control', label: 'Quality Control', icon: 'fas fa-chart-line' },
-    { id: 'profile', label: 'Lab Profile', icon: 'fas fa-user-md' }
+    { id: 'profile', label: 'Lab Profile', icon: 'fas fa-user-md' }, { id: 'raise-ticket', label: 'Raise Ticket', icon: 'fa-envelope-open-text' }
+  
   ]
 
   const doctorMenu = [
@@ -43,7 +44,8 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
     { id: 'labs', label: 'Lab Results', icon: 'fa-flask' },
     { id: 'inpatient', label: 'Inpatient Visits', icon: 'fa-procedures' },
     { id: 'messages', label: 'Messaging', icon: 'fa-comments' },
-    { id: 'profile', label: 'My Profile', icon: 'fa-user-md' }
+    { id: 'profile', label: 'My Profile', icon: 'fa-user-md' },
+    { id: 'raise-ticket', label: 'Raise Ticket', icon: 'fa-envelope-open-text' }
   ]
 
   const adminMenu = [
@@ -72,7 +74,8 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
     { id: 'labs', label: 'Lab Tests & Upload', icon: 'fa-vial' },
     { id: 'notes', label: 'Nursing Notes', icon: 'fa-notes-medical' },
     { id: 'discharge', label: 'Discharge Summary', icon: 'fa-file-medical' },
-    { id: 'profile', label: 'My Profile', icon: 'fa-user-nurse' }
+    { id: 'profile', label: 'My Profile', icon: 'fa-user-nurse' }, { id: 'raise-ticket', label: 'Raise Ticket', icon: 'fa-envelope-open-text' }
+  
   ]
 
   const receptionistMenu = [
@@ -85,7 +88,8 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
     { id: 'documents', label: 'Document Management', icon: 'fas fa-file-upload' },
     { id: 'billing', label: 'Billing', icon: 'fa-receipt' },
     { id: 'discharge', label: 'Discharge Summary', icon: 'fas fa-file-contract' },
-    { id: 'profile', label: 'My Profile', icon: 'fa-user-tie' }
+    { id: 'profile', label: 'My Profile', icon: 'fa-user-tie' },
+        { id: 'raise-ticket', label: 'Raise Ticket', icon: 'fa-envelope-open-text' }
   ]
 
   const superAdminMenu = [
@@ -125,6 +129,8 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
     { id: "suppliermanagement", label: "Supplier Management", icon: "fas fa-truck" },
     { id: "medicinedatabase", label: "Medicine Database", icon: "fas fa-database" },
     { id: "settings", label: "Settings", icon: "fas fa-cog" },
+     { id: 'raise-ticket', label: 'Raise Ticket', icon: 'fa-envelope-open-text' }
+  
   ];
 
 const teleMedicineMenu = [
@@ -138,6 +144,8 @@ const teleMedicineMenu = [
   { id: "messages", label: "Messaging", icon: "fa-comments" },
   { id: "doctoroverview", label: "Doctor Overview", icon: "fa-solid fa-clipboard-list" },
   { id: "doctorprofile", label: "Doctor Profile", icon: "fa-solid fa-user-doctor" },
+   { id: 'raise-ticket', label: 'Raise Ticket', icon: 'fa-envelope-open-text' }
+  
 ];
 
   const getMenuItems = () => {

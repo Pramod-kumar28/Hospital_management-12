@@ -12,6 +12,7 @@ import OPDManagement from './pages/OPDManagement'
 import IPDManagement from './pages/IPDManagement'
 import DocumentManagement from './pages/DocumentManagement'
 import DischargeSummary from './pages/DischargeSummary'
+import RaiseticketRecepetionst from './pages/RaiseticketReceptionst'
 
 const ReceptionistDashboard = () => {
   const [activePage, setActivePage] = useState('dashboard')
@@ -46,32 +47,35 @@ const ReceptionistDashboard = () => {
   }
 
   const renderPage = () => {
-    switch (activePage) {
-      case 'dashboard':
-        return <ReceptionOverview />
-      case 'registration':
-        return <PatientRegistration />
-      case 'appointments':
-        return <AppointmentScheduling />
-      case 'billing':
-        return <Billing />
-      case 'records':
-        return <PatientRecords />
-      case 'profile':
-        return <ReceptionProfile />
-      // Add new cases for your menu items
-      case 'opd':
-        return <OPDManagement />
-      case 'ipd':
-        return <IPDManagement />
-      case 'documents':
-        return <DocumentManagement />
-      case 'discharge':
-        return <DischargeSummary />
-      default:
-        return <ReceptionOverview />
-    }
+  console.log("Active Page:", activePage);
+
+  switch (activePage?.toLowerCase()) {
+    case 'dashboard':
+      return <ReceptionOverview />
+    case 'registration':
+      return <PatientRegistration />
+    case 'appointments':
+      return <AppointmentScheduling />
+    case 'billing':
+      return <Billing />
+    case 'records':
+      return <PatientRecords />
+    case 'profile':
+      return <ReceptionProfile />
+    case 'opd':
+      return <OPDManagement />
+    case 'ipd':
+      return <IPDManagement />
+    case 'documents':
+      return <DocumentManagement />
+    case 'discharge':
+      return <DischargeSummary />
+    case 'raise-ticket':
+      return <RaiseticketRecepetionst />
+    default:
+      return <ReceptionOverview />
   }
+}
 
   const handleMobileMenuToggle = () => {
     setIsMobileSidebarOpen(true)

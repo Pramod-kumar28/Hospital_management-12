@@ -10,6 +10,7 @@ import LabResults from './pages/LabResults'
 import InpatientVisits from './pages/InpatientVisits'
 import Messaging from './pages/Messaging'
 import DoctorProfile from './pages/DoctorProfile'
+import RaiseticketDoctor from './pages/RaiseticketDoctor'
 
 const DoctorDashboard = () => {
   const [activePage, setActivePage] = useState('dashboard')
@@ -48,7 +49,7 @@ const DoctorDashboard = () => {
     const pageProps = {
       onPageChange: handlePageChange
     }
-    
+
     switch (activePage) {
       case 'dashboard':
         return <DoctorOverview {...pageProps} />
@@ -64,8 +65,11 @@ const DoctorDashboard = () => {
         return <InpatientVisits {...pageProps} />
       case 'messages':
         return <Messaging {...pageProps} />
+      case 'raise-ticket':
+        return <RaiseticketDoctor {...pageProps} />
       case 'profile':
         return <DoctorProfile {...pageProps} />
+
       default:
         return <DoctorOverview {...pageProps} />
     }
@@ -87,19 +91,18 @@ const DoctorDashboard = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Fixed Header */}
       <div className="fixed top-0 left-0 right-0 z-50">
-        <Header 
+        <Header
           onMenuToggle={handleMobileMenuToggle}
           onSidebarToggle={handleDesktopSidebarToggle}
           isSidebarOpen={isDesktopSidebarOpen}
         />
       </div>
-     
+
       {/* Main Layout */}
       <div className="flex pt-16 min-h-screen">
         {/* Desktop Sidebar - Fixed position */}
-        <div className={`hidden md:block fixed top-16 left-0 bottom-0 z-40 transition-transform duration-300 ${
-          isDesktopSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}>
+        <div className={`hidden md:block fixed top-16 left-0 bottom-0 z-40 transition-transform duration-300 ${isDesktopSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}>
           <Sidebar
             activePage={activePage}
             onPageChange={handlePageChange}
@@ -107,11 +110,10 @@ const DoctorDashboard = () => {
             onClose={() => setIsDesktopSidebarOpen(false)}
           />
         </div>
-        
+
         {/* Mobile Sidebar - Fixed position */}
-        <div className={`md:hidden fixed top-0 left-0 bottom-0 z-40 transition-transform duration-300 ${
-          isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}>
+        <div className={`md:hidden fixed top-0 left-0 bottom-0 z-40 transition-transform duration-300 ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}>
           <Sidebar
             activePage={activePage}
             onPageChange={handlePageChange}
@@ -119,17 +121,16 @@ const DoctorDashboard = () => {
             onClose={handleMobileSidebarClose}
           />
         </div>
-       
+
         {/* Main Content */}
-        <main className={`flex-1 min-h-[calc(100vh-4rem)] overflow-auto transition-all duration-300 ${
-          isDesktopSidebarOpen ? 'md:ml-[270px]' : 'md:ml-0'
-        }`}>
+        <main className={`flex-1 min-h-[calc(100vh-4rem)] overflow-auto transition-all duration-300 ${isDesktopSidebarOpen ? 'md:ml-[270px]' : 'md:ml-0'
+          }`}>
           <div className="p-2 pt-5 w-full">
             {renderPage()}
           </div>
         </main>
       </div>
-     
+
       {/* Mobile Overlay */}
       {isMobileSidebarOpen && (
         <div

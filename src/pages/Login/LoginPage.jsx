@@ -8,6 +8,7 @@ import { shouldRequireHospitalAdminPasswordChange } from '../../utils/authFlow'
 import { buildUserPayloadFromApiUser } from '../../utils/authLoginPayload'
 import { normalizeRoleForRoute } from '../../utils/authRoles'
 import { PASSWORD_MIN_LENGTH, isValidEmail } from '../../utils/validation'
+import { loginKindMatchesApiUser, LOGIN_KIND_MISMATCH_MESSAGE } from '../../utils/loginAccountTypeMatch'
 import { Eye, EyeOff, Mail, Lock, Zap, Shield, ChevronDown } from 'lucide-react'
 
 /** Sign-in persona: admins use platform login; staff share one endpoint (role comes from the account). */
@@ -94,11 +95,14 @@ const LoginPage = () => {
     }
   }
 
-  const tryDemoLogin = (email, password) => {
+  const tryDemoLogin = (email, password, selectedKind) => {
     const demo = DEMO_USERS.find(
       (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
     )
-    if (!demo) return false
+    if (!demo) return 'not_found'
+
+    const expectedKind = DEMO_ROLE_TO_LOGIN_KIND[demo.role]
+    if (expectedKind !== selectedKind) return 'wrong_kind'
 
     const appRole = normalizeRoleForRoute({ roles: [demo.role], role: demo.role })
     dispatch(
@@ -117,7 +121,7 @@ const LoginPage = () => {
     )
     toast.success(`Demo login successful (${demo.role})`)
     navigateByAppRole(appRole, false)
-    return true
+    return 'success'
   }
 
   const fillDemoCredentials = (demoUser) => {
@@ -170,7 +174,15 @@ const LoginPage = () => {
       const msg = response.message || response?.detail?.message || `Request failed (${res.status})`
 
       if (!res.ok) {
-        if (tryDemoLogin(email, password)) {
+        const demoOutcome = tryDemoLogin(email, password, loginKind)
+        if (demoOutcome === 'success') {
+          setLoading(false)
+          return
+        }
+        if (demoOutcome === 'wrong_kind') {
+          setError(LOGIN_KIND_MISMATCH_MESSAGE)
+          dispatch(loginFailure(LOGIN_KIND_MISMATCH_MESSAGE))
+          toast.error(LOGIN_KIND_MISMATCH_MESSAGE)
           setLoading(false)
           return
         }
@@ -205,6 +217,14 @@ const LoginPage = () => {
         return
       }
 
+      if (!loginKindMatchesApiUser(loginKind, user)) {
+        setError(LOGIN_KIND_MISMATCH_MESSAGE)
+        dispatch(loginFailure(LOGIN_KIND_MISMATCH_MESSAGE))
+        toast.error(LOGIN_KIND_MISMATCH_MESSAGE)
+        setLoading(false)
+        return
+      }
+
       const requiresPasswordChange =
         !useStaffApi &&
         userPayload.role === 'ADMIN' &&
@@ -228,7 +248,15 @@ const LoginPage = () => {
       navigateByAppRole(userPayload.role, requiresPasswordChange)
     } catch (err) {
       console.error('Login failed:', err)
-      if (tryDemoLogin(email, password)) {
+      const demoOutcome = tryDemoLogin(email, password, loginKind)
+      if (demoOutcome === 'success') {
+        setLoading(false)
+        return
+      }
+      if (demoOutcome === 'wrong_kind') {
+        setError(LOGIN_KIND_MISMATCH_MESSAGE)
+        dispatch(loginFailure(LOGIN_KIND_MISMATCH_MESSAGE))
+        toast.error(LOGIN_KIND_MISMATCH_MESSAGE)
         setLoading(false)
         return
       }

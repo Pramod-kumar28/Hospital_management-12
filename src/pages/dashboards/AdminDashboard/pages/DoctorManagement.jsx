@@ -8,22 +8,29 @@ const DoctorManagement = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [departmentFilter, setDepartmentFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [consultationTypeFilter, setConsultationTypeFilter] = useState('')
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [currentDoctor, setCurrentDoctor] = useState(null)
+  const [showPassword, setShowPassword] = useState(false)
+  const [isAddMode, setIsAddMode] = useState(true)
   const [formData, setFormData] = useState({
     name: '',
     specialization: '',
     department: '',
     email: '',
+    personalEmail: '',
     phone: '',
+    password: '',
+    confirmPassword: '',
     qualification: '',
     experience: '',
     consultationFee: '',
+    consultationType: '',
     availability: '9AM-5PM',
-    bio: ''
+   
   })
 
   useEffect(() => {
@@ -47,7 +54,7 @@ const DoctorManagement = () => {
           email: 'meena.rao@hospital.com',
           qualification: 'MBBS, MD Cardiology',
           experience: '12',
-          bio: 'Senior Cardiologist with 12 years of experience'
+          consultationType: 'In-Person and Telemedicine'
         },
         { 
           id: 'DOC-1002', 
@@ -62,7 +69,7 @@ const DoctorManagement = () => {
           email: 'vivek.sharma@hospital.com',
           qualification: 'MBBS, MS Orthopedics',
           experience: '8',
-          bio: 'Orthopedic surgeon specializing in joint replacements'
+          consultationType: 'In-Person'
         },
         { 
           id: 'DOC-1003', 
@@ -77,7 +84,7 @@ const DoctorManagement = () => {
           email: 'rajesh.menon@hospital.com',
           qualification: 'MBBS, DM Neurology',
           experience: '15',
-          bio: 'Neurologist with expertise in stroke management'
+          consultationType: 'In-Person and Telemedicine'
         },
         { 
           id: 'DOC-1004', 
@@ -92,7 +99,7 @@ const DoctorManagement = () => {
           email: 'anjali.desai@hospital.com',
           qualification: 'MBBS, DCH',
           experience: '10',
-          bio: 'Pediatrician with special interest in child development'
+          consultationType: 'In-Person'
         }
       ])
       setLoading(false)
@@ -102,6 +109,24 @@ const DoctorManagement = () => {
   // Add new doctor
   const handleAddDoctor = () => {
     if (!validateForm()) return
+    
+    // Password validation for add mode
+    if (isAddMode) {
+      if (!formData.password || !formData.confirmPassword) {
+        alert('Please enter both password and confirm password')
+        return
+      }
+      
+      if (formData.password !== formData.confirmPassword) {
+        alert('Passwords do not match. Please check and try again.')
+        return
+      }
+      
+      if (formData.password.length < 8) {
+        alert('Password must be at least 8 characters long')
+        return
+      }
+    }
 
     const doctor = {
       id: `DOC-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -114,9 +139,12 @@ const DoctorManagement = () => {
       status: 'Active',
       image: `https://i.pravatar.cc/100?img=${Math.floor(Math.random() * 70) + 1}`,
       email: formData.email,
+      personalEmail: formData.personalEmail,
+      password: formData.password,
       qualification: formData.qualification,
       experience: formData.experience,
-      bio: formData.bio
+      consultationType: formData.consultationType,
+     
     }
     
     setDoctors(prev => [doctor, ...prev])
@@ -140,8 +168,10 @@ const DoctorManagement = () => {
               fee: parseInt(formData.consultationFee),
               contact: formData.phone,
               email: formData.email,
+              personalEmail: formData.personalEmail,
               qualification: formData.qualification,
               experience: formData.experience,
+              consultationType: formData.consultationType,
               bio: formData.bio
             }
           : doctor
@@ -177,16 +207,20 @@ const DoctorManagement = () => {
 
   // Open edit modal with doctor data
   const openEditModal = (doctor) => {
+    setIsAddMode(false)
     setCurrentDoctor(doctor)
     setFormData({
       name: doctor.name,
       specialization: doctor.specialization,
       department: doctor.department,
       email: doctor.email,
+      personalEmail: doctor.personalEmail || '',
       phone: doctor.contact,
+      password: '',
       qualification: doctor.qualification,
       experience: doctor.experience,
       consultationFee: doctor.fee.toString(),
+      consultationType: doctor.consultationType || '',
       availability: doctor.availability,
       bio: doctor.bio || ''
     })
@@ -205,12 +239,16 @@ const DoctorManagement = () => {
       specialization: '',
       department: '',
       email: '',
+      personalEmail: '',
       phone: '',
+      password: '',
+      confirmPassword: '',
       qualification: '',
       experience: '',
       consultationFee: '',
+      consultationType: '',
       availability: '9AM-5PM',
-      bio: ''
+     
     })
     setCurrentDoctor(null)
   }
@@ -240,8 +278,9 @@ const DoctorManagement = () => {
       doctor.specialization.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesDepartment = !departmentFilter || doctor.department === departmentFilter
     const matchesStatus = !statusFilter || doctor.status === statusFilter
+    const matchesConsultationType = !consultationTypeFilter || doctor.consultationType === consultationTypeFilter
     
-    return matchesSearch && matchesDepartment && matchesStatus
+    return matchesSearch && matchesDepartment && matchesStatus && matchesConsultationType
   })
 
   // Departments and specializations data
@@ -287,7 +326,7 @@ const DoctorManagement = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Full Name *
+            Full Name <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
@@ -301,7 +340,7 @@ const DoctorManagement = () => {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Email Address *
+            Official Email <span className="text-red-500">*</span>
           </label>
           <input
             type="email"
@@ -315,7 +354,20 @@ const DoctorManagement = () => {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Phone Number *
+            Personal Email
+          </label>
+          <input
+            type="email"
+            value={formData.personalEmail}
+            onChange={(e) => handleInputChange('personalEmail', e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+            placeholder="personal@email.com"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Phone Number <span className="text-red-500">*</span>
           </label>
           <input
             type="tel"
@@ -329,7 +381,7 @@ const DoctorManagement = () => {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Qualification *
+            Qualification <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
@@ -342,11 +394,53 @@ const DoctorManagement = () => {
         </div>
       </div>
 
+      {/* Password Setup Section - Only in Add Mode */}
+      {isAddMode && (
+        <div>
+          <h3 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+            <i className="fas fa-lock text-blue-500"></i>
+            Login Credentials
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Password <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="password"
+                required={isAddMode}
+                value={formData.password}
+                onChange={(e) => handleInputChange('password', e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                placeholder="Enter a strong password"
+              />
+              <p className="text-xs text-gray-500 mt-1">Use at least 8 characters, numbers, and symbols</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Confirm Password <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="password"
+                required={isAddMode}
+                value={formData.confirmPassword}
+                onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                placeholder="Confirm password"
+              />
+              {formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword && (
+                <p className="text-xs text-red-500 mt-1">Passwords do not match</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Professional Information */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Department *
+            Department <span className="text-red-500">*</span>
           </label>
           <select
             required
@@ -363,7 +457,7 @@ const DoctorManagement = () => {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Specialization *
+            Specialization <span className="text-red-500">*</span>
           </label>
           <select
             required
@@ -380,7 +474,7 @@ const DoctorManagement = () => {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Years of Experience *
+            Years of Experience <span className="text-red-500">*</span>
           </label>
           <input
             type="number"
@@ -396,7 +490,7 @@ const DoctorManagement = () => {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Consultation Fee (₹) *
+            Consultation Fee (₹) <span className="text-red-500">*</span>
           </label>
           <input
             type="number"
@@ -408,45 +502,47 @@ const DoctorManagement = () => {
             placeholder="500"
           />
         </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Consultation Type
+          </label>
+          <select
+            value={formData.consultationType}
+            onChange={(e) => handleInputChange('consultationType', e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+          >
+            <option value="">Select Consultation Type</option>
+            <option value="In-Person">In-Person</option>
+            <option value="Telemedicine">Telemedicine</option>
+            <option value=" In-Person and Telemedicine">Both In-Person and Telemedicine</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Availability <span className="text-red-500">*</span>
+          </label>
+          <select
+            required
+            value={formData.availability}
+            onChange={(e) => handleInputChange('availability', e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+          >
+            {availabilityOptions.map(option => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      {/* Availability */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Availability *
-        </label>
-        <select
-          required
-          value={formData.availability}
-          onChange={(e) => handleInputChange('availability', e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-        >
-          {availabilityOptions.map(option => (
-            <option key={option} value={option}>{option}</option>
-          ))}
-        </select>
-      </div>
-
-      {/* Bio */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Professional Bio
-        </label>
-        <textarea
-          rows="3"
-          value={formData.bio}
-          onChange={(e) => handleInputChange('bio', e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-          placeholder="Brief description about the doctor's expertise and experience..."
-        />
-      </div>
     </div>
   )
 
   if (loading) return <LoadingSpinner />
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen ">
       {/* Sticky Header */}
       <div className="sticky top-0 z-40 backdrop-blur-xl bg-white/70 border-b border-white/20 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
@@ -461,7 +557,10 @@ const DoctorManagement = () => {
               </div>
             </div>
             <button 
-              onClick={() => setIsAddModalOpen(true)}
+              onClick={() => {
+                setIsAddMode(true)
+                setIsAddModalOpen(true)
+              }}
               className="w-full sm:w-auto group relative bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-semibold overflow-hidden transition-all duration-300 transform hover:scale-105 hover:shadow-xl active:scale-95 flex items-center justify-center gap-2"
             >
               <i className="fas fa-plus"></i>
@@ -473,7 +572,7 @@ const DoctorManagement = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Premium Search & Filter Bar */}
-        <div className="backdrop-blur-xl bg-white/60 border border-white/40 rounded-2xl p-5 sm:p-6 shadow-lg mb-8 hover:shadow-xl transition-all">
+        <div className="backdrop-blur-xl bg-white/60 border border-gray-300 rounded-2xl p-5 sm:p-6 shadow-lg mb-8 hover:shadow-xl transition-all">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Search Input - Full Width on Mobile */}
             <div className="sm:col-span-2 lg:col-span-2">
@@ -528,6 +627,26 @@ const DoctorManagement = () => {
                 <i className="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none text-sm"></i>
               </div>
             </div>
+            {/* Consultation Type Filter */}
+            <div>
+              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                <i className="fas fa-stethoscope text-purple-500"></i>
+                Consultation Type
+              </label>
+              <div className="relative">
+                <select 
+                  className="w-full px-3 py-2.5 pr-8 bg-white/80 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 text-gray-900 transition-all duration-200 text-sm appearance-none cursor-pointer"
+                  value={consultationTypeFilter}
+                  onChange={(e) => setConsultationTypeFilter(e.target.value)}
+                >
+                  <option value="">All</option>
+                  <option value="In-Person">In-Person</option>
+                  <option value="Telemedicine">Telemedicine</option>
+                  <option value=" In-Person and Telemedicine">Both</option>
+                </select>
+                <i className="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none text-sm"></i>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -538,7 +657,7 @@ const DoctorManagement = () => {
               return (
               <div 
                 key={doctor.id} 
-                className="group h-full backdrop-blur-3xl bg-gradient-to-br from-white/30 to-white/10 border border-white/50 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden relative cursor-pointer"
+                className="group h-full backdrop-blur-3xl bg-gradient-to-br from-white/30 to-white/10 border border-gray-300 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden relative cursor-pointer"
                 style={{animationDelay: `${idx * 50}ms`}}
               >
                 {/* Premium Gradient Overlay */}
@@ -595,7 +714,10 @@ const DoctorManagement = () => {
             <h3 className="text-4xl font-bold text-gray-800/95 mb-4">No Doctors Found</h3>
             <p className="text-gray-700/80 mb-10 text-lg font-medium">Try adjusting your filters or add a new doctor</p>
             <button
-              onClick={() => setIsAddModalOpen(true)}
+              onClick={() => {
+                setIsAddMode(true)
+                setIsAddModalOpen(true)
+              }}
               className="inline-flex items-center gap-2 backdrop-blur-md bg-white/15 hover:bg-white/28 border border-white/45 hover:border-white/65 text-gray-800/95 px-10 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 active:scale-95 hover:shadow-lg"
             >
               <i className="fas fa-plus"></i>
@@ -721,6 +843,7 @@ const DoctorManagement = () => {
         onClose={() => {
           setIsViewModalOpen(false)
           setCurrentDoctor(null)
+          setShowPassword(false)
         }} 
         title="Doctor Details"
         size="lg"
@@ -801,6 +924,19 @@ const DoctorManagement = () => {
                 <p className="text-sm font-semibold text-black-900 break-all ml-13">{currentDoctor.email}</p>
               </div>
 
+              {/* Personal Email */}
+              {currentDoctor.personalEmail && (
+                <div className="backdrop-blur-md bg-white border-2 border-blue-300/50 rounded-2xl p-5 hover:from-blue-500/25 hover:to-blue-500/15 hover:border-blue-400/75 transition-all shadow-md hover:shadow-lg">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 bg-rose-500/30 rounded-lg flex items-center justify-center">
+                      <i className="fas fa-envelope-open text-rose-700 text-lg"></i>
+                    </div>
+                    <label className="text-xs font-bold text-rose-700/90 uppercase tracking-wide">Personal Email</label>
+                  </div>
+                  <p className="text-sm font-semibold text-black-900 break-all ml-13">{currentDoctor.personalEmail}</p>
+                </div>
+              )}
+
               {/* Contact */}
               <div className="backdrop-blur-md bg-white border-2 border-blue-300/50 rounded-2xl p-5 hover:from-blue-500/25 hover:to-blue-500/15 hover:border-blue-400/75 transition-all shadow-md hover:shadow-lg">
                 <div className="flex items-center gap-3 mb-3">
@@ -833,10 +969,21 @@ const DoctorManagement = () => {
                 </div>
                 <p className="text-xl font-bold text-black-900 ml-13">₹{currentDoctor.fee}</p>
               </div>
-            </div>
 
-            {/* Qualification and Bio Section */}
-            <div className="space-y-3 sm:space-y-5 mb-6 sm:mb-8 px-4 sm:px-6 md:px-8">
+              {/* Consultation Type */}
+              {currentDoctor.consultationType && (
+                <div className="backdrop-blur-md bg-white border-2 border-blue-300/50 rounded-2xl p-5 hover:from-blue-500/25 hover:to-blue-500/15 hover:border-blue-400/75 transition-all shadow-md hover:shadow-lg">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 bg-pink-500/30 rounded-lg flex items-center justify-center">
+                      <i className="fas fa-video text-pink-700 text-lg"></i>
+                    </div>
+                    <label className="text-xs font-bold text-pink-700/90 uppercase tracking-wide">Consultation Type</label>
+                  </div>
+                  <p className="text-lg font-bold text-black-900 ml-13">{currentDoctor.consultationType}</p>
+                </div>
+              )}
+
+              {/* Qualification */}
               <div className="backdrop-blur-md bg-white border-2 border-blue-300/50 rounded-2xl p-5 hover:from-blue-500/25 hover:to-blue-500/15 hover:border-blue-400/75 transition-all shadow-md hover:shadow-lg">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 bg-indigo-500/30 rounded-lg flex items-center justify-center">
@@ -846,6 +993,35 @@ const DoctorManagement = () => {
                 </div>
                 <p className="text-black-900 font-semibold ml-13">{currentDoctor.qualification}</p>
               </div>
+
+              {/* Password */}
+              {currentDoctor.password && (
+                <div className="backdrop-blur-md bg-white border-2 border-blue-300/50 rounded-2xl p-5 hover:from-blue-500/25 hover:to-blue-500/15 hover:border-blue-400/75 transition-all shadow-md hover:shadow-lg">
+                  <div className="flex items-center justify-between gap-3 mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-red-500/30 rounded-lg flex items-center justify-center">
+                        <i className="fas fa-lock text-red-700 text-lg"></i>
+                      </div>
+                      <label className="text-xs font-bold text-red-700/90 uppercase tracking-wide">Password</label>
+                    </div>
+                    <button
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="p-2 rounded-lg hover:bg-red-500/10 transition-all text-red-700 cursor-pointer"
+                      title={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      <i className={`fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'} text-lg`}></i>
+                    </button>
+                  </div>
+                  <p className="text-sm font-semibold text-black-900 font-mono tracking-widest ml-13 select-none break-all">
+                    {showPassword ? currentDoctor.password : '•'.repeat(Math.min(currentDoctor.password.length, 12))}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-2">{showPassword ? 'Password visible' : 'Masked for security'}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Bio Section */}
+            <div className="space-y-3 sm:space-y-5 mb-6 sm:mb-8 px-4 sm:px-6 md:px-8">
               {currentDoctor.bio && (
                 <div className="backdrop-blur-md bg-white border-2 border-blue-300/50 rounded-2xl p-5 hover:from-blue-500/25 hover:to-blue-500/15 hover:border-blue-400/75 transition-all shadow-md hover:shadow-lg">
                   <div className="flex items-center gap-3 mb-3">
@@ -867,7 +1043,7 @@ const DoctorManagement = () => {
                   setIsViewModalOpen(false)
                   setCurrentDoctor(null)
                 }}
-                className="px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base backdrop-blur-md bg-white/40 border-2 border-white/60 rounded-xl text-gray-700 font-semibold hover:bg-white/50 hover:border-white/80 transition-all duration-200 active:scale-95"
+                className="px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base  bg-gray-200 border-2 border-white/60 rounded-xl text-gray-700 font-semibold hover:bg-gray-300 hover:border-white/80 transition-all duration-200 active:scale-95"
               >
                 Close
               </button>

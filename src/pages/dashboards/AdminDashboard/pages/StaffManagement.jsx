@@ -9,8 +9,57 @@ import {
 } from '../../../../config/api'
 import { apiFetch } from '../../../../services/apiClient'
 
-const ROLE_OPTIONS = ['DOCTOR', 'NURSE', 'RECEPTIONIST', 'LAB_TECH', 'PHARMACIST']
+const ROLE_OPTIONS = [ 'NURSE', 'RECEPTIONIST', 'LAB_TECH', 'PHARMACIST']
 const SHIFT_OPTIONS = ['Morning (7AM-3PM)', 'Evening (3PM-11PM)', 'Night (11PM-7AM)', 'Flexible', 'Part-time']
+
+// ========== ROLE CONFIGURATION - Scalable & Dynamic ==========
+// Add new roles here without changing UI logic
+const ROLE_CONFIG = {
+  
+  NURSE: {
+    label: 'Nurses',
+    pluralLabel: 'Nursing team',
+    color: 'teal',
+    icon: 'fas fa-user-nurse',
+    description: 'Nursing professionals'
+  },
+  RECEPTIONIST: {
+    label: 'Receptionists',
+    pluralLabel: 'Front desk',
+    color: 'rose',
+    icon: 'fas fa-hospital-user',
+    description: 'Reception team'
+  },
+  LAB_TECH: {
+    label: 'Lab Technicians',
+    pluralLabel: 'Diagnostics team',
+    color: 'purple',
+    icon: 'fas fa-microscope',
+    description: 'Laboratory technicians'
+  },
+  PHARMACIST: {
+    label: 'Pharmacists',
+    pluralLabel: 'Pharmacy team',
+    color: 'orange',
+    icon: 'fas fa-pills',
+    description: 'Pharmacy staff'
+  },
+ 
+  CLEANER: {
+    label: 'Cleaners',
+    pluralLabel: 'Housekeeping',
+    color: 'cyan',
+    icon: 'fas fa-broom',
+    description: 'Cleaning and housekeeping'
+  },
+  SECURITY: {
+    label: 'Security',
+    pluralLabel: 'Security team',
+    color: 'amber',
+    icon: 'fas fa-shield-alt',
+    description: 'Security personnel'
+  }
+}
 
 const EMPTY_FORM = {
   email: '',
@@ -36,12 +85,15 @@ const getStaffItems = (data) => {
 
 const toDisplayRole = (role) => {
   const value = String(role || '').toUpperCase()
-  if (value === 'LAB_TECH') return 'Lab Tech'
-  if (value === 'PHARMACIST') return 'Pharmacist'
-  if (value === 'DOCTOR') return 'Doctor'
-  if (value === 'NURSE') return 'Nurses'
-  if (value === 'RECEPTIONIST') return 'Receptionists'
-  return value || 'Unknown'
+  // Get from config if exists, otherwise format the string
+  if (ROLE_CONFIG[value]) {
+    return ROLE_CONFIG[value].label
+  }
+  // Fallback: convert underscore to space and title case
+  return value
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ')
 }
 
 const mapStaff = (item) => {
@@ -265,14 +317,48 @@ const StaffManagement = () => {
     })
   }, [staff, searchTerm])
 
-  const stats = useMemo(() => [
-    { label: 'Total Staff', value: staff.length, color: 'blue', icon: 'fas fa-users', change: 'Hospital users' },
-    { label: 'Doctors', value: staff.filter((s) => s.role === 'DOCTOR').length, color: 'green', icon: 'fas fa-user-md', change: 'Medical staff' },
-    { label: 'Nurses', value: staff.filter((s) => s.role === 'NURSE').length, color: 'teal', icon: 'fas fa-user-nurse', change: 'Nursing team' },
-    { label: 'Receptionists', value: staff.filter((s) => s.role === 'RECEPTIONIST').length, color: 'rose', icon: 'fas fa-hospital-user', change: 'Front desk' },
-    { label: 'Lab Tech', value: staff.filter((s) => s.role === 'LAB_TECH').length, color: 'purple', icon: 'fas fa-microscope', change: 'Diagnostics team' },
-    { label: 'Pharmacists', value: staff.filter((s) => s.role === 'PHARMACIST').length, color: 'orange', icon: 'fas fa-pills', change: 'Pharmacy team' }
-  ], [staff])
+  // Dynamic KPI stats - Auto-generates based on all available roles
+  const stats = useMemo(() => {
+    // Always show Total Staff
+    const baseStats = [
+      { 
+        label: 'Total Staff', 
+        value: staff.length, 
+        color: 'blue', 
+        icon: 'fas fa-users', 
+        change: 'Hospital users' 
+      }
+    ]
+    
+    // Get unique roles present in current staff data
+    const availableRoles = new Set(staff.map(s => s.role))
+    
+    // Generate KPI cards dynamically for each available role
+    availableRoles.forEach((role) => {
+      const config = ROLE_CONFIG[role]
+      
+      if (config) {
+        baseStats.push({
+          label: config.label,
+          value: staff.filter((s) => s.role === role).length,
+          color: config.color,
+          icon: config.icon,
+          change: config.pluralLabel
+        })
+      } else {
+        // Fallback for roles not in config
+        baseStats.push({
+          label: toDisplayRole(role),
+          value: staff.filter((s) => s.role === role).length,
+          color: 'gray',
+          icon: 'fas fa-user',
+          change: toDisplayRole(role)
+        })
+      }
+    })
+    
+    return baseStats
+  }, [staff])
 
   if (loading) return <LoadingSpinner />
 
@@ -360,6 +446,10 @@ const StaffManagement = () => {
             rose: { bg: 'bg-rose-50', text: 'text-rose-700', iconBg: 'bg-rose-100', iconColor: 'text-rose-500' },
             purple: { bg: 'bg-purple-50', text: 'text-purple-700', iconBg: 'bg-purple-100', iconColor: 'text-purple-500' },
             orange: { bg: 'bg-orange-50', text: 'text-orange-700', iconBg: 'bg-orange-100', iconColor: 'text-orange-500' },
+            indigo: { bg: 'bg-indigo-50', text: 'text-indigo-700', iconBg: 'bg-indigo-100', iconColor: 'text-indigo-500' },
+            cyan: { bg: 'bg-cyan-50', text: 'text-cyan-700', iconBg: 'bg-cyan-100', iconColor: 'text-cyan-500' },
+            amber: { bg: 'bg-amber-50', text: 'text-amber-700', iconBg: 'bg-amber-100', iconColor: 'text-amber-500' },
+            gray: { bg: 'bg-gray-50', text: 'text-gray-700', iconBg: 'bg-gray-100', iconColor: 'text-gray-500' },
           }
           
           const config = colorConfigs[color] || colorConfigs.blue
@@ -367,7 +457,7 @@ const StaffManagement = () => {
           return (
             <div 
               key={label} 
-              className={`${config.bg} p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300`}
+              className={`${config.bg} p-6 rounded-2xl shadow-sm border border-gray-300 hover:shadow-md transition-all duration-300`}
             >
               <div className="flex items-center justify-between mb-4">
                 <div className={`${config.iconBg} p-3 rounded-xl`}>
@@ -379,9 +469,7 @@ const StaffManagement = () => {
               </div>
               <div className={`text-4xl font-bold ${config.text} mb-2`}>{value}</div>
               <div className="text-gray-600">{label}</div>
-              <div className="mt-4 h-1 w-full bg-white rounded-full overflow-hidden">
-                <div className={`h-full ${config.iconBg} rounded-full`} style={{ width: '75%' }}></div>
-              </div>
+          
             </div>
           )
         })}

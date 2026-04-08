@@ -1,6 +1,36 @@
 import React, { useState, useEffect } from 'react'
 import LoadingSpinner from '../../../../components/common/LoadingSpinner/LoadingSpinner'
 import Modal from '../../../../components/common/Modal/Modal'
+import { HOSPITAL_ADMIN_STAFF } from '../../../../config/api'
+import { apiFetch } from '../../../../services/apiClient'
+import {
+  Lock,
+  LocalHospital,
+  Add,
+  Search,
+  ExpandMore,
+  FiberManualRecord,
+  Badge,
+  EmojiEvents,
+  MailOutline,
+  Phone,
+  CalendarMonth,
+  CurrencyRupee,
+  VideoCall,
+  School,
+  WarningAmber,
+  DeleteOutline,
+  SaveOutlined,
+  CheckCircle,
+  Close,
+  Visibility,
+  VisibilityOff,
+  MenuBook,
+  MarkEmailRead,
+  Edit,
+  PlayArrow,
+  Pause
+} from '@mui/icons-material'
 
 const DoctorManagement = () => {
   const [loading, setLoading] = useState(true)
@@ -16,6 +46,10 @@ const DoctorManagement = () => {
   const [currentDoctor, setCurrentDoctor] = useState(null)
   const [showPassword, setShowPassword] = useState(false)
   const [isAddMode, setIsAddMode] = useState(true)
+  const [departmentDropdownOpen, setDepartmentDropdownOpen] = useState(false)
+  const [specializationDropdownOpen, setSpecializationDropdownOpen] = useState(false)
+  const [departmentSearchTerm, setDepartmentSearchTerm] = useState('')
+  const [specializationSearchTerm, setSpecializationSearchTerm] = useState('')
   const [formData, setFormData] = useState({
     name: '',
     specialization: '',
@@ -37,73 +71,63 @@ const DoctorManagement = () => {
     loadDoctors()
   }, [])
 
+  // Map staff data to doctor format
+  const mapDoctorData = (staffItem) => {
+    const firstNameOrFull = staffItem?.first_name || staffItem?.firstName || ''
+    const lastNameOrFull = staffItem?.last_name || staffItem?.lastName || ''
+    const fullName = `Dr. ${firstNameOrFull}${lastNameOrFull ? ' ' + lastNameOrFull : ''}`.trim()
+    
+    return {
+      id: staffItem?.id || staffItem?.staff_id || staffItem?.user_id || '',
+      name: fullName || 'Unnamed Doctor',
+      email: staffItem?.email || '',
+      personalEmail: staffItem?.personal_email || '',
+      phone: staffItem?.phone || '',
+      qualification: staffItem?.qualification || '',
+      experience: staffItem?.experience || '0',
+      fee: parseInt(staffItem?.consultation_fee || 0),
+      specialization: staffItem?.doctor_specialization || 'General Physician',
+      department: staffItem?.department || 'General',
+      consultationType: staffItem?.consultation_type || 'In-Person',
+      availability: staffItem?.availability || '9AM-5PM',
+      status: staffItem?.is_active === false ? 'Inactive' : 'Active',
+      image: `https://i.pravatar.cc/100?img=${Math.floor(Math.random() * 70) + 1}`,
+      contact: staffItem?.phone || '',
+      is_active: staffItem?.is_active !== false
+    }
+  }
+
   const loadDoctors = async () => {
     setLoading(true)
-    setTimeout(() => {
-      setDoctors([
-        { 
-          id: 'DOC-1001', 
-          name: 'Dr. Meena Rao', 
-          specialization: 'Cardiology', 
-          department: 'Cardiology', 
-          availability: '9AM-5PM', 
-          fee: 800, 
-          contact: '+91 98765 43210', 
-          status: 'Active', 
-          image: 'https://i.pravatar.cc/100?img=1',
-          email: 'meena.rao@hospital.com',
-          qualification: 'MBBS, MD Cardiology',
-          experience: '12',
-          consultationType: 'In-Person and Telemedicine'
-        },
-        { 
-          id: 'DOC-1002', 
-          name: 'Dr. Vivek Sharma', 
-          specialization: 'Orthopedics', 
-          department: 'Orthopedics', 
-          availability: '10AM-6PM', 
-          fee: 750, 
-          contact: '+91 98765 43211', 
-          status: 'Active', 
-          image: 'https://i.pravatar.cc/100?img=2',
-          email: 'vivek.sharma@hospital.com',
-          qualification: 'MBBS, MS Orthopedics',
-          experience: '8',
-          consultationType: 'In-Person'
-        },
-        { 
-          id: 'DOC-1003', 
-          name: 'Dr. Rajesh Menon', 
-          specialization: 'Neurology', 
-          department: 'Neurology', 
-          availability: '8AM-4PM', 
-          fee: 900, 
-          contact: '+91 98765 43212', 
-          status: 'Active', 
-          image: 'https://i.pravatar.cc/100?img=3',
-          email: 'rajesh.menon@hospital.com',
-          qualification: 'MBBS, DM Neurology',
-          experience: '15',
-          consultationType: 'In-Person and Telemedicine'
-        },
-        { 
-          id: 'DOC-1004', 
-          name: 'Dr. Anjali Desai', 
-          specialization: 'Pediatrics', 
-          department: 'Pediatrics', 
-          availability: '24/7 On-call', 
-          fee: 600, 
-          contact: '+91 98765 43213', 
-          status: 'Active', 
-          image: 'https://i.pravatar.cc/100?img=4',
-          email: 'anjali.desai@hospital.com',
-          qualification: 'MBBS, DCH',
-          experience: '10',
-          consultationType: 'In-Person'
-        }
-      ])
+    try {
+      const params = new URLSearchParams()
+      params.set('page', '1')
+      params.set('limit', '100')
+      params.set('role', 'DOCTOR')
+      
+      const res = await apiFetch(`${HOSPITAL_ADMIN_STAFF}?${params.toString()}`)
+      const data = await res.json().catch(() => ({}))
+      
+      if (!res.ok) {
+        console.error('Failed to load doctors:', data?.message || data?.detail?.message)
+        setDoctors([])
+        return
+      }
+      
+      // Extract items from response
+      const raw = data?.data ?? data
+      const items = Array.isArray(raw?.items) ? raw.items : 
+                   Array.isArray(raw?.staff) ? raw.staff : 
+                   Array.isArray(raw) ? raw : []
+      
+      const mappedDoctors = items.map(mapDoctorData)
+      setDoctors(mappedDoctors)
+    } catch (error) {
+      console.error('Error loading doctors:', error)
+      setDoctors([])
+    } finally {
       setLoading(false)
-    }, 1000)
+    }
   }
 
   // Add new doctor
@@ -224,6 +248,10 @@ const DoctorManagement = () => {
       availability: doctor.availability,
       bio: doctor.bio || ''
     })
+    setDepartmentSearchTerm('')
+    setSpecializationSearchTerm('')
+    setDepartmentDropdownOpen(false)
+    setSpecializationDropdownOpen(false)
     setIsEditModalOpen(true)
   }
 
@@ -250,6 +278,10 @@ const DoctorManagement = () => {
       availability: '9AM-5PM',
      
     })
+    setDepartmentSearchTerm('')
+    setSpecializationSearchTerm('')
+    setDepartmentDropdownOpen(false)
+    setSpecializationDropdownOpen(false)
     setCurrentDoctor(null)
   }
 
@@ -398,7 +430,7 @@ const DoctorManagement = () => {
       {isAddMode && (
         <div>
           <h3 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
-            <i className="fas fa-lock text-blue-500"></i>
+            <Lock className="text-blue-500" style={{fontSize: '20px'}} />
             Login Credentials
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-blue-50 p-4 rounded-lg border border-blue-200">
@@ -438,38 +470,96 @@ const DoctorManagement = () => {
 
       {/* Professional Information */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
+        <div className="relative">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Department <span className="text-red-500">*</span>
           </label>
-          <select
+          <input
+            type="text"
             required
-            value={formData.department}
-            onChange={(e) => handleInputChange('department', e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-          >
-            <option value="">Select Department</option>
-            {departments.map(dept => (
-              <option key={dept} value={dept}>{dept}</option>
-            ))}
-          </select>
+            value={departmentSearchTerm || formData.department}
+            onChange={(e) => {
+              setDepartmentSearchTerm(e.target.value)
+              setDepartmentDropdownOpen(true)
+              handleInputChange('department', e.target.value)
+            }}
+            onFocus={() => setDepartmentDropdownOpen(true)}
+            onBlur={() => setTimeout(() => setDepartmentDropdownOpen(false), 150)}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            placeholder="Type or select department"
+          />
+          {departmentDropdownOpen && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-20 max-h-48 overflow-y-auto">
+              {departments
+                .filter(dept => 
+                  !departmentSearchTerm || dept.toLowerCase().includes(departmentSearchTerm.toLowerCase())
+                )
+                .map(dept => (
+                  <div
+                    key={dept}
+                    onClick={() => {
+                      handleInputChange('department', dept)
+                      setDepartmentSearchTerm('')
+                      setDepartmentDropdownOpen(false)
+                    }}
+                    className="w-full text-left px-4 py-2.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
+                  >
+                    {dept}
+                  </div>
+                ))}
+              {departments.filter(dept => 
+                !departmentSearchTerm || dept.toLowerCase().includes(departmentSearchTerm.toLowerCase())
+              ).length === 0 && (
+                <div className="px-4 py-2.5 text-gray-500 text-sm">No departments found</div>
+              )}
+            </div>
+          )}
         </div>
 
-        <div>
+        <div className="relative">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Specialization <span className="text-red-500">*</span>
           </label>
-          <select
+          <input
+            type="text"
             required
-            value={formData.specialization}
-            onChange={(e) => handleInputChange('specialization', e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-          >
-            <option value="">Select Specialization</option>
-            {specializations.map(spec => (
-              <option key={spec} value={spec}>{spec}</option>
-            ))}
-          </select>
+            value={specializationSearchTerm || formData.specialization}
+            onChange={(e) => {
+              setSpecializationSearchTerm(e.target.value)
+              setSpecializationDropdownOpen(true)
+              handleInputChange('specialization', e.target.value)
+            }}
+            onFocus={() => setSpecializationDropdownOpen(true)}
+            onBlur={() => setTimeout(() => setSpecializationDropdownOpen(false), 150)}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            placeholder="Type or select specialization"
+          />
+          {specializationDropdownOpen && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-20 max-h-48 overflow-y-auto">
+              {specializations
+                .filter(spec => 
+                  !specializationSearchTerm || spec.toLowerCase().includes(specializationSearchTerm.toLowerCase())
+                )
+                .map(spec => (
+                  <div
+                    key={spec}
+                    onClick={() => {
+                      handleInputChange('specialization', spec)
+                      setSpecializationSearchTerm('')
+                      setSpecializationDropdownOpen(false)
+                    }}
+                    className="w-full text-left px-4 py-2.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
+                  >
+                    {spec}
+                  </div>
+                ))}
+              {specializations.filter(spec => 
+                !specializationSearchTerm || spec.toLowerCase().includes(specializationSearchTerm.toLowerCase())
+              ).length === 0 && (
+                <div className="px-4 py-2.5 text-gray-500 text-sm">No specializations found</div>
+              )}
+            </div>
+          )}
         </div>
 
         <div>
@@ -542,14 +632,14 @@ const DoctorManagement = () => {
   if (loading) return <LoadingSpinner />
 
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen bg-gray-50">
       {/* Sticky Header */}
       <div className="sticky top-0 z-40 backdrop-blur-xl bg-white/70 border-b border-white/20 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex items-center gap-3 flex-1">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
-                <i className="fas fa-user-md text-white text-xl"></i>
+                <LocalHospital className="text-white" style={{fontSize: '24px'}} />
               </div>
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Doctor Management</h1>
@@ -563,7 +653,7 @@ const DoctorManagement = () => {
               }}
               className="w-full sm:w-auto group relative bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-semibold overflow-hidden transition-all duration-300 transform hover:scale-105 hover:shadow-xl active:scale-95 flex items-center justify-center gap-2"
             >
-              <i className="fas fa-plus"></i>
+              <Add style={{fontSize: '20px'}} />
               <span>Add Doctor</span>
             </button>
           </div>
@@ -577,7 +667,7 @@ const DoctorManagement = () => {
             {/* Search Input - Full Width on Mobile */}
             <div className="sm:col-span-2 lg:col-span-2">
               <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                <i className="fas fa-search text-blue-500"></i>
+                <Search className="text-blue-500" style={{fontSize: '20px'}} />
                 Search
               </label>
               <input 
@@ -591,7 +681,7 @@ const DoctorManagement = () => {
             {/* Department Filter */}
             <div className="lg:col-span-1">
               <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                <i className="fas fa-hospital text-green-500"></i>
+                <LocalHospital className="text-green-500" style={{fontSize: '20px'}} />
                 Dept
               </label>
               <div className="relative">
@@ -605,13 +695,13 @@ const DoctorManagement = () => {
                     <option key={dept} value={dept}>{dept}</option>
                   ))}
                 </select>
-                <i className="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none text-sm"></i>
+                <ExpandMore className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none" style={{fontSize: '20px'}} />
               </div>
             </div>
             {/* Status Filter */}
             <div>
               <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                <i className="fas fa-circle-notch text-orange-500"></i>
+                <FiberManualRecord className="text-orange-500" style={{fontSize: '20px'}} />
                 Status
               </label>
               <div className="relative">
@@ -624,13 +714,13 @@ const DoctorManagement = () => {
                   <option value="Active">Active</option>
                   <option value="Inactive">Inactive</option>
                 </select>
-                <i className="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none text-sm"></i>
+                <ExpandMore className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none" style={{fontSize: '20px'}} />
               </div>
             </div>
             {/* Consultation Type Filter */}
             <div>
               <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                <i className="fas fa-stethoscope text-purple-500"></i>
+                <LocalHospital className="text-purple-500" style={{fontSize: '20px'}} />
                 Consultation Type
               </label>
               <div className="relative">
@@ -644,7 +734,7 @@ const DoctorManagement = () => {
                   <option value="Telemedicine">Telemedicine</option>
                   <option value=" In-Person and Telemedicine">Both</option>
                 </select>
-                <i className="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none text-sm"></i>
+                <ExpandMore className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none" style={{fontSize: '20px'}} />
               </div>
             </div>
           </div>
@@ -652,7 +742,7 @@ const DoctorManagement = () => {
 
         {/* Doctors Grid */}
         {filteredDoctors.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-12">
             {filteredDoctors.map((doctor, idx) => {
               return (
               <div 
@@ -694,8 +784,12 @@ const DoctorManagement = () => {
                         doctor.status === 'Active' 
                           ? 'bg-emerald-500/15 text-emerald-700/90 border-emerald-400/40' 
                           : 'bg-slate-500/15 text-slate-700/90 border-slate-400/40'
-                      }`}>
-                        <i className={`fas ${doctor.status === 'Active' ? 'fa-check' : 'fa-times'} mr-1.5`}></i>
+                      } flex items-center gap-1`}>
+                        {doctor.status === 'Active' ? (
+                          <CheckCircle style={{fontSize: '16px'}} />
+                        ) : (
+                          <Close style={{fontSize: '16px'}} />
+                        )}
                         {doctor.status}
                       </span>
                     </div>
@@ -709,7 +803,7 @@ const DoctorManagement = () => {
         ) : (
           <div className="text-center py-24 backdrop-blur-3xl bg-gradient-to-br from-white/30 to-white/10 border border-white/50 rounded-4xl shadow-2xl">
             <div className="mb-8 inline-flex items-center justify-center w-28 h-28 rounded-full backdrop-blur-md bg-white/15 border border-white/40">
-              <i className="fas fa-user-md text-gray-600/80 text-6xl"></i>
+              <LocalHospital className="text-gray-600/80" style={{fontSize: '72px'}} />
             </div>
             <h3 className="text-4xl font-bold text-gray-800/95 mb-4">No Doctors Found</h3>
             <p className="text-gray-700/80 mb-10 text-lg font-medium">Try adjusting your filters or add a new doctor</p>
@@ -720,7 +814,7 @@ const DoctorManagement = () => {
               }}
               className="inline-flex items-center gap-2 backdrop-blur-md bg-white/15 hover:bg-white/28 border border-white/45 hover:border-white/65 text-gray-800/95 px-10 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 active:scale-95 hover:shadow-lg"
             >
-              <i className="fas fa-plus"></i>
+              <Add style={{fontSize: '20px'}} />
               Add First Doctor
             </button>
           </div>
@@ -757,7 +851,7 @@ const DoctorManagement = () => {
             disabled={!formData.name || !formData.email || !formData.department || !formData.specialization}
             className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 active:scale-95 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
           >
-            <i className="fas fa-plus"></i>
+            <Add style={{fontSize: '20px'}} />
             Add Doctor
           </button>
         </div>
@@ -793,7 +887,7 @@ const DoctorManagement = () => {
             disabled={!formData.name || !formData.email || !formData.department || !formData.specialization}
             className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-blue-600 text-white font-semibold rounded-lg hover:from-indigo-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 active:scale-95 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
           >
-            <i className="fas fa-save"></i>
+            <SaveOutlined style={{fontSize: '20px'}} />
             Update Doctor
           </button>
         </div>
@@ -811,7 +905,7 @@ const DoctorManagement = () => {
       >
         <div className="text-center p-8">
           <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-red-100 to-pink-100 rounded-2xl flex items-center justify-center shadow-lg">
-            <i className="fas fa-exclamation-triangle text-red-600 text-3xl"></i>
+            <WarningAmber className="text-red-600" style={{fontSize: '36px'}} />
           </div>
           <h3 className="text-2xl font-bold text-gray-900 mb-3">Confirm Deletion</h3>
           <p className="text-gray-600 mb-2">Are you sure you want to delete <span className="font-bold text-red-600">{currentDoctor?.name}</span>?</p>
@@ -830,7 +924,7 @@ const DoctorManagement = () => {
               onClick={handleDeleteDoctor}
               className="px-8 py-3 bg-gradient-to-r from-red-500 to-pink-600 text-white font-semibold rounded-lg hover:from-red-600 hover:to-pink-700 transition-all duration-200 active:scale-95 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
             >
-              <i className="fas fa-trash"></i>
+              <DeleteOutline style={{fontSize: '20px'}} />
               Delete Doctor
             </button>
           </div>
@@ -853,12 +947,16 @@ const DoctorManagement = () => {
             {/* Premium Header Section */}
             <div className="relative bg-gradient-to-r from-blue-500/10 to-indigo-500/10 backdrop-blur-md border-b border-blue-200/50 rounded-t-3xl p-4 sm:p-6 md:p-8 mb-6 sm:mb-8">
               {/* Status Badge - Top Right */}
-              <span className={`absolute top-3 right-3 sm:top-6 sm:right-6 inline-block px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-bold backdrop-blur-md border ${
+              <span className={`absolute top-3 right-3 sm:top-6 sm:right-6 inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-bold backdrop-blur-md border ${
                 currentDoctor.status === 'Active' 
                   ? 'bg-emerald-500/20 text-emerald-700/90 border-emerald-400/50' 
                   : 'bg-slate-500/20 text-slate-700/90 border-slate-400/50'
               }`}>
-                <i className={`fas ${currentDoctor.status === 'Active' ? 'fa-check-circle' : 'fa-times-circle'} mr-2`}></i>
+                {currentDoctor.status === 'Active' ? (
+                  <CheckCircle style={{fontSize: '18px'}} />
+                ) : (
+                  <Close style={{fontSize: '18px'}} />
+                )}
                 {currentDoctor.status}
               </span>
 
@@ -878,11 +976,11 @@ const DoctorManagement = () => {
                 <div className="flex-1">
                   <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">{currentDoctor.name}</h2>
                   <p className="text-gray-700 text-sm font-semibold mb-2 flex items-center gap-2">
-                    <i className="fas fa-id-badge text-blublacke-500/70"></i>
+                    <Badge className="text-blue-500/70" style={{fontSize: '20px'}} />
                     {currentDoctor.id}
                   </p>
                   <p className="text-lg font-bold text-blue-600/90 flex items-center gap-2">
-                    <i className="fas fa-stethoscope text-black-500/70"></i>
+                    <LocalHospital className="text-blue-600/70" style={{fontSize: '20px'}} />
                     {currentDoctor.specialization}
                   </p>
                 </div>
@@ -895,7 +993,7 @@ const DoctorManagement = () => {
               <div className="backdrop-blur-md bg-white border-2 border-blue-300/50 rounded-2xl p-5 hover:from-blue-500/25 hover:to-blue-500/15 hover:border-blue-400/75 transition-all shadow-md hover:shadow-lg">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 bg-blue-500/30 rounded-lg flex items-center justify-center">
-                    <i className="fas fa-hospital text-blue-700 text-lg"></i>
+                    <LocalHospital className="text-blue-700" style={{fontSize: '20px'}} />
                   </div>
                   <label className="text-xs font-bold text-blue-700/90 uppercase tracking-wide">Department</label>
                 </div>
@@ -906,7 +1004,7 @@ const DoctorManagement = () => {
               <div className="backdrop-blur-md bg-white border-2 border-blue-300/50 rounded-2xl p-5 hover:from-blue-500/25 hover:to-blue-500/15 hover:border-blue-400/75 transition-all shadow-md hover:shadow-lg">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 bg-purple-500/30 rounded-lg flex items-center justify-center">
-                    <i className="fas fa-award text-purple-700 text-lg"></i>
+                    <EmojiEvents className="text-purple-700" style={{fontSize: '20px'}} />
                   </div>
                   <label className="text-xs font-bold text-purple-700/90 uppercase tracking-wide">Experience</label>
                 </div>
@@ -917,7 +1015,7 @@ const DoctorManagement = () => {
               <div className="backdrop-blur-md bg-white border-2 border-blue-300/50 rounded-2xl p-5 hover:from-blue-500/25 hover:to-blue-500/15 hover:border-blue-400/75 transition-all shadow-md hover:shadow-lg">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 bg-green-500/30 rounded-lg flex items-center justify-center">
-                    <i className="fas fa-envelope text-green-700 text-lg"></i>
+                    <MailOutline className="text-green-700" style={{fontSize: '20px'}} />
                   </div>
                   <label className="text-xs font-bold text-green-700/90 uppercase tracking-wide">Email</label>
                 </div>
@@ -929,7 +1027,7 @@ const DoctorManagement = () => {
                 <div className="backdrop-blur-md bg-white border-2 border-blue-300/50 rounded-2xl p-5 hover:from-blue-500/25 hover:to-blue-500/15 hover:border-blue-400/75 transition-all shadow-md hover:shadow-lg">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-10 h-10 bg-rose-500/30 rounded-lg flex items-center justify-center">
-                      <i className="fas fa-envelope-open text-rose-700 text-lg"></i>
+                      <MarkEmailRead className="text-rose-700" style={{fontSize: '20px'}} />
                     </div>
                     <label className="text-xs font-bold text-rose-700/90 uppercase tracking-wide">Personal Email</label>
                   </div>
@@ -941,7 +1039,7 @@ const DoctorManagement = () => {
               <div className="backdrop-blur-md bg-white border-2 border-blue-300/50 rounded-2xl p-5 hover:from-blue-500/25 hover:to-blue-500/15 hover:border-blue-400/75 transition-all shadow-md hover:shadow-lg">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 bg-orange-500/30 rounded-lg flex items-center justify-center">
-                    <i className="fas fa-phone text-orange-700 text-lg"></i>
+                    <Phone className="text-orange-700" style={{fontSize: '20px'}} />
                   </div>
                   <label className="text-xs font-bold text-orange-700/90 uppercase tracking-wide">Contact</label>
                 </div>
@@ -952,7 +1050,7 @@ const DoctorManagement = () => {
               <div className="backdrop-blur-md bg-white border-2 border-blue-300/50 rounded-2xl p-5 hover:from-blue-500/25 hover:to-blue-500/15 hover:border-blue-400/75 transition-all shadow-md hover:shadow-lg">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 bg-teal-500/30 rounded-lg flex items-center justify-center">
-                    <i className="fas fa-calendar text-teal-700 text-lg"></i>
+                    <CalendarMonth className="text-teal-700" style={{fontSize: '20px'}} />
                   </div>
                   <label className="text-xs font-bold text-teal-700/90 uppercase tracking-wide">Availability</label>
                 </div>
@@ -963,7 +1061,7 @@ const DoctorManagement = () => {
               <div className="backdrop-blur-md bg-white border-2 border-blue-300/50 rounded-2xl p-5 hover:from-blue-500/25 hover:to-blue-500/15 hover:border-blue-400/75 transition-all shadow-md hover:shadow-lg">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 bg-yellow-500/30 rounded-lg flex items-center justify-center">
-                    <i className="fas fa-rupee-sign text-yellow-700 text-lg"></i>
+                    <CurrencyRupee className="text-yellow-700" style={{fontSize: '20px'}} />
                   </div>
                   <label className="text-xs font-bold text-yellow-700/90 uppercase tracking-wide">Consultation Fee</label>
                 </div>
@@ -975,7 +1073,7 @@ const DoctorManagement = () => {
                 <div className="backdrop-blur-md bg-white border-2 border-blue-300/50 rounded-2xl p-5 hover:from-blue-500/25 hover:to-blue-500/15 hover:border-blue-400/75 transition-all shadow-md hover:shadow-lg">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-10 h-10 bg-pink-500/30 rounded-lg flex items-center justify-center">
-                      <i className="fas fa-video text-pink-700 text-lg"></i>
+                      <VideoCall className="text-pink-700" style={{fontSize: '20px'}} />
                     </div>
                     <label className="text-xs font-bold text-pink-700/90 uppercase tracking-wide">Consultation Type</label>
                   </div>
@@ -987,7 +1085,7 @@ const DoctorManagement = () => {
               <div className="backdrop-blur-md bg-white border-2 border-blue-300/50 rounded-2xl p-5 hover:from-blue-500/25 hover:to-blue-500/15 hover:border-blue-400/75 transition-all shadow-md hover:shadow-lg">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 bg-indigo-500/30 rounded-lg flex items-center justify-center">
-                    <i className="fas fa-graduation-cap text-indigo-700 text-lg"></i>
+                    <School className="text-indigo-700" style={{fontSize: '20px'}} />
                   </div>
                   <label className="text-xs font-bold text-indigo-700/90 uppercase tracking-wide">Qualification</label>
                 </div>
@@ -1000,7 +1098,7 @@ const DoctorManagement = () => {
                   <div className="flex items-center justify-between gap-3 mb-3">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-red-500/30 rounded-lg flex items-center justify-center">
-                        <i className="fas fa-lock text-red-700 text-lg"></i>
+                        <Lock className="text-red-700" style={{fontSize: '20px'}} />
                       </div>
                       <label className="text-xs font-bold text-red-700/90 uppercase tracking-wide">Password</label>
                     </div>
@@ -1009,7 +1107,7 @@ const DoctorManagement = () => {
                       className="p-2 rounded-lg hover:bg-red-500/10 transition-all text-red-700 cursor-pointer"
                       title={showPassword ? 'Hide password' : 'Show password'}
                     >
-                      <i className={`fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'} text-lg`}></i>
+                      {showPassword ? <VisibilityOff style={{fontSize: '20px'}} /> : <Visibility style={{fontSize: '20px'}} />}
                     </button>
                   </div>
                   <p className="text-sm font-semibold text-black-900 font-mono tracking-widest ml-13 select-none break-all">
@@ -1026,7 +1124,7 @@ const DoctorManagement = () => {
                 <div className="backdrop-blur-md bg-white border-2 border-blue-300/50 rounded-2xl p-5 hover:from-blue-500/25 hover:to-blue-500/15 hover:border-blue-400/75 transition-all shadow-md hover:shadow-lg">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-10 h-10 bg-cyan-500/30 rounded-lg flex items-center justify-center">
-                      <i className="fas fa-book text-cyan-700 text-lg"></i>
+                      <MenuBook className="text-cyan-700" style={{fontSize: '20px'}} />
                     </div>
                     <label className="text-xs font-bold text-cyan-700/90 uppercase tracking-wide">Bio</label>
                   </div>
@@ -1059,7 +1157,11 @@ const DoctorManagement = () => {
                     : 'bg-gradient-to-r from-green-500/80 to-emerald-600/80 hover:from-green-600 hover:to-emerald-700 text-white border-green-400/50'
                 }`}
               >
-                <i className={`fas ${currentDoctor.status === 'Active' ? 'fa-pause' : 'fa-play'}`}></i>
+                {currentDoctor.status === 'Active' ? (
+                  <Pause style={{fontSize: '20px'}} />
+                ) : (
+                  <PlayArrow style={{fontSize: '20px'}} />
+                )}
                 <span className="hidden sm:inline">{currentDoctor.status === 'Active' ? 'Deactivate' : 'Activate'}</span>
                 <span className="sm:hidden">{currentDoctor.status === 'Active' ? 'Deactivate' : 'Activate'}</span>
               </button>
@@ -1071,7 +1173,7 @@ const DoctorManagement = () => {
                 }}
                 className="px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 active:scale-95 shadow-lg hover:shadow-xl backdrop-blur-md border border-blue-400/50 flex items-center justify-center gap-2"
               >
-                <i className="fas fa-edit"></i>
+                <Edit style={{fontSize: '20px'}} />
                 <span className="hidden sm:inline">Edit Doctor</span>
                 <span className="sm:hidden">Edit</span>
               </button>

@@ -1,0 +1,630 @@
+import React, { useEffect, useMemo, useState } from 'react'
+import LoadingSpinner from '../../../../components/common/LoadingSpinner/LoadingSpinner'
+import Modal from '../../../../components/common/Modal/Modal'
+import { apiFetch } from '../../../../services/apiClient'
+import {
+  DOCTOR_SCHEDULE_WEEKLY,
+  DOCTOR_SCHEDULE_SLOTS,
+  DOCTOR_SCHEDULE_CREATE,
+  DOCTOR_SCHEDULE_SLOT_DETAILS
+} from '../../../../config/api'
+
+const WEEK_DAYS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY']
+
+const EMPTY_FORM = {
+  day_of_week: 'MONDAY',
+  start_time: '',
+  end_time: '',
+  slot_duration_minutes: 30,
+  max_patients_per_slot: 1,
+  break_start_time: '',
+  break_end_time: '',
+  notes: '',
+  is_emergency_available: false
+}
+
+const ScheduleManagement = () => {
+  const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+  const [weeklySchedule, setWeeklySchedule] = useState(null)
+  const [scheduleSlots, setScheduleSlots] = useState([])
+  const [error, setError] = useState('')
+  const [selectedWeekStart, setSelectedWeekStart] = useState(getStartOfWeekISO(new Date()))
+  const [modalState, setModalState] = useState({ add: false, edit: false })
+  const [submitLoading, setSubmitLoading] = useState(false)
+  const [currentSlot, setCurrentSlot] = useState(null)
+  const [formData, setFormData] = useState(EMPTY_FORM)
+
+  const loadData = async ({ showLoader = false } = {}) => {
+    if (showLoader) setLoading(true)
+    setRefreshing(true)
+    setError('')
+
+    try {
+      const weeklyParams = new URLSearchParams()
+      if (selectedWeekStart) weeklyParams.set('week_start', selectedWeekStart)
+
+      const [weeklyRes, slotsRes] = await Promise.all([
+        apiFetchWithFallback(
+          buildCandidatePaths('weekly', { weekStart: selectedWeekStart }),
+          { method: 'GET' }
+        ),
+        apiFetchWithFallback(buildCandidatePaths('slots'), { method: 'GET' })
+      ])
+
+      const weeklyData = await weeklyRes.json().catch(() => ({}))
+      const slotsData = await slotsRes.json().catch(() => ({}))
+
+      if (!weeklyRes.ok) {
+        throw new Error(
+          weeklyData?.message ||
+          weeklyData?.detail ||
+          `Failed to load weekly schedule (${weeklyRes.status})${weeklyRes?._attemptedPath ? ` - ${weeklyRes._attemptedPath}` : ''}`
+        )
+      }
+      if (!slotsRes.ok) {
+        throw new Error(
+          slotsData?.message ||
+          slotsData?.detail ||
+          `Failed to load schedule slots (${slotsRes.status})${slotsRes?._attemptedPath ? ` - ${slotsRes._attemptedPath}` : ''}`
+        )
+      }
+
+      setWeeklySchedule(getDataPayload(weeklyData))
+      setScheduleSlots(normalizeScheduleSlots(getDataPayload(slotsData)))
+    } catch (loadError) {
+      setError(loadError?.message || 'Unable to load schedule information.')
+      setWeeklySchedule(null)
+      setScheduleSlots([])
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
+    }
+  }
+
+  useEffect(() => {
+    loadData({ showLoader: true })
+  }, [selectedWeekStart])
+
+  const stats = useMemo(() => {
+    const totalSlots = Number(weeklySchedule?.total_slots || 0)
+    const totalAppointments = Number(weeklySchedule?.total_appointments || 0)
+    const availableSlots = Number(weeklySchedule?.available_slots || 0)
+    return { totalSlots, totalAppointments, availableSlots }
+  }, [weeklySchedule])
+
+  const openAddModal = () => {
+    setCurrentSlot(null)
+    setFormData(EMPTY_FORM)
+    setModalState({ add: true, edit: false })
+  }
+
+  const openEditModal = (slot) => {
+    setCurrentSlot(slot)
+    setFormData({
+      day_of_week: slot.day_of_week || 'MONDAY',
+      start_time: slot.start_time || '',
+      end_time: slot.end_time || '',
+      slot_duration_minutes: Number(slot.slot_duration_minutes || 30),
+      max_patients_per_slot: Number(slot.max_patients_per_slot || 1),
+      break_start_time: slot.break_start_time || '',
+      break_end_time: slot.break_end_time || '',
+      notes: slot.notes || '',
+      is_emergency_available: Boolean(slot.is_emergency_available)
+    })
+    setModalState({ add: false, edit: true })
+  }
+
+  const closeModal = () => {
+    setModalState({ add: false, edit: false })
+    setCurrentSlot(null)
+    setFormData(EMPTY_FORM)
+  }
+
+  const handleInputChange = (field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const buildPayload = () => ({
+    day_of_week: formData.day_of_week,
+    start_time: formData.start_time,
+    end_time: formData.end_time,
+    slot_duration_minutes: Number(formData.slot_duration_minutes || 30),
+    max_patients_per_slot: Number(formData.max_patients_per_slot || 1),
+    break_start_time: formData.break_start_time || null,
+    break_end_time: formData.break_end_time || null,
+    notes: String(formData.notes || '').trim() || null,
+    is_emergency_available: Boolean(formData.is_emergency_available)
+  })
+
+  const validateForm = () => {
+    if (!formData.day_of_week || !formData.start_time || !formData.end_time) {
+      window.alert('Please fill day, start time and end time.')
+      return false
+    }
+    if (formData.start_time >= formData.end_time) {
+      window.alert('End time must be greater than start time.')
+      return false
+    }
+    if (
+      formData.break_start_time &&
+      formData.break_end_time &&
+      formData.break_start_time >= formData.break_end_time
+    ) {
+      window.alert('Break end time must be greater than break start time.')
+      return false
+    }
+    return true
+  }
+
+  const handleCreateSlot = async () => {
+    if (!validateForm()) return
+    setSubmitLoading(true)
+    try {
+      const res = await apiFetchWithFallback(buildCandidatePaths('create'), {
+        method: 'POST',
+        body: buildPayload()
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        window.alert(
+          data?.message ||
+          data?.detail ||
+          `Failed to create slot (${res.status})${res?._attemptedPath ? ` - ${res._attemptedPath}` : ''}`
+        )
+        return
+      }
+      closeModal()
+      loadData()
+    } catch (submitError) {
+      window.alert(submitError?.message || 'Unable to create schedule slot.')
+    } finally {
+      setSubmitLoading(false)
+    }
+  }
+
+  const handleUpdateSlot = async () => {
+    if (!currentSlot?.schedule_id || !validateForm()) return
+    setSubmitLoading(true)
+    try {
+      const res = await apiFetchWithFallback(
+        buildCandidatePaths('slotById', { scheduleId: currentSlot.schedule_id }),
+        {
+        method: 'PUT',
+        body: buildPayload()
+        }
+      )
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        window.alert(
+          data?.message ||
+          data?.detail ||
+          `Failed to update slot (${res.status})${res?._attemptedPath ? ` - ${res._attemptedPath}` : ''}`
+        )
+        return
+      }
+      closeModal()
+      loadData()
+    } catch (submitError) {
+      window.alert(submitError?.message || 'Unable to update schedule slot.')
+    } finally {
+      setSubmitLoading(false)
+    }
+  }
+
+  const handleDeleteSlot = async (slot) => {
+    if (!slot?.schedule_id) return
+    if (!window.confirm(`Delete schedule for ${slot.day_of_week}?`)) return
+
+    try {
+      const res = await apiFetchWithFallback(
+        buildCandidatePaths('slotById', { scheduleId: slot.schedule_id }),
+        {
+        method: 'DELETE'
+        }
+      )
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        window.alert(
+          data?.message ||
+          data?.detail ||
+          `Failed to delete slot (${res.status})${res?._attemptedPath ? ` - ${res._attemptedPath}` : ''}`
+        )
+        return
+      }
+      loadData()
+    } catch (deleteError) {
+      window.alert(deleteError?.message || 'Unable to delete schedule slot.')
+    }
+  }
+
+  if (loading) return <LoadingSpinner />
+
+  return (
+    <div className="space-y-8 animate-fade-in">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-800">Schedule Management</h2>
+          <p className="text-sm text-gray-500 mt-1">Manage weekly availability and schedule slots</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <input
+            type="date"
+            value={selectedWeekStart}
+            onChange={(event) => setSelectedWeekStart(event.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-lg text-sm"
+          />
+          <button
+            onClick={openAddModal}
+            className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all"
+          >
+            <i className="fas fa-plus mr-2"></i>
+            Add Slot
+          </button>
+        </div>
+      </div>
+
+      {error && (
+        <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 flex items-center justify-between">
+          <span><i className="fas fa-exclamation-circle mr-2"></i>{error}</span>
+          <button onClick={() => loadData({ showLoader: true })} className="px-3 py-1.5 rounded-lg bg-red-100 hover:bg-red-200 text-sm">
+            Retry
+          </button>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <StatCard title="Total Slots" value={stats.totalSlots} color="blue" icon="fa-calendar-alt" />
+        <StatCard title="Booked Appointments" value={stats.totalAppointments} color="yellow" icon="fa-user-check" />
+        <StatCard title="Available Slots" value={stats.availableSlots} color="green" icon="fa-clock" />
+      </div>
+
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="px-5 py-4 border-b flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-800">Weekly Schedule</h3>
+          {refreshing && <span className="text-xs text-gray-500">Refreshing...</span>}
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Day</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Schedule</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Slots</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Booked</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Available</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {(weeklySchedule?.daily_schedules || []).map((day) => (
+                <tr key={day.date} className="hover:bg-gray-50">
+                  <td className="px-4 py-3 text-sm font-medium text-gray-900">{humanizeDay(day.day_name)}</td>
+                  <td className="px-4 py-3 text-sm text-gray-700">{day.date}</td>
+                  <td className="px-4 py-3 text-sm text-gray-700">
+                    {day.has_schedule ? `${day.start_time} - ${day.end_time}` : 'No schedule'}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-700">{day.total_slots ?? 0}</td>
+                  <td className="px-4 py-3 text-sm text-gray-700">{day.booked_appointments ?? 0}</td>
+                  <td className="px-4 py-3 text-sm text-gray-700">{day.available_slots ?? 0}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="px-5 py-4 border-b">
+          <h3 className="text-lg font-semibold text-gray-800">Schedule Slots Configuration</h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Day</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Duration</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Max/Slot</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {scheduleSlots.map((slot) => (
+                <tr key={slot.schedule_id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3 text-sm text-gray-900">{humanizeDay(slot.day_of_week)}</td>
+                  <td className="px-4 py-3 text-sm text-gray-700">{slot.start_time} - {slot.end_time}</td>
+                  <td className="px-4 py-3 text-sm text-gray-700">{slot.slot_duration_minutes} mins</td>
+                  <td className="px-4 py-3 text-sm text-gray-700">{slot.max_patients_per_slot}</td>
+                  <td className="px-4 py-3 text-sm">
+                    <span className={`px-2 py-1 rounded-full text-xs ${slot.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      {slot.is_active ? 'Active' : 'Inactive'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => openEditModal(slot)}
+                        className="text-blue-600 hover:text-blue-800"
+                        title="Edit"
+                      >
+                        <i className="fas fa-edit"></i>
+                      </button>
+                      <button
+                        onClick={() => handleDeleteSlot(slot)}
+                        className="text-red-600 hover:text-red-800"
+                        title="Delete"
+                      >
+                        <i className="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {scheduleSlots.length === 0 && (
+          <div className="text-center py-10 text-gray-500">No schedule slots configured.</div>
+        )}
+      </div>
+
+      <Modal isOpen={modalState.add} onClose={closeModal} title="Create Schedule Slot" size="lg">
+        <SlotForm
+          formData={formData}
+          onChange={handleInputChange}
+          onCancel={closeModal}
+          onSubmit={handleCreateSlot}
+          submitText={submitLoading ? 'Saving...' : 'Create Slot'}
+          submitLoading={submitLoading}
+        />
+      </Modal>
+
+      <Modal isOpen={modalState.edit} onClose={closeModal} title="Edit Schedule Slot" size="lg">
+        <SlotForm
+          formData={formData}
+          onChange={handleInputChange}
+          onCancel={closeModal}
+          onSubmit={handleUpdateSlot}
+          submitText={submitLoading ? 'Saving...' : 'Update Slot'}
+          submitLoading={submitLoading}
+        />
+      </Modal>
+    </div>
+  )
+}
+
+const SlotForm = ({ formData, onChange, onCancel, onSubmit, submitText, submitLoading }) => (
+  <div className="space-y-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label className="block text-sm text-gray-700 mb-1">Day of Week</label>
+        <select
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+          value={formData.day_of_week}
+          onChange={(event) => onChange('day_of_week', event.target.value)}
+        >
+          {WEEK_DAYS.map((day) => (
+            <option key={day} value={day}>{humanizeDay(day)}</option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label className="block text-sm text-gray-700 mb-1">Slot Duration (mins)</label>
+        <input
+          type="number"
+          min="5"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+          value={formData.slot_duration_minutes}
+          onChange={(event) => onChange('slot_duration_minutes', event.target.value)}
+        />
+      </div>
+      <div>
+        <label className="block text-sm text-gray-700 mb-1">Start Time</label>
+        <input
+          type="time"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+          value={formData.start_time}
+          onChange={(event) => onChange('start_time', event.target.value)}
+        />
+      </div>
+      <div>
+        <label className="block text-sm text-gray-700 mb-1">End Time</label>
+        <input
+          type="time"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+          value={formData.end_time}
+          onChange={(event) => onChange('end_time', event.target.value)}
+        />
+      </div>
+      <div>
+        <label className="block text-sm text-gray-700 mb-1">Break Start</label>
+        <input
+          type="time"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+          value={formData.break_start_time}
+          onChange={(event) => onChange('break_start_time', event.target.value)}
+        />
+      </div>
+      <div>
+        <label className="block text-sm text-gray-700 mb-1">Break End</label>
+        <input
+          type="time"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+          value={formData.break_end_time}
+          onChange={(event) => onChange('break_end_time', event.target.value)}
+        />
+      </div>
+      <div>
+        <label className="block text-sm text-gray-700 mb-1">Max Patients / Slot</label>
+        <input
+          type="number"
+          min="1"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+          value={formData.max_patients_per_slot}
+          onChange={(event) => onChange('max_patients_per_slot', event.target.value)}
+        />
+      </div>
+      <label className="inline-flex items-center gap-2 mt-7 text-sm text-gray-700">
+        <input
+          type="checkbox"
+          checked={Boolean(formData.is_emergency_available)}
+          onChange={(event) => onChange('is_emergency_available', event.target.checked)}
+        />
+        Emergency available
+      </label>
+    </div>
+    <div>
+      <label className="block text-sm text-gray-700 mb-1">Notes</label>
+      <textarea
+        rows="3"
+        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+        value={formData.notes}
+        onChange={(event) => onChange('notes', event.target.value)}
+      />
+    </div>
+    <div className="flex justify-end gap-3 pt-3 border-t border-gray-100">
+      <button onClick={onCancel} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700">Cancel</button>
+      <button
+        onClick={onSubmit}
+        disabled={submitLoading}
+        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-60"
+      >
+        {submitText}
+      </button>
+    </div>
+  </div>
+)
+
+const StatCard = ({ title, value, color, icon }) => (
+  <div className={`rounded-xl p-5 text-white ${
+    color === 'green'
+      ? 'bg-gradient-to-br from-green-500 to-emerald-600'
+      : color === 'yellow'
+        ? 'bg-gradient-to-br from-yellow-500 to-amber-600'
+        : 'bg-gradient-to-br from-blue-500 to-blue-700'
+  }`}>
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm opacity-90">{title}</p>
+        <p className="text-3xl font-bold mt-1">{value}</p>
+      </div>
+      <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center">
+        <i className={`fas ${icon} text-xl`}></i>
+      </div>
+    </div>
+  </div>
+)
+
+function getDataPayload(response) {
+  return response?.data ?? response ?? {}
+}
+
+function getStartOfWeekISO(currentDate) {
+  const date = new Date(currentDate)
+  const day = date.getDay() === 0 ? 7 : date.getDay()
+  date.setDate(date.getDate() - day + 1)
+  return date.toISOString().slice(0, 10)
+}
+
+function humanizeDay(day) {
+  const raw = String(day || '').toLowerCase()
+  return raw.charAt(0).toUpperCase() + raw.slice(1)
+}
+
+function normalizeScheduleSlots(rawData) {
+  const schedules = Array.isArray(rawData?.schedules)
+    ? rawData.schedules
+    : Array.isArray(rawData)
+      ? rawData
+      : []
+
+  return schedules.map((item) => ({
+    schedule_id: item?.schedule_id || item?.id || '',
+    day_of_week: item?.day_of_week || '',
+    start_time: item?.start_time || '',
+    end_time: item?.end_time || '',
+    slot_duration_minutes: Number(item?.slot_duration_minutes || 0),
+    break_start_time: item?.break_start_time || '',
+    break_end_time: item?.break_end_time || '',
+    max_patients_per_slot: Number(item?.max_patients_per_slot || 1),
+    is_active: item?.is_active !== false,
+    notes: item?.notes || '',
+    is_emergency_available: Boolean(item?.is_emergency_available)
+  }))
+}
+
+function buildCandidatePaths(type, { scheduleId, weekStart } = {}) {
+  const weekQuery = weekStart ? `?week_start=${encodeURIComponent(weekStart)}` : ''
+  const scheduleIdSafe = scheduleId ? encodeURIComponent(scheduleId) : ''
+  const withTrailing = (path) => (path.endsWith('/') ? path : `${path}/`)
+
+  const candidatesByType = {
+    weekly: [
+      `${DOCTOR_SCHEDULE_WEEKLY}${weekQuery}`,
+      `${withTrailing(DOCTOR_SCHEDULE_WEEKLY)}${weekQuery}`,
+      `/doctor-management/schedule/weekly${weekQuery}`,
+      `/doctor-management/schedule/weekly/${weekQuery ? weekQuery.slice(1) : ''}`.replace(/\/$/, ''),
+      `/api/v1/doctor-management/schedule/weekly${weekQuery}`,
+      `/api/v1/doctor-management/schedule/weekly/${weekQuery ? weekQuery.slice(1) : ''}`.replace(/\/$/, ''),
+      `/api/v1/doctor/schedules/weekly${weekQuery}`,
+      `/api/v1/doctors/schedule/weekly${weekQuery}`,
+      `/api/v1/doctors/schedules/weekly${weekQuery}`
+    ],
+    slots: [
+      DOCTOR_SCHEDULE_SLOTS,
+      withTrailing(DOCTOR_SCHEDULE_SLOTS),
+      '/doctor-management/schedule/slots',
+      '/doctor-management/schedule/slots/',
+      '/api/v1/doctor-management/schedule/slots',
+      '/api/v1/doctor-management/schedule/slots/',
+      '/api/v1/doctor/schedules/slots',
+      '/api/v1/doctors/schedule/slots',
+      '/api/v1/doctors/schedules/slots'
+    ],
+    create: [
+      DOCTOR_SCHEDULE_CREATE,
+      withTrailing(DOCTOR_SCHEDULE_CREATE),
+      '/doctor-management/schedule/create',
+      '/doctor-management/schedule/create/',
+      '/api/v1/doctor-management/schedule/create',
+      '/api/v1/doctor-management/schedule/create/',
+      '/api/v1/doctor/schedule/create',
+      '/api/v1/doctors/schedule/create'
+    ],
+    slotById: [
+      DOCTOR_SCHEDULE_SLOT_DETAILS(scheduleIdSafe),
+      withTrailing(DOCTOR_SCHEDULE_SLOT_DETAILS(scheduleIdSafe)),
+      `/doctor-management/schedule/${scheduleIdSafe}`,
+      `/doctor-management/schedule/${scheduleIdSafe}/`,
+      `/api/v1/doctor-management/schedule/${scheduleIdSafe}`,
+      `/api/v1/doctor-management/schedule/${scheduleIdSafe}/`,
+      `/api/v1/doctor/schedules/slots/${scheduleIdSafe}`,
+      `/api/v1/doctors/schedule/slots/${scheduleIdSafe}`,
+      `/api/v1/doctors/schedules/slots/${scheduleIdSafe}`,
+      `/api/v1/doctor/schedule/${scheduleIdSafe}`,
+      `/api/v1/doctors/schedule/${scheduleIdSafe}`
+    ]
+  }
+
+  const raw = candidatesByType[type] || []
+  return Array.from(new Set(raw.filter(Boolean)))
+}
+
+async function apiFetchWithFallback(paths, options = {}) {
+  let lastResponse = null
+  let lastPath = ''
+  for (const path of paths) {
+    const res = await apiFetch(path, { ...options, suppressAuthRedirect: true })
+    lastResponse = res
+    lastPath = path
+    if (res.status !== 404 && res.status !== 401) return res
+  }
+  if (lastResponse) {
+    lastResponse._attemptedPath = lastPath
+  }
+  return lastResponse
+}
+
+export default ScheduleManagement

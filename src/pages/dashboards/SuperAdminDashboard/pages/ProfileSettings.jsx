@@ -57,10 +57,118 @@ const ProfileSettings = () => {
   // Check if security settings have changed
   const hasSecurityChanges = JSON.stringify(securitySettings) !== JSON.stringify(originalSecuritySettings)
 
+  // Sessions & Devices State
+  const [devices, setDevices] = useState([
+    {
+      id: 1,
+      name: 'MacBook Pro 16"',
+      type: 'desktop',
+      browser: 'Chrome',
+      location: 'San Francisco, CA',
+      ipAddress: '192.168.1.1',
+      lastActive: 'Active Now',
+      isCurrent: true,
+    },
+    {
+      id: 2,
+      name: 'samsung Galaxy S21',
+      type: 'mobile',
+      browser: 'Safari',
+      location: 'Los Angeles, CA',
+      ipAddress: '192.168.1.50',
+      lastActive: '2 hours ago',
+      isCurrent: false,
+    },
+    {
+      id: 3,
+      name: 'iPad Air',
+      type: 'tablet',
+      browser: 'Safari',
+      location: 'San Francisco, CA',
+      ipAddress: '192.168.1.75',
+      lastActive: '1 day ago',
+      isCurrent: false,
+    },
+  ])
+
+  // Confirmation Dialog State
+  const [confirmation, setConfirmation] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    action: null,
+    actionData: null,
+  })
+
   // Show message notification
   const showMessage = (type, text) => {
     setMessage({ type, text })
     setTimeout(() => setMessage({ type: '', text: '' }), 4000)
+  }
+
+  // ========== Session & Device Handlers ==========
+  const openConfirmation = (title, message, action, actionData = null) => {
+    setConfirmation({
+      isOpen: true,
+      title,
+      message,
+      action,
+      actionData,
+    })
+  }
+
+  const closeConfirmation = () => {
+    setConfirmation({
+      isOpen: false,
+      title: '',
+      message: '',
+      action: null,
+      actionData: null,
+    })
+  }
+
+  const handleConfirmAction = async () => {
+    setLoading(true)
+    try {
+      if (confirmation.action === 'signOutAll') {
+        // API call to sign out all sessions
+        // const response = await fetch('/api/user/sign-out-all', {
+        //   method: 'POST',
+        //   headers: { Authorization: `Bearer ${token}` },
+        // })
+        
+        await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
+        
+        // Keep only current device active (in real scenario, user would be logged out)
+        setDevices(prevDevices =>
+          prevDevices.map(device =>
+            device.isCurrent ? device : null
+          ).filter(Boolean)
+        )
+        showMessage('success', 'Successfully signed out from all other sessions!')
+      } else if (confirmation.action === 'revokeDevice') {
+        const deviceId = confirmation.actionData
+        
+        // API call to revoke device
+        // const response = await fetch(`/api/user/revoke-device/${deviceId}`, {
+        //   method: 'DELETE',
+        //   headers: { Authorization: `Bearer ${token}` },
+        // })
+        
+        await new Promise(resolve => setTimeout(resolve, 800)) // Simulate API call
+        
+        // Remove device from list
+        setDevices(prevDevices =>
+          prevDevices.filter(device => device.id !== deviceId)
+        )
+        showMessage('success', `Device access has been revoked successfully!`)
+      }
+      closeConfirmation()
+    } catch (error) {
+      showMessage('error', error.message || 'Failed to perform action. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   // ========== Profile Picture Handler ==========
@@ -801,49 +909,100 @@ const ProfileSettings = () => {
                   <i className="fas fa-laptop text-cyan-600 text-lg"></i>
                   <h3 className="text-base sm:text-lg font-bold text-gray-900">Sessions & Devices</h3>
                 </div>
-                <button className="text-red-600 hover:text-red-700 text-xs sm:text-sm font-bold uppercase tracking-wide transition-colors border border-red-600 hover:border-red-700 rounded-lg sm:rounded-xl px-2 sm:px-3 py-1 whitespace-nowrap">
+                <button
+                  onClick={() => openConfirmation(
+                    'Sign Out All Sessions',
+                    'This will sign you out from all other devices. You will remain logged in on this device. Are you sure you want to continue?',
+                    'signOutAll'
+                  )}
+                  disabled={loading || devices.length <= 1}
+                  className="text-red-600 hover:text-red-700 disabled:text-gray-400 disabled:border-gray-400 disabled:cursor-not-allowed text-xs sm:text-sm font-bold uppercase tracking-wide transition-colors border border-red-600 hover:border-red-700 disabled:border-gray-300 rounded-lg sm:rounded-xl px-2 sm:px-3 py-1 whitespace-nowrap"
+                  title={devices.length <= 1 ? 'Only one session active' : 'Sign out from all other devices'}
+                >
                   <i className="fas fa-sign-out-alt mr-1"></i>
                   SIGN OUT ALL
                 </button>
               </div>
 
               <div className="space-y-3">
-                {/* Current Device */}
-                <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-blue-200">
-                  <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
-                    <div className="text-blue-600 text-xl sm:text-2xl flex-shrink-0">
-                      <i className="fas fa-desktop"></i>
-                    </div>
-                    <div className="flex-1 min-w-0 w-full">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                        <p className="font-semibold text-gray-900 text-sm sm:text-base">MacBook Pro 16"</p>
-                        <span className="px-2 py-0.5 bg-blue-200 text-blue-700 text-xs font-bold rounded w-fit">CURRENT</span>
+                {devices.length > 0 ? (
+                  devices.map((device) => (
+                    <div
+                      key={device.id}
+                      className={`rounded-lg sm:rounded-xl p-3 sm:p-4 border transition-all ${
+                        device.isCurrent
+                          ? 'bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200'
+                          : 'bg-white border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 justify-between">
+                        <div className="flex items-start gap-3 sm:gap-4 flex-1">
+                          <div
+                            className={`text-xl sm:text-2xl flex-shrink-0 ${
+                              device.isCurrent ? 'text-blue-600' : 'text-gray-400'
+                            }`}
+                          >
+                            <i
+                              className={`fas ${
+                                device.type === 'mobile'
+                                  ? 'fa-mobile-alt'
+                                  : device.type === 'tablet'
+                                  ? 'fa-tablet-alt'
+                                  : 'fa-desktop'
+                              }`}
+                            ></i>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                              <p className="font-semibold text-gray-900 text-sm sm:text-base">
+                                {device.name}
+                              </p>
+                              {device.isCurrent && (
+                                <span className="px-2 py-0.5 bg-blue-200 text-blue-700 text-xs font-bold rounded w-fit">
+                                  CURRENT
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs sm:text-sm text-gray-700 mt-1 overflow-auto">
+                              {device.browser} • {device.location} • {device.ipAddress}
+                            </p>
+                            <p className="text-xs text-gray-600 mt-1">
+                              <span
+                                className={`px-2 py-0.5 rounded text-xs font-medium ${
+                                  device.lastActive === 'Active Now'
+                                    ? 'bg-green-100 text-green-700'
+                                    : 'bg-gray-100 text-gray-700'
+                                }`}
+                              >
+                                {device.lastActive}
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+                        {!device.isCurrent && (
+                          <button
+                            onClick={() =>
+                              openConfirmation(
+                                'Revoke Device Access',
+                                `Are you sure you want to revoke access for "${device.name}"? This device will be logged out immediately.`,
+                                'revokeDevice',
+                                device.id
+                              )
+                            }
+                            disabled={loading}
+                            className="text-red-600 hover:text-red-700 disabled:text-gray-400 disabled:border-gray-300 disabled:cursor-not-allowed font-medium text-xs sm:text-sm flex-shrink-0 transition-colors border border-red-600 hover:border-red-700 disabled:border-gray-400 rounded-lg sm:rounded-xl px-2 sm:px-3 py-1 w-full sm:w-auto text-center"
+                          >
+                            Revoke
+                          </button>
+                        )}
                       </div>
-                      <p className="text-xs sm:text-sm text-gray-700 mt-1 overflow-auto">Chrome • San Francisco, CA • 192.168.1.1</p>
-                      <p className="text-xs text-gray-600 mt-1">
-                        <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-medium">ACTIVE NOW</span>
-                      </p>
                     </div>
+                  ))
+                ) : (
+                  <div className="bg-white rounded-lg sm:rounded-xl p-6 border border-gray-200 text-center">
+                    <p className="text-gray-600 text-sm">No devices found</p>
                   </div>
-                </div>
-
-                {/* Other Device */}
-                <div className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 border border-gray-200 hover:border-gray-300 transition-colors">
-                  <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 justify-between">
-                    <div className="flex items-start gap-3 sm:gap-4 flex-1">
-                      <div className="text-gray-400 text-xl sm:text-2xl flex-shrink-0">
-                        <i className="fas fa-mobile-alt"></i>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-gray-900 text-sm sm:text-base">iPhone 15 Pro</p>
-                        <p className="text-xs sm:text-sm text-gray-600 overflow-auto">Safari • Los Angeles, CA • 2 hours ago</p>
-                      </div>
-                    </div>
-                    <button className="text-red-600 hover:text-red-700 font-medium text-xs sm:text-sm flex-shrink-0 transition-colors border border-red-600 hover:border-red-700 rounded-lg sm:rounded-xl px-2 sm:px-3 py-1">
-                      Revoke
-                    </button>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
 
@@ -917,6 +1076,68 @@ const ProfileSettings = () => {
                 <i className="fas fa-save mr-2"></i>
                 Save Security Profile
               </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Confirmation Modal */}
+        {confirmation.isOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg sm:rounded-xl shadow-2xl max-w-md w-full animate-in fade-in duration-200">
+              {/* Modal Header */}
+              <div className="bg-gradient-to-r from-red-50 to-red-100 px-4 sm:px-6 py-4 sm:py-5 border-b border-red-200 rounded-t-lg sm:rounded-t-xl flex items-start gap-3">
+                <div className="text-red-600 text-2xl flex-shrink-0 mt-0.5">
+                  <i className="fas fa-exclamation-circle"></i>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-900">
+                    {confirmation.title}
+                  </h3>
+                </div>
+                <button
+                  onClick={closeConfirmation}
+                  className="text-gray-400 hover:text-gray-600 text-xl flex-shrink-0 transition-colors"
+                  aria-label="Close"
+                >
+                  <i className="fas fa-times"></i>
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="px-4 sm:px-6 py-4 sm:py-5">
+                <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
+                  {confirmation.message}
+                </p>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="bg-gray-50 px-4 sm:px-6 py-4 border-t border-gray-200 rounded-b-lg sm:rounded-b-xl flex gap-3 flex-row-reverse">
+                <button
+                  onClick={handleConfirmAction}
+                  disabled={loading}
+                  className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded-lg sm:rounded-xl transition-all duration-200 text-sm sm:text-base"
+                >
+                  {loading ? (
+                    <>
+                      <i className="fas fa-spinner fa-spin mr-2"></i>
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <i className="fas fa-check mr-2"></i>
+                      Confirm
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={closeConfirmation}
+                  disabled={loading}
+                  className="flex-1 bg-gray-100 hover:bg-gray-200 disabled:bg-gray-50 disabled:cursor-not-allowed text-gray-900 font-semibold py-2 px-4 rounded-lg sm:rounded-xl transition-all duration-200 text-sm sm:text-base"
+                >
+                  <i className="fas fa-times mr-2"></i>
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         )}

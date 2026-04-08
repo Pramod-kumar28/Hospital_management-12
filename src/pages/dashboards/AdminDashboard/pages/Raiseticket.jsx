@@ -133,8 +133,9 @@ const SupportManagement = () => {
     return order[priority] || 5;
   };
 
-  // Update stats based on tickets
+  // CORRECTED: Update stats based on tickets
   const updateStats = (ticketsList, completedList = []) => {
+    // Calculate stats from active tickets
     const open = ticketsList.filter(t => t.status === 'OPEN').length;
     const inProgress = ticketsList.filter(t => t.status === 'IN_PROGRESS').length;
     const resolved = ticketsList.filter(t => t.status === 'RESOLVED').length;
@@ -142,17 +143,26 @@ const SupportManagement = () => {
     const urgent = ticketsList.filter(t => t.priority === 'URGENT').length;
     const high = ticketsList.filter(t => t.priority === 'HIGH').length;
     
+    // Completed tickets are those that are RESOLVED or CLOSED from active tickets PLUS the separate completed tickets
+    const activeCompleted = ticketsList.filter(t => t.status === 'RESOLVED' || t.status === 'CLOSED').length;
+    const totalCompleted = activeCompleted + completedList.length;
+    
     setStats({
-      total: ticketsList.length + completedList.length,
-      open,
-      inProgress,
-      resolved,
-      closed,
-      urgent,
-      high,
-      completed: completedList.length
+      total: ticketsList.length + completedList.length,  // Total active + completed
+      open: open,
+      inProgress: inProgress,
+      resolved: resolved,
+      closed: closed,
+      urgent: urgent,
+      high: high,
+      completed: totalCompleted  // Active resolved/closed + separate completed tickets
     });
   };
+
+  // Update stats whenever tickets or completedTickets change
+  useEffect(() => {
+    updateStats(tickets, completedTickets);
+  }, [tickets, completedTickets]);
 
   // Check if user is SUPER_ADMIN
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
@@ -202,7 +212,6 @@ const SupportManagement = () => {
         if (response.status === 403) {
           toast.error('You do not have permission to view tickets');
           setTickets([]);
-          updateStats([], completedTickets);
           setLoading(false);
           return;
         }
@@ -226,7 +235,7 @@ const SupportManagement = () => {
       });
       
       setTickets(ticketsData);
-      updateStats(ticketsData, completedTickets);
+      // Stats will be updated by the useEffect that watches tickets and completedTickets
       
       setPagination({
         total: data?.total || ticketsData.length,
@@ -244,7 +253,6 @@ const SupportManagement = () => {
         toast.error(error.message || 'Failed to fetch tickets');
       }
       setTickets([]);
-      updateStats([], completedTickets);
     } finally {
       setLoading(false);
     }
@@ -289,7 +297,7 @@ const SupportManagement = () => {
       let completedData = data?.tickets || data?.data || [];
       
       setCompletedTickets(completedData);
-      updateStats(tickets, completedData);
+      // Stats will be updated by the useEffect that watches tickets and completedTickets
       
       setCompletedPagination({
         total: data?.total || completedData.length,
@@ -1875,4 +1883,4 @@ const SupportManagement = () => {
   );
 };
 
-export default SupportManagement; 
+export default SupportManagement;

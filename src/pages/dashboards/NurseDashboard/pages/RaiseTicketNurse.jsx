@@ -1,4 +1,4 @@
-// SupportManagement.jsx - Complete Frontend for Hospital Admin Tickets
+// SupportManagement.jsx - Staff Ticket Management (Only Priority Cards)
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { toast, ToastContainer } from 'react-toastify';
@@ -44,13 +44,8 @@ const SupportManagement = () => {
     limit: 50
   });
 
-  // Stats for cards
+  // Stats for priority cards only
   const [stats, setStats] = useState({
-    total: 0,
-    open: 0,
-    inProgress: 0,
-    resolved: 0,
-    closed: 0,
     critical: 0,
     urgent: 0,
     high: 0,
@@ -64,12 +59,8 @@ const SupportManagement = () => {
     return ticketId.substring(0, 8);
   };
 
-  // Update stats based on tickets
+  // Update priority stats only
   const updateStats = (ticketsList) => {
-    const open = ticketsList.filter(t => t.status === 'OPEN').length;
-    const inProgress = ticketsList.filter(t => t.status === 'IN_PROGRESS').length;
-    const resolved = ticketsList.filter(t => t.status === 'RESOLVED').length;
-    const closed = ticketsList.filter(t => t.status === 'CLOSED').length;
     const critical = ticketsList.filter(t => t.priority === 'CRITICAL').length;
     const urgent = ticketsList.filter(t => t.priority === 'URGENT').length;
     const high = ticketsList.filter(t => t.priority === 'HIGH').length;
@@ -77,11 +68,6 @@ const SupportManagement = () => {
     const low = ticketsList.filter(t => t.priority === 'LOW').length;
     
     setStats({
-      total: ticketsList.length,
-      open,
-      inProgress,
-      resolved,
-      closed,
       critical,
       urgent,
       high,
@@ -108,7 +94,6 @@ const SupportManagement = () => {
         return;
       }
       
-      // Build query parameters
       const queryParams = new URLSearchParams({
         skip: filters.skip,
         limit: filters.limit,
@@ -122,9 +107,7 @@ const SupportManagement = () => {
       const endpoint = `/api/v1/support/staff/tickets?${queryParams.toString()}`;
       console.log('Fetching tickets from:', endpoint);
       
-      const response = await apiFetch(endpoint, {
-        method: "GET",
-      });
+      const response = await apiFetch(endpoint, { method: "GET" });
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -145,17 +128,14 @@ const SupportManagement = () => {
       const data = await response.json();
       console.log('Tickets API Response:', data);
       
-      // Get tickets array from response
       let ticketsData = data?.tickets || [];
       
-      // Sort tickets by priority (CRITICAL > URGENT > HIGH > NORMAL > LOW)
+      // Sort by priority
       const priorityOrder = { 'CRITICAL': 1, 'URGENT': 2, 'HIGH': 3, 'NORMAL': 4, 'LOW': 5 };
       ticketsData = [...ticketsData].sort((a, b) => {
         const orderA = priorityOrder[a.priority] || 99;
         const orderB = priorityOrder[b.priority] || 99;
-        if (orderA !== orderB) {
-          return orderA - orderB;
-        }
+        if (orderA !== orderB) return orderA - orderB;
         return new Date(b.created_at) - new Date(a.created_at);
       });
       
@@ -211,13 +191,10 @@ const SupportManagement = () => {
     return Object.keys(errors).length === 0;
   };
 
-  // Create Ticket using staff endpoint
   const handleCreateTicket = async (e) => {
     e.preventDefault();
     
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
     
     setSubmitting(true);
     
@@ -228,7 +205,6 @@ const SupportManagement = () => {
         return;
       }
       
-      // Prepare the payload
       const payload = {
         subject: formData.subject.trim(),
         description: formData.description.trim(),
@@ -237,14 +213,12 @@ const SupportManagement = () => {
       
       console.log('Creating ticket with payload:', payload);
       
-      // Create ticket using the staff endpoint
       const response = await apiFetch('/api/v1/support/staff/tickets', {
         method: "POST",
         body: payload,
       });
       
       const responseData = await response.json();
-      console.log('API Response:', responseData);
       
       if (!response.ok) {
         if (response.status === 422 && responseData.detail) {
@@ -264,10 +238,8 @@ const SupportManagement = () => {
         throw new Error(responseData.message || responseData.detail || `Failed to create ticket: ${response.statusText}`);
       }
       
-      // Display success message
-      toast.success(`✅ ${responseData.message || 'Ticket created successfully!'}`);
+      toast.success(` ${responseData.message || 'Ticket created successfully!'}`);
       
-      // Reset form
       setFormData({
         subject: '',
         description: '',
@@ -276,7 +248,6 @@ const SupportManagement = () => {
       setFormErrors({});
       setShowCreateModal(false);
       
-      // Refresh ticket list
       await fetchTickets();
       
     } catch (error) {
@@ -346,7 +317,6 @@ const SupportManagement = () => {
     });
   };
 
-  // Filter tickets based on search term
   const getFilteredTickets = () => {
     if (!searchTerm) return tickets;
     
@@ -388,95 +358,91 @@ const SupportManagement = () => {
     <div className="min-h-screen bg-gray-50 p-6">
       <ToastContainer position="top-right" autoClose={5000} />
       
-      {/* Header */}
+      {/* Header - Changed to "Raise Ticket" */}
       <div className="mb-8">
         <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 to-blue-800 bg-clip-text text-transparent">
-          Support Tickets
+          Raise Ticket
         </h1>
         <p className="text-gray-600 mt-2">
-          View and manage all support tickets
+          Create and track your support requests
         </p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {/* TOTAL TICKETS */}
-        <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-600 mb-3">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-              </div>
-              <p className="text-sm text-gray-500">Total Tickets</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+      {/* ONLY 5 Priority Cards - Enhanced Design */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 mb-8">
+        {/* CRITICAL */}
+        <div className="group relative bg-gradient-to-br from-red-50 to-red-100 rounded-2xl p-5 border border-red-200 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 cursor-pointer overflow-hidden">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-red-200 rounded-full -mr-10 -mt-10 opacity-20 group-hover:scale-150 transition-transform duration-500"></div>
+          <div className="relative">
+            <div className="w-12 h-12 flex items-center justify-center rounded-full bg-red-600 mb-3 shadow-md">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
             </div>
+            <p className="text-xs font-semibold text-red-700 uppercase tracking-wider">CRITICAL</p>
+            <p className="text-3xl font-bold text-red-800 mt-1">{stats.critical}</p>
+            <p className="text-xs text-red-600 mt-1">Immediate attention</p>
           </div>
         </div>
 
-        {/* OPEN TICKETS */}
-        <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
-          <div>
-            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-yellow-500 mb-3">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        {/* URGENT */}
+        <div className="group relative bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-5 border border-orange-200 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 cursor-pointer overflow-hidden">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-orange-200 rounded-full -mr-10 -mt-10 opacity-20 group-hover:scale-150 transition-transform duration-500"></div>
+          <div className="relative">
+            <div className="w-12 h-12 flex items-center justify-center rounded-full bg-orange-500 mb-3 shadow-md">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <p className="text-sm text-gray-500">Open Tickets</p>
-            <p className="text-2xl font-bold text-gray-900">{stats.open}</p>
+            <p className="text-xs font-semibold text-orange-700 uppercase tracking-wider">URGENT</p>
+            <p className="text-3xl font-bold text-orange-800 mt-1">{stats.urgent}</p>
+            <p className="text-xs text-orange-600 mt-1">Address soon</p>
           </div>
         </div>
 
-        {/* IN PROGRESS */}
-        <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
-          <div>
-            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-purple-600 mb-3">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        {/* HIGH */}
+        <div className="group relative bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-2xl p-5 border border-yellow-200 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 cursor-pointer overflow-hidden">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-yellow-200 rounded-full -mr-10 -mt-10 opacity-20 group-hover:scale-150 transition-transform duration-500"></div>
+          <div className="relative">
+            <div className="w-12 h-12 flex items-center justify-center rounded-full bg-yellow-600 mb-3 shadow-md">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
-            <p className="text-sm text-gray-500">In Progress</p>
-            <p className="text-2xl font-bold text-gray-900">{stats.inProgress}</p>
+            <p className="text-xs font-semibold text-yellow-700 uppercase tracking-wider">HIGH</p>
+            <p className="text-3xl font-bold text-yellow-800 mt-1">{stats.high}</p>
+            <p className="text-xs text-yellow-600 mt-1">Needs quick action</p>
           </div>
         </div>
 
-        {/* RESOLVED/CLOSED */}
-        <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
-          <div>
-            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-green-500 mb-3">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        {/* NORMAL */}
+        <div className="group relative bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-5 border border-blue-200 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 cursor-pointer overflow-hidden">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-blue-200 rounded-full -mr-10 -mt-10 opacity-20 group-hover:scale-150 transition-transform duration-500"></div>
+          <div className="relative">
+            <div className="w-12 h-12 flex items-center justify-center rounded-full bg-blue-600 mb-3 shadow-md">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <p className="text-sm text-gray-500">Resolved/Closed</p>
-            <p className="text-2xl font-bold text-gray-900">{stats.resolved + stats.closed}</p>
+            <p className="text-xs font-semibold text-blue-700 uppercase tracking-wider">NORMAL</p>
+            <p className="text-3xl font-bold text-blue-800 mt-1">{stats.normal}</p>
+            <p className="text-xs text-blue-600 mt-1">Standard priority</p>
           </div>
         </div>
-      </div>
 
-      {/* Priority Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-        <div className="bg-red-50 rounded-xl p-4 border border-red-200">
-          <p className="text-xs text-red-600 font-medium">CRITICAL</p>
-          <p className="text-2xl font-bold text-red-700">{stats.critical}</p>
-        </div>
-        <div className="bg-orange-50 rounded-xl p-4 border border-orange-200">
-          <p className="text-xs text-orange-600 font-medium">URGENT</p>
-          <p className="text-2xl font-bold text-orange-700">{stats.urgent}</p>
-        </div>
-        <div className="bg-yellow-50 rounded-xl p-4 border border-yellow-200">
-          <p className="text-xs text-yellow-600 font-medium">HIGH</p>
-          <p className="text-2xl font-bold text-yellow-700">{stats.high}</p>
-        </div>
-        <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
-          <p className="text-xs text-blue-600 font-medium">NORMAL</p>
-          <p className="text-2xl font-bold text-blue-700">{stats.normal}</p>
-        </div>
-        <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-          <p className="text-xs text-gray-600 font-medium">LOW</p>
-          <p className="text-2xl font-bold text-gray-700">{stats.low}</p>
+        {/* LOW */}
+        <div className="group relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 cursor-pointer overflow-hidden">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gray-200 rounded-full -mr-10 -mt-10 opacity-20 group-hover:scale-150 transition-transform duration-500"></div>
+          <div className="relative">
+            <div className="w-12 h-12 flex items-center justify-center rounded-full bg-gray-500 mb-3 shadow-md">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <p className="text-xs font-semibold text-gray-700 uppercase tracking-wider">LOW</p>
+            <p className="text-3xl font-bold text-gray-800 mt-1">{stats.low}</p>
+            <p className="text-xs text-gray-600 mt-1">Can wait</p>
+          </div>
         </div>
       </div>
 
@@ -526,7 +492,7 @@ const SupportManagement = () => {
         </div>
       </div>
 
-      {/* Tickets Table */}
+      {/* Tickets Table (unchanged functionality) */}
       <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
         {loading ? (
           <div className="p-12 text-center">
@@ -589,10 +555,10 @@ const SupportManagement = () => {
                       </td>
                       <td className="py-4 px-6 text-sm text-gray-500">
                         {formatDate(ticket.created_at)}
-                      </td>
+                       </td>
                       <td className="py-4 px-6 text-sm text-gray-500">
                         {formatDate(ticket.updated_at)}
-                      </td>
+                       </td>
                       <td className="py-4 px-6">
                         <button
                           onClick={() => {
@@ -607,8 +573,8 @@ const SupportManagement = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                           </svg>
                         </button>
-                      </td>
-                    </tr>
+                       </td>
+                     </tr>
                   ))}
                 </tbody>
               </table>
@@ -652,7 +618,7 @@ const SupportManagement = () => {
         )}
       </div>
 
-      {/* Create Ticket Modal */}
+      {/* Create Ticket Modal (unchanged) */}
       <Modal
         isOpen={showCreateModal}
         onClose={() => {
@@ -664,11 +630,8 @@ const SupportManagement = () => {
       >
         <form onSubmit={handleCreateTicket} className="space-y-6">
           <div className="space-y-4">
-            {/* Subject Field */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Subject *
-              </label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Subject *</label>
               <input
                 type="text"
                 value={formData.subject}
@@ -682,11 +645,8 @@ const SupportManagement = () => {
               {formErrors.subject && <p className="mt-1 text-sm text-red-600">{formErrors.subject}</p>}
             </div>
 
-            {/* Description Field */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Description *
-              </label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Description *</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => {
@@ -700,21 +660,18 @@ const SupportManagement = () => {
               {formErrors.description && <p className="mt-1 text-sm text-red-600">{formErrors.description}</p>}
             </div>
 
-            {/* Priority Field */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Priority *
-              </label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Priority *</label>
               <select
                 value={formData.priority}
                 onChange={(e) => setFormData({...formData, priority: e.target.value})}
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
               >
-                <option value="CRITICAL">🔴 CRITICAL</option>
-                <option value="URGENT">🟠 URGENT</option>
-                <option value="HIGH">🟡 HIGH</option>
-                <option value="NORMAL">🔵 NORMAL</option>
-                <option value="LOW">⚪ LOW</option>
+                <option value="CRITICAL"> CRITICAL</option>
+                <option value="URGENT">URGENT</option>
+                <option value="HIGH">HIGH</option>
+                <option value="NORMAL">NORMAL</option>
+                <option value="LOW"> LOW</option>
               </select>
             </div>
           </div>
@@ -753,7 +710,7 @@ const SupportManagement = () => {
         </form>
       </Modal>
 
-      {/* View Ticket Modal */}
+      {/* View Ticket Modal (unchanged) */}
       <Modal
         isOpen={showViewModal}
         onClose={() => setShowViewModal(false)}
@@ -765,9 +722,7 @@ const SupportManagement = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-gray-500">Ticket ID</label>
-                <p className="font-mono font-semibold text-blue-600">
-                  {selectedTicket.id}
-                </p>
+                <p className="font-mono font-semibold text-blue-600">{selectedTicket.id}</p>
               </div>
               <div>
                 <label className="text-sm text-gray-500">Status</label>

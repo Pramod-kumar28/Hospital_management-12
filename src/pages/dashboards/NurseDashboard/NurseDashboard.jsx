@@ -10,6 +10,7 @@ import LabTestsUpload from './pages/LabTestsUpload'
 import NursingNotes from './pages/NursingNotes'
 import DischargeSummary from './pages/DischargeSummary'
 import NurseProfile from './pages/NurseProfile'
+import RaiseticketNurse from './pages/RaiseTicketNurse'
 
 const NurseDashboard = () => {
   const [activePage, setActivePage] = useState('dashboard')
@@ -63,6 +64,8 @@ const NurseDashboard = () => {
         return <DischargeSummary />
       case 'profile':
         return <NurseProfile />
+        case 'raise-ticket':
+          return <RaiseticketNurse/>
       default:
         return <NurseOverview />
     }

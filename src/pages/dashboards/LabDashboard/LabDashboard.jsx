@@ -11,6 +11,7 @@ import EquipmentTracking from './pages/EquipmentTracking'
 import QualityControl from './pages/QualityControl'
 import LabOverview from './pages/LabOverview'
 import LabProfile from './pages/LabProfile'
+import RaiseticketLab from './pages/RaiseticketLab'
 
 const LabDashboard = () => {
   const [activePage, setActivePage] = useState('lab-dashboard')
@@ -62,6 +63,8 @@ const LabDashboard = () => {
         return <EquipmentTracking />
       case 'quality-control':
         return <QualityControl />
+        case 'raise-ticket':
+          return <RaiseticketLab/>
       case 'profile':
         return <LabProfile/>
       default:

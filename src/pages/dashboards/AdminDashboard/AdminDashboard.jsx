@@ -6,7 +6,7 @@ import HospitalProfile from './pages/HospitalProfile'
 import DoctorManagement from './pages/DoctorManagement'
 import StaffManagement from './pages/StaffManagement'
 import DepartmentManagement from './pages/DepartmentManagement'
-// import AssignDepartment from './pages/DepartmentAssignment'
+import AssignDepartment from './pages/DepartmentAssignment'
 import AppointmentManagement from './pages/AppointmentManagement'
 import BillingFinance from './pages/BillingFinance'
 import InpatientManagement from './pages/InpatientManagement'
@@ -61,8 +61,8 @@ const AdminDashboard = () => {
         return <StaffManagement />
       case 'departments':
         return <DepartmentManagement />
-      // case 'assign-departments':
-      //   return <AssignDepartment />
+       case 'assign-departments':
+         return <AssignDepartment />
       case 'appointments':
         return <AppointmentManagement />
       case 'billing':

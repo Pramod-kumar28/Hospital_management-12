@@ -38,6 +38,7 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
   const doctorMenu = [
     { id: 'dashboard', label: 'Dashboard Overview', icon: 'fa-chart-line' },
     { id: 'appointments', label: 'Appointments', icon: 'fa-calendar-alt' },
+    { id: 'schedule', label: 'Schedule Management', icon: 'fa-calendar-week' },
     { id: 'patients', label: 'Patient Records', icon: 'fa-user-injured' },
     { id: 'prescriptions', label: 'Prescriptions', icon: 'fa-prescription-bottle-medical' },
     { id: 'labs', label: 'Lab Results', icon: 'fa-flask' },
@@ -52,7 +53,7 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
     { id: 'doctors', label: 'Doctor Management', icon: 'fa-user-md' },
     { id: 'staff', label: 'Staff Management', icon: 'fa-users' },
     { id: 'departments', label: 'Department Management', icon: 'fa-building' },
-    // { id: 'assign-departments', label: 'Department Assignment', icon: 'fa-briefcase' },
+    { id: 'assign-departments', label: 'Department Assignment', icon: 'fa-briefcase' },
     { id: 'appointments', label: 'Appointment Management', icon: 'fa-clipboard-list' },
     { id: 'billing', label: 'Billing & Finance', icon: 'fa-money-bill-wave' },
     { id: 'inpatient', label: 'Inpatient Management', icon: 'fa-bed' },

@@ -92,3 +92,13 @@ export const HOSPITAL_ADMIN_DEPARTMENT_STAFF_BY_NAME = (departmentName) =>
 /** GET departments for a staff member (path uses staff display name) */
 export const HOSPITAL_ADMIN_STAFF_DEPARTMENTS_BY_NAME = (staffName) =>
   `/api/v1/hospital-admin/staff/${encodeURIComponent(staffName)}/departments`;
+
+/** Doctor: schedule management */
+export const DOCTOR_SCHEDULE_WEEKLY = '/api/v1/doctor-management/schedule/weekly';
+export const DOCTOR_SCHEDULE_SLOTS = '/api/v1/doctor-management/schedule/slots';
+export const DOCTOR_SCHEDULE_CREATE = '/api/v1/doctor-management/schedule/create';
+export const DOCTOR_SCHEDULE_SLOT_DETAILS = (scheduleId) =>
+  `/api/v1/doctor-management/schedule/${encodeURIComponent(scheduleId)}`;
+
+
+

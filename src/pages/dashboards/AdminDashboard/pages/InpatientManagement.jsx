@@ -8,16 +8,17 @@ const InpatientManagement = () => {
   const [inpatients, setInpatients] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
-  const [modalState, setModalState] = useState({ add: false, view: false, discharge: false, transfer: false, roomShift: false })
+  const [modalState, setModalState] = useState({ add: false, view: false, discharge: false, transfer: false })
   const [currentPatient, setCurrentPatient] = useState(null)
   const [formData, setFormData] = useState({
     patient: '', doctor: '', roomNo: '', bedNo: '', admissionDate: '', 
-    diagnosis: '', treatmentPlan: '', emergencyContact: '', insurance: '', insuranceId: '', insuranceAmount: ''
+    condition: 'Stable', diagnosis: '', treatmentPlan: '', emergencyContact: '', insurance: ''
   })
 
   // Data constants
   const PATIENTS = ['Ravi Kumar', 'Anita Sharma', 'Suresh Patel', 'Priya Singh', 'Rajesh Kumar', 'Meena Gupta', 'Arun Verma', 'Kavita Joshi']
   const DOCTORS = ['Dr. Meena Rao - Cardiology', 'Dr. Vivek Sharma - Orthopedics', 'Dr. Rajesh Menon - Neurology', 'Dr. Anjali Desai - Pediatrics', 'Dr. Kavita Iyer - ENT', 'Dr. Sanjay Kumar - Dermatology']
+  const CONDITIONS = ['Stable', 'Critical', 'Serious', 'Improving', 'Observation']
   const INSURANCE_PROVIDERS = ['HealthGuard', 'MediCare Plus', 'SecureLife', 'Wellness First', 'Star Health', 'Apollo Munich']
 
   useEffect(() => { loadInpatients() }, [])
@@ -26,9 +27,9 @@ const InpatientManagement = () => {
     setLoading(true)
     setTimeout(() => {
       setInpatients([
-        { id: 'INP-5001', roomNo: 'R-101', bedNo: 'B-1', admissionDate: '2023-10-12', dischargeDate: null, doctor: 'Dr. Meena Rao', patient: 'Ravi Kumar', diagnosis: 'Pneumonia', treatmentPlan: 'Antibiotics and rest', emergencyContact: '+91 98765 43210', insurance: 'HealthGuard' },
-        { id: 'INP-5002', roomNo: 'R-205', bedNo: 'B-1', admissionDate: '2023-10-10', dischargeDate: null, doctor: 'Dr. Sharma', patient: 'Suresh Patel', diagnosis: 'Heart Attack', treatmentPlan: 'ICU monitoring', emergencyContact: '+91 98765 43211', insurance: 'MediCare Plus' },
-        { id: 'INP-5003', roomNo: 'R-102', bedNo: 'B-2', admissionDate: '2023-10-08', dischargeDate: '2023-10-15', doctor: 'Dr. Desai', patient: 'Anita Sharma',  diagnosis: 'Appendicitis', treatmentPlan: 'Surgery completed', emergencyContact: '+91 98765 43212', insurance: 'SecureLife' }
+        { id: 'INP-5001', roomNo: 'R-101', bedNo: 'B-1', admissionDate: '2023-10-12', dischargeDate: null, doctor: 'Dr. Meena Rao', patient: 'Ravi Kumar', condition: 'Stable', diagnosis: 'Pneumonia', treatmentPlan: 'Antibiotics and rest', emergencyContact: '+91 98765 43210', insurance: 'HealthGuard' },
+        { id: 'INP-5002', roomNo: 'R-205', bedNo: 'B-1', admissionDate: '2023-10-10', dischargeDate: null, doctor: 'Dr. Sharma', patient: 'Suresh Patel', condition: 'Critical', diagnosis: 'Heart Attack', treatmentPlan: 'ICU monitoring', emergencyContact: '+91 98765 43211', insurance: 'MediCare Plus' },
+        { id: 'INP-5003', roomNo: 'R-102', bedNo: 'B-2', admissionDate: '2023-10-08', dischargeDate: '2023-10-15', doctor: 'Dr. Desai', patient: 'Anita Sharma', condition: 'Discharged', diagnosis: 'Appendicitis', treatmentPlan: 'Surgery completed', emergencyContact: '+91 98765 43212', insurance: 'SecureLife' }
       ])
       setLoading(false)
     }, 1000)
@@ -42,13 +43,10 @@ const InpatientManagement = () => {
       if (type === 'view') {
         setFormData({
           patient: patient.patient, doctor: patient.doctor, roomNo: patient.roomNo, 
-          bedNo: patient.bedNo, admissionDate: patient.admissionDate, 
+          bedNo: patient.bedNo, admissionDate: patient.admissionDate, condition: patient.condition,
           diagnosis: patient.diagnosis, treatmentPlan: patient.treatmentPlan, 
-          emergencyContact: patient.emergencyContact, insurance: patient.insurance, insuranceId: patient.insuranceId, insuranceAmount: patient.insuranceAmount
+          emergencyContact: patient.emergencyContact, insurance: patient.insurance
         })
-      }
-      if (type === 'transfer' || type === 'roomShift') {
-        setFormData(prev => ({ ...prev, roomNo: '', bedNo: '' }))
       }
     }
   }
@@ -85,12 +83,16 @@ const InpatientManagement = () => {
     closeModal('transfer')
   }
 
- 
+  const handleUpdateCondition = (patientId, newCondition) => {
+    setInpatients(prev => prev.map(ip => 
+      ip.id === patientId ? { ...ip, condition: newCondition } : ip
+    ))
+  }
 
   const resetForm = () => {
     setFormData({
       patient: '', doctor: '', roomNo: '', bedNo: '', admissionDate: '', 
-      diagnosis: '', treatmentPlan: '', emergencyContact: '', insurance: '', insuranceId: '', insuranceAmount: ''
+      condition: 'Stable', diagnosis: '', treatmentPlan: '', emergencyContact: '', insurance: ''
     })
     setCurrentPatient(null)
   }
@@ -109,62 +111,20 @@ const InpatientManagement = () => {
     return true
   }
 
-  // Generate room and bed options with proper room types
-  const getRoomType = (roomNo) => {
-    if (roomNo.startsWith('P-')) return 'Private'
-    if (roomNo.startsWith('D-')) return 'Double Sharing'
-    if (roomNo.startsWith('G-')) return 'General Ward'
-    if (roomNo.startsWith('F-')) return '4 Sharing'
-    return 'Unknown'
-  }
-
+  // Generate room and bed options
   const generateRoomOptions = () => {
     const rooms = []
-    const floors = 3
-    
-    // Private rooms (1 bed each)
-    for (let floor = 1; floor <= floors; floor++) {
-      for (let room = 1; room <= 3; room++) {
-        rooms.push(`P-${floor}${room.toString().padStart(2, '0')}`)
+    for (let floor = 1; floor <= 3; floor++) {
+      for (let room = 1; room <= 20; room++) {
+        rooms.push(`R-${floor}${room.toString().padStart(2, '0')}`)
       }
     }
-    
-    // Double Sharing (2 beds each)
-    for (let floor = 1; floor <= floors; floor++) {
-      for (let room = 4; room <= 6; room++) {
-        rooms.push(`D-${floor}${room.toString().padStart(2, '0')}`)
-      }
-    }
-    
-    // General Ward (4 beds each)
-    for (let floor = 1; floor <= floors; floor++) {
-      for (let room = 7; room <= 8; room++) {
-        rooms.push(`G-${floor}${room.toString().padStart(2, '0')}`)
-      }
-    }
-    
-    // 4 Sharing (4 beds each)
-    for (let floor = 1; floor <= floors; floor++) {
-      for (let room = 9; room <= 10; room++) {
-        rooms.push(`F-${floor}${room.toString().padStart(2, '0')}`)
-      }
-    }
-    
-    return rooms.sort((a, b) => a.localeCompare(b))
+    return rooms
   }
 
   const generateBedOptions = (roomNo) => {
+    const bedsPerRoom = roomNo.includes('P') ? 1 : 2
     const beds = []
-    let bedsPerRoom = 1
-    
-    if (roomNo.startsWith('P-')) {
-      bedsPerRoom = 1
-    } else if (roomNo.startsWith('D-')) {
-      bedsPerRoom = 2
-    } else if (roomNo.startsWith('G-') || roomNo.startsWith('F-')) {
-      bedsPerRoom = 4
-    }
-    
     for (let i = 1; i <= bedsPerRoom; i++) {
       beds.push(`B-${i}`)
     }
@@ -219,7 +179,16 @@ const InpatientManagement = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-       
+          <select 
+            className="p-2 border rounded focus:outline-none focus:border-blue-500"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="">All Conditions</option>
+            {CONDITIONS.map(condition => (
+              <option key={condition} value={condition}>{condition}</option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -296,8 +265,7 @@ const InpatientManagement = () => {
             onView={() => openModal('view', patient)}
             onDischarge={() => openModal('discharge', patient)}
             onTransfer={() => openModal('transfer', patient)}
-            onRoomShift={() => openModal('roomShift', patient)}
-            
+            onUpdateCondition={handleUpdateCondition}
           />
         ))}
       </div>
@@ -337,7 +305,7 @@ const InpatientManagement = () => {
         isOpen={modalState.view}
         onClose={() => closeModal('view')}
         patient={currentPatient}
-       
+        onUpdateCondition={handleUpdateCondition}
       />
 
       <DischargeModal
@@ -355,27 +323,34 @@ const InpatientManagement = () => {
         onInputChange={handleInputChange}
         patient={currentPatient}
       />
-
-      <RoomShiftModal
-        isOpen={modalState.roomShift}
-        onClose={() => closeModal('roomShift')}
-        onConfirm={handleTransferPatient}
-        formData={formData}
-        onInputChange={handleInputChange}
-        patient={currentPatient}
-      />
     </div>
   )
 }
 
 // Sub-components
-const InpatientCard = ({ patient, onView, onDischarge, onTransfer, onRoomShift }) => (
+const InpatientCard = ({ patient, onView, onDischarge, onTransfer, onUpdateCondition }) => (
   <div className="bg-white rounded-xl card-shadow border p-6 hover:shadow-lg transition-shadow">
     <div className="flex items-center justify-between mb-4">
       <div>
         <h3 className="font-semibold text-blue-700">{patient.patient}</h3>
         <p className="text-xs text-gray-500">{patient.id}</p>
       </div>
+      <select 
+        value={patient.condition}
+        onChange={(e) => onUpdateCondition(patient.id, e.target.value)}
+        className={`text-xs px-2 py-1 rounded border ${
+          patient.condition === 'Critical' ? 'bg-red-100 text-red-800 border-red-200' :
+          patient.condition === 'Serious' ? 'bg-orange-100 text-orange-800 border-orange-200' :
+          patient.condition === 'Stable' ? 'bg-green-100 text-green-800 border-green-200' :
+          'bg-blue-100 text-blue-800 border-blue-200'
+        }`}
+      >
+        <option value="Stable">Stable</option>
+        <option value="Serious">Serious</option>
+        <option value="Critical">Critical</option>
+        <option value="Improving">Improving</option>
+        <option value="Observation">Observation</option>
+      </select>
     </div>
     
     <div className="space-y-2 text-sm text-gray-600 mb-4">
@@ -399,9 +374,8 @@ const InpatientCard = ({ patient, onView, onDischarge, onTransfer, onRoomShift }
       </span>
       <div className="flex gap-1">
         <ActionButton icon="chart-line" color="blue" onClick={onView} title="View Details" />
-        <ActionButton icon="exchange-alt" color="orange" onClick={onTransfer} title="Transfer Room" />
-        <ActionButton icon="bed" color="purple" onClick={onRoomShift} title="Room Shifting" />
         <ActionButton icon="sign-out-alt" color="green" onClick={onDischarge} title="Discharge Patient" />
+        <ActionButton icon="exchange-alt" color="red" onClick={onTransfer} title="Transfer Patient" />
       </div>
     </div>
   </div>
@@ -420,255 +394,135 @@ const ActionButton = ({ icon, color, onClick, title }) => (
 const AdmitPatientModal = ({ isOpen, onClose, onSubmit, formData, onInputChange }) => {
   const generateRoomOptions = () => {
     const rooms = []
-    const floors = 3
-    
-    // Private rooms (1 bed each)
-    for (let floor = 1; floor <= floors; floor++) {
-      for (let room = 1; room <= 3; room++) {
-        rooms.push(`P-${floor}${room.toString().padStart(2, '0')}`)
+    for (let floor = 1; floor <= 3; floor++) {
+      for (let room = 1; room <= 20; room++) {
+        rooms.push(`R-${floor}${room.toString().padStart(2, '0')}`)
       }
     }
-    
-    // Double Sharing (2 beds each)
-    for (let floor = 1; floor <= floors; floor++) {
-      for (let room = 4; room <= 6; room++) {
-        rooms.push(`D-${floor}${room.toString().padStart(2, '0')}`)
-      }
-    }
-    
-    // General Ward (4 beds each)
-    for (let floor = 1; floor <= floors; floor++) {
-      for (let room = 7; room <= 8; room++) {
-        rooms.push(`G-${floor}${room.toString().padStart(2, '0')}`)
-      }
-    }
-    
-    // 4 Sharing (4 beds each)
-    for (let floor = 1; floor <= floors; floor++) {
-      for (let room = 9; room <= 10; room++) {
-        rooms.push(`F-${floor}${room.toString().padStart(2, '0')}`)
-      }
-    }
-    
-    return rooms.sort((a, b) => a.localeCompare(b))
+    return rooms
   }
 
   const generateBedOptions = (roomNo) => {
+    const bedsPerRoom = roomNo.includes('P') ? 1 : 2
     const beds = []
-    let bedsPerRoom = 1
-    
-    if (roomNo.startsWith('P-')) {
-      bedsPerRoom = 1
-    } else if (roomNo.startsWith('D-')) {
-      bedsPerRoom = 2
-    } else if (roomNo.startsWith('G-') || roomNo.startsWith('F-')) {
-      bedsPerRoom = 4
-    }
-    
     for (let i = 1; i <= bedsPerRoom; i++) {
       beds.push(`B-${i}`)
     }
     return beds
   }
 
-  const getRoomType = (roomNo) => {
-    if (roomNo.startsWith('P-')) return 'Private'
-    if (roomNo.startsWith('D-')) return 'Double Sharing'
-    if (roomNo.startsWith('G-')) return 'General Ward'
-    if (roomNo.startsWith('F-')) return '4 Sharing'
-    return 'Unknown'
-  }
+  const formSections = [
+    {
+      title: 'Patient and Doctor Selection',
+      fields: [
+        { type: 'select', name: 'patient', label: 'Select Patient *', options: ['Ravi Kumar', 'Anita Sharma', 'Suresh Patel', 'Priya Singh', 'Rajesh Kumar', 'Meena Gupta'] },
+        { type: 'select', name: 'doctor', label: 'Attending Doctor *', options: ['Dr. Meena Rao - Cardiology', 'Dr. Vivek Sharma - Orthopedics', 'Dr. Rajesh Menon - Neurology', 'Dr. Anjali Desai - Pediatrics', 'Dr. Kavita Iyer - ENT', 'Dr. Sanjay Kumar - Dermatology'] }
+      ]
+    },
+    {
+      title: 'Room and Bed Assignment',
+      fields: [
+        { type: 'select', name: 'roomNo', label: 'Room Number *', options: generateRoomOptions() },
+        { type: 'select', name: 'bedNo', label: 'Bed Number *', options: formData.roomNo ? generateBedOptions(formData.roomNo) : [], disabled: !formData.roomNo }
+      ]
+    },
+    {
+      title: 'Admission Details',
+      fields: [
+        { type: 'date', name: 'admissionDate', label: 'Admission Date *' },
+        { type: 'select', name: 'condition', label: 'Patient Condition *', options: ['Stable', 'Critical', 'Serious', 'Improving', 'Observation'] }
+      ]
+    }
+  ]
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Admit New Patient" size="lg">
       <div className="space-y-6">
-        {/* Patient and Doctor Selection */}
+        {formSections.map((section, index) => (
+          <div key={index}>
+            {index > 0 && <div className="border-t my-4"></div>}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {section.fields.map(field => (
+                <div key={field.name}>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
+                  {field.type === 'select' ? (
+                    <select
+                      required={field.label.includes('*')}
+                      value={formData[field.name]}
+                      onChange={(e) => {
+                        onInputChange(field.name, e.target.value)
+                        if (field.name === 'roomNo') onInputChange('bedNo', '')
+                      }}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      disabled={field.disabled}
+                    >
+                      <option value="">Select {field.label.replace(' *', '')}</option>
+                      {field.options.map(option => <option key={option} value={option}>{option}</option>)}
+                    </select>
+                  ) : (
+                    <input
+                      type={field.type}
+                      required={field.label.includes('*')}
+                      value={formData[field.name]}
+                      onChange={(e) => onInputChange(field.name, e.target.value)}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+
         <div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Select Patient <span className="text-red-500">*</span>
-              </label>
-              <select
-                required
-                value={formData.patient}
-                onChange={(e) => onInputChange('patient', e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-              >
-                <option value="">Select Patient</option>
-                {['Ravi Kumar', 'Anita Sharma', 'Suresh Patel', 'Priya Singh', 'Rajesh Kumar', 'Meena Gupta'].map(patient => (
-                  <option key={patient} value={patient}>{patient}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Attending Doctor <span className="text-red-500">*</span>
-              </label>
-              <select
-                required
-                value={formData.doctor}
-                onChange={(e) => onInputChange('doctor', e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-              >
-                <option value="">Select Doctor</option>
-                {['Dr. Meena Rao - Cardiology', 'Dr. Vivek Sharma - Orthopedics', 'Dr. Rajesh Menon - Neurology', 'Dr. Anjali Desai - Pediatrics', 'Dr. Kavita Iyer - ENT', 'Dr. Sanjay Kumar - Dermatology'].map(doctor => (
-                  <option key={doctor} value={doctor}>{doctor}</option>
-                ))}
-              </select>
-            </div>
-          </div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Diagnosis *</label>
+          <input
+            type="text"
+            required
+            value={formData.diagnosis}
+            onChange={(e) => onInputChange('diagnosis', e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+            placeholder="Enter primary diagnosis"
+          />
         </div>
 
-        <div className="border-t pt-4">
-          {/* Room and Bed Assignment */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Room Type <span className="text-red-500">*</span>
-              </label>
-              <select
-                required
-                value={formData.roomNo}
-                onChange={(e) => {
-                  onInputChange('roomNo', e.target.value)
-                  onInputChange('bedNo', '')
-                }}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-              >
-                <option value="">Select Room</option>
-                {generateRoomOptions().map(room => (
-                  <option key={room} value={room}>{room} - {getRoomType(room)}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Bed Number <span className="text-red-500">*</span>
-              </label>
-              <select
-                required
-                value={formData.bedNo}
-                onChange={(e) => onInputChange('bedNo', e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                disabled={!formData.roomNo}
-              >
-                <option value="">Select Bed</option>
-                {formData.roomNo && generateBedOptions(formData.roomNo).map(bed => (
-                  <option key={bed} value={bed}>{bed}</option>
-                ))}
-              </select>
-            </div>
-          </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Treatment Plan *</label>
+          <textarea
+            rows="3"
+            required
+            value={formData.treatmentPlan}
+            onChange={(e) => onInputChange('treatmentPlan', e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+            placeholder="Describe the treatment plan and medications..."
+          />
         </div>
 
-        <div className="border-t pt-4">
-          {/* Admission Details */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Admission Date <span className="text-red-500">*</span>
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Emergency Contact *</label>
             <input
-              type="date"
+              type="tel"
               required
-              value={formData.admissionDate}
-              onChange={(e) => onInputChange('admissionDate', e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 mb-4"
-            />
-          </div>
-        </div>
-
-        <div className="border-t pt-4">
-          {/* Medical Information */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Diagnosis <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.diagnosis}
-              onChange={(e) => onInputChange('diagnosis', e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 mb-4"
-              placeholder="Enter primary diagnosis"
+              value={formData.emergencyContact}
+              onChange={(e) => onInputChange('emergencyContact', e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+              placeholder="+91 98765 43210"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Treatment Plan <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              rows="3"
-              required
-              value={formData.treatmentPlan}
-              onChange={(e) => onInputChange('treatmentPlan', e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 mb-4"
-              placeholder="Describe the treatment plan and medications..."
-            />
-          </div>
-        </div>
-
-        <div className="border-t pt-4">
-          {/* Contact and Insurance */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Emergency Contact <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="tel"
-                required
-                value={formData.emergencyContact}
-                onChange={(e) => onInputChange('emergencyContact', e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                placeholder="+91 98765 43210"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Insurance Provider
-              </label>
-              <select
-                value={formData.insurance}
-                onChange={(e) => onInputChange('insurance', e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-              >
-                <option value="">Select Insurance</option>
-                {['HealthGuard', 'MediCare Plus', 'SecureLife', 'Wellness First', 'Star Health', 'Apollo Munich'].map(insurance => (
-                  <option key={insurance} value={insurance}>{insurance}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Insurance Details */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Insurance ID / Policy Number
-              </label>
-              <input
-                type="text"
-                value={formData.insuranceId}
-                onChange={(e) => onInputChange('insuranceId', e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                placeholder="Policy/ID number"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Insurance Coverage Amount
-              </label>
-              <input
-                type="number"
-                value={formData.insuranceAmount}
-                onChange={(e) => onInputChange('insuranceAmount', e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                placeholder="Coverage amount"
-              />
-            </div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Insurance Provider</label>
+            <select
+              value={formData.insurance}
+              onChange={(e) => onInputChange('insurance', e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+            >
+              <option value="">Select Insurance</option>
+              {['HealthGuard', 'MediCare Plus', 'SecureLife', 'Wellness First', 'Star Health', 'Apollo Munich'].map(insurance => (
+                <option key={insurance} value={insurance}>{insurance}</option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -692,34 +546,20 @@ const AdmitPatientModal = ({ isOpen, onClose, onSubmit, formData, onInputChange 
   )
 }
 
-const ViewPatientModal = ({ isOpen, onClose, patient }) => (
+const ViewPatientModal = ({ isOpen, onClose, patient, onUpdateCondition }) => (
   <Modal isOpen={isOpen} onClose={onClose} title="Patient Details" size="lg">
     {patient && (
       <div className="space-y-6">
         <div className="grid grid-cols-2 gap-4 text-sm">
           <DetailItem label="Patient ID" value={patient.id} />
+          <DetailItem label="Condition" value={patient.condition} />
           <DetailItem label="Patient Name" value={patient.patient} />
           <DetailItem label="Room" value={patient.roomNo} />
           <DetailItem label="Bed" value={patient.bedNo} />
           <DetailItem label="Admission Date" value={patient.admissionDate} />
           <DetailItem label="Doctor" value={patient.doctor} />
+          <DetailItem label="Insurance" value={patient.insurance} />
         </div>
-
-        {/* Insurance Details Section */}
-        {patient.insurance && (
-          <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-            <h4 className="font-semibold text-gray-800 mb-3">Insurance Details</h4>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <DetailItem label="Insurance Provider" value={patient.insurance} />
-              {patient.insuranceId && (
-                <DetailItem label="Insurance ID" value={patient.insuranceId} />
-              )}
-              {patient.insuranceAmount && (
-                <DetailItem label="Coverage Amount" value={`₹${patient.insuranceAmount}`} />
-              )}
-            </div>
-          </div>
-        )}
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Diagnosis</label>
@@ -776,63 +616,21 @@ const DischargeModal = ({ isOpen, onClose, onConfirm, patient }) => (
 const TransferModal = ({ isOpen, onClose, onConfirm, formData, onInputChange, patient }) => {
   const generateRoomOptions = () => {
     const rooms = []
-    const floors = 3
-    
-    // Private rooms (1 bed each)
-    for (let floor = 1; floor <= floors; floor++) {
-      for (let room = 1; room <= 3; room++) {
-        rooms.push(`P-${floor}${room.toString().padStart(2, '0')}`)
+    for (let floor = 1; floor <= 3; floor++) {
+      for (let room = 1; room <= 20; room++) {
+        rooms.push(`R-${floor}${room.toString().padStart(2, '0')}`)
       }
     }
-    
-    // Double Sharing (2 beds each)
-    for (let floor = 1; floor <= floors; floor++) {
-      for (let room = 4; room <= 6; room++) {
-        rooms.push(`D-${floor}${room.toString().padStart(2, '0')}`)
-      }
-    }
-    
-    // General Ward (4 beds each)
-    for (let floor = 1; floor <= floors; floor++) {
-      for (let room = 7; room <= 8; room++) {
-        rooms.push(`G-${floor}${room.toString().padStart(2, '0')}`)
-      }
-    }
-    
-    // 4 Sharing (4 beds each)
-    for (let floor = 1; floor <= floors; floor++) {
-      for (let room = 9; room <= 10; room++) {
-        rooms.push(`F-${floor}${room.toString().padStart(2, '0')}`)
-      }
-    }
-    
-    return rooms.sort((a, b) => a.localeCompare(b))
+    return rooms
   }
 
   const generateBedOptions = (roomNo) => {
+    const bedsPerRoom = roomNo.includes('P') ? 1 : 2
     const beds = []
-    let bedsPerRoom = 1
-    
-    if (roomNo.startsWith('P-')) {
-      bedsPerRoom = 1
-    } else if (roomNo.startsWith('D-')) {
-      bedsPerRoom = 2
-    } else if (roomNo.startsWith('G-') || roomNo.startsWith('F-')) {
-      bedsPerRoom = 4
-    }
-    
     for (let i = 1; i <= bedsPerRoom; i++) {
       beds.push(`B-${i}`)
     }
     return beds
-  }
-
-  const getRoomType = (roomNo) => {
-    if (roomNo.startsWith('P-')) return 'Private'
-    if (roomNo.startsWith('D-')) return 'Double Sharing'
-    if (roomNo.startsWith('G-')) return 'General Ward'
-    if (roomNo.startsWith('F-')) return '4 Sharing'
-    return 'Unknown'
   }
 
   return (
@@ -849,7 +647,7 @@ const TransferModal = ({ isOpen, onClose, onConfirm, formData, onInputChange, pa
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">New Room <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">New Room *</label>
               <select
                 required
                 value={formData.roomNo}
@@ -861,13 +659,13 @@ const TransferModal = ({ isOpen, onClose, onConfirm, formData, onInputChange, pa
               >
                 <option value="">Select Room</option>
                 {generateRoomOptions().map(room => (
-                  <option key={room} value={room}>{room} - {getRoomType(room)}</option>
+                  <option key={room} value={room}>{room}</option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">New Bed <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">New Bed *</label>
               <select
                 required
                 value={formData.bedNo}
@@ -910,150 +708,5 @@ const DetailItem = ({ label, value }) => (
     <p className="text-gray-900">{value}</p>
   </div>
 )
-
-const RoomShiftModal = ({ isOpen, onClose, onConfirm, formData, onInputChange, patient }) => {
-  const generateRoomOptions = () => {
-    const rooms = []
-    const floors = 3
-    
-    // Private rooms (1 bed each)
-    for (let floor = 1; floor <= floors; floor++) {
-      for (let room = 1; room <= 3; room++) {
-        rooms.push(`P-${floor}${room.toString().padStart(2, '0')}`)
-      }
-    }
-    
-    // Double Sharing (2 beds each)
-    for (let floor = 1; floor <= floors; floor++) {
-      for (let room = 4; room <= 6; room++) {
-        rooms.push(`D-${floor}${room.toString().padStart(2, '0')}`)
-      }
-    }
-    
-    // General Ward (4 beds each)
-    for (let floor = 1; floor <= floors; floor++) {
-      for (let room = 7; room <= 8; room++) {
-        rooms.push(`G-${floor}${room.toString().padStart(2, '0')}`)
-      }
-    }
-    
-    // 4 Sharing (4 beds each)
-    for (let floor = 1; floor <= floors; floor++) {
-      for (let room = 9; room <= 10; room++) {
-        rooms.push(`F-${floor}${room.toString().padStart(2, '0')}`)
-      }
-    }
-    
-    return rooms.sort((a, b) => a.localeCompare(b))
-  }
-
-  const generateBedOptions = (roomNo) => {
-    const beds = []
-    let bedsPerRoom = 1
-    
-    if (roomNo.startsWith('P-')) {
-      bedsPerRoom = 1
-    } else if (roomNo.startsWith('D-')) {
-      bedsPerRoom = 2
-    } else if (roomNo.startsWith('G-') || roomNo.startsWith('F-')) {
-      bedsPerRoom = 4
-    }
-    
-    for (let i = 1; i <= bedsPerRoom; i++) {
-      beds.push(`B-${i}`)
-    }
-    return beds
-  }
-
-  const getRoomType = (roomNo) => {
-    if (roomNo.startsWith('P-')) return 'Private'
-    if (roomNo.startsWith('D-')) return 'Double Sharing'
-    if (roomNo.startsWith('G-')) return 'General Ward'
-    if (roomNo.startsWith('F-')) return '4 Sharing'
-    return 'Unknown'
-  }
-
-  return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Room Shifting" size="md">
-      {patient && (
-        <div className="space-y-6">
-          <div className="text-center">
-            <div className="w-12 h-12 mx-auto mb-3 bg-purple-100 rounded-full flex items-center justify-center">
-              <i className="fas fa-bed text-purple-600"></i>
-            </div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">Room Shifting</h3>
-            <p className="text-gray-600">Shift {patient.patient} from {patient.roomNo}-{patient.bedNo}</p>
-          </div>
-
-          <div className="bg-gray-50 p-4 rounded-lg border">
-            <h4 className="font-medium text-gray-700 mb-3">Current Location</h4>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="text-gray-500">Current Room</p>
-                <p className="font-semibold text-gray-800">{patient.roomNo}</p>
-              </div>
-              <div>
-                <p className="text-gray-500">Current Bed</p>
-                <p className="font-semibold text-gray-800">{patient.bedNo}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">New Room <span className="text-red-500">*</span></label>
-              <select
-                required
-                value={formData.roomNo}
-                onChange={(e) => {
-                  onInputChange('roomNo', e.target.value)
-                  onInputChange('bedNo', '')
-                }}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
-              >
-                <option value="">Select Room</option>
-                {generateRoomOptions().map(room => (
-                  <option key={room} value={room}>{room} - {getRoomType(room)}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">New Bed <span className="text-red-500">*</span></label>
-              <select
-                required
-                value={formData.bedNo}
-                onChange={(e) => onInputChange('bedNo', e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
-                disabled={!formData.roomNo}
-              >
-                <option value="">Select Bed</option>
-                {formData.roomNo && generateBedOptions(formData.roomNo).map(bed => (
-                  <option key={bed} value={bed}>{bed}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-3 pt-4 border-t">
-            <button
-              onClick={onClose}
-              className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={onConfirm}
-              disabled={!formData.roomNo || !formData.bedNo}
-              className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <i className="fas fa-bed mr-2"></i>Confirm Shift
-            </button>
-          </div>
-        </div>
-      )}
-    </Modal>
-  )
-}
 
 export default InpatientManagement

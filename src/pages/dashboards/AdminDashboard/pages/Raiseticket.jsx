@@ -1,4 +1,4 @@
-// SupportManagement.jsx - Complete Frontend for Hospital Admin Tickets with Completed Tickets Integration
+// Raiseticket.jsx - Updated for regular users to create tickets for SUPER_ADMIN
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { toast, ToastContainer } from 'react-toastify';
@@ -13,9 +13,7 @@ const SupportManagement = () => {
   
   // State Management
   const [tickets, setTickets] = useState([]);
-  const [completedTickets, setCompletedTickets] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [loadingCompleted, setLoadingCompleted] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -25,10 +23,10 @@ const SupportManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sendingEmail, setSendingEmail] = useState(false);
   const [showClosedOnly, setShowClosedOnly] = useState(false);
-  const [activeTab, setActiveTab] = useState('active'); // 'active' or 'completed'
   
   // Form Data States
   const [formData, setFormData] = useState({
+    hospital_name: '',
     subject: '',
     description: '',
     priority: 'NORMAL',
@@ -55,18 +53,7 @@ const SupportManagement = () => {
     limit: 50
   });
   
-  const [completedFilters, setCompletedFilters] = useState({
-    skip: 0,
-    limit: 50
-  });
-  
   const [pagination, setPagination] = useState({
-    total: 0,
-    skip: 0,
-    limit: 50
-  });
-  
-  const [completedPagination, setCompletedPagination] = useState({
     total: 0,
     skip: 0,
     limit: 50
@@ -80,8 +67,7 @@ const SupportManagement = () => {
     resolved: 0,
     closed: 0,
     urgent: 0,
-    high: 0,
-    completed: 0
+    high: 0
   });
 
   // Helper function to extract ONLY numeric ID
@@ -133,9 +119,8 @@ const SupportManagement = () => {
     return order[priority] || 5;
   };
 
-  // CORRECTED: Update stats based on tickets
-  const updateStats = (ticketsList, completedList = []) => {
-    // Calculate stats from active tickets
+  // Update stats based on tickets
+  const updateStats = (ticketsList) => {
     const open = ticketsList.filter(t => t.status === 'OPEN').length;
     const inProgress = ticketsList.filter(t => t.status === 'IN_PROGRESS').length;
     const resolved = ticketsList.filter(t => t.status === 'RESOLVED').length;
@@ -143,42 +128,29 @@ const SupportManagement = () => {
     const urgent = ticketsList.filter(t => t.priority === 'URGENT').length;
     const high = ticketsList.filter(t => t.priority === 'HIGH').length;
     
-    // Completed tickets are those that are RESOLVED or CLOSED from active tickets PLUS the separate completed tickets
-    const activeCompleted = ticketsList.filter(t => t.status === 'RESOLVED' || t.status === 'CLOSED').length;
-    const totalCompleted = activeCompleted + completedList.length;
-    
     setStats({
-      total: ticketsList.length + completedList.length,  // Total active + completed
-      open: open,
-      inProgress: inProgress,
-      resolved: resolved,
-      closed: closed,
-      urgent: urgent,
-      high: high,
-      completed: totalCompleted  // Active resolved/closed + separate completed tickets
+      total: ticketsList.length,
+      open,
+      inProgress,
+      resolved,
+      closed,
+      urgent,
+      high
     });
   };
-
-  // Update stats whenever tickets or completedTickets change
-  useEffect(() => {
-    updateStats(tickets, completedTickets);
-  }, [tickets, completedTickets]);
 
   // Check if user is SUPER_ADMIN
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
 
-  // Fetch tickets
+  // Fetch tickets based on user role
   useEffect(() => {
     if (!connectionError && token) {
       fetchTickets();
-      fetchCompletedTickets();
     }
   }, [filters.skip, filters.limit, filters.status, token]);
 
   const fetchTickets = async () => {
     setLoading(true);
-    setConnectionError(false);
-    
     try {
       if (!token) {
         toast.warning('Please login to view tickets');
@@ -186,31 +158,22 @@ const SupportManagement = () => {
         return;
       }
       
-      // Build query parameters
-      const queryParams = new URLSearchParams({
-        skip: filters.skip,
-        limit: filters.limit
-      });
-      
-      if (filters.status) {
-        queryParams.append('status', filters.status);
+      // Different endpoints based on user role
+      let endpoint = '';
+      if (isSuperAdmin) {
+        endpoint = `/api/v1/super-admin/support/tickets?skip=${filters.skip}&limit=${filters.limit}&status=${filters.status || ''}`;
+      } else {
+        // Regular users endpoint - they can only view their own tickets
+        endpoint = `/api/v1/super-admin/support/tickets?skip=${filters.skip}&limit=${filters.limit}&status=${filters.status || ''}`;
       }
-      
-      const endpoint = `/api/v1/support/hospital-admin/tickets?${queryParams.toString()}`;
-      console.log('Fetching tickets from:', endpoint);
       
       const response = await apiFetch(endpoint, {
         method: "GET",
       });
 
       if (!response.ok) {
-        if (response.status === 401) {
-          toast.error('Authentication failed. Please login again.');
-          setLoading(false);
-          return;
-        }
         if (response.status === 403) {
-          toast.error('You do not have permission to view tickets');
+          // If regular user can't access tickets, just show empty list
           setTickets([]);
           setLoading(false);
           return;
@@ -219,9 +182,7 @@ const SupportManagement = () => {
       }
 
       const data = await response.json();
-      console.log('Tickets API Response:', data);
       
-      // Handle the response structure: { tickets: [], skip: 0, limit: 50 }
       let ticketsData = data?.tickets || data?.data || [];
       
       // Sort tickets by priority
@@ -235,12 +196,12 @@ const SupportManagement = () => {
       });
       
       setTickets(ticketsData);
-      // Stats will be updated by the useEffect that watches tickets and completedTickets
+      updateStats(ticketsData);
       
       setPagination({
         total: data?.total || ticketsData.length,
-        skip: data?.skip || filters.skip,
-        limit: data?.limit || filters.limit
+        skip: data?.skip || 0,
+        limit: data?.limit || 50
       });
       setConnectionError(false);
 
@@ -250,94 +211,10 @@ const SupportManagement = () => {
         setConnectionError(true);
         toast.error('Cannot connect to server');
       } else {
-        toast.error(error.message || 'Failed to fetch tickets');
+        toast.error(error.message);
       }
-      setTickets([]);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchCompletedTickets = async () => {
-    setLoadingCompleted(true);
-    
-    try {
-      if (!token) {
-        setLoadingCompleted(false);
-        return;
-      }
-      
-      const queryParams = new URLSearchParams({
-        skip: completedFilters.skip,
-        limit: completedFilters.limit
-      });
-      
-      const endpoint = `/api/v1/support/hospital-admin/tickets/completed?${queryParams.toString()}`;
-      console.log('Fetching completed tickets from:', endpoint);
-      
-      const response = await apiFetch(endpoint, {
-        method: "GET",
-      });
-
-      if (!response.ok) {
-        if (response.status === 404 || response.status === 403) {
-          // Endpoint might not exist, just set empty array
-          setCompletedTickets([]);
-          setCompletedPagination({ total: 0, skip: 0, limit: 50 });
-          setLoadingCompleted(false);
-          return;
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log('Completed Tickets API Response:', data);
-      
-      // Handle the response structure: { tickets: [], skip: 0, limit: 50 }
-      let completedData = data?.tickets || data?.data || [];
-      
-      setCompletedTickets(completedData);
-      // Stats will be updated by the useEffect that watches tickets and completedTickets
-      
-      setCompletedPagination({
-        total: data?.total || completedData.length,
-        skip: data?.skip || completedFilters.skip,
-        limit: data?.limit || completedFilters.limit
-      });
-
-    } catch (error) {
-      console.error("Fetch completed tickets error:", error);
-      setCompletedTickets([]);
-      setCompletedPagination({ total: 0, skip: 0, limit: 50 });
-    } finally {
-      setLoadingCompleted(false);
-    }
-  };
-
-  // NEW FUNCTION: Update ticket status using the hospital-admin endpoint
-  const updateTicketStatus = async (ticketId, statusData) => {
-    try {
-      const endpoint = `/api/v1/support/hospital-admin/tickets/${ticketId}/status`;
-      console.log('Updating ticket status at:', endpoint);
-      console.log('Request payload:', statusData);
-      
-      const response = await apiFetch(endpoint, {
-        method: "PATCH",
-        body: statusData,
-      });
-      
-      const responseData = await response.json();
-      console.log('Status update response:', responseData);
-      
-      if (!response.ok) {
-        throw new Error(responseData.message || responseData.detail || 'Failed to update status');
-      }
-      
-      return responseData;
-      
-    } catch (error) {
-      console.error('Status update error:', error);
-      throw error;
     }
   };
 
@@ -439,7 +316,7 @@ const SupportManagement = () => {
               
               <div class="info-row">
                 <span class="info-label">Hospital:</span>
-                <span class="info-value">${hospitalName || user?.hospital_name || 'N/A'}</span>
+                <span class="info-value">${hospitalName || 'N/A'}</span>
               </div>
               
               <div class="info-row">
@@ -476,128 +353,31 @@ const SupportManagement = () => {
     `;
   };
 
-  // Create status update email HTML
-  const createStatusUpdateEmailHTML = (ticket, newStatus, resolutionNotes, updatedBy) => {
-    const formattedId = formatEqualNumericId(ticket.id || ticket.ticket_id);
-    const updateDate = new Date().toLocaleDateString('en-US', {
-      dateStyle: 'full',
-      timeStyle: 'medium'
-    });
-    
-    const statusConfig = {
-      'OPEN': { color: '#eab308', bg: '#fef9e3', icon: '🟡', message: 'Ticket has been opened and is awaiting review' },
-      'IN_PROGRESS': { color: '#3b82f6', bg: '#dbeafe', icon: '🔵', message: 'Ticket is currently being worked on' },
-      'RESOLVED': { color: '#22c55e', bg: '#dcfce7', icon: '✅', message: 'Ticket has been resolved' },
-      'CLOSED': { color: '#6b7280', bg: '#f3f4f6', icon: '🔒', message: 'Ticket has been closed' }
-    };
-    
-    const statusInfo = statusConfig[newStatus] || statusConfig['OPEN'];
-    
-    return `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Ticket #${formattedId} Status Update</title>
-        <style>
-          body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f3f4f6; }
-          .email-container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-          .email-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px 20px; text-align: center; }
-          .email-header h1 { margin: 0; font-size: 28px; }
-          .email-content { padding: 30px 25px; background: #f9fafb; }
-          .status-card { background: white; border-radius: 12px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid ${statusInfo.color}; }
-          .ticket-id { font-size: 20px; font-weight: bold; color: #667eea; font-family: monospace; margin-bottom: 15px; }
-          .status-badge { display: inline-block; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: bold; background-color: ${statusInfo.bg}; color: ${statusInfo.color}; margin: 10px 0; }
-          .info-row { margin: 12px 0; padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
-          .info-label { font-weight: 600; color: #4b5563; display: inline-block; width: 120px; }
-          .info-value { color: #1f2937; display: inline-block; }
-          .notes-box { background-color: #fef9e3; padding: 15px; border-radius: 8px; margin-top: 15px; border-left: 3px solid #eab308; }
-          .email-footer { background-color: #f3f4f6; padding: 20px; text-align: center; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb; }
-          .button { display: inline-block; padding: 12px 24px; background-color: #667eea; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0; font-weight: 600; }
-        </style>
-      </head>
-      <body>
-        <div class="email-container">
-          <div class="email-header">
-            <h1>${statusInfo.icon} Ticket Status Updated</h1>
-            <p style="margin-top: 8px; font-size: 14px;">Support Ticket Update Notification</p>
-          </div>
-          <div class="email-content">
-            <p>Dear User,</p>
-            <p>The status of your support ticket has been updated by <strong>${updatedBy}</strong>.</p>
-            
-            <div class="status-card">
-              <div class="ticket-id">Ticket #${formattedId}</div>
-              <div class="status-badge">New Status: ${newStatus}</div>
-              
-              <div class="info-row">
-                <span class="info-label">Subject:</span>
-                <span class="info-value">${ticket.subject}</span>
-              </div>
-              
-              <div class="info-row">
-                <span class="info-label">Previous Status:</span>
-                <span class="info-value">${ticket.status || 'N/A'}</span>
-              </div>
-              
-              <div class="info-row">
-                <span class="info-label">Updated Date:</span>
-                <span class="info-value">${updateDate}</span>
-              </div>
-              
-              <div class="info-row">
-                <span class="info-label">Status Message:</span>
-                <span class="info-value">${statusInfo.message}</span>
-              </div>
-              
-              ${resolutionNotes ? `
-                <div class="notes-box">
-                  <strong>📝 Resolution Notes:</strong><br>
-                  ${resolutionNotes.replace(/\n/g, '<br>')}
-                </div>
-              ` : ''}
-            </div>
-            
-            <p style="text-align: center;">
-              <a href="${window.location.origin}/support/tickets/${ticket.id || ticket.ticket_id}" class="button">
-                View Ticket Details
-              </a>
-            </p>
-            
-            <p>Thank you for using our support system.</p>
-          </div>
-          <div class="email-footer">
-            <p>This is an automated message from the Support Management System.</p>
-            <p>© ${new Date().getFullYear()} Hospital Management System</p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
-  };
-
   const validateForm = () => {
     const errors = {};
     
+    if (!formData.hospital_name.trim()) {
+      errors.hospital_name = "Please enter hospital name";
+    } else if (formData.hospital_name.trim().length < 2) {
+      errors.hospital_name = "Hospital name must be at least 2 characters";
+    } else if (formData.hospital_name.trim().length > 100) {
+      errors.hospital_name = "Hospital name must not exceed 100 characters";
+    }
+    
     if (!formData.subject.trim()) {
       errors.subject = "Subject is required";
-    } else if (formData.subject.trim().length < 5) {
-      errors.subject = "Subject must be at least 5 characters";
-    } else if (formData.subject.trim().length > 200) {
-      errors.subject = "Subject must not exceed 200 characters";
+    } else if (formData.subject.trim().length < 10) {
+      errors.subject = "Subject must be at least 10 characters";
+    } else if (formData.subject.trim().length > 100) {
+      errors.subject = "Subject must not exceed 100 characters";
     }
     
     if (!formData.description.trim()) {
       errors.description = "Description is required";
-    } else if (formData.description.trim().length < 10) {
-      errors.description = "Description must be at least 10 characters";
-    } else if (formData.description.trim().length > 1000) {
-      errors.description = "Description must not exceed 1000 characters";
-    }
-    
-    if (!formData.priority) {
-      errors.priority = "Priority is required";
+    } else if (formData.description.trim().length < 20) {
+      errors.description = "Description must be at least 20 characters";
+    } else if (formData.description.trim().length > 500) {
+      errors.description = "Description must not exceed 500 characters";
     }
     
     if (formData.additional_emails) {
@@ -631,17 +411,18 @@ const SupportManagement = () => {
         return;
       }
       
-      // Prepare the payload according to the API specification
+      // Prepare the payload
       const payload = {
+        hospital_name: formData.hospital_name.trim(),
         subject: formData.subject.trim(),
         description: formData.description.trim(),
         priority: formData.priority
       };
       
-      console.log('Creating ticket with payload:', payload);
+      console.log('Sending payload:', payload);
       
-      // Create ticket using the hospital-admin endpoint
-      const response = await apiFetch('/api/v1/support/hospital-admin/tickets', {
+      // Create ticket - Use the endpoint that allows regular users to create tickets
+      const response = await apiFetch(`/api/v1/super-admin/support/tickets`, {
         method: "POST",
         body: payload,
       });
@@ -665,7 +446,7 @@ const SupportManagement = () => {
             throw new Error('Please fix the validation errors');
           }
         }
-        throw new Error(responseData.message || responseData.detail || `Failed to create ticket: ${response.statusText}`);
+        throw new Error(responseData.message || responseData.detail || "Failed to create ticket");
       }
       
       const newTicket = responseData.data || responseData;
@@ -675,7 +456,11 @@ const SupportManagement = () => {
         try {
           const recipients = [];
           
-          // Add admin email
+          // Add Super Admin email (you may need to configure this)
+          const superAdminEmail = 'superadmin@hospital.com'; // Update with actual super admin email
+          recipients.push(superAdminEmail);
+          
+          // Add the creator's email
           if (user?.email) {
             recipients.push(user.email);
           }
@@ -690,7 +475,7 @@ const SupportManagement = () => {
           
           const emailHTML = createTicketEmailHTML(
             newTicket, 
-            user?.hospital_name || 'Hospital',
+            formData.hospital_name.trim(),
             user?.email || 'System User'
           );
           
@@ -704,18 +489,19 @@ const SupportManagement = () => {
           );
           
           await Promise.allSettled(emailPromises);
-          toast.success(`✅ Ticket created successfully! Confirmation email sent to ${uniqueRecipients.length} recipient(s)`);
+          toast.success(`✅ Ticket created! Email sent to Super Admin and ${uniqueRecipients.length - 1} other recipient(s)`);
           
         } catch (emailError) {
           console.error('Email sending failed:', emailError);
-          toast.warning('✅ Ticket created! Email notification failed but ticket has been recorded.');
+          toast.warning('⚠️ Ticket created but email notification failed. Super Admin can view the ticket in the dashboard.');
         }
       } else {
-        toast.success("✅ Ticket created successfully!");
+        toast.success("✅ Ticket created successfully! Super Admin will review it shortly.");
       }
       
       // Reset form
       setFormData({
+        hospital_name: '',
         subject: '',
         description: '',
         priority: 'NORMAL',
@@ -727,7 +513,6 @@ const SupportManagement = () => {
       
       // Refresh ticket list
       await fetchTickets();
-      await fetchCompletedTickets();
       
     } catch (error) {
       console.error("Create ticket error:", error);
@@ -764,69 +549,31 @@ const SupportManagement = () => {
         return;
       }
       
-      // Prepare payload for status update
       const payload = {
         status: statusUpdateData.status,
         resolution_notes: statusUpdateData.resolution_notes,
         assigned_to_user_id: statusUpdateData.assigned_to_user_id
       };
       
-      // Remove undefined fields
-      Object.keys(payload).forEach(key => {
-        if (payload[key] === undefined || payload[key] === '') {
-          delete payload[key];
-        }
+      // Only SUPER_ADMIN can update status
+      if (!isSuperAdmin) {
+        toast.error('Only Super Admin can update ticket status');
+        setSubmitting(false);
+        return;
+      }
+      
+      const response = await apiFetch(`/api/v1/super-admin/support/tickets/${ticketId}/status`, {
+        method: "PATCH",
+        body: payload,
       });
       
-      // Call the hospital-admin endpoint for status update
-      const result = await updateTicketStatus(ticketId, payload);
+      const data = await response.json();
       
-      // Send email notification if enabled
-      if (statusUpdateData.send_email) {
-        try {
-          const recipients = [];
-          
-          // Add ticket creator's email
-          if (selectedTicket?.user_email || selectedTicket?.created_by_email) {
-            recipients.push(selectedTicket.user_email || selectedTicket.created_by_email);
-          }
-          
-          // Add additional message recipients
-          if (statusUpdateData.additional_message && statusUpdateData.additional_message.trim()) {
-            const additionalEmails = statusUpdateData.additional_message.split(',').map(e => e.trim());
-            recipients.push(...additionalEmails);
-          }
-          
-          const uniqueRecipients = [...new Set(recipients)];
-          
-          if (uniqueRecipients.length > 0) {
-            const emailHTML = createStatusUpdateEmailHTML(
-              selectedTicket,
-              statusUpdateData.status,
-              statusUpdateData.resolution_notes,
-              user?.email || 'Super Admin'
-            );
-            
-            const emailPromises = uniqueRecipients.map(recipient => 
-              sendEmailViaAPI(
-                recipient,
-                `[Ticket #${formatEqualNumericId(ticketId)}] Status Updated to ${statusUpdateData.status}`,
-                emailHTML
-              )
-            );
-            
-            await Promise.allSettled(emailPromises);
-            toast.success(`Status updated and email notification sent to ${uniqueRecipients.length} recipient(s)`);
-          } else {
-            toast.success("Status updated successfully!");
-          }
-        } catch (emailError) {
-          console.error('Email sending failed:', emailError);
-          toast.warning('Status updated! Email notification failed.');
-        }
-      } else {
-        toast.success("Status updated successfully!");
+      if (!response.ok) {
+        throw new Error(data.detail || "Failed to update status");
       }
+      
+      toast.success("Status updated successfully!");
       
       setShowEditModal(false);
       setSelectedTicket(null);
@@ -839,13 +586,11 @@ const SupportManagement = () => {
         additional_message: ''
       });
       
-      // Refresh both ticket lists
-      await fetchTickets();
-      await fetchCompletedTickets();
+      fetchTickets();
       
     } catch (error) {
-      console.error("Status update error:", error);
-      toast.error(error.message || "Failed to update status");
+      toast.error(error.message || "Update failed");
+      console.error(error);
     } finally {
       setSubmitting(false);
     }
@@ -860,51 +605,31 @@ const SupportManagement = () => {
   };
 
   const handleNextPage = () => {
-    if (activeTab === 'active') {
-      if (filters.skip + filters.limit < pagination.total) {
-        setFilters(prev => ({
-          ...prev,
-          skip: prev.skip + prev.limit
-        }));
-      }
-    } else {
-      if (completedFilters.skip + completedFilters.limit < completedPagination.total) {
-        setCompletedFilters(prev => ({
-          ...prev,
-          skip: prev.skip + prev.limit
-        }));
-      }
+    if (filters.skip + filters.limit < pagination.total) {
+      setFilters(prev => ({
+        ...prev,
+        skip: prev.skip + prev.limit
+      }));
     }
   };
 
   const handlePrevPage = () => {
-    if (activeTab === 'active') {
-      if (filters.skip > 0) {
-        setFilters(prev => ({
-          ...prev,
-          skip: Math.max(0, prev.skip - prev.limit)
-        }));
-      }
-    } else {
-      if (completedFilters.skip > 0) {
-        setCompletedFilters(prev => ({
-          ...prev,
-          skip: Math.max(0, prev.skip - prev.limit)
-        }));
-      }
+    if (filters.skip > 0) {
+      setFilters(prev => ({
+        ...prev,
+        skip: Math.max(0, prev.skip - prev.limit)
+      }));
     }
   };
 
   const handleShowClosedTickets = () => {
     setShowClosedOnly(true);
     setSearchTerm('');
-    setFilters(prev => ({ ...prev, status: 'CLOSED' }));
   };
 
   const handleShowAllTickets = () => {
     setShowClosedOnly(false);
     setSearchTerm('');
-    setFilters(prev => ({ ...prev, status: '' }));
   };
 
   const getStatusBadgeClass = (status) => {
@@ -933,64 +658,29 @@ const SupportManagement = () => {
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      day: 'numeric'
     });
   };
 
-  const getCurrentDisplayTickets = () => {
-    if (activeTab === 'active') {
-      return tickets.filter(ticket => {
-        if (showClosedOnly && ticket.status !== 'CLOSED') return false;
-        if (!searchTerm) return true;
-        
-        const searchLower = searchTerm.toLowerCase();
-        const pureNumericId = getPureNumericTicketId(ticket.id || ticket.ticket_id);
-        const equalFormattedId = formatEqualNumericId(ticket.id || ticket.ticket_id);
-        return (
-          pureNumericId.toLowerCase().includes(searchLower) ||
-          equalFormattedId.toLowerCase().includes(searchLower) ||
-          (ticket.id || ticket.ticket_id)?.toLowerCase().includes(searchLower) ||
-          ticket.subject?.toLowerCase().includes(searchLower) ||
-          ticket.status?.toLowerCase().includes(searchLower) ||
-          ticket.hospital_name?.toLowerCase().includes(searchLower)
-        );
-      });
-    } else {
-      return completedTickets.filter(ticket => {
-        if (!searchTerm) return true;
-        
-        const searchLower = searchTerm.toLowerCase();
-        const pureNumericId = getPureNumericTicketId(ticket.id || ticket.ticket_id);
-        const equalFormattedId = formatEqualNumericId(ticket.id || ticket.ticket_id);
-        return (
-          pureNumericId.toLowerCase().includes(searchLower) ||
-          equalFormattedId.toLowerCase().includes(searchLower) ||
-          (ticket.id || ticket.ticket_id)?.toLowerCase().includes(searchLower) ||
-          ticket.subject?.toLowerCase().includes(searchLower) ||
-          ticket.status?.toLowerCase().includes(searchLower) ||
-          ticket.hospital_name?.toLowerCase().includes(searchLower)
-        );
-      });
+  const filteredTickets = tickets.filter(ticket => {
+    if (showClosedOnly && ticket.status !== 'CLOSED') {
+      return false;
     }
-  };
-
-  const getCurrentPagination = () => {
-    if (activeTab === 'active') {
-      return pagination;
-    } else {
-      return completedPagination;
-    }
-  };
-
-  const isLoading = () => {
-    if (activeTab === 'active') {
-      return loading;
-    } else {
-      return loadingCompleted;
-    }
-  };
+    
+    if (!searchTerm) return true;
+    
+    const searchLower = searchTerm.toLowerCase();
+    const pureNumericId = getPureNumericTicketId(ticket.id || ticket.ticket_id);
+    const equalFormattedId = formatEqualNumericId(ticket.id || ticket.ticket_id);
+    return (
+      pureNumericId.toLowerCase().includes(searchLower) ||
+      equalFormattedId.toLowerCase().includes(searchLower) ||
+      (ticket.id || ticket.ticket_id)?.toLowerCase().includes(searchLower) ||
+      ticket.subject?.toLowerCase().includes(searchLower) ||
+      ticket.status?.toLowerCase().includes(searchLower) ||
+      ticket.hospital_name?.toLowerCase().includes(searchLower)
+    );
+  });
 
   if (connectionError) {
     return (
@@ -1004,7 +694,6 @@ const SupportManagement = () => {
           <button
             onClick={() => {
               fetchTickets();
-              fetchCompletedTickets();
             }}
             className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
           >
@@ -1015,10 +704,7 @@ const SupportManagement = () => {
     );
   }
 
-  const displayedTickets = getCurrentDisplayTickets();
-  const currentPagination = getCurrentPagination();
-  const currentLoading = isLoading();
-
+  // Return JSX - Keeping the same structure but with conditional rendering for update button
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <ToastContainer position="top-right" autoClose={5000} />
@@ -1031,7 +717,9 @@ const SupportManagement = () => {
           </h1>
         </div>
         <p className="text-gray-600">
-          Create and track your support tickets. Super Admin will review and respond to your requests.
+          {isSuperAdmin 
+            ? "Manage and track support tickets efficiently" 
+            : "Create and track your support tickets. Super Admin will review and respond to your requests."}
         </p>
       </div>
 
@@ -1115,7 +803,7 @@ const SupportManagement = () => {
           </div>
         </div>
 
-        {/* COMPLETED TICKETS */}
+        {/* RESOLVED & CLOSED */}
         <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent pointer-events-none" />
           <span className="absolute top-4 right-4 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded">
@@ -1128,9 +816,9 @@ const SupportManagement = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <p className="text-sm text-gray-500">Completed Tickets</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.completed}</p>
-              <p className="text-xs text-gray-400 mt-1">Resolved/Closed tickets</p>
+              <p className="text-sm text-gray-500">Resolved/Closed</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.resolved + stats.closed}</p>
+              <p className="text-xs text-gray-400 mt-1">Completed tickets</p>
             </div>
             <svg width="70" height="40" viewBox="0 0 70 40">
               <polyline points="0,28 12,24 24,18 36,14 48,10 60,6" fill="none" stroke="#22c55e" strokeWidth="2" />
@@ -1178,42 +866,6 @@ const SupportManagement = () => {
         </div>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 mb-6">
-        <div className="flex border-b border-gray-200">
-          <button
-            className={`px-6 py-4 text-sm font-medium transition-all duration-200 ${
-              activeTab === 'active'
-                ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/30'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-            }`}
-            onClick={() => setActiveTab('active')}
-          >
-            <div className="flex items-center gap-2">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-              Active Tickets ({stats.open + stats.inProgress})
-            </div>
-          </button>
-          <button
-            className={`px-6 py-4 text-sm font-medium transition-all duration-200 ${
-              activeTab === 'completed'
-                ? 'text-green-600 border-b-2 border-green-600 bg-green-50/30'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-            }`}
-            onClick={() => setActiveTab('completed')}
-          >
-            <div className="flex items-center gap-2">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Completed Tickets ({stats.completed})
-            </div>
-          </button>
-        </div>
-      </div>
-
       {/* Search and Actions Bar */}
       <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-5 mb-6">
         <div className="flex flex-col lg:flex-row gap-4 items-center">
@@ -1226,7 +878,7 @@ const SupportManagement = () => {
               </div>
               <input
                 type="text"
-                placeholder={activeTab === 'active' ? "Search tickets by ID, subject, status, or hospital..." : "Search completed tickets by ID, subject, or hospital..."}
+                placeholder={showClosedOnly ? "Search closed tickets..." : "Search tickets by ID, subject, status, or hospital..."}
                 className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -1235,19 +887,17 @@ const SupportManagement = () => {
           </div>
 
           <div className="flex flex-wrap gap-3">
-            {activeTab === 'active' && (
-              <select
-                className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                value={filters.status}
-                onChange={(e) => handleFilterChange('status', e.target.value)}
-              >
-                <option value="">All Status</option>
-                <option value="OPEN">● Open</option>
-                <option value="IN_PROGRESS">● In Progress</option>
-                <option value="RESOLVED">● Resolved</option>
-                <option value="CLOSED">● Closed</option>
-              </select>
-            )}
+            <select
+              className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+              value={filters.status}
+              onChange={(e) => handleFilterChange('status', e.target.value)}
+            >
+              <option value="">All Status</option>
+              <option value="OPEN">● Open</option>
+              <option value="IN_PROGRESS">● In Progress</option>
+              <option value="RESOLVED">● Resolved</option>
+              <option value="CLOSED">● Closed</option>
+            </select>
 
             <button
               onClick={() => setShowCreateModal(true)}
@@ -1260,7 +910,7 @@ const SupportManagement = () => {
               Create Ticket
             </button>
 
-            {activeTab === 'active' && showClosedOnly ? (
+            {showClosedOnly ? (
               <button
                 onClick={handleShowAllTickets}
                 className="px-5 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-xl transition-all duration-200 font-medium flex items-center gap-2"
@@ -1271,17 +921,15 @@ const SupportManagement = () => {
                 Show All
               </button>
             ) : (
-              activeTab === 'active' && (
-                <button
-                  onClick={handleShowClosedTickets}
-                  className="px-5 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl transition-all duration-200 font-medium flex items-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Closed Tickets
-                </button>
-              )
+              <button
+                onClick={handleShowClosedTickets}
+                className="px-5 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl transition-all duration-200 font-medium flex items-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                Closed Tickets
+              </button>
             )}
           </div>
         </div>
@@ -1289,12 +937,12 @@ const SupportManagement = () => {
 
       {/* Tickets Table */}
       <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-        {currentLoading ? (
+        {loading ? (
           <div className="p-12 text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
             <p className="text-gray-600">Loading tickets...</p>
           </div>
-        ) : displayedTickets.length === 0 ? (
+        ) : filteredTickets.length === 0 ? (
           <div className="p-12 text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
               <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1302,17 +950,13 @@ const SupportManagement = () => {
               </svg>
             </div>
             <h3 className="text-lg font-semibold text-gray-700 mb-2">No tickets found</h3>
-            <p className="text-gray-500 mb-6">
-              {activeTab === 'active' ? 'Create your first support ticket' : 'No completed tickets yet'}
-            </p>
-            {activeTab === 'active' && (
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:shadow-lg transition-all"
-              >
-                Create First Ticket
-              </button>
-            )}
+            <p className="text-gray-500 mb-6">Create your first support ticket</p>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:shadow-lg transition-all"
+            >
+              Create First Ticket
+            </button>
           </div>
         ) : (
           <>
@@ -1326,17 +970,19 @@ const SupportManagement = () => {
                     <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">Status</th>
                     <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">Priority</th>
                     <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">Created</th>
-                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">Actions</th>
+                    {isSuperAdmin && (
+                      <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">Actions</th>
+                    )}
                   </tr>
                 </thead>
                 <tbody>
-                  {displayedTickets.map((ticket) => (
+                  {filteredTickets.map((ticket) => (
                     <tr key={ticket.id || ticket.ticket_id} className="border-b border-gray-100 hover:bg-blue-50/30 transition-all duration-300">
                       <td className="py-4 px-6">
                         <p className="font-mono font-semibold text-blue-600">{formatEqualNumericId(ticket.id || ticket.ticket_id)}</p>
                       </td>
                       <td className="py-4 px-6">
-                        <p className="font-medium text-gray-900">{ticket.hospital_name || user?.hospital_name || 'N/A'}</p>
+                        <p className="font-medium text-gray-900">{ticket.hospital_name}</p>
                       </td>
                       <td className="py-4 px-6">
                         <p className="text-gray-700 max-w-md truncate" title={ticket.subject}>{ticket.subject}</p>
@@ -1354,44 +1000,46 @@ const SupportManagement = () => {
                       <td className="py-4 px-6 text-sm text-gray-500">
                         {formatDate(ticket.created_at)}
                       </td>
-                      <td className="py-4 px-6">
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => {
-                              setSelectedTicket(ticket);
-                              setShowViewModal(true);
-                            }}
-                            className="w-8 h-8 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-lg flex items-center justify-center transition-colors"
-                            title="View"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
-                          </button>
-                          {isSuperAdmin && ticket.status !== 'CLOSED' && activeTab === 'active' && (
+                      {isSuperAdmin && (
+                        <td className="py-4 px-6">
+                          <div className="flex gap-2">
                             <button
                               onClick={() => {
                                 setSelectedTicket(ticket);
-                                setStatusUpdateData({
-                                  status: ticket.status || '',
-                                  resolution_notes: ticket.resolution_notes || '',
-                                  assigned_to_user_id: ticket.assigned_to_user_id || '',
-                                  send_email: true,
-                                  additional_message: ''
-                                });
-                                setShowEditModal(true);
+                                setShowViewModal(true);
                               }}
-                              className="w-8 h-8 bg-green-100 text-green-600 hover:bg-green-200 rounded-lg flex items-center justify-center transition-colors"
-                              title="Update Status"
+                              className="w-8 h-8 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-lg flex items-center justify-center transition-colors"
+                              title="View"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                               </svg>
                             </button>
-                          )}
-                        </div>
-                      </td>
+                            {ticket.status !== 'CLOSED' && (
+                              <button
+                                onClick={() => {
+                                  setSelectedTicket(ticket);
+                                  setStatusUpdateData({
+                                    status: ticket.status || '',
+                                    resolution_notes: ticket.resolution_notes || '',
+                                    assigned_to_user_id: ticket.assigned_to_user_id || '',
+                                    send_email: true,
+                                    additional_message: ''
+                                  });
+                                  setShowEditModal(true);
+                                }}
+                                className="w-8 h-8 bg-green-100 text-green-600 hover:bg-green-200 rounded-lg flex items-center justify-center transition-colors"
+                                title="Update Status"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -1401,18 +1049,18 @@ const SupportManagement = () => {
             {/* Pagination */}
             <div className="px-6 py-4 bg-white border-t border-gray-200 flex items-center justify-between">
               <div className="text-sm text-gray-700">
-                Showing <span className="font-medium">{currentPagination.skip + 1}</span> to{' '}
+                Showing <span className="font-medium">{pagination.skip + 1}</span> to{' '}
                 <span className="font-medium">
-                  {Math.min(currentPagination.skip + currentPagination.limit, currentPagination.total)}
+                  {Math.min(pagination.skip + pagination.limit, pagination.total)}
                 </span>{' '}
-                of <span className="font-medium">{currentPagination.total}</span> results
+                of <span className="font-medium">{pagination.total}</span> results
               </div>
               <div className="flex space-x-2">
                 <button
                   onClick={handlePrevPage}
-                  disabled={currentPagination.skip === 0}
+                  disabled={filters.skip === 0}
                   className={`px-3 py-1 rounded border ${
-                    currentPagination.skip === 0
+                    filters.skip === 0
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                       : 'bg-white text-gray-700 hover:bg-gray-50'
                   }`}
@@ -1421,9 +1069,9 @@ const SupportManagement = () => {
                 </button>
                 <button
                   onClick={handleNextPage}
-                  disabled={currentPagination.skip + currentPagination.limit >= currentPagination.total}
+                  disabled={filters.skip + filters.limit >= pagination.total}
                   className={`px-3 py-1 rounded border ${
-                    currentPagination.skip + currentPagination.limit >= currentPagination.total
+                    filters.skip + filters.limit >= pagination.total
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                       : 'bg-white text-gray-700 hover:bg-gray-50'
                   }`}
@@ -1436,7 +1084,7 @@ const SupportManagement = () => {
         )}
       </div>
 
-      {/* Create Ticket Modal */}
+      {/* Create Ticket Modal - Same as before */}
       <Modal
         isOpen={showCreateModal}
         onClose={() => {
@@ -1457,10 +1105,46 @@ const SupportManagement = () => {
       >
         <form onSubmit={handleCreateTicket} className="space-y-6">
           <div className="space-y-4">
+            {/* Hospital Name - Text Input */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                Hospital Name *
+              </label>
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  value={formData.hospital_name}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value.length <= 100) {
+                      setFormData({...formData, hospital_name: value});
+                      setFormErrors({...formErrors, hospital_name: ''});
+                    }
+                  }}
+                  maxLength="100"
+                  className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${formErrors.hospital_name ? 'border-red-400' : 'border-gray-200'}`}
+                  placeholder="Enter hospital name (e.g., City Hospital, Apollo Hospital)"
+                />
+              </div>
+              <div className="flex justify-between mt-1">
+                {formErrors.hospital_name && (
+                  <p className="text-sm text-red-600">{formErrors.hospital_name}</p>
+                )}
+                <p className={`text-xs ${formData.hospital_name.length >= 2 && formData.hospital_name.length <= 100 ? 'text-green-600' : 'text-gray-500'} ml-auto`}>
+                  {formData.hospital_name.length}/100 characters (min 2)
+                </p>
+              </div>
+            </div>
+
             {/* Subject Field */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Subject * (Min 5, Max 200 characters)
+                Subject * (Min 10, Max 100 characters)
               </label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -1473,20 +1157,20 @@ const SupportManagement = () => {
                   value={formData.subject}
                   onChange={(e) => {
                     const value = e.target.value;
-                    if (value.length <= 200) {
+                    if (value.length <= 100) {
                       setFormData({...formData, subject: value});
                       setFormErrors({...formErrors, subject: ''});
                     }
                   }}
-                  maxLength="200"
+                  maxLength="100"
                   className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${formErrors.subject ? 'border-red-400' : 'border-gray-200'}`}
-                  placeholder="Enter ticket subject (5-200 characters)"
+                  placeholder="Enter subject (10-100 characters)"
                 />
               </div>
               <div className="flex justify-between mt-1">
                 {formErrors.subject && <p className="text-sm text-red-600">{formErrors.subject}</p>}
-                <p className={`text-xs ${formData.subject.length >= 5 && formData.subject.length <= 200 ? 'text-green-600' : 'text-gray-500'} ml-auto`}>
-                  {formData.subject.length}/200 characters (min 5)
+                <p className={`text-xs ${formData.subject.length >= 10 && formData.subject.length <= 100 ? 'text-green-600' : 'text-gray-500'} ml-auto`}>
+                  {formData.subject.length}/100 characters (min 10)
                 </p>
               </div>
             </div>
@@ -1494,7 +1178,7 @@ const SupportManagement = () => {
             {/* Description Field */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Description * (Min 10, Max 1000 characters)
+                Description * (Min 20, Max 500 characters)
               </label>
               <div className="relative group">
                 <div className="absolute top-3 left-3">
@@ -1506,21 +1190,21 @@ const SupportManagement = () => {
                   value={formData.description}
                   onChange={(e) => {
                     const value = e.target.value;
-                    if (value.length <= 1000) {
+                    if (value.length <= 500) {
                       setFormData({...formData, description: value});
                       setFormErrors({...formErrors, description: ''});
                     }
                   }}
                   rows="4"
-                  maxLength="1000"
+                  maxLength="500"
                   className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none transition-all ${formErrors.description ? 'border-red-400' : 'border-gray-200'}`}
-                  placeholder="Enter detailed description (10-1000 characters)"
+                  placeholder="Describe the issue in detail (20-500 characters)"
                 />
               </div>
               <div className="flex justify-between mt-1">
                 {formErrors.description && <p className="text-sm text-red-600">{formErrors.description}</p>}
-                <p className={`text-xs ${formData.description.length >= 10 && formData.description.length <= 1000 ? 'text-green-600' : 'text-gray-500'} ml-auto`}>
-                  {formData.description.length}/1000 characters (min 10)
+                <p className={`text-xs ${formData.description.length >= 20 && formData.description.length <= 500 ? 'text-green-600' : 'text-gray-500'} ml-auto`}>
+                  {formData.description.length}/500 characters (min 20)
                 </p>
               </div>
             </div>
@@ -1650,7 +1334,7 @@ const SupportManagement = () => {
             </div>
             <div>
               <label className="text-sm text-gray-500">Hospital</label>
-              <p className="font-semibold text-gray-900">{selectedTicket?.hospital_name || user?.hospital_name || 'N/A'}</p>
+              <p className="font-semibold text-gray-900">{selectedTicket?.hospital_name}</p>
             </div>
             <div>
               <label className="text-sm text-gray-500">Status</label>
@@ -1690,13 +1374,6 @@ const SupportManagement = () => {
               <div className="bg-green-50 p-4 rounded-xl mt-1 border border-green-200">
                 <p className="whitespace-pre-wrap text-gray-800 break-words">{selectedTicket.resolution_notes}</p>
               </div>
-            </div>
-          )}
-          
-          {selectedTicket?.resolved_at && (
-            <div>
-              <label className="text-sm text-gray-500 font-semibold">Resolved At</label>
-              <p className="font-medium text-gray-900">{formatDate(selectedTicket.resolved_at)}</p>
             </div>
           )}
           
@@ -1812,37 +1489,6 @@ const SupportManagement = () => {
                 placeholder="Add resolution notes (required when status is RESOLVED)..."
               />
               {statusErrors.resolution_notes && <p className="mt-1 text-sm text-red-600">{statusErrors.resolution_notes}</p>}
-            </div>
-
-            {/* Email Notification Section for Status Update */}
-            <div className="p-4 bg-green-50 rounded-xl border border-green-200">
-              <label className="flex items-center space-x-2 mb-3">
-                <input
-                  type="checkbox"
-                  checked={statusUpdateData.send_email}
-                  onChange={(e) => setStatusUpdateData({...statusUpdateData, send_email: e.target.checked})}
-                  className="rounded border-gray-300 text-green-600 focus:ring-green-500"
-                />
-                <span className="text-sm font-medium text-gray-700">Send email notifications about this update</span>
-              </label>
-              
-              {statusUpdateData.send_email && (
-                <div className="mt-3">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Additional Email Recipients (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={statusUpdateData.additional_message}
-                    onChange={(e) => setStatusUpdateData({...statusUpdateData, additional_message: e.target.value})}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                    placeholder="Enter email addresses separated by commas"
-                  />
-                  <p className="mt-1 text-xs text-gray-500">
-                    Email will be sent to: Ticket creator and additional recipients
-                  </p>
-                </div>
-              )}
             </div>
             
             <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">

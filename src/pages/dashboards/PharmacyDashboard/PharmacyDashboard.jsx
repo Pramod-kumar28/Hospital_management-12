@@ -9,7 +9,6 @@ import ExpiryAlerts from './pages/ExpiryAlerts'
 import SupplierManagement from './pages/SupplierManagement'
 import MedicineDatabase from './pages/MedicineDatabase'
 import Settings from './pages/Settings'
-import RaiseticketPharma from './pages/RaiseticketPharma'
 
 const PharmacyDashboard = () => {
   const [activePage, setActivePage] = useState('dashboard')
@@ -35,8 +34,6 @@ const PharmacyDashboard = () => {
         return <MedicineDatabase />
       case 'settings':
         return <Settings />
-      case 'raise-ticket':
-        return <RaiseticketPharma/>
       default:
         return <Dashboard />
     }

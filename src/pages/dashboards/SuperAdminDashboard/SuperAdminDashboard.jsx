@@ -1,4 +1,4 @@
-import React, { useState , useEffect  } from 'react'
+import React, { useState } from 'react'
 import Header from '../../../components/common/Header/Header'
 import Sidebar from '../../../components/common/Sidebar/Sidebar'
 import SuperAdminOverview from './pages/SuperAdminOverview'
@@ -12,7 +12,6 @@ import ReportsAnalytics from './pages/ReportsAnalytics'
 import AnalyticsMonitoring from './pages/AnalyticsMonitoring'
 import SupportManagement from './pages/SupportManagement'
 import Notifications from './pages/Notifications'
-import ProfileSettings from './pages/ProfileSettings'
 // import SuperAdminProfile from './pages/SuperAdminProfile'
 
 const SuperAdminDashboard = () => {
@@ -20,21 +19,6 @@ const SuperAdminDashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true)
-
-    // Listen for dashboard navigation events from Header
-  useEffect(() => {
-    const handleDashboardNavigation = (event) => {
-      const page = event.detail.page
-      setActivePage(page)
-      // Close mobile sidebar when navigating
-      setIsMobileSidebarOpen(false)
-    }
-
-    window.addEventListener('dashboard-navigation', handleDashboardNavigation)
-    return () => {
-      window.removeEventListener('dashboard-navigation', handleDashboardNavigation)
-    }
-  }, [])
 
   const renderPage = () => {
     switch (activePage) {
@@ -59,8 +43,6 @@ const SuperAdminDashboard = () => {
           return <AnalyticsMonitoring />
           case 'notifications':
     return <Notifications />;
-     case 'profile':
-        return <ProfileSettings />
       
       // case 'profile':
       //   return <SuperAdminProfile />

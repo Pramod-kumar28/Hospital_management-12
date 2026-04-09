@@ -101,12 +101,11 @@ export const HOSPITAL_ADMIN_DEPARTMENT_STAFF_BY_NAME = (departmentName) =>
 export const HOSPITAL_ADMIN_STAFF_DEPARTMENTS_BY_NAME = (staffName) =>
   `/api/v1/hospital-admin/staff/${encodeURIComponent(staffName)}/departments`;
 
-/** Doctor: schedule management */
+/** Doctor: Schedule Management */
 export const DOCTOR_SCHEDULE_WEEKLY = '/api/v1/doctor-management/schedule/weekly';
 export const DOCTOR_SCHEDULE_SLOTS = '/api/v1/doctor-management/schedule/slots';
 export const DOCTOR_SCHEDULE_CREATE = '/api/v1/doctor-management/schedule/create';
-export const DOCTOR_SCHEDULE_SLOT_DETAILS = (scheduleId) =>
-  `/api/v1/doctor-management/schedule/${encodeURIComponent(scheduleId)}`;
+export const DOCTOR_SCHEDULE_SLOT_DETAILS = (scheduleId) => `/api/v1/doctor-management/schedule/${encodeURIComponent(scheduleId)}`;
 
-
-
+export const RECEPTIONIST_PATIENT_REGISTER = '/api/v1/receptionist/patients/register';
+export const RECEPTIONIST_DASHBOARD_OVERVIEW = '/api/v1/receptionist/dashboard';

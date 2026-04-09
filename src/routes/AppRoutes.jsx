@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux'
 import ProtectedRoute from '../components/auth/ProtectedRoute/ProtectedRoute'
 // import Dashboard from '../pages/Dashboard/Dashboard'
 import LoginPage from '../pages/Login/LoginPage'
+import PatientLoginPage from '../pages/Login/PatientLoginPage'
 import HospitalAdminChangePassword from '../pages/Login/HospitalAdminChangePassword'
 
 // Import dashboard components
@@ -47,6 +48,16 @@ const AppRoutes = () => {
       <Route element={<Layout />}>
         <Route
           path="/login"
+          element={
+            shouldRedirectFromLoginPage(isAuthenticated, user, requiresPasswordChange) ? (
+              <Navigate to={getDefaultRoute()} replace />
+            ) : (
+              <PatientLoginPage />
+            )
+          }
+        />
+        <Route
+          path="/staff-login"
           element={
             shouldRedirectFromLoginPage(isAuthenticated, user, requiresPasswordChange) ? (
               <Navigate to={getDefaultRoute()} replace />

@@ -100,5 +100,6 @@ export const DOCTOR_SCHEDULE_CREATE = '/api/v1/doctor-management/schedule/create
 export const DOCTOR_SCHEDULE_SLOT_DETAILS = (scheduleId) =>
   `/api/v1/doctor-management/schedule/${encodeURIComponent(scheduleId)}`;
 
-
-
+/** Receptionist: profile management */
+export const RECEPTIONIST_PROFILE = '/api/v1/receptionist/profile';
+export const RECEPTIONIST_PROFILE_UPDATE = '/api/v1/receptionist/profile';

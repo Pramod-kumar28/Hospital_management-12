@@ -101,7 +101,26 @@ export const HOSPITAL_ADMIN_DEPARTMENT_STAFF_BY_NAME = (departmentName) =>
 export const HOSPITAL_ADMIN_STAFF_DEPARTMENTS_BY_NAME = (staffName) =>
   `/api/v1/hospital-admin/staff/${encodeURIComponent(staffName)}/departments`;
 
-/** Doctor: Schedule Management */
+/** Hospital Admin: ward & bed management */
+export const HOSPITAL_ADMIN_WARDS = '/api/v1/hospital-admin/wards';
+export const HOSPITAL_ADMIN_WARD = (wardId) =>
+  `/api/v1/hospital-admin/wards/${encodeURIComponent(wardId)}`;
+export const HOSPITAL_ADMIN_WARD_STATUS = (wardId) =>
+  `/api/v1/hospital-admin/wards/${encodeURIComponent(wardId)}/status`;
+export const HOSPITAL_ADMIN_BEDS = '/api/v1/hospital-admin/beds';
+export const HOSPITAL_ADMIN_BED = (bedId) =>
+  `/api/v1/hospital-admin/beds/${encodeURIComponent(bedId)}`;
+export const HOSPITAL_ADMIN_BED_STATUS = (bedId) =>
+  `/api/v1/hospital-admin/beds/${encodeURIComponent(bedId)}/status`;
+
+/** Hospital Admin: admissions (bed assignment / discharge flow) */
+export const HOSPITAL_ADMIN_ADMISSIONS = '/api/v1/hospital-admin/admissions';
+export const HOSPITAL_ADMIN_ADMISSION_ASSIGN_BED = (admissionId) =>
+  `/api/v1/hospital-admin/admissions/${encodeURIComponent(admissionId)}/assign-bed`;
+export const HOSPITAL_ADMIN_ADMISSION_DISCHARGE = (admissionId) =>
+  `/api/v1/hospital-admin/admissions/${encodeURIComponent(admissionId)}/discharge`;
+
+/** Doctor: schedule management */
 export const DOCTOR_SCHEDULE_WEEKLY = '/api/v1/doctor-management/schedule/weekly';
 export const DOCTOR_SCHEDULE_SLOTS = '/api/v1/doctor-management/schedule/slots';
 export const DOCTOR_SCHEDULE_CREATE = '/api/v1/doctor-management/schedule/create';

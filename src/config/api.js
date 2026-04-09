@@ -25,6 +25,14 @@ export const AUTH_HOSPITAL_ADMIN_LOGIN = '/api/v1/auth/login';
 
 /** Auth: hospital staff login (DOCTOR, PHARMACIST, LAB_TECH, NURSE, RECEPTIONIST) */
 export const AUTH_STAFF_LOGIN = '/api/v1/auth/login';
+
+/** Auth: patient login */
+export const AUTH_PATIENT_LOGIN = '/api/v1/auth/patient/login';
+
+/** Auth: patient signup helpers */
+export const AUTH_HOSPITALS = '/api/v1/auth/hospitals';
+export const AUTH_PATIENT_REGISTER = '/api/v1/auth/patient/register';
+export const AUTH_PATIENT_VERIFY_OTP = '/api/v1/auth/patient/verify-otp';
  
 /** Auth: hospital-admin change password (e.g. after first login with temp password) */
 export const AUTH_HOSPITAL_ADMIN_CHANGE_PASSWORD = '/api/v1/auth/hospital-admin/change-password';
@@ -93,6 +101,25 @@ export const HOSPITAL_ADMIN_DEPARTMENT_STAFF_BY_NAME = (departmentName) =>
 export const HOSPITAL_ADMIN_STAFF_DEPARTMENTS_BY_NAME = (staffName) =>
   `/api/v1/hospital-admin/staff/${encodeURIComponent(staffName)}/departments`;
 
+/** Hospital Admin: ward & bed management */
+export const HOSPITAL_ADMIN_WARDS = '/api/v1/hospital-admin/wards';
+export const HOSPITAL_ADMIN_WARD = (wardId) =>
+  `/api/v1/hospital-admin/wards/${encodeURIComponent(wardId)}`;
+export const HOSPITAL_ADMIN_WARD_STATUS = (wardId) =>
+  `/api/v1/hospital-admin/wards/${encodeURIComponent(wardId)}/status`;
+export const HOSPITAL_ADMIN_BEDS = '/api/v1/hospital-admin/beds';
+export const HOSPITAL_ADMIN_BED = (bedId) =>
+  `/api/v1/hospital-admin/beds/${encodeURIComponent(bedId)}`;
+export const HOSPITAL_ADMIN_BED_STATUS = (bedId) =>
+  `/api/v1/hospital-admin/beds/${encodeURIComponent(bedId)}/status`;
+
+/** Hospital Admin: admissions (bed assignment / discharge flow) */
+export const HOSPITAL_ADMIN_ADMISSIONS = '/api/v1/hospital-admin/admissions';
+export const HOSPITAL_ADMIN_ADMISSION_ASSIGN_BED = (admissionId) =>
+  `/api/v1/hospital-admin/admissions/${encodeURIComponent(admissionId)}/assign-bed`;
+export const HOSPITAL_ADMIN_ADMISSION_DISCHARGE = (admissionId) =>
+  `/api/v1/hospital-admin/admissions/${encodeURIComponent(admissionId)}/discharge`;
+
 /** Doctor: schedule management */
 export const DOCTOR_SCHEDULE_WEEKLY = '/api/v1/doctor-management/schedule/weekly';
 export const DOCTOR_SCHEDULE_SLOTS = '/api/v1/doctor-management/schedule/slots';
@@ -103,3 +130,7 @@ export const DOCTOR_SCHEDULE_SLOT_DETAILS = (scheduleId) =>
 /** Receptionist: profile management */
 export const RECEPTIONIST_PROFILE = '/api/v1/receptionist/profile';
 export const RECEPTIONIST_PROFILE_UPDATE = '/api/v1/receptionist/profile';
+export const DOCTOR_SCHEDULE_SLOT_DETAILS = (scheduleId) => `/api/v1/doctor-management/schedule/${encodeURIComponent(scheduleId)}`;
+
+export const RECEPTIONIST_PATIENT_REGISTER = '/api/v1/receptionist/patients/register';
+export const RECEPTIONIST_DASHBOARD_OVERVIEW = '/api/v1/receptionist/dashboard';

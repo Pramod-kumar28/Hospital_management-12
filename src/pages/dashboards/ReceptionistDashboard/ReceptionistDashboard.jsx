@@ -51,7 +51,7 @@ const ReceptionistDashboard = () => {
 
   switch (activePage?.toLowerCase()) {
     case 'dashboard':
-      return <ReceptionOverview />
+      return <ReceptionOverview setActivePage={handlePageChange} />
     case 'registration':
       return <PatientRegistration />
     case 'appointments':
@@ -73,7 +73,7 @@ const ReceptionistDashboard = () => {
     case 'raise-ticket':
       return <RaiseticketRecepetionst />
     default:
-      return <ReceptionOverview />
+      return <ReceptionOverview setActivePage={handlePageChange} />
   }
 }
 

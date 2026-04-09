@@ -1,48 +1,61 @@
 import React, { useState, useEffect } from 'react'
 import LoadingSpinner from '../../../../components/common/LoadingSpinner/LoadingSpinner'
 import DataTable from '../../../../components/ui/Tables/DataTable'
+import { apiFetch } from '../../../../services/apiClient'
+import { RECEPTIONIST_DASHBOARD_OVERVIEW } from '../../../../config/api'
 
 const ReceptionOverview = ({ setActivePage }) => {
   const [loading, setLoading] = useState(true)
-  const [dashboardData, setDashboardData] = useState({})
+  const [dashboardData, setDashboardData] = useState({
+    stats: {
+      totalPatients: 0,
+      todayAppointments: 0,
+      pendingBills: 0,
+      newRegistrations: 0,
+      waitingPatients: 0,
+      completedAppointments: 0,
+      revenueToday: 0,
+      avgWaitTime: 0
+    },
+    appointments: [],
+    registrations: [],
+    waitingPatients: []
+  })
 
   useEffect(() => {
     loadDashboardData()
   }, [])
 
   const loadDashboardData = async () => {
-    setLoading(true)
-    setTimeout(() => {
-      setDashboardData({
-        stats: {
-          totalPatients: 156,
-          todayAppointments: 24,
-          pendingBills: 8,
-          newRegistrations: 12,
-          waitingPatients: 14,
-          completedAppointments: 18,
-          revenueToday: 125000,
-          avgWaitTime: 24
-        },
-        appointments: [
-          { id: 'APT-3001', patient: 'Ravi Kumar', doctor: 'Dr. Meena Rao', time: '10:30 AM', status: 'Confirmed', reason: 'General Checkup' },
-          { id: 'APT-3002', patient: 'Anita Sharma', doctor: 'Dr. Sharma', time: '11:00 AM', status: 'Pending', reason: 'Fever Consultation' },
-          { id: 'APT-3003', patient: 'Suresh Patel', doctor: 'Dr. Menon', time: '11:30 AM', status: 'Confirmed', reason: 'Follow-up Visit' },
-          { id: 'APT-3004', patient: 'Priya Singh', doctor: 'Dr. Verma', time: '12:00 PM', status: 'In Progress', reason: 'Lab Test' }
-        ],
-        registrations: [
-          { id: 'REG-001', name: 'Rajesh Kumar', time: '09:15 AM', type: 'New', priority: 'Normal' },
-          { id: 'REG-002', name: 'Priya Singh', time: '09:30 AM', type: 'Follow-up', priority: 'Normal' },
-          { id: 'REG-003', name: 'Amit Patel', time: '10:00 AM', type: 'New', priority: 'Urgent' }
-        ],
-        waitingPatients: [
-          { id: 'P-1001', name: 'Rajesh Kumar', waitingSince: '09:15 AM', department: 'Cardiology', priority: 'Normal' },
-          { id: 'P-1002', name: 'Anjali Mehta', waitingSince: '09:45 AM', department: 'Orthopedics', priority: 'Normal' },
-          { id: 'P-1003', name: 'Vikram Singh', waitingSince: '10:00 AM', department: 'General', priority: 'Urgent' }
-        ]
-      })
+    try {
+      setLoading(true)
+      const res = await apiFetch(RECEPTIONIST_DASHBOARD_OVERVIEW)
+      const data = await res.json()
+
+      if (res.ok) {
+        setDashboardData({
+          stats: {
+            totalPatients: data.stats?.totalPatients || data.stats?.total_patients || 0,
+            todayAppointments: data.stats?.todayAppointments || data.stats?.today_appointments || 0,
+            pendingBills: data.stats?.pendingBills || data.stats?.pending_bills || 0,
+            newRegistrations: data.stats?.newRegistrations || data.stats?.new_registrations || 0,
+            waitingPatients: data.stats?.waitingPatients || data.stats?.waiting_patients || 0,
+            completedAppointments: data.stats?.completedAppointments || data.stats?.completed_appointments || 0,
+            revenueToday: data.stats?.revenueToday || data.stats?.revenue_today || 0,
+            avgWaitTime: data.stats?.avgWaitTime || data.stats?.avg_wait_time || 0
+          },
+          appointments: data.appointments || [],
+          registrations: data.registrations || [],
+          waitingPatients: data.waitingPatients || data.waiting_patients || []
+        })
+      } else {
+        console.error('Failed to load dashboard data:', data.message || 'Unknown error')
+      }
+    } catch (error) {
+      console.error('Error loading dashboard data:', error)
+    } finally {
       setLoading(false)
-    }, 1000)
+    }
   }
 
   const handleQuickAction = (action) => {
@@ -479,7 +492,7 @@ const ReceptionOverview = ({ setActivePage }) => {
               onClick={() => handleQuickAction('records')}
               className="text-blue-600 text-sm hover:underline hover:text-blue-800 self-start sm:self-auto"
             >
-              Manage Queue →
+              View All →
             </button>
           </div>
 

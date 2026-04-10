@@ -33,7 +33,10 @@ export const AUTH_PATIENT_LOGIN = '/api/v1/auth/patient/login';
 export const AUTH_HOSPITALS = '/api/v1/auth/hospitals';
 export const AUTH_PATIENT_REGISTER = '/api/v1/auth/patient/register';
 export const AUTH_PATIENT_VERIFY_OTP = '/api/v1/auth/patient/verify-otp';
- 
+
+/** Patient portal: authenticated appointment booking (Bearer patient JWT) */
+export const PATIENT_APPOINTMENT_BOOKING_BASE = '/api/v1/patient-appointment-booking';
+
 /** Auth: hospital-admin change password (e.g. after first login with temp password) */
 export const AUTH_HOSPITAL_ADMIN_CHANGE_PASSWORD = '/api/v1/auth/hospital-admin/change-password';
 

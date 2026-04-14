@@ -10,13 +10,35 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import LoadingSpinner from '../../../../components/common/LoadingSpinner/LoadingSpinner'
 import DataTable from '../../../../components/ui/Tables/DataTable'
 import Modal from '../../../../components/common/Modal/Modal'
+import { apiFetch } from '../../../../services/apiClient'
 
 const AppointmentScheduling = () => {
   const [loading, setLoading] = useState(true)
   const [appointments, setAppointments] = useState([])
+  const [filteredAppointments, setFilteredAppointments] = useState([])
+  const [patients, setPatients] = useState([])
+  const [statistics, setStatistics] = useState({
+    total_appointments: 0,
+    checked_in: 0,
+    waiting: 0,
+    in_consultation: 0,
+    completed: 0,
+    cancelled: 0,
+    no_show: 0
+  })
+  const [quickActions, setQuickActions] = useState(null)
+
   const [showForm, setShowForm] = useState(false)
   const [selectedAppointment, setSelectedAppointment] = useState(null)
+  
+  // Search and Filter States
+  const [searchTerm, setSearchTerm] = useState('')
+
+  const [filters, setFilters] = useState({
+    page: 1, limit: 50, department_name: '', doctor_name: '', status: ''
+  })
   const [formData, setFormData] = useState({
+    id: null,
     patientId: '',
     referralId: '',
     department: '',
@@ -41,14 +63,6 @@ const AppointmentScheduling = () => {
   const [isDocDropdownOpen, setIsDocDropdownOpen] = useState(false)
   const docDropdownRef = useRef(null)
 
-  // Mock patient data with Referral IDs
-  const PATIENTS = [
-    { id: '1', name: 'Ravi Kumar', referralId: 'REF-2023-001' },
-    { id: '2', name: 'Anita Sharma', referralId: 'REF-2023-002' },
-    { id: '3', name: 'Suresh Patel', referralId: 'REF-2023-003' },
-    { id: '4', name: 'John Doe', referralId: 'REF-2023-004' }
-  ]
-
   // Centralized Doctor and Department data
   const DOCTORS = [
     { id: '1', name: 'Dr. Meena Rao', department: 'Cardiology' },
@@ -61,52 +75,142 @@ const AppointmentScheduling = () => {
   const DEPARTMENTS = [...new Set(DOCTORS.map(d => d.department))]
 
   useEffect(() => {
+    loadPatients()
     loadAppointments()
-  }, [])
+    loadStatistics()
+    loadQuickActions()
+  }, [filters])
+
+  // Apply search and filters
+  useEffect(() => {
+    let filtered = appointments
+    
+    if (searchTerm) {
+      filtered = filtered.filter(apt =>
+        apt.patient?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        apt.id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        apt.doctor?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    }
+
+    setFilteredAppointments(filtered)
+  }, [searchTerm, appointments])
+
+  const loadPatients = async () => {
+    try {
+      const queryParams = new URLSearchParams()
+      queryParams.append('page', 1)
+      queryParams.append('limit', 100)
+
+      const res = await apiFetch(`/api/v1/receptionist/patients/search?${queryParams.toString()}`, { skipAuth: false })
+      if (res.ok) {
+        const data = await res.json()
+        const formattedPatients = (data.data?.patients || []).map(patient => ({
+          id: patient.id,
+          patient_id: patient.patient_id || patient.patient_ref,
+          name: patient.name || `${patient.first_name} ${patient.last_name}`,
+          referralId: patient.patient_ref || patient.patient_id,
+          email: patient.email,
+          phone: patient.phone,
+          gender: patient.gender,
+          date_of_birth: patient.date_of_birth
+        }))
+        setPatients(formattedPatients)
+        console.log('Loaded Patients:', formattedPatients)
+      }
+    } catch (e) { 
+      console.error('Error fetching patients', e)
+      setPatients([])
+    }
+  }
+
+  const loadStatistics = async () => {
+    try {
+      const res = await apiFetch('/api/v1/receptionist/appointments/statistics', { skipAuth: false })
+      if (res.ok) {
+        const data = await res.json()
+        console.log('Statistics Data:', data.data)
+        setStatistics(data.data || {})
+      }
+    } catch (e) { 
+      console.error('Error fetching statistics', e)
+      // Fallback: Calculate statistics from appointments
+      calculateStatistics()
+    }
+  }
+
+  const calculateStatistics = () => {
+    if (appointments.length === 0) return
+
+    const stats = {
+      total_appointments: appointments.length,
+      checked_in: appointments.filter(a => a.status === 'CHECKED_IN' || a.is_checked_in).length,
+      waiting: appointments.filter(a => a.status === 'WAITING' || a.status === 'CHECKED_IN').length,
+      in_consultation: appointments.filter(a => a.status === 'IN_CONSULTATION').length,
+      completed: appointments.filter(a => a.status === 'COMPLETED').length,
+      cancelled: appointments.filter(a => a.status === 'CANCELLED').length,
+      no_show: appointments.filter(a => a.status === 'NO_SHOW').length
+    }
+    setStatistics(stats)
+  }
+
+  const loadQuickActions = async () => {
+    try {
+      const res = await apiFetch('/api/v1/receptionist/quick-actions', { skipAuth: false })
+      if (res.ok) {
+        const data = await res.json()
+        setQuickActions(data.data || {})
+      }
+    } catch (e) { console.error('Error fetching quick actions', e) }
+  }
 
   const loadAppointments = async () => {
     setLoading(true)
-    setTimeout(() => {
-      setAppointments([
-        {
-          id: 'APT-3001',
-          patientId: '1',
-          patient: 'Ravi Kumar',
-          doctorId: '1',
-          doctor: 'Dr. Meena Rao',
-          date: '2023-10-15',
-          time: '10:30 AM',
-          reason: 'Fever',
-          type: 'Regular',
-          status: 'Confirmed'
-        },
-        {
-          id: 'APT-3002',
-          patientId: '2',
-          patient: 'Anita Sharma',
-          doctorId: '2',
-          doctor: 'Dr. Sharma',
-          date: '2023-10-15',
-          time: '11:00 AM',
-          reason: 'Back Pain',
-          type: 'New',
-          status: 'Pending'
-        },
-        {
-          id: 'APT-3003',
-          patientId: '3',
-          patient: 'Suresh Patel',
-          doctorId: '3',
-          doctor: 'Dr. Menon',
-          date: '2023-10-15',
-          time: '11:30 AM',
-          reason: 'Routine Checkup',
-          type: 'Regular',
-          status: 'Confirmed'
+    try {
+      const queryParams = new URLSearchParams()
+      queryParams.append('page', filters.page)
+      queryParams.append('limit', filters.limit)
+      if (filters.department_name) queryParams.append('department_name', filters.department_name)
+      if (filters.doctor_name) queryParams.append('doctor_name', filters.doctor_name)
+      if (filters.status) queryParams.append('status', filters.status)
+
+      const res = await apiFetch(`/api/v1/receptionist/appointments/today?${queryParams.toString()}`)
+      if (res.ok) {
+        const data = await res.json()
+
+        let appointmentsArray = []
+        if (data && data.data && Array.isArray(data.data.appointments)) {
+          appointmentsArray = data.data.appointments
+        } else if (data && Array.isArray(data.data)) {
+          appointmentsArray = data.data
         }
-      ])
+
+        // Map backend structure to expected table structure
+        const formatted = appointmentsArray.map(apt => ({
+          ...apt,
+          id: apt.appointment_ref || apt.id || 'N/A',
+          patient: apt.patient_name || apt.patient || apt.patient_ref || 'Unknown Patient',
+          doctor: apt.doctor_name || apt.doctor || 'Unknown Doctor',
+          department: apt.department_name || apt.department || 'N/A',
+          date: apt.appointment_date || apt.date || 'N/A',
+          time: apt.appointment_time || apt.time || 'N/A',
+          type: apt.appointment_type || apt.type || 'Regular',
+          reason: apt.chief_complaint || apt.reason || 'N/A',
+          status: apt.status || 'SCHEDULED',
+          is_checked_in: apt.is_checked_in || false
+        }))
+
+        console.log("Mapped Appointments for UI:", formatted)
+        setAppointments(formatted)
+        calculateStatistics()
+      } else {
+        if (typeof toast !== 'undefined') toast.error('Failed to load appointments')
+      }
+    } catch (err) {
+      if (typeof toast !== 'undefined') toast.error('An error occurred while loading appointments')
+    } finally {
       setLoading(false)
-    }, 1000)
+    }
   }
 
   const generateAppointmentId = () => {
@@ -116,18 +220,14 @@ const AppointmentScheduling = () => {
     return `APT-${lastId + 1}`
   }
 
-  const getPatientName = (patientName) => {
-    return PATIENTS.find(p => p.name === patientName)?.name || patientName || 'Unknown Patient'
-  }
-
   const handlePatientChange = (e) => {
     const selectedName = e.target.value
-    const patient = PATIENTS.find(p => p.name === selectedName)
-    
-    setFormData({ 
-      ...formData, 
-      patientId: selectedName, 
-      referralId: patient?.referralId || '' 
+    const patient = patients.find(p => p.name === selectedName)
+
+    setFormData({
+      ...formData,
+      patientId: selectedName,
+      referralId: patient?.referralId || ''
     })
     setPatientSearchTerm(selectedName)
   }
@@ -184,7 +284,7 @@ const AppointmentScheduling = () => {
     setIsDocDropdownOpen(false)
   }
 
-  const filteredPatients = PATIENTS.filter(p =>
+  const filteredPatients = patients.filter(p =>
     p.name.toLowerCase().includes(patientSearchTerm.toLowerCase()) ||
     p.referralId.toLowerCase().includes(patientSearchTerm.toLowerCase())
   )
@@ -203,8 +303,8 @@ const AppointmentScheduling = () => {
   }
 
   const handleDepartmentChange = (e) => {
-    setFormData({ 
-      ...formData, 
+    setFormData({
+      ...formData,
       department: e.target.value,
       doctorId: '' // Reset doctor when department changes
     })
@@ -212,7 +312,6 @@ const AppointmentScheduling = () => {
 
   const formatTime = (timeString) => {
     if (!timeString) return ''
-    // If time is in 24-hour format (HH:MM), convert to 12-hour format
     if (timeString.includes(':')) {
       const [hours, minutes] = timeString.split(':')
       const hour = parseInt(hours)
@@ -223,67 +322,102 @@ const AppointmentScheduling = () => {
     return timeString
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
 
-    const newAppointment = {
-      id: generateAppointmentId(),
-      patientId: formData.patientId,
-      patient: getPatientName(formData.patientId),
-      doctorId: formData.doctorId,
-      doctor: getDoctorName(formData.doctorId),
-      date: formData.date,
-      time: formatTime(formData.time),
-      reason: formData.reason,
-      type: formData.type,
-      status: 'Pending' // New appointments should start as Pending
+    try {
+      let res;
+      if (formData.id) {
+        // Modify existing appointment
+        const updatePayload = {
+          appointment_date: formData.date,
+          appointment_time: formData.time.includes('AM') || formData.time.includes('PM') ? convertTo24Hour(formData.time) : formData.time,
+          doctor_name: getDoctorName(formData.doctorId) || formData.doctorId,
+          department_name: formData.department,
+          chief_complaint: formData.reason,
+          notes: ''
+        };
+
+        res = await apiFetch(`/api/v1/receptionist/appointments/${formData.id}`, {
+          method: 'PATCH',
+          body: updatePayload
+        })
+      } else {
+        // Schedule new appointment
+        const createPayload = {
+          patient_ref: formData.referralId || undefined,
+          patient_name: formData.patientId !== 'New Patient' ? formData.patientId : undefined,
+          doctor_name: getDoctorName(formData.doctorId) || formData.doctorId,
+          department_name: formData.department,
+          appointment_date: formData.date,
+          appointment_time: formData.time.includes('AM') || formData.time.includes('PM') ? convertTo24Hour(formData.time) : formData.time,
+          chief_complaint: formData.reason,
+          appointment_type: formData.type.toUpperCase() === 'NEW PATIENT' ? 'CONSULTATION' :
+            formData.type.toUpperCase() === 'REGULAR' ? 'CONSULTATION' :
+              formData.type.toUpperCase() || 'CONSULTATION'
+        }
+
+        res = await apiFetch('/api/v1/receptionist/appointments/schedule', {
+          method: 'POST',
+          body: createPayload
+        })
+      }
+
+      const data = await res.json()
+
+      if (res.ok) {
+        if (typeof toast !== 'undefined') toast.success(data.message || `Appointment ${formData.id ? 'modified' : 'scheduled'} successfully!`);
+        setShowForm(false)
+        loadAppointments()
+        loadStatistics()
+
+        setFormData({
+          id: null,
+          patientId: '',
+          referralId: '',
+          department: '',
+          doctorId: '',
+          date: '',
+          time: '',
+          reason: '',
+          type: 'Regular'
+        })
+        setPatientSearchTerm('')
+        setDeptSearchTerm('')
+        setDocSearchTerm('')
+      } else {
+        if (typeof toast !== 'undefined') toast.error(data.message || 'Error saving appointment');
+      }
+    } catch (err) {
+      if (typeof toast !== 'undefined') toast.error('An error occurred while saving');
     }
-
-    // Add the new appointment to the array
-    setAppointments(prev => [...prev, newAppointment])
-
-    alert('Appointment scheduled successfully!')
-    setShowForm(false)
-    setFormData({
-      patientId: '',
-      referralId: '',
-      department: '',
-      doctorId: '',
-      date: '',
-      time: '',
-      reason: '',
-      type: 'Regular'
-    })
-    setPatientSearchTerm('')
-    setDeptSearchTerm('')
-    setDocSearchTerm('')
   }
 
   // Handle view appointment
   const handleViewAppointment = (appointment) => {
-    setShowForm(false) // Close form modal if open
-    setSelectedAppointment(appointment) // Open details modal
+    setShowForm(false)
+    setSelectedAppointment(appointment)
   }
 
-  // Handle reschedule - only open form modal
   const handleReschedule = (appointment) => {
     setSelectedAppointment(null) // Close details modal
-    const doctorObj = DOCTORS.find(d => d.id === appointment.doctorId)
+    const doctorObj = DOCTORS.find(d => d.id === appointment.doctorId) || DOCTORS.find(d => d.name === appointment.doctor);
     setFormData({
+      id: appointment.id,
       patientId: appointment.patient || '', // Use name since we switched to names
-      referralId: appointment.referralId || PATIENTS.find(p => p.name === appointment.patient)?.referralId || '',
-      department: doctorObj?.department || '',
-      doctorId: appointment.doctorId || '',
+      referralId: appointment.referralId || patients.find(p => p.name === appointment.patient)?.referralId || '',
+      department: doctorObj?.department || appointment.department || '',
+      doctorId: doctorObj?.id || appointment.doctorId || '',
       date: appointment.date,
-      time: appointment.time.includes('AM') || appointment.time.includes('PM')
+      time: appointment.time?.includes('AM') || appointment.time?.includes('PM')
         ? convertTo24Hour(appointment.time)
         : appointment.time,
-      reason: appointment.reason,
-      type: appointment.type
+      reason: appointment.reason || '',
+      type: appointment.type || 'Regular'
     })
     setPatientSearchTerm(appointment.patient || '')
-    setDeptSearchTerm(doctorObj?.department || '')
-    setDocSearchTerm(doctorObj?.name || '')
+    setDeptSearchTerm(doctorObj?.department || appointment.department || '')
+    setDocSearchTerm(doctorObj?.name || appointment.doctor || '')
     setShowForm(true) // Open form modal
   }
 
@@ -305,8 +439,9 @@ const AppointmentScheduling = () => {
 
   // Handle new appointment
   const handleNewAppointment = () => {
-    setSelectedAppointment(null) // Close details modal
+    setSelectedAppointment(null)
     setFormData({
+      id: null,
       patientId: '',
       referralId: '',
       department: '',
@@ -322,22 +457,62 @@ const AppointmentScheduling = () => {
     setShowForm(true) // Open form modal
   }
 
-  const handleCancelAppointment = (appointmentId) => {
+  const handleCancelAppointment = async (appointmentId) => {
     if (window.confirm('Are you sure you want to cancel this appointment?')) {
-      setAppointments(prev => prev.map(apt =>
-        apt.id === appointmentId
-          ? { ...apt, status: 'Cancelled' }
-          : apt
-      ))
+      try {
+        const res = await apiFetch(`/api/v1/receptionist/appointments/${appointmentId}`, {
+          method: 'PATCH',
+          body: { status: 'CANCELLED' }
+        });
+        if (res.ok) {
+          if (typeof toast !== 'undefined') toast.success('Appointment cancelled successfully');
+          loadAppointments()
+          loadStatistics()
+        } else {
+          if (typeof toast !== 'undefined') toast.error('Failed to cancel appointment')
+        }
+      } catch (err) {
+        if (typeof toast !== 'undefined') toast.error('An error occurred while canceling')
+      }
     }
   }
 
-  const handleStatusChange = (appointmentId, newStatus) => {
-    setAppointments(prev => prev.map(apt =>
-      apt.id === appointmentId
-        ? { ...apt, status: newStatus }
-        : apt
-    ))
+  const handleStatusChange = async (appointmentId, newStatus) => {
+    try {
+      const mappedStatus = newStatus === 'Confirmed' ? 'CONFIRMED' : newStatus.toUpperCase();
+      const res = await apiFetch(`/api/v1/receptionist/appointments/${appointmentId}`, {
+        method: 'PATCH',
+        body: { status: mappedStatus }
+      });
+      if (res.ok) {
+        if (typeof toast !== 'undefined') toast.success('Status updated successfully');
+        loadAppointments()
+        loadStatistics()
+      } else {
+        if (typeof toast !== 'undefined') toast.error('Failed to update status')
+      }
+    } catch (err) {
+      if (typeof toast !== 'undefined') toast.error('An error occurred while updating status')
+    }
+  }
+
+  const handleCheckIn = async (appointmentId) => {
+    try {
+      const res = await apiFetch(`/api/v1/receptionist/appointments/${appointmentId}/check-in`, {
+        method: 'POST',
+        body: { }
+      });
+      if (res.ok) {
+        if (typeof toast !== 'undefined') toast.success('Patient checked-in successfully');
+        loadAppointments()
+        loadStatistics()
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        if (typeof toast !== 'undefined') toast.error(errorData?.message || 'Failed to check-in patient');
+      }
+    } catch (err) {
+      if (typeof toast !== 'undefined') toast.error('An error occurred during check-in');
+    }
   }
 
   if (loading) return <LoadingSpinner />
@@ -346,171 +521,220 @@ const AppointmentScheduling = () => {
     <>
       {/* ---------- MAIN PAGE WRAPPER ---------- */}
       <div className="space-y-6 animate-fade-in">
+        {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
           <h2 className="text-xl md:text-2xl lg:text-2xl font-semibold text-gray-700">Appointment Scheduling</h2>
           <button
             onClick={handleNewAppointment}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center justify-center transition-colors"
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center justify-center transition-colors"
           >
             <AddIcon className="mr-1" style={{ fontSize: '1.25rem' }} /> Schedule Appointment
           </button>
         </div>
 
-        {/* Appointment Statistics */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-
-          {/* Confirmed */}
-          <div className="relative bg-gradient-to-br from-white to-blue-50 p-5 rounded-2xl border border-blue-200 
-                  hover:shadow-lg transition-all duration-300 overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
-
-            <div className="text-3xl font-bold text-blue-600">
-              {appointments.filter(a => a.status === 'Confirmed').length}
-            </div>
-            <div className="text-sm font-medium text-gray-600 mt-1">
-              Confirmed
-            </div>
-            <div className="text-xs text-blue-500 mt-1">
-              Active appointments
+        {/* KPI Statistics Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Total Appointments Card */}
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl border border-blue-200 hover:shadow-md transition-all">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-gray-600 text-sm font-medium">Total Appointments</p>
+                <p className="text-3xl font-bold text-blue-600 mt-2">{statistics?.total_appointments || 0}</p>
+                <p className="text-xs text-gray-500 mt-1">Today's schedule</p>
+              </div>
+              <div className="w-12 h-12 bg-blue-200 rounded-lg flex items-center justify-center text-xl">
+                📅
+              </div>
             </div>
           </div>
 
-          {/* Pending */}
-          <div className="relative bg-gradient-to-br from-white to-yellow-50 p-5 rounded-2xl border border-yellow-200 
-                  hover:shadow-lg transition-all duration-300 overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-yellow-500"></div>
-
-            <div className="text-3xl font-bold text-yellow-600">
-              {appointments.filter(a => a.status === 'Pending').length}
-            </div>
-            <div className="text-sm font-medium text-gray-600 mt-1">
-              Pending
-            </div>
-            <div className="text-xs text-yellow-500 mt-1">
-              Awaiting confirmation
+          {/* Waiting Card */}
+          <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 p-6 rounded-xl border border-yellow-200 hover:shadow-md transition-all">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-gray-600 text-sm font-medium">Waiting</p>
+                <p className="text-3xl font-bold text-yellow-600 mt-2">{statistics?.waiting || 0}</p>
+                <p className="text-xs text-gray-500 mt-1">Checked in</p>
+              </div>
+              <div className="w-12 h-12 bg-yellow-200 rounded-lg flex items-center justify-center text-xl">
+                ⏳
+              </div>
             </div>
           </div>
 
-          {/* Completed */}
-          <div className="relative bg-gradient-to-br from-white to-green-50 p-5 rounded-2xl border border-green-200 
-                  hover:shadow-lg transition-all duration-300 overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-green-500"></div>
-
-            <div className="text-3xl font-bold text-green-600">
-              {appointments.filter(a => a.status === 'Completed').length}
-            </div>
-            <div className="text-sm font-medium text-gray-600 mt-1">
-              Completed
-            </div>
-            <div className="text-xs text-green-500 mt-1">
-              Successfully served
+          {/* Completed Card */}
+          <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-xl border border-green-200 hover:shadow-md transition-all">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-gray-600 text-sm font-medium">Completed</p>
+                <p className="text-3xl font-bold text-green-600 mt-2">{statistics?.completed || 0}</p>
+                <p className="text-xs text-gray-500 mt-1">Successfully served</p>
+              </div>
+              <div className="w-12 h-12 bg-green-200 rounded-lg flex items-center justify-center text-xl">
+                ✅
+              </div>
             </div>
           </div>
 
-          {/* Cancelled */}
-          <div className="relative bg-gradient-to-br from-white to-red-50 p-5 rounded-2xl border border-red-200 
-                  hover:shadow-lg transition-all duration-300 overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-red-500"></div>
-
-            <div className="text-3xl font-bold text-red-600">
-              {appointments.filter(a => a.status === 'Cancelled').length}
-            </div>
-            <div className="text-sm font-medium text-gray-600 mt-1">
-              Cancelled
-            </div>
-            <div className="text-xs text-red-500 mt-1">
-              Not attended
+          {/* Cancelled Card */}
+          <div className="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-xl border border-red-200 hover:shadow-md transition-all">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-gray-600 text-sm font-medium">Cancelled</p>
+                <p className="text-3xl font-bold text-red-600 mt-2">{statistics?.cancelled || 0}</p>
+                <p className="text-xs text-gray-500 mt-1">Not attended</p>
+              </div>
+              <div className="w-12 h-12 bg-red-200 rounded-lg flex items-center justify-center text-xl">
+                ❌
+              </div>
             </div>
           </div>
-
         </div>
+
+        {/* Search Bar Section */}
+        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+          <div className="relative">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Search Appointments</label>
+            <div className="relative">
+              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" style={{ fontSize: '1.2rem' }} />
+              <input
+                type="text"
+                placeholder="Search by patient name, appointment ID, or doctor..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  title="Clear search"
+                >
+                  <CloseIcon style={{ fontSize: '1.2rem' }} />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Results Summary */}
+        <div className="flex justify-between items-center px-2">
+          <div className="text-sm text-gray-600">
+            Showing <span className="font-semibold text-gray-700">{filteredAppointments.length}</span> of <span className="font-semibold text-gray-700">{appointments.length}</span> appointments
+          </div>
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+            >
+              Clear Search
+            </button>
+          )}
+        </div>
+
         {/* Data Table */}
-        <div className="bg-white rounded-lg border overflow-hidden">
-          <DataTable
-            columns={[
-              { key: 'id', title: 'Appointment ID', sortable: true },
-              { key: 'patient', title: 'Patient', sortable: true },
-              { key: 'doctor', title: 'Doctor', sortable: true },
-              { key: 'date', title: 'Date', sortable: true },
-              { key: 'time', title: 'Time', sortable: true },
-              { key: 'reason', title: 'Reason', sortable: true },
-              {
-                key: 'type',
-                title: 'Type',
-                render: (value) => (
-                  <span className={`px-2 py-1 rounded-full text-xs ${value === 'Urgent' ? 'bg-red-100 text-red-800' :
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+          {filteredAppointments.length > 0 ? (
+            <DataTable
+              columns={[
+                { key: 'id', title: 'Appointment ID', sortable: true },
+                { key: 'patient', title: 'Patient', sortable: true },
+                { key: 'doctor', title: 'Doctor', sortable: true },
+                { key: 'department', title: 'Department', sortable: true },
+                { key: 'date', title: 'Date', sortable: true },
+                { key: 'time', title: 'Time', sortable: true },
+                { key: 'reason', title: 'Reason', sortable: true },
+                {
+                  key: 'type',
+                  title: 'Type',
+                  render: (value) => (
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${value === 'Urgent' ? 'bg-red-100 text-red-800' :
                       value === 'New' ? 'bg-green-100 text-green-800' :
                         value === 'Follow-up' ? 'bg-purple-100 text-purple-800' :
                           'bg-blue-100 text-blue-800'
-                    }`}>
-                    {value}
-                  </span>
-                )
-              },
-              {
-                key: 'status',
-                title: 'Status',
-                sortable: true,
-                render: (value, row) => (
-                  <div className="flex items-center gap-2">
-                    <span className={`px-2 py-1 rounded-full text-xs ${value === 'Confirmed' ? 'bg-green-100 text-green-800' :
-                        value === 'Cancelled' ? 'bg-red-100 text-red-800' :
-                          value === 'Completed' ? 'bg-blue-100 text-blue-800' :
-                            'bg-yellow-100 text-yellow-800'
                       }`}>
                       {value}
                     </span>
-                    {value === 'Pending' && (
+                  )
+                },
+                {
+                  key: 'status',
+                  title: 'Status',
+                  sortable: true,
+                  render: (value, row) => (
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${value === 'Confirmed' || value === 'CONFIRMED' ? 'bg-green-100 text-green-800' :
+                        value === 'Cancelled' || value === 'CANCELLED' ? 'bg-red-100 text-red-800' :
+                          value === 'Completed' || value === 'COMPLETED' ? 'bg-blue-100 text-blue-800' :
+                            'bg-yellow-100 text-yellow-800'
+                        }`}>
+                        {String(value).replace(/_/g, ' ')}
+                      </span>
+                      {value === 'Pending' && (
+                        <button
+                          onClick={() => handleStatusChange(row.id, 'Confirmed')}
+                          className="text-xs text-green-600 hover:text-green-800 transition-colors"
+                          title="Confirm"
+                        >
+                          <CheckIcon style={{ fontSize: '1rem' }} />
+                        </button>
+                      )}
+                    </div>
+                  )
+                },
+                {
+                  key: 'actions',
+                  title: 'Actions',
+                  render: (_, row) => (
+                    <div className="flex gap-2">
                       <button
-                        onClick={() => handleStatusChange(row.id, 'Confirmed')}
-                        className="text-xs text-green-600 hover:text-green-800 transition-colors"
-                        title="Confirm"
+                        onClick={() => handleViewAppointment(row)}
+                        className="p-1 text-blue-600 hover:text-blue-800 transition-colors"
+                        title="View Details"
                       >
-                        <CheckIcon style={{ fontSize: '1rem' }} />
+                        <VisibilityIcon style={{ fontSize: '1.1rem' }} />
                       </button>
-                    )}
-                  </div>
-                )
-              },
-              {
-                key: 'actions',
-                title: 'Actions',
-                render: (_, row) => (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleViewAppointment(row)}
-                      className="p-1 text-blue-600 hover:text-blue-800 transition-colors"
-                      title="View Details"
-                    >
-                      <VisibilityIcon style={{ fontSize: '1.1rem' }} />
-                    </button>
-                    {row.status !== 'Cancelled' && row.status !== 'Completed' && (
-                      <>
+                      {(row.status === 'Confirmed' || row.status === 'CONFIRMED' || row.status === 'SCHEDULED') && (
                         <button
-                          onClick={() => handleReschedule(row)}
-                          className="p-1 text-green-600 hover:text-green-800 transition-colors"
-                          title="Reschedule"
+                          onClick={() => handleCheckIn(row.id)}
+                          className="p-1 px-2 text-xs font-semibold bg-green-50 text-green-700 rounded border border-green-200 hover:bg-green-100 transition-colors"
+                          title="Check In Patient"
                         >
-                          <EditIcon style={{ fontSize: '1.1rem' }} />
+                          Check-in
                         </button>
-                        <button
-                          onClick={() => handleCancelAppointment(row.id)}
-                          className="p-1 text-red-600 hover:text-red-800 transition-colors"
-                          title="Cancel"
-                        >
-                          <CloseIcon style={{ fontSize: '1.1rem' }} />
-                        </button>
-                      </>
-                    )}
-                  </div>
-                )
-              }
-            ]}
-            data={appointments}
-          />
+                      )}
+                      {row.status !== 'Cancelled' && row.status !== 'CANCELLED' && row.status !== 'Completed' && row.status !== 'COMPLETED' && (
+                        <>
+                          <button
+                            onClick={() => handleReschedule(row)}
+                            className="p-1 text-green-600 hover:text-green-800 transition-colors"
+                            title="Reschedule"
+                          >
+                            <EditIcon style={{ fontSize: '1.1rem' }} />
+                          </button>
+                          <button
+                            onClick={() => handleCancelAppointment(row.id)}
+                            className="p-1 text-red-600 hover:text-red-800 transition-colors"
+                            title="Cancel"
+                          >
+                            <CloseIcon style={{ fontSize: '1.1rem' }} />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )
+                }
+              ]}
+              data={filteredAppointments}
+            />
+          ) : (
+            <div className="text-center py-12">
+              <SearchIcon style={{ fontSize: '3rem' }} className="text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500 text-lg">No appointments found</p>
+              <p className="text-gray-400 text-sm mt-1">Try adjusting your search or create a new appointment</p>
+            </div>
+          )}
         </div>
-
-
 
       </div>
 
@@ -539,7 +763,7 @@ const AppointmentScheduling = () => {
                   className="w-full p-2 pr-10 border rounded focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                   required
                 />
-                <div 
+                <div
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer hover:text-blue-500 transition-colors"
                   onClick={() => setIsPatientDropdownOpen(!isPatientDropdownOpen)}
                 >
@@ -558,7 +782,8 @@ const AppointmentScheduling = () => {
                         className="p-3 hover:bg-blue-50 cursor-pointer border-b last:border-0 border-gray-100 transition-colors"
                       >
                         <div className="font-medium text-gray-800">{p.name}</div>
-                        <div className="text-xs text-gray-500">{p.referralId || 'New Patient'}</div>
+                        <div className="text-xs text-gray-500">{p.referralId || p.patient_id || 'No ID'}</div>
+                        <div className="text-xs text-gray-400">{p.phone || 'No Phone'}</div>
                       </div>
                     ))
                   ) : (
@@ -567,9 +792,9 @@ const AppointmentScheduling = () => {
                     </div>
                   )}
                   {/* Option to create new if not in list */}
-                  {!PATIENTS.some(p => p.name === patientSearchTerm) && patientSearchTerm && (
+                  {!patients.some(p => p.name === patientSearchTerm) && patientSearchTerm && (
                     <div
-                      onClick={() => handleSelectPatient({ id: 'new', name: patientSearchTerm, referralId: '' })}
+                      onClick={() => handleSelectPatient({ id: 'new', name: patientSearchTerm, referralId: '', patient_id: '' })}
                       className="p-3 bg-gray-50 hover:bg-blue-50 text-blue-600 cursor-pointer sticky bottom-0 border-t border-gray-200 font-medium flex items-center transition-colors"
                     >
                       <AddCircleOutlineIcon className="mr-2" style={{ fontSize: '1.2rem' }} />
@@ -589,7 +814,7 @@ const AppointmentScheduling = () => {
                 readOnly={formData.patientId !== 'New Patient'}
                 onChange={(e) => setFormData({ ...formData, referralId: e.target.value })}
                 className={`w-full p-2 border rounded outline-none transition-all ${formData.patientId !== 'New Patient' ? 'bg-gray-50 text-gray-500' : 'bg-white'}`}
-                placeholder="ID Example: REF-1001"
+                placeholder="ID Example: PAT-DAVE-211"
                 required
               />
             </div>
@@ -611,7 +836,7 @@ const AppointmentScheduling = () => {
                   className="w-full p-2 pr-10 border rounded focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                   required
                 />
-                <div 
+                <div
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer hover:text-blue-500 transition-colors"
                   onClick={() => setIsDeptDropdownOpen(!isDeptDropdownOpen)}
                 >
@@ -657,7 +882,7 @@ const AppointmentScheduling = () => {
                   className={`w-full p-2 pr-10 border rounded focus:ring-2 focus:ring-blue-500 outline-none transition-all ${!formData.department ? 'bg-gray-50 text-gray-400 cursor-not-allowed' : 'bg-white'}`}
                   required
                 />
-                <div 
+                <div
                   className={`absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 ${formData.department ? 'cursor-pointer hover:text-blue-500' : 'cursor-not-allowed'} transition-colors`}
                   onClick={() => formData.department && setIsDocDropdownOpen(!isDocDropdownOpen)}
                 >
@@ -703,19 +928,18 @@ const AppointmentScheduling = () => {
                 <option value="Urgent">Urgent</option>
               </select>
             </div>
-           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Reason for Visit</label>
-            <input
-              type="text"
-              name="reason"
-              value={formData.reason}
-              onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-              className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="Brief reason for the appointment"
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Reason for Visit</label>
+              <input
+                type="text"
+                name="reason"
+                value={formData.reason}
+                onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+                className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                placeholder="Brief reason for the appointment"
+              />
+            </div>
           </div>
-          </div>
-          
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -742,8 +966,6 @@ const AppointmentScheduling = () => {
               />
             </div>
           </div>
-
-
 
           <div className="flex justify-end gap-3 pt-4">
             <button
@@ -780,12 +1002,12 @@ const AppointmentScheduling = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Status</p>
-                  <span className={`px-2 py-1 rounded-full text-xs ${selectedAppointment.status === 'Confirmed' ? 'bg-green-100 text-green-800' :
-                      selectedAppointment.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
-                        selectedAppointment.status === 'Completed' ? 'bg-blue-100 text-blue-800' :
-                          'bg-yellow-100 text-yellow-800'
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${String(selectedAppointment.status).toUpperCase() === 'CHECKED_IN' || String(selectedAppointment.status).toUpperCase() === 'CONFIRMED' ? 'bg-green-100 text-green-800' :
+                    String(selectedAppointment.status).toUpperCase() === 'CANCELLED' ? 'bg-red-100 text-red-800' :
+                      String(selectedAppointment.status).toUpperCase() === 'COMPLETED' ? 'bg-blue-100 text-blue-800' :
+                        'bg-yellow-100 text-yellow-800'
                     }`}>
-                    {selectedAppointment.status}
+                    {String(selectedAppointment.status).toUpperCase().replace(/_/g, ' ')}
                   </span>
                 </div>
               </div>
@@ -798,6 +1020,11 @@ const AppointmentScheduling = () => {
               <div className="border-t pt-3">
                 <p className="text-sm text-gray-500">Doctor Information</p>
                 <p className="font-medium">{selectedAppointment.doctor}</p>
+              </div>
+
+              <div className="border-t pt-3">
+                <p className="text-sm text-gray-500">Department</p>
+                <p className="font-medium">{selectedAppointment.department}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4 border-t pt-3">
@@ -818,7 +1045,7 @@ const AppointmentScheduling = () => {
             </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t">
-              {selectedAppointment.status !== 'Cancelled' && selectedAppointment.status !== 'Completed' && (
+              {String(selectedAppointment.status).toUpperCase() !== 'CANCELLED' && String(selectedAppointment.status).toUpperCase() !== 'COMPLETED' && (
                 <>
                   <button
                     onClick={() => {

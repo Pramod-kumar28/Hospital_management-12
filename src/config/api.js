@@ -94,6 +94,11 @@ export const HOSPITAL_ADMIN_DEPARTMENTS = '/api/v1/hospital-admin/departments';
 export const HOSPITAL_ADMIN_DEPARTMENT_DETAILS = (departmentId) => `/api/v1/hospital-admin/departments/${encodeURIComponent(departmentId)}`;
 export const HOSPITAL_ADMIN_DEPARTMENT_STATUS = (departmentId) => `/api/v1/hospital-admin/departments/${encodeURIComponent(departmentId)}/status`;
 
+// HOSPITAL ADMIN - APPOINTMENT OVERSIGHT
+export const HOSPITAL_ADMIN_APPOINTMENTS = '/api/v1/hospital-admin/appointments';
+export const HOSPITAL_ADMIN_APPOINTMENT_DETAILS = (appointmentId) => `/api/v1/hospital-admin/appointments/${encodeURIComponent(appointmentId)}`;
+export const HOSPITAL_ADMIN_APPOINTMENT_STATUS_UPDATE = (appointmentId) => `/api/v1/hospital-admin/appointments/${encodeURIComponent(appointmentId)}/status`;
+
 /** Hospital Admin: assign / unassign staff to departments (by names) */
 export const HOSPITAL_ADMIN_DEPARTMENTS_ASSIGN_STAFF = '/api/v1/hospital-admin/departments/assign-staff';
 export const HOSPITAL_ADMIN_DEPARTMENTS_UNASSIGN_STAFF = '/api/v1/hospital-admin/departments/unassign-staff';

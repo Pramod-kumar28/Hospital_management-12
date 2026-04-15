@@ -3,29 +3,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import LoadingSpinner from '../../../../components/common/LoadingSpinner/LoadingSpinner';
 import DataTable from '../../../../components/ui/Tables/DataTable';
 import Modal from '../../../../components/common/Modal/Modal';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import SearchIcon from '@mui/icons-material/Search';
-import PrintIcon from '@mui/icons-material/Print';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
-import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
-import QueueIcon from '@mui/icons-material/Queue';
-import PersonIcon from '@mui/icons-material/Person';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import WarningIcon from '@mui/icons-material/Warning';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import CloseIcon from '@mui/icons-material/Close';
-import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
-import CheckIcon from '@mui/icons-material/Check';
-import AddIcon from '@mui/icons-material/Add';
-import DescriptionIcon from '@mui/icons-material/Description';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import GroupsIcon from '@mui/icons-material/Groups';
-import PendingActionsIcon from '@mui/icons-material/PendingActions';
-import TaskAltIcon from '@mui/icons-material/TaskAlt';
+import {
+  KeyboardArrowDown as KeyboardArrowDownIcon, Search as SearchIcon, Print as PrintIcon, 
+  CheckCircle as CheckCircleIcon, ConfirmationNumber as ConfirmationNumberIcon,
+   MedicalServices as MedicalServicesIcon, Queue as QueueIcon, Person as PersonIcon,
+  AccessTime as AccessTimeIcon, Warning as WarningIcon, PersonAdd as PersonAddIcon,
+  PlayArrow as PlayArrowIcon, SwapHoriz as SwapHorizIcon, Visibility as VisibilityIcon,
+  Close as CloseIcon, PowerSettingsNew as PowerSettingsNewIcon, Check as CheckIcon,
+  Add as AddIcon, Description as DescriptionIcon, KeyboardArrowUp as KeyboardArrowUpIcon,
+  Groups as GroupsIcon, PendingActions as PendingActionsIcon, TaskAlt as TaskAltIcon
+} from '@mui/icons-material';
 
 
 const OPDManagement = () => {

@@ -1,11 +1,27 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../../../../hooks/useAuth'
 import Button from '../../../../components/common/Button/Button'
 import { isValidEmail, PHONE_REGEX } from '../../../../utils/validation'
+import { SUPER_ADMIN_PROFILE, SUPER_ADMIN_ME, SUPER_ADMIN_ME_AVATAR, SUPER_ADMIN_ME_SECURITY, SUPER_ADMIN_ME_CHANGE_PASSWORD, API_BASE_URL, PUBLIC_API_BASE_URL, API_HEADERS } from '../../../../config/api'
+import { CheckCircle, Error, Person, CloudUpload, Check, Email, Phone, Info, Security, Save, VisibilityOff, Visibility, Lock, VpnKey, Notifications, PhoneIphone, Tablet, DesktopMac, Logout, RocketLaunch, HourglassBottom, Close, ErrorOutline } from '@mui/icons-material'
 
 const ProfileSettings = () => {
   const { user } = useAuth()
   const fileInputRef = useRef(null)
+
+  // Helper function to construct full avatar URL
+  const getFullAvatarUrl = (avatarPath) => {
+    if (!avatarPath) return null
+    // If already a full URL, return as-is
+    if (avatarPath.startsWith('http')) return avatarPath
+    // In dev mode, PUBLIC_API_BASE_URL is empty, so relative paths work via Vite proxy
+    // In prod mode, PUBLIC_API_BASE_URL has the backend domain
+    if (PUBLIC_API_BASE_URL === '') {
+      return avatarPath // Use relative path for Vite proxy
+    }
+    return `${PUBLIC_API_BASE_URL}${avatarPath}`
+  }
+
   const [activeTab, setActiveTab] = useState('personal')
   const [profileImage, setProfileImage] = useState(user?.profileImage || null)
   const [imagePreview, setImagePreview] = useState(user?.profileImage || null)
@@ -45,7 +61,7 @@ const ProfileSettings = () => {
   })
   
   // Track original security settings to detect changes
-  const [originalSecuritySettings] = useState({
+  const [originalSecuritySettings, setOriginalSecuritySettings] = useState({
     twoFactorEnabled: user?.twoFactorEnabled || false,
     loginAlerts: user?.loginAlerts || true,
     suspiciousActivity: user?.suspiciousActivity || true,
@@ -99,6 +115,100 @@ const ProfileSettings = () => {
     action: null,
     actionData: null,
   })
+
+  // Fetch profile data on component mount
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+        if (!token) return
+
+        // Fetch authenticated user data
+        const meResponse = await fetch(`${API_BASE_URL}${SUPER_ADMIN_ME}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            ...API_HEADERS,
+          },
+        })
+
+        if (meResponse.ok) {
+          const meData = await meResponse.json()
+          const userData = meData?.data || meData
+          
+          // Handle both camelCase and snake_case field names from API
+          const firstName = userData.firstName || userData.first_name
+          const lastName = userData.lastName || userData.last_name
+          const email = userData.email
+          const phone = userData.phone
+          
+          if (firstName || lastName || email || phone) {
+            setPersonalInfo({
+              firstName: firstName || personalInfo.firstName,
+              lastName: lastName || personalInfo.lastName,
+              email: email || personalInfo.email,
+              phone: phone || personalInfo.phone,
+            })
+          }
+
+          if (userData.profileImage || userData.avatar || userData.avatar_url) {
+            setImagePreview(userData.profileImage || userData.avatar || userData.avatar_url)
+          }
+
+          // Extract and set security settings from API response
+          if (userData.security) {
+            const securityData = userData.security
+            const updatedSecuritySettings = {
+              twoFactorEnabled: securityData.is_two_factor_enabled || false,
+              loginAlerts: securityData.enable_login_alerts !== undefined ? securityData.enable_login_alerts : true,
+              suspiciousActivity: securityData.enable_suspicious_activity_alerts !== undefined ? securityData.enable_suspicious_activity_alerts : true,
+              sessionTimeout: securityData.inactivity_timeout_minutes || '30',
+              accountAutoLock: securityData.enable_account_auto_lock !== undefined ? securityData.enable_account_auto_lock : true,
+            }
+            setSecuritySettings(updatedSecuritySettings)
+            setOriginalSecuritySettings(updatedSecuritySettings)
+          }
+        }
+
+        // Fetch profile details
+        const profileResponse = await fetch(`${API_BASE_URL}${SUPER_ADMIN_PROFILE}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            ...API_HEADERS,
+          },
+        })
+
+        if (profileResponse.ok) {
+          const data = await profileResponse.json()
+          const profileData = data?.data || data
+          
+          // Handle both camelCase and snake_case field names from API
+          const firstName = profileData.firstName || profileData.first_name
+          const lastName = profileData.lastName || profileData.last_name
+          const email = profileData.email
+          const phone = profileData.phone
+          
+          if (firstName || lastName || email || phone) {
+            setPersonalInfo({
+              firstName: firstName || personalInfo.firstName,
+              lastName: lastName || personalInfo.lastName,
+              email: email || personalInfo.email,
+              phone: phone || personalInfo.phone,
+            })
+          }
+
+          if (profileData.profileImage || profileData.avatar || profileData.avatar_url) {
+            setImagePreview(profileData.profileImage || profileData.avatar || profileData.avatar_url)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch profile data:', error)
+      }
+    }
+
+    fetchProfileData()
+  }, [])
 
   // Show message notification
   const showMessage = (type, text) => {
@@ -208,18 +318,26 @@ const ProfileSettings = () => {
 
     setLoading(true)
     try {
-      // Simulate API call - Replace with actual API endpoint
+      const token = localStorage.getItem('access_token') || localStorage.getItem('token')
       const formData = new FormData()
-      formData.append('profileImage', profileImage)
+      formData.append('avatar', profileImage)
       
-      // const response = await fetch('/api/user/profile-picture', {
-      //   method: 'POST',
-      //   headers: { Authorization: `Bearer ${token}` },
-      //   body: formData,
-      // })
+      const response = await fetch(`${API_BASE_URL}${SUPER_ADMIN_ME_AVATAR}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          ...API_HEADERS,
+        },
+        body: formData,
+      })
       
-      await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
-      showMessage('success', 'Profile picture updated successfully!')
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}))
+        throw new Error(error?.message || 'Failed to update profile picture')
+      }
+      
+      const data = await response.json()
+      showMessage('success', data?.message || 'Profile picture updated successfully!')
       setProfileImage(null)
     } catch (error) {
       showMessage('error', error.message || 'Failed to update profile picture')
@@ -258,18 +376,29 @@ const ProfileSettings = () => {
 
     setLoading(true)
     try {
-      // Simulate API call - Replace with actual API endpoint
-      // const response = await fetch('/api/user/update-profile', {
-      //   method: 'PUT',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     Authorization: `Bearer ${token}`,
-      //   },
-      //   body: JSON.stringify(personalInfo),
-      // })
+      const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+      const response = await fetch(`${API_BASE_URL}${SUPER_ADMIN_PROFILE}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          ...API_HEADERS,
+        },
+        body: JSON.stringify({
+          first_name: personalInfo.firstName,
+          last_name: personalInfo.lastName,
+          email: personalInfo.email,
+          phone: personalInfo.phone,
+        }),
+      })
       
-      await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
-      showMessage('success', 'Personal information updated successfully!')
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}))
+        throw new Error(error?.message || 'Failed to update personal information')
+      }
+      
+      const data = await response.json()
+      showMessage('success', data?.message || 'Personal information updated successfully!')
       setPersonalErrors({})
     } catch (error) {
       showMessage('error', error.message || 'Failed to update personal information')
@@ -309,21 +438,34 @@ const ProfileSettings = () => {
 
     setLoading(true)
     try {
-      // Simulate API call - Replace with actual API endpoint
-      // const response = await fetch('/api/user/change-password', {
-      //   method: 'PUT',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     Authorization: `Bearer ${token}`,
-      //   },
-      //   body: JSON.stringify({
-      //     currentPassword: passwordData.currentPassword,
-      //     newPassword: passwordData.newPassword,
-      //   }),
-      // })
-      
-      await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
-      showMessage('success', 'Password changed successfully!')
+      const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+      if (!token) {
+        showMessage('error', 'Authentication token not found')
+        setLoading(false)
+        return
+      }
+
+      const response = await fetch(`${API_BASE_URL}${SUPER_ADMIN_ME_CHANGE_PASSWORD}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          ...API_HEADERS,
+        },
+        body: JSON.stringify({
+          current_password: passwordData.currentPassword,
+          new_password: passwordData.newPassword,
+          confirm_password: passwordData.confirmPassword,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData?.message || `Failed to change password: ${response.statusText}`)
+      }
+
+      const data = await response.json()
+      showMessage('success', data?.message || 'Password changed successfully!')
       setPasswordData({
         currentPassword: '',
         newPassword: '',
@@ -331,6 +473,7 @@ const ProfileSettings = () => {
       })
       setPasswordErrors({})
     } catch (error) {
+      console.error('Password change error:', error)
       showMessage('error', error.message || 'Failed to change password')
     } finally {
       setLoading(false)
@@ -345,19 +488,47 @@ const ProfileSettings = () => {
   const handleUpdateSecuritySettings = async () => {
     setLoading(true)
     try {
-      // Simulate API call - Replace with actual API endpoint
-      // const response = await fetch('/api/user/security-settings', {
-      //   method: 'PUT',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     Authorization: `Bearer ${token}`,
-      //   },
-      //   body: JSON.stringify(securitySettings),
-      // })
+      const token = localStorage.getItem('access_token') || localStorage.getItem('token')
+      if (!token) {
+        showMessage('error', 'Authentication token not found')
+        setLoading(false)
+        return
+      }
+
+      // Convert camelCase to snake_case for API
+      const payload = {
+        is_two_factor_enabled: securitySettings.twoFactorEnabled,
+        enable_login_alerts: securitySettings.loginAlerts,
+        enable_suspicious_activity_alerts: securitySettings.suspiciousActivity,
+        biometric_enabled: securitySettings.biometricEnabled,
+        inactivity_timeout_minutes: parseInt(securitySettings.sessionTimeout),
+        enable_account_auto_lock: securitySettings.accountAutoLock,
+      }
+
+      const response = await fetch(`${API_BASE_URL}${SUPER_ADMIN_ME}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          ...API_HEADERS,
+        },
+        body: JSON.stringify({
+          security: payload
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to update security settings: ${response.statusText}`)
+      }
+
+      const data = await response.json()
       
-      await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
+      // Update original settings after successful update to track changes
+      setOriginalSecuritySettings(securitySettings)
+      
       showMessage('success', 'Security settings updated successfully!')
     } catch (error) {
+      console.error('Security settings update error:', error)
       showMessage('error', error.message || 'Failed to update security settings')
     } finally {
       setLoading(false)
@@ -401,7 +572,7 @@ const ProfileSettings = () => {
               ? 'bg-green-50 border border-green-200 text-green-800' 
               : 'bg-red-50 border border-red-200 text-red-800'
           }`}>
-            <i className={`fas ${message.type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}`}></i>
+            {message.type === 'success' ? <CheckCircle className="flex-shrink-0" /> : <Error className="flex-shrink-0" />}
             <span className="font-medium">{message.text}</span>
           </div>
         )}
@@ -415,7 +586,7 @@ const ProfileSettings = () => {
                 {imagePreview ? (
                   <img src={imagePreview} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
-                  <i className="fas fa-user text-white text-4xl sm:text-5xl"></i>
+                  <Person className="text-white" sx={{ fontSize: '3rem' }} />
                 )}
               </div>
               <div className="flex flex-col gap-2 w-full">
@@ -433,7 +604,7 @@ const ProfileSettings = () => {
                   size="sm"
                   fullWidth
                 >
-                  <i className="fas fa-cloud-upload-alt mr-2"></i>
+                  <CloudUpload className="mr-2" sx={{ fontSize: '1.2rem' }} />
                   Choose Image
                 </Button>
                 {profileImage && (
@@ -444,7 +615,7 @@ const ProfileSettings = () => {
                     size="sm"
                     fullWidth
                   >
-                    <i className="fas fa-check mr-2"></i>
+                    <Check className="mr-2" sx={{ fontSize: '1.2rem' }} />
                     Upload
                   </Button>
                 )}
@@ -465,7 +636,7 @@ const ProfileSettings = () => {
                 <div className="bg-white rounded-lg p-3 sm:p-4 border border-blue-100 shadow-sm">
                   <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Email</p>
                   <p className="text-xs sm:text-sm font-medium text-gray-900 flex items-center gap-2 break-words">
-                    <i className="fas fa-envelope text-blue-500 flex-shrink-0"></i>
+                    <Email className="text-blue-500 flex-shrink-0" sx={{ fontSize: '1.2rem' }} />
                     <span className="truncate">{personalInfo.email || 'Not provided'}</span>
                   </p>
                 </div>
@@ -474,15 +645,15 @@ const ProfileSettings = () => {
                 <div className="bg-white rounded-lg p-3 sm:p-4 border border-blue-100 shadow-sm">
                   <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Phone</p>
                   <p className="text-xs sm:text-sm font-medium text-gray-900 flex items-center gap-2">
-                    <i className="fas fa-phone text-blue-500 flex-shrink-0"></i>
+                    <Phone className="text-blue-500 flex-shrink-0" sx={{ fontSize: '1.2rem' }} />
                     <span className="truncate">{personalInfo.phone || 'Not provided'}</span>
                   </p>
                 </div>
               </div>
 
-              <p className="text-xs text-gray-600 mt-3 sm:mt-4 text-center sm:text-left">
-                <i className="fas fa-info-circle mr-2"></i>
-                Upload a new profile picture. Max size 5MB. Supported formats: JPG, PNG, GIF
+              <p className="text-xs text-gray-600 mt-3 sm:mt-4 text-center sm:text-left flex items-center justify-center sm:justify-start gap-2">
+                <Info sx={{ fontSize: '1rem' }} />
+                <span>Upload a new profile picture. Max size 5MB. Supported formats: JPG, PNG, GIF</span>
               </p>
             </div>
           </div>
@@ -501,11 +672,11 @@ const ProfileSettings = () => {
                     : 'text-gray-600 border-transparent hover:text-gray-900'
                 }`}
               >
-                <i className={`fas hidden sm:inline ${
-                  tab === 'personal' ? 'fa-user' :
-                  tab === 'password' ? 'fa-lock' :
-                  'fa-shield-alt'
-                } mr-2`}></i>
+                <span className="hidden sm:inline mr-2">
+                  {tab === 'personal' ? <Person sx={{ fontSize: '1rem' }} /> :
+                  tab === 'password' ? <Lock sx={{ fontSize: '1rem' }} /> :
+                  <Security sx={{ fontSize: '1rem' }} />}
+                </span>
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
               </button>
             ))}
@@ -535,7 +706,7 @@ const ProfileSettings = () => {
                 />
                 {personalErrors.firstName && (
                   <p className="text-red-600 text-xs sm:text-sm mt-1 flex items-center gap-1">
-                    <i className="fas fa-exclamation-circle"></i>
+                    <ErrorOutline sx={{ fontSize: '1rem' }} />
                     {personalErrors.firstName}
                   </p>
                 )}
@@ -558,7 +729,7 @@ const ProfileSettings = () => {
                 />
                 {personalErrors.lastName && (
                   <p className="text-red-600 text-xs sm:text-sm mt-1 flex items-center gap-1">
-                    <i className="fas fa-exclamation-circle"></i>
+                    <ErrorOutline sx={{ fontSize: '1rem' }} />
                     {personalErrors.lastName}
                   </p>
                 )}
@@ -581,7 +752,7 @@ const ProfileSettings = () => {
                 />
                 {personalErrors.email && (
                   <p className="text-red-600 text-xs sm:text-sm mt-1 flex items-center gap-1">
-                    <i className="fas fa-exclamation-circle"></i>
+                    <ErrorOutline sx={{ fontSize: '1rem' }} />
                     {personalErrors.email}
                   </p>
                 )}
@@ -604,7 +775,7 @@ const ProfileSettings = () => {
                 />
                 {personalErrors.phone && (
                   <p className="text-red-600 text-xs sm:text-sm mt-1 flex items-center gap-1">
-                    <i className="fas fa-exclamation-circle"></i>
+                    <ErrorOutline sx={{ fontSize: '1rem' }} />
                     {personalErrors.phone}
                   </p>
                 )}
@@ -618,7 +789,7 @@ const ProfileSettings = () => {
                 onClick={handleUpdatePersonalInfo}
                 disabled={loading}
               >
-                <i className="fas fa-save mr-2"></i>
+                <Save className="mr-2" sx={{ fontSize: '1.2rem' }} />
                 Save Changes
               </Button>
               <Button
@@ -666,12 +837,12 @@ const ProfileSettings = () => {
                     onClick={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}
                     className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
                   >
-                    <i className={`fas text-base sm:text-lg ${showPasswords.current ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                    {showPasswords.current ? <VisibilityOff /> : <Visibility />}
                   </button>
                 </div>
                 {passwordErrors.currentPassword && (
                   <p className="text-red-600 text-sm mt-1 flex items-center gap-1">
-                    <i className="fas fa-exclamation-circle"></i>
+                    <ErrorOutline sx={{ fontSize: '1rem' }} />
                     {passwordErrors.currentPassword}
                   </p>
                 )}
@@ -698,12 +869,12 @@ const ProfileSettings = () => {
                     onClick={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}
                     className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
                   >
-                    <i className={`fas text-base sm:text-lg ${showPasswords.new ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                    {showPasswords.new ? <VisibilityOff /> : <Visibility />}
                   </button>
                 </div>
                 {passwordErrors.newPassword && (
                   <p className="text-red-600 text-xs sm:text-sm mt-1 flex items-center gap-1">
-                    <i className="fas fa-exclamation-circle"></i>
+                    <ErrorOutline sx={{ fontSize: '1rem' }} />
                     {passwordErrors.newPassword}
                   </p>
                 )}
@@ -730,12 +901,12 @@ const ProfileSettings = () => {
                     onClick={() => setShowPasswords(prev => ({ ...prev, confirm: !prev.confirm }))}
                     className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
                   >
-                    <i className={`fas text-base sm:text-lg ${showPasswords.confirm ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                    {showPasswords.confirm ? <VisibilityOff /> : <Visibility />}
                   </button>
                 </div>
                 {passwordErrors.confirmPassword && (
                   <p className="text-red-600 text-xs sm:text-sm mt-1 flex items-center gap-1">
-                    <i className="fas fa-exclamation-circle"></i>
+                    <ErrorOutline sx={{ fontSize: '1rem' }} />
                     {passwordErrors.confirmPassword}
                   </p>
                 )}
@@ -746,15 +917,15 @@ const ProfileSettings = () => {
                 <p className="text-xs sm:text-sm font-medium text-blue-900 mb-2">Password Requirements:</p>
                 <ul className="text-xs sm:text-sm text-blue-800 space-y-1">
                   <li className="flex items-center gap-2">
-                    <i className="fas fa-check text-green-600 flex-shrink-0"></i>
+                    <Check className="text-green-600 flex-shrink-0" sx={{ fontSize: '1rem' }} />
                     <span>At least 8 characters long</span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <i className="fas fa-check text-green-600 flex-shrink-0"></i>
+                    <Check className="text-green-600 flex-shrink-0" sx={{ fontSize: '1rem' }} />
                     <span>Mix of uppercase and lowercase letters</span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <i className="fas fa-check text-green-600 flex-shrink-0"></i>
+                    <Check className="text-green-600 flex-shrink-0" sx={{ fontSize: '1rem' }} />
                     <span>At least one number and special character</span>
                   </li>
                 </ul>
@@ -768,7 +939,7 @@ const ProfileSettings = () => {
                 onClick={handleUpdatePassword}
                 disabled={loading}
               >
-                <i className="fas fa-key mr-2"></i>
+                <VpnKey className="mr-2" sx={{ fontSize: '1.2rem' }} />
                 Update Password
               </Button>
               <Button
@@ -796,7 +967,7 @@ const ProfileSettings = () => {
               <div className="flex flex-col sm:flex-row items-start sm:items-start gap-3 sm:gap-4 sm:justify-between">
                 <div className="flex items-start gap-3 sm:gap-4">
                   <div className={`${securityLevel.color} text-2xl sm:text-3xl flex-shrink-0`}>
-                    <i className="fas fa-shield-alt"></i>
+                    <Security sx={{ fontSize: '2rem' }} />
                   </div>
                   <div>
                     <h3 className={`text-base sm:text-lg font-bold ${securityLevel.color}`}>Security Level: {securityLevel.text}</h3>
@@ -822,7 +993,7 @@ const ProfileSettings = () => {
               {/* Authentication Section */}
               <div>
                 <div className="flex items-center gap-2 mb-4 sm:mb-6 ">
-                  <i className="fas fa-key text-blue-600 text-lg"></i>
+                  <VpnKey className="text-blue-600" sx={{ fontSize: '1.5rem' }} />
                   <h3 className="text-base sm:text-lg font-bold text-gray-900">Authentication</h3>
                 </div>
 
@@ -852,7 +1023,7 @@ const ProfileSettings = () => {
               {/* Alerts & Monitoring Section */}
               <div>
                 <div className="flex items-center gap-2 mb-6">
-                  <i className="fas fa-bell text-orange-600 text-lg"></i>
+                  <Notifications className="text-orange-600" sx={{ fontSize: '1.5rem' }} />
                   <h3 className="text-lg font-bold text-gray-900">Alerts & Monitoring</h3>
                 </div>
 
@@ -906,7 +1077,7 @@ const ProfileSettings = () => {
             <div className="mb-6 sm:mb-8">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
                 <div className="flex items-center gap-2">
-                  <i className="fas fa-laptop text-cyan-600 text-lg"></i>
+                  <DesktopMac className="text-cyan-600" sx={{ fontSize: '1.5rem' }} />
                   <h3 className="text-base sm:text-lg font-bold text-gray-900">Sessions & Devices</h3>
                 </div>
                 <button
@@ -916,10 +1087,10 @@ const ProfileSettings = () => {
                     'signOutAll'
                   )}
                   disabled={loading || devices.length <= 1}
-                  className="text-red-600 hover:text-red-700 disabled:text-gray-400 disabled:border-gray-400 disabled:cursor-not-allowed text-xs sm:text-sm font-bold uppercase tracking-wide transition-colors border border-red-600 hover:border-red-700 disabled:border-gray-300 rounded-lg sm:rounded-xl px-2 sm:px-3 py-1 whitespace-nowrap"
+                  className="text-red-600 hover:text-red-700 disabled:text-gray-400 disabled:border-gray-400 disabled:cursor-not-allowed text-xs sm:text-sm font-bold uppercase tracking-wide transition-colors border border-red-600 hover:border-red-700 disabled:border-gray-300 rounded-lg sm:rounded-xl px-2 sm:px-3 py-1 whitespace-nowrap flex items-center justify-center gap-1"
                   title={devices.length <= 1 ? 'Only one session active' : 'Sign out from all other devices'}
                 >
-                  <i className="fas fa-sign-out-alt mr-1"></i>
+                  <Logout sx={{ fontSize: '1rem' }} />
                   SIGN OUT ALL
                 </button>
               </div>
@@ -942,15 +1113,11 @@ const ProfileSettings = () => {
                               device.isCurrent ? 'text-blue-600' : 'text-gray-400'
                             }`}
                           >
-                            <i
-                              className={`fas ${
-                                device.type === 'mobile'
-                                  ? 'fa-mobile-alt'
-                                  : device.type === 'tablet'
-                                  ? 'fa-tablet-alt'
-                                  : 'fa-desktop'
-                              }`}
-                            ></i>
+                            {device.type === 'mobile'
+                              ? <PhoneIphone sx={{ fontSize: '1.5rem' }} />
+                              : device.type === 'tablet'
+                              ? <Tablet sx={{ fontSize: '1.5rem' }} />
+                              : <DesktopMac sx={{ fontSize: '1.5rem' }} />}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
@@ -1009,16 +1176,16 @@ const ProfileSettings = () => {
             {/* Advanced Protection Section */}
             <div className="mb-6 sm:mb-8 p-4 sm:p-6 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg sm:rounded-xl border border-blue-200">
               <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
-                <i className="fas fa-rocket text-blue-600"></i>
+                <RocketLaunch className="text-blue-600" />
                 Advanced Protection
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 {/* Inactivity Timeout */}
                 <div>
-                  <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-2 sm:mb-3 uppercase tracking-wide">
-                    <i className="fas fa-hourglass-end text-blue-600 mr-2"></i>
-                    Inactivity Timeout
+                  <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-2 sm:mb-3 uppercase tracking-wide flex items-center gap-2">
+                    <HourglassBottom className="text-blue-600" sx={{ fontSize: '1rem' }} />
+                    <span>Inactivity Timeout</span>
                   </label>
                   <p className="text-xs text-gray-600 mb-2 sm:mb-3">
                     Session will automatically terminate after a period of inactivity.
@@ -1039,9 +1206,9 @@ const ProfileSettings = () => {
                 {/* Account Auto-Lock */}
                 <div className="flex items-start justify-between">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wide">
-                      <i className="fas fa-lock text-blue-600 mr-2"></i>
-                      Account Auto-Lock
+                    <label className="block text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wide flex items-center gap-2">
+                      <Lock className="text-blue-600" sx={{ fontSize: '1rem' }} />
+                      <span>Account Auto-Lock</span>
                     </label>
                     <p className="text-xs text-gray-600">Lock after 5 failed login attempts</p>
                   </div>
@@ -1065,7 +1232,7 @@ const ProfileSettings = () => {
                 onClick={handleDiscardSecurityChanges}
                 disabled={loading || !hasSecurityChanges}
               >
-                <i className="fas fa-times mr-2"></i>
+                <Close className="mr-2" sx={{ fontSize: '1.2rem' }} />
                 Discard Changes
               </Button>
               <Button
@@ -1073,7 +1240,7 @@ const ProfileSettings = () => {
                 onClick={handleUpdateSecuritySettings}
                 disabled={loading || !hasSecurityChanges}
               >
-                <i className="fas fa-save mr-2"></i>
+                <Save className="mr-2" sx={{ fontSize: '1.2rem' }} />
                 Save Security Profile
               </Button>
             </div>
@@ -1087,7 +1254,7 @@ const ProfileSettings = () => {
               {/* Modal Header */}
               <div className="bg-gradient-to-r from-red-50 to-red-100 px-4 sm:px-6 py-4 sm:py-5 border-b border-red-200 rounded-t-lg sm:rounded-t-xl flex items-start gap-3">
                 <div className="text-red-600 text-2xl flex-shrink-0 mt-0.5">
-                  <i className="fas fa-exclamation-circle"></i>
+                  <ErrorOutline sx={{ fontSize: '1.5rem' }} />
                 </div>
                 <div className="flex-1">
                   <h3 className="text-lg sm:text-xl font-bold text-gray-900">
@@ -1099,7 +1266,7 @@ const ProfileSettings = () => {
                   className="text-gray-400 hover:text-gray-600 text-xl flex-shrink-0 transition-colors"
                   aria-label="Close"
                 >
-                  <i className="fas fa-times"></i>
+                  <Close sx={{ fontSize: '1.5rem' }} />
                 </button>
               </div>
 
@@ -1119,12 +1286,12 @@ const ProfileSettings = () => {
                 >
                   {loading ? (
                     <>
-                      <i className="fas fa-spinner fa-spin mr-2"></i>
+                      <span className="inline-block animate-spin mr-2"><ErrorOutline sx={{ fontSize: '1rem' }} /></span>
                       Processing...
                     </>
                   ) : (
                     <>
-                      <i className="fas fa-check mr-2"></i>
+                      <Check className="mr-2" sx={{ fontSize: '1.2rem' }} />
                       Confirm
                     </>
                   )}
@@ -1132,10 +1299,10 @@ const ProfileSettings = () => {
                 <button
                   onClick={closeConfirmation}
                   disabled={loading}
-                  className="flex-1 bg-gray-100 hover:bg-gray-200 disabled:bg-gray-50 disabled:cursor-not-allowed text-gray-900 font-semibold py-2 px-4 rounded-lg sm:rounded-xl transition-all duration-200 text-sm sm:text-base"
+                  className="flex-1 bg-gray-100 hover:bg-gray-200 disabled:bg-gray-50 disabled:cursor-not-allowed text-gray-900 font-semibold py-2 px-4 rounded-lg sm:rounded-xl transition-all duration-200 text-sm sm:text-base flex items-center justify-center gap-2"
                 >
-                  <i className="fas fa-times mr-2"></i>
-                  Cancel
+                  <Close sx={{ fontSize: '1.2rem' }} />
+                  <span>Cancel</span>
                 </button>
               </div>
             </div>

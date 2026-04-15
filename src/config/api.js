@@ -63,6 +63,13 @@ export const SUPER_ADMIN_NOTIFY_HOSPITAL_ADMINS = '/api/v1/super-admin/notificat
 export const SUPER_ADMIN_HOSPITAL_SUBSCRIPTION = (hospitalName) => `/api/v1/super-admin/hospitals/${encodeURIComponent(hospitalName)}/subscription`;
 export const SUPER_ADMIN_HOSPITAL_ASSIGN_PLAN = (hospitalName) => `/api/v1/super-admin/hospitals/${encodeURIComponent(hospitalName)}/assign-plan`;
  
+/** Super Admin: Profile management */
+export const SUPER_ADMIN_PROFILE = '/api/v1/super-admin/profile';
+export const SUPER_ADMIN_ME = '/api/v1/super-admin/me';
+export const SUPER_ADMIN_ME_AVATAR = '/api/v1/super-admin/me/avatar';
+export const SUPER_ADMIN_ME_SECURITY = '/api/v1/super-admin/me/security';
+export const SUPER_ADMIN_ME_CHANGE_PASSWORD = '/api/v1/super-admin/me/change-password';
+
 /** Analytics: GET overview (hospitals, subscriptions, revenue, patients, occupancy) */
 export const ANALYTICS_OVERVIEW = '/api/v1/analytics/overview';
  

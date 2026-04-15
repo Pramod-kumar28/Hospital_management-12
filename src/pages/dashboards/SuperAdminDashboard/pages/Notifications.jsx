@@ -1,4 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import {
+  SUPER_ADMIN_HOSPITALS,
+  SUPER_ADMIN_NOTIFY_HOSPITAL_ADMINS
+} from '../../../../config/api';
+import { apiFetch } from '../../../../services/apiClient';
+
 
 const NotifyHospitalAdminsForm = () => {
   const [formData, setFormData] = useState({
@@ -16,7 +22,17 @@ const NotifyHospitalAdminsForm = () => {
   const [loadingHospitals, setLoadingHospitals] = useState(false);
   const [showHospitalDropdown, setShowHospitalDropdown] = useState(false);
   const [tokenValid, setTokenValid] = useState(true);
-  
+
+  const notificationApiKey =
+    (typeof window !== 'undefined' && (
+      localStorage.getItem('notification_api_key') ||
+      localStorage.getItem('NOTIFICATION_API_KEY')
+    )) ||
+    (typeof process !== 'undefined' && process?.env?.REACT_APP_NOTIFICATION_API_KEY) ||
+    (typeof import.meta !== 'undefined' && import.meta?.env?.VITE_NOTIFICATION_API_KEY) ||
+    '';
+
+
   const getHospitalItems = (data) => {
     if (Array.isArray(data)) return data;
     if (Array.isArray(data?.data)) return data.data;
@@ -28,18 +44,10 @@ const NotifyHospitalAdminsForm = () => {
   const getHospitalName = (hospital) =>
     hospital?.name || hospital?.hospital_name || hospital?.hospitalName || 'Unknown Hospital';
 
-  const fetchHospitals = async (token) => {
+  const fetchHospitals = async () => {
     setLoadingHospitals(true);
     try {
-      const response = await fetch('/api/v1/super-admin/hospitals', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-        },
-      });
-
+      const response = await apiFetch(SUPER_ADMIN_HOSPITALS);
       const responseData = await response.json().catch(() => ({}));
       if (!response.ok) {
         showNotification(responseData?.message || 'Failed to fetch hospitals', 'error');
@@ -57,10 +65,8 @@ const NotifyHospitalAdminsForm = () => {
     const token = localStorage.getItem('access_token') || localStorage.getItem('token');
     if (!token) {
       setTokenValid(false);
-      showNotification('Please login to send notifications', 'error');
-      return;
     }
-    fetchHospitals(token);
+    fetchHospitals();
   }, []);
 
   const handleInputChange = (e) => {
@@ -110,21 +116,8 @@ const NotifyHospitalAdminsForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) return;
 
-    const token = localStorage.getItem('access_token') || localStorage.getItem('token');
-    if (!token) {
-      showNotification('Please login to send notifications', 'error');
-      handleLogout();
-      return;
-    }
-    const notificationApiKey =
-      localStorage.getItem('notification_api_key') ||
-      localStorage.getItem('NOTIFICATION_API_KEY') ||
-      (typeof process !== 'undefined' && process?.env?.REACT_APP_NOTIFICATION_API_KEY) ||
-      (typeof import.meta !== 'undefined' && import.meta?.env?.VITE_NOTIFICATION_API_KEY) ||
-      '';
+    if (!validateForm()) return;
 
     setLoading(true);
     try {
@@ -137,45 +130,31 @@ const NotifyHospitalAdminsForm = () => {
         subject: formData.subject,
         message: formData.message,
       };
+
+      const requestHeaders = {};
       if (notificationApiKey) {
+        requestHeaders['x-api-key'] = notificationApiKey;
         requestBody.notification_api_key = notificationApiKey;
       }
 
       console.log('Sending notification:', requestBody);
 
-      const requestHeaders = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
-      };
-      if (notificationApiKey) {
-        requestHeaders['x-api-key'] = notificationApiKey;
-      }
-
-      const response = await fetch('/api/v1/super-admin/notifications/send-to-hospital-admins', {
+      const response = await apiFetch(SUPER_ADMIN_NOTIFY_HOSPITAL_ADMINS, {
         method: 'POST',
         headers: requestHeaders,
-        body: JSON.stringify(requestBody),
+        body: requestBody,
       });
 
+      const responseData = await response.json().catch(() => ({}));
       console.log('Response status:', response.status);
-      
-      const responseData = await response.json();
       console.log('Full response data:', responseData);
-
-      if (response.status === 401) {
-        showNotification('Your session has expired. Please login again.', 'error');
-        setTimeout(() => handleLogout(), 2000);
-        setLoading(false);
-        return;
-      }
 
       if (response.ok) {
         showNotification(
-          responseData.message || `✅ Notification sent successfully!`,
+          responseData.message || `Notification sent successfully!`,
           'success'
         );
-        
+
         setFormData({
           hospitalId: '',
           subject: '',
@@ -185,16 +164,16 @@ const NotifyHospitalAdminsForm = () => {
       } else {
         // Extract detailed error message
         let errorMsg = 'Failed to send notification';
-        
+
         if (responseData.errors && responseData.errors.length > 0) {
           errorMsg = responseData.errors[0];
         } else if (responseData.message) {
           errorMsg = responseData.message;
         }
-        
+
         showNotification(errorMsg, 'error');
       }
-      
+
     } catch (error) {
       console.error('Error sending notification:', error);
       showNotification(
@@ -241,7 +220,7 @@ const NotifyHospitalAdminsForm = () => {
       <div className="relative bg-gradient-to-br from-white to-indigo-50 p-5 rounded-2xl border border-indigo-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
         <div className="absolute top-0 right-0 w-20 h-20 bg-indigo-200 rounded-full -translate-y-8 translate-x-8 opacity-20"></div>
         <div className="absolute bottom-0 left-0 w-16 h-16 bg-indigo-300 rounded-full translate-y-8 -translate-x-8 opacity-10"></div>
-        
+
         <div className="relative">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -259,11 +238,10 @@ const NotifyHospitalAdminsForm = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
             <div
-              className={`cursor-pointer transition-all duration-300 rounded-xl border-2 p-4 ${
-                formData.hospitalId === '' && !showHospitalDropdown
-                  ? 'border-indigo-500 bg-indigo-50 shadow-md'
-                  : 'border-gray-200 hover:border-indigo-300 hover:shadow-md'
-              }`}
+              className={`cursor-pointer transition-all duration-300 rounded-xl border-2 p-4 ${formData.hospitalId === '' && !showHospitalDropdown
+                ? 'border-indigo-500 bg-indigo-50 shadow-md'
+                : 'border-gray-200 hover:border-indigo-300 hover:shadow-md'
+                }`}
               onClick={() => {
                 setShowHospitalDropdown(false);
                 setFormData((prev) => ({ ...prev, hospitalId: '' }));
@@ -282,11 +260,10 @@ const NotifyHospitalAdminsForm = () => {
             </div>
 
             <div
-              className={`cursor-pointer transition-all duration-300 rounded-xl border-2 p-4 ${
-                showHospitalDropdown || formData.hospitalId
-                  ? 'border-indigo-500 bg-indigo-50 shadow-md'
-                  : 'border-gray-200 hover:border-indigo-300 hover:shadow-md'
-              }`}
+              className={`cursor-pointer transition-all duration-300 rounded-xl border-2 p-4 ${showHospitalDropdown || formData.hospitalId
+                ? 'border-indigo-500 bg-indigo-50 shadow-md'
+                : 'border-gray-200 hover:border-indigo-300 hover:shadow-md'
+                }`}
               onClick={() => setShowHospitalDropdown(true)}
             >
               <div className="flex flex-col items-center text-center">
@@ -335,7 +312,7 @@ const NotifyHospitalAdminsForm = () => {
 
           <div className="relative mt-4 pt-3 border-t border-indigo-100">
             <p className="text-xs text-indigo-700 font-medium">
-              {formData.hospitalId 
+              {formData.hospitalId
                 ? `Mail will be sent to: ${getHospitalName(hospitals.find((hospital) => String(hospital?.id) === String(formData.hospitalId)))}`
                 : `✅ Notification will be sent to ALL hospital administrators`}
             </p>
@@ -347,7 +324,7 @@ const NotifyHospitalAdminsForm = () => {
       <div className="relative bg-gradient-to-br from-white to-pink-50 p-5 rounded-2xl border border-pink-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
         <div className="absolute top-0 right-0 w-20 h-20 bg-pink-200 rounded-full -translate-y-8 translate-x-8 opacity-20"></div>
         <div className="absolute bottom-0 left-0 w-16 h-16 bg-pink-300 rounded-full translate-y-8 -translate-x-8 opacity-10"></div>
-        
+
         <div className="relative">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -386,7 +363,7 @@ const NotifyHospitalAdminsForm = () => {
       <div className="relative bg-gradient-to-br from-white to-purple-50 p-5 rounded-2xl border border-purple-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
         <div className="absolute top-0 right-0 w-20 h-20 bg-purple-200 rounded-full -translate-y-8 translate-x-8 opacity-20"></div>
         <div className="absolute bottom-0 left-0 w-16 h-16 bg-purple-300 rounded-full translate-y-8 -translate-x-8 opacity-10"></div>
-        
+
         <div className="relative">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -412,7 +389,7 @@ const NotifyHospitalAdminsForm = () => {
             disabled={loading || !tokenValid}
             required
           />
-          
+
           <div className="text-right text-xs text-gray-500 mt-2">
             {formData.message.length} characters
           </div>
@@ -430,7 +407,7 @@ const NotifyHospitalAdminsForm = () => {
         <div className="relative bg-gradient-to-br from-white to-blue-50 p-5 rounded-2xl border border-blue-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
           <div className="absolute top-0 right-0 w-20 h-20 bg-blue-200 rounded-full -translate-y-8 translate-x-8 opacity-20"></div>
           <div className="absolute bottom-0 left-0 w-16 h-16 bg-blue-300 rounded-full translate-y-8 -translate-x-8 opacity-10"></div>
-          
+
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -468,7 +445,7 @@ const NotifyHospitalAdminsForm = () => {
       <div className="relative bg-gradient-to-br from-white to-gray-50 p-5 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
         <div className="absolute top-0 right-0 w-20 h-20 bg-gray-200 rounded-full -translate-y-8 translate-x-8 opacity-20"></div>
         <div className="absolute bottom-0 left-0 w-16 h-16 bg-gray-300 rounded-full translate-y-8 -translate-x-8 opacity-10"></div>
-        
+
         <div className="relative">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -479,7 +456,7 @@ const NotifyHospitalAdminsForm = () => {
                 Review and send notification
               </p>
             </div>
-           
+
           </div>
 
           <div className="flex gap-3 justify-end">
@@ -525,11 +502,10 @@ const NotifyHospitalAdminsForm = () => {
 
       {/* Notification Toast */}
       {notification.show && (
-        <div className={`fixed top-5 right-5 z-50 animate-slide-in ${
-          notification.type === 'success' 
-            ? 'bg-gradient-to-r from-green-500 to-green-600' 
-            : 'bg-gradient-to-r from-red-500 to-red-600'
-        } text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3`}>
+        <div className={`fixed top-5 right-5 z-50 animate-slide-in ${notification.type === 'success'
+          ? 'bg-gradient-to-r from-green-500 to-green-600'
+          : 'bg-gradient-to-r from-red-500 to-red-600'
+          } text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3`}>
           <i className={`fas ${notification.type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} text-xl`}></i>
           <span>{notification.message}</span>
         </div>

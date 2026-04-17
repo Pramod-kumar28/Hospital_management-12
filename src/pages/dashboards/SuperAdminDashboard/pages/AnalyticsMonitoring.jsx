@@ -1,17 +1,29 @@
-import React, { useEffect, useState } from 'react'
-import { API_BASE_URL, API_HEADERS } from '../../../../config/api'
+import React, { useEffect, useState, useRef } from 'react'
+import { API_BASE_URL, API_HEADERS, SUPER_ADMIN_ANALYTICS_OVERVIEW, SUPER_ADMIN_FINANCIAL_ANALYTICS, SUPER_ADMIN_SUBSCRIPTION_ANALYTICS, SUPER_ADMIN_PERFORMANCE_ANALYTICS, ANALYTICS_AUDIT_LOGS } from '../../../../config/api'
  
 const AnalyticsMonitoring = () => {
   const [analytics, setAnalytics] = useState(null)
+  const [financial, setFinancial] = useState(null)
+  const [subscriptionStats, setSubscriptionStats] = useState(null)
+  const [performanceStats, setPerformanceStats] = useState(null)
   const [logs, setLogs] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [filters, setFilters] = useState({
+    date_from: null,
+    date_to: null,
+    hospital_id: null
+  })
+  const fetchCalled = useRef(false)
  
   useEffect(() => {
-    fetchData()
+    if (!fetchCalled.current) {
+      fetchData()
+      fetchCalled.current = true
+    }
   }, [])
  
-  const fetchData = async () => {
+  const fetchData = async (overrideFilters = null) => {
     setLoading(true)
     setError('')
  
@@ -27,6 +39,9 @@ const AnalyticsMonitoring = () => {
       if (!finalToken) {
         setError('Authentication required. Please log in again.')
         setAnalytics(null)
+        setFinancial(null)
+        setSubscriptionStats(null)
+        setPerformanceStats(null)
         setLogs([])
         setLoading(false)
         return
@@ -38,14 +53,30 @@ const AnalyticsMonitoring = () => {
         'Content-Type': 'application/json'
       }
  
-      // Fetch analytics overview and audit logs
-      const [aRes, lRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/v1/analytics/overview`, { headers }),
-        fetch(`${API_BASE_URL}/api/v1/analytics/audit-logs?resource_type=1&skip=0&limit=50`, { headers })
+      const activeFilters = overrideFilters?.date_from !== undefined ? overrideFilters : filters;
+
+      // Fetch analytics overview, financial analytics, subscription analytics, performance analytics, and audit logs
+      const [aRes, lRes, fRes, sRes, pRes] = await Promise.all([
+        fetch(`${API_BASE_URL}${SUPER_ADMIN_ANALYTICS_OVERVIEW}`, { headers }),
+        fetch(`${API_BASE_URL}${ANALYTICS_AUDIT_LOGS()}`, { headers }),
+        fetch(`${API_BASE_URL}${SUPER_ADMIN_FINANCIAL_ANALYTICS}`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(activeFilters)
+        }),
+        fetch(`${API_BASE_URL}${SUPER_ADMIN_SUBSCRIPTION_ANALYTICS}`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(activeFilters)
+        }),
+        fetch(`${API_BASE_URL}${SUPER_ADMIN_PERFORMANCE_ANALYTICS}`, { headers })
       ])
  
       const aData = await aRes.json().catch(() => ({}))
       const lData = await lRes.json().catch(() => ({}))
+      const fData = await fRes.json().catch(() => ({}))
+      const sData = await sRes.json().catch(() => ({}))
+      const pData = await pRes.json().catch(() => ({}))
  
       if (aRes.status === 401) {
         setError('⚠️ Unauthorized - Your token is invalid or expired. Please log in again with valid credentials from your backend.')
@@ -58,6 +89,24 @@ const AnalyticsMonitoring = () => {
       } else {
         setAnalytics(aData)
       }
+
+      if (fRes.ok && fData.data) {
+        setFinancial(fData.data)
+      } else {
+        setFinancial(null)
+      }
+
+      if (sRes.ok && sData.data) {
+        setSubscriptionStats(sData.data)
+      } else {
+        setSubscriptionStats(null)
+      }
+
+      if (pRes.ok && pData.success) {
+        setPerformanceStats(pData.data)
+      } else {
+        setPerformanceStats(null)
+      }
  
       if (lRes.status === 401) {
         setError('⚠️ Unauthorized - Your token is invalid or expired. Please log in again with valid credentials from your backend.')
@@ -66,7 +115,7 @@ const AnalyticsMonitoring = () => {
         const errorMsg = lData?.message || lData?.error || `Error: ${lRes.status}`;
         setError(prev => prev ? `${prev}` : `Failed to load logs: ${errorMsg}`)
       } else {
-        const logsData = Array.isArray(lData) ? lData : lData?.data ?? []
+        const logsData = Array.isArray(lData) ? lData : lData?.logs || lData?.data || []
         setLogs(logsData)
       }
  
@@ -74,6 +123,9 @@ const AnalyticsMonitoring = () => {
       console.error('Fetch error:', err)
       setError('Network error. Please check your connection.')
       setAnalytics(null)
+      setFinancial(null)
+      setSubscriptionStats(null)
+      setPerformanceStats(null)
       setLogs([])
     } finally {
       setLoading(false)
@@ -88,6 +140,56 @@ const AnalyticsMonitoring = () => {
           Analytics & Monitoring
         </h2>
         <p className="text-gray-500 mt-1">System insights and audit logs</p>
+      </div>
+      
+      {/* Analytics Filters UI */}
+      <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-wrap gap-4 items-end">
+        <div>
+          <label className="block text-xs font-bold text-gray-500 uppercase mb-2">From Date</label>
+          <input 
+            type="date"
+            value={filters.date_from || ''}
+            onChange={(e) => setFilters(prev => ({ ...prev, date_from: e.target.value || null }))}
+            className="p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-700"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-gray-500 uppercase mb-2">To Date</label>
+          <input 
+            type="date"
+            value={filters.date_to || ''}
+            onChange={(e) => setFilters(prev => ({ ...prev, date_to: e.target.value || null }))}
+            className="p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-700"
+          />
+        </div>
+        <div className="flex-1 min-w-[250px]">
+          <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Hospital UUID (Optional)</label>
+          <input 
+            type="text"
+            placeholder="e.g. 123e4567-e89b-12d3..."
+            value={filters.hospital_id || ''}
+            onChange={(e) => setFilters(prev => ({ ...prev, hospital_id: e.target.value || null }))}
+            className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-700"
+          />
+        </div>
+        <div className="flex gap-2">
+          <button 
+            onClick={() => fetchData()}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg transition-colors font-semibold shadow-sm flex items-center"
+          >
+            <i className="fas fa-filter mr-2"></i> Apply Filters
+          </button>
+          <button 
+            onClick={() => {
+              const cleared = { date_from: null, date_to: null, hospital_id: null }
+              setFilters(cleared)
+              fetchData(cleared)
+            }}
+            className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-lg transition-colors font-semibold border border-gray-200"
+          >
+            Clear
+          </button>
+        </div>
       </div>
  
       {error && (
@@ -106,10 +208,9 @@ const AnalyticsMonitoring = () => {
           {/* CARDS */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card
-              title="Hospitals"
-              value={analytics?.hospitals?.total ?? 0}
-              subvalue={`${analytics?.hospitals?.active ?? 0} active`}
-              icon="fa-hospital"
+              title="Total Doctors"
+              value={analytics?.overview?.total_doctors ?? 0}
+              icon="fa-user-md"
               color="blue"
             />
             <Card
@@ -125,35 +226,205 @@ const AnalyticsMonitoring = () => {
               color="purple"
             />
             <Card
-              title="Total Patients"
-              value={analytics?.patients?.total ?? 0}
-              subvalue={`${analytics?.patients?.appointments_this_month ?? 0} appointments this month`}
-              icon="fa-user-injured"
+              title="Total Appointments"
+              value={analytics?.overview?.total_appointments ?? 0}
+              icon="fa-calendar-check"
               color="amber"
             />
           </div>
  
-          {/* Occupancy Info */}
-          {analytics?.occupancy && (
+          {/* System Info */}
+          {analytics?.overview && (
             <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Bed Occupancy</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Platform Overview</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <p className="text-sm text-gray-600">Total Beds</p>
-                  <p className="text-2xl font-bold text-gray-900">{analytics?.occupancy?.total_beds ?? 0}</p>
+                  <p className="text-sm text-gray-600">Total System Beds</p>
+                  <p className="text-2xl font-bold text-gray-900">{analytics?.overview?.total_beds ?? 0}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Occupied Beds</p>
-                  <p className="text-2xl font-bold text-blue-600">{analytics?.occupancy?.occupied_beds ?? 0}</p>
+                  <p className="text-sm text-gray-600">Total Billing Processed</p>
+                  <p className="text-2xl font-bold text-blue-600">₹ {analytics?.overview?.total_billing ?? 0}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Occupancy Rate</p>
-                  <p className="text-2xl font-bold text-green-600">{analytics?.occupancy?.occupancy_rate_percent ?? 0}%</p>
+                  <p className="text-sm text-gray-600">Premium Subscriptions</p>
+                  <p className="text-2xl font-bold text-green-600">{analytics?.subscriptions?.by_plan?.PREMIUM ?? 0}</p>
                 </div>
               </div>
             </div>
           )}
-          <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+
+          {/* Financial Breakdown */}
+          {financial && financial.summary && financial.summary.financial && (
+            <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden mb-6 mt-6">
+              <div className="px-6 py-4 border-b bg-gradient-to-r from-emerald-50 to-teal-50 font-semibold text-emerald-800 flex items-center">
+                <i className="fas fa-chart-line mr-2"></i> Core Financial Analytics
+              </div>
+              <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-6 border-b border-gray-50">
+                <div>
+                  <p className="text-xs uppercase font-bold text-gray-500 mb-1">MRR</p>
+                  <p className="text-xl font-black text-gray-800">₹ {(financial.summary.financial.monthlyRecurringRevenue || 0).toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase font-bold text-gray-500 mb-1">ARR</p>
+                  <p className="text-xl font-black text-emerald-600">₹ {(financial.summary.financial.annualRecurringRevenue || 0).toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase font-bold text-gray-500 mb-1">ARPU</p>
+                  <p className="text-xl font-black text-blue-600">₹ {(financial.summary.financial.averageRevenuePerUser || 0).toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase font-bold text-gray-500 mb-1">Profit Margin</p>
+                  <p className="text-xl font-black text-purple-600">{(financial.summary.financial.profitMargin || 0)}%</p>
+                </div>
+              </div>
+              
+              {/* Detailed Invoicing Row */}
+              <div className="p-6 grid grid-cols-2 md:grid-cols-5 gap-4 bg-gray-50/50">
+                <div>
+                  <p className="text-[10px] uppercase font-bold text-gray-500 mb-1">Total Revenue</p>
+                  <p className="text-lg font-bold text-gray-900">₹ {(financial.summary.financial.totalRevenue || 0).toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase font-bold text-gray-500 mb-1">Outstanding</p>
+                  <p className="text-lg font-bold text-red-500">₹ {(financial.summary.financial.outstandingAmount || 0).toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase font-bold text-gray-500 mb-1">Collection Rate</p>
+                  <p className="text-lg font-bold text-indigo-600">{(financial.summary.financial.collectionRate || 0)}%</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase font-bold text-gray-500 mb-1">Paid / Pending</p>
+                  <p className="text-lg font-bold text-gray-700">
+                    <span className="text-emerald-600">{financial.summary.financial.paidInvoices || 0}</span> / <span className="text-amber-500">{financial.summary.financial.pendingInvoices || 0}</span>
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase font-bold text-gray-500 mb-1">Overdue Invoices</p>
+                  <p className="text-lg font-bold text-red-600">{financial.summary.financial.overdueInvoices || 0}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Subscription Analytics Breakdown */}
+          {subscriptionStats && subscriptionStats.summary && subscriptionStats.summary.subscription && (
+            <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden mb-6 mt-6">
+              <div className="px-6 py-4 border-b bg-gradient-to-r from-blue-50 to-indigo-50 font-semibold text-blue-800 flex items-center">
+                <i className="fas fa-sync-alt mr-2"></i> Subscription Health
+              </div>
+              <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-6 border-b border-gray-50">
+                <div>
+                  <p className="text-xs uppercase font-bold text-gray-500 mb-1">Total Franchised</p>
+                  <p className="text-xl font-black text-gray-800">{subscriptionStats.summary.subscription.totalHospitals || 0} <span className="font-semibold text-xs text-gray-400">hospitals</span></p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase font-bold text-gray-500 mb-1">Active Accounts</p>
+                  <p className="text-xl font-black text-emerald-600">{subscriptionStats.summary.subscription.activeSubscriptions || 0}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase font-bold text-gray-500 mb-1">Expired / Churned</p>
+                  <p className="text-xl font-black text-red-500">{subscriptionStats.summary.subscription.expiredSubscriptions || 0}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase font-bold text-gray-500 mb-1">Retention Rate</p>
+                  <p className="text-xl font-black text-indigo-600">{subscriptionStats.summary.subscription.retentionRate || 0}%</p>
+                </div>
+              </div>
+
+              {/* Subscriptions Table */}
+              {subscriptionStats.subscriptions && subscriptionStats.subscriptions.length > 0 && (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm">
+                    <thead className="bg-gray-50 text-gray-500 text-xs uppercase font-bold tracking-wider">
+                      <tr>
+                        <th className="px-6 py-3 text-left">Hospital Name</th>
+                        <th className="px-6 py-3 text-left">Plan</th>
+                        <th className="px-6 py-3 text-left">Status</th>
+                        <th className="px-6 py-3 text-left">Auto Renewal</th>
+                        <th className="px-6 py-3 text-left">Expiration Date</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {subscriptionStats.subscriptions.map((sub, i) => (
+                        <tr key={i} className="hover:bg-blue-50/30 transition">
+                          <td className="px-6 py-3 font-semibold text-gray-800">{sub.hospitalName || '--'}</td>
+                          <td className="px-6 py-3 text-gray-600">
+                            <span className="bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 rounded font-medium text-xs">{sub.planType?.toUpperCase() || '--'}</span>
+                          </td>
+                          <td className="px-6 py-3">
+                            <span className={`px-2.5 py-1 text-[10px] uppercase font-bold rounded ${
+                              sub.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                            }`}>
+                              {sub.status || '--'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-3">
+                             {sub.autoRenewal ? (
+                               <i className="fas fa-check-circle text-emerald-500 text-sm" title="Enabled"></i>
+                             ) : (
+                               <i className="fas fa-times-circle text-red-400 text-sm" title="Disabled"></i>
+                             )}
+                          </td>
+                          <td className="px-6 py-3 text-gray-500 font-medium">{sub.subscriptionEndDate || '--'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Performance Analytics Breakdown */}
+          {performanceStats && performanceStats.summary && performanceStats.summary.performance && (
+            <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden mb-6 mt-6">
+              <div className="px-6 py-4 border-b bg-gradient-to-r from-amber-50 to-orange-50 font-semibold text-amber-800 flex items-center">
+                <i className="fas fa-server mr-2"></i> System Performance
+              </div>
+              <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-6 border-b border-gray-50">
+                <div>
+                  <p className="text-xs uppercase font-bold text-gray-500 mb-1">Platform Uptime</p>
+                  <p className="text-xl font-black text-emerald-600">{performanceStats.summary.performance.platformUptime || "99.99%"}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase font-bold text-gray-500 mb-1">Response Time (Avg / Peak)</p>
+                  <p className="text-xl font-black text-gray-800">{performanceStats.summary.performance.apiResponseTime || "0"}ms <span className="text-sm font-normal text-gray-400">/</span> <span className="text-amber-600">{performanceStats.summary.performance.peakResponseTime || "0"}ms</span></p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase font-bold text-gray-500 mb-1">Success / Error Rate</p>
+                  <p className="text-xl font-black text-emerald-600">{performanceStats.summary.performance.successRate || 0}% <span className="text-sm font-normal text-gray-400">/</span> <span className="text-red-500">{performanceStats.summary.performance.errorRate || 0}%</span></p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase font-bold text-gray-500 mb-1">Active Sessions</p>
+                  <p className="text-xl font-black text-blue-600">{performanceStats.summary.performance.activeSessions || 0}</p>
+                </div>
+              </div>
+              
+              <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-4 bg-gray-50/50">
+                <div>
+                  <p className="text-[10px] uppercase font-bold text-gray-500 mb-1">Total Requests / Failed</p>
+                  <p className="text-lg font-bold text-gray-900">
+                    <span className="text-blue-600">{(performanceStats.summary.performance.totalRequests || 0).toLocaleString()}</span> / <span className="text-red-500">{(performanceStats.summary.performance.failedRequests || 0).toLocaleString()}</span>
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase font-bold text-gray-500 mb-1">Server Load</p>
+                  <p className="text-lg font-bold text-amber-600">{performanceStats.summary.performance.serverLoad || "0%"}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase font-bold text-gray-500 mb-1">CPU Usage</p>
+                  <p className="text-lg font-bold text-indigo-600">{performanceStats.summary.performance.cpuUsage || "0%"}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase font-bold text-gray-500 mb-1">Memory Usage</p>
+                  <p className="text-lg font-bold text-purple-600">{performanceStats.summary.performance.memoryUsage || "0%"}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden mt-6">
             <div className="px-6 py-4 border-b bg-gray-50 font-semibold text-gray-700">
               Audit Logs
             </div>

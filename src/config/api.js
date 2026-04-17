@@ -72,9 +72,19 @@ export const SUPER_ADMIN_ME_CHANGE_PASSWORD = '/api/v1/super-admin/me/change-pas
 
 /** Analytics: GET overview (hospitals, subscriptions, revenue, patients, occupancy) */
 export const ANALYTICS_OVERVIEW = '/api/v1/analytics/overview';
+export const SUPER_ADMIN_ANALYTICS_OVERVIEW = '/api/v1/super-admin/analytics/overview';
  
 /** Analytics: GET audit logs with filters */
 export const ANALYTICS_AUDIT_LOGS = (resourceType = 1, skip = 0, limit = 50) => `/api/v1/analytics/audit-logs?resource_type=${resourceType}&skip=${skip}&limit=${limit}`;
+
+/** Super Admin: Financial Analytics - POST with filter body (date_from, date_to, hospital_id) */
+export const SUPER_ADMIN_FINANCIAL_ANALYTICS = '/api/v1/super-admin/financial-analytics';
+
+/** Super Admin: Subscription Analytics - POST with filter body (date_from, date_to, hospital_id) */
+export const SUPER_ADMIN_SUBSCRIPTION_ANALYTICS = '/api/v1/super-admin/subscription-analytics';
+
+/** Super Admin: Performance Analytics */
+export const SUPER_ADMIN_PERFORMANCE_ANALYTICS = '/api/v1/super-admin/performance-analytics';
 // SUPPORT MANAGEMENT ENDPOINTS
 /** Super Admin: Support Tickets */
 export const SUPER_ADMIN_SUPPORT_TICKETS = '/api/v1/super-admin/support/tickets';

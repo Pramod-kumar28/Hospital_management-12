@@ -39,6 +39,7 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
   const doctorMenu = [
     { id: 'dashboard', label: 'Dashboard Overview', icon: 'fa-chart-line' },
     { id: 'appointments', label: 'Appointments', icon: 'fa-calendar-alt' },
+    { id: 'appointment-tracking', label: 'Appointment Tracking', icon: 'fa-route' },
     { id: 'schedule', label: 'Schedule Management', icon: 'fa-calendar-week' },
     { id: 'patients', label: 'Patient Records', icon: 'fa-user-injured' },
     { id: 'prescriptions', label: 'Prescriptions', icon: 'fa-prescription-bottle-medical' },

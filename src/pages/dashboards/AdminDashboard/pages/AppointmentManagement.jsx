@@ -48,6 +48,7 @@ const AppointmentManagement = () => {
         patient: appointment.patient,
         doctor: appointment.doctor,
         date: date,
+        
         time: time + ' ' + appointment.dateTime.split(' ')[2],
         reason: appointment.reason,
         type: appointment.type,

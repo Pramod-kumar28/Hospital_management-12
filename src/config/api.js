@@ -73,6 +73,10 @@ export const SUPER_ADMIN_ME_CHANGE_PASSWORD = '/api/v1/super-admin/me/change-pas
 /** Analytics: GET overview (hospitals, subscriptions, revenue, patients, occupancy) */
 export const ANALYTICS_OVERVIEW = '/api/v1/analytics/overview';
 export const SUPER_ADMIN_ANALYTICS_OVERVIEW = '/api/v1/super-admin/analytics/overview';
+
+/** Super Admin: Dashboard Overview Cards with growth metrics */
+export const SUPER_ADMIN_DASHBOARD_OVERVIEW_CARDS = (periodDays = 30, trendMonths = 6) => 
+  `/api/v1/super-admin/dashboard/overview-cards?period_days=${periodDays}&trend_months=${trendMonths}`;
  
 /** Analytics: GET audit logs with filters */
 export const ANALYTICS_AUDIT_LOGS = (resourceType = 1, skip = 0, limit = 50) => `/api/v1/analytics/audit-logs?resource_type=${resourceType}&skip=${skip}&limit=${limit}`;

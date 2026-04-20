@@ -3,11 +3,11 @@ import { useAuth } from '../../../../hooks/useAuth'
 import { apiFetch } from '../../../../services/apiClient'
 import { RECEPTIONIST_PROFILE, RECEPTIONIST_PROFILE_UPDATE } from '../../../../config/api'
 import {
+
   ErrorOutline,
   CheckCircle,
   Email,
   Badge,
-  AccessTime,
   LocationOn,
   Close,
   Edit,
@@ -16,7 +16,7 @@ import {
   LockOpen,
   Assignment,
   Check,
-  FiberManualRecord
+  FiberManualRecord,
 } from '@mui/icons-material'
 
 const ReceptionProfile = () => {
@@ -31,11 +31,17 @@ const ReceptionProfile = () => {
     name: "",
     email: "",
     phone: "",
+    mobile_number: "",
     designation: "",
     work_area: "",
+    address: "",
     shift_type: "DAY",
+    shift_time: "",
     employment_type: "FULL_TIME",
     experience_years: 0,
+    blood_group: "",
+    gender: "",
+    join_date: "",
     profile_photo: null,
     profile_photo_url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS9B-uq-hoK_JiRml8oo37F6A0ro-ondfH0cQ&s",
     permissions: {
@@ -65,14 +71,20 @@ const ReceptionProfile = () => {
         setProfile({
           receptionist_id: apiProfile?.receptionist_id || "",
           employee_id: apiProfile?.employee_id || "",
-          name: apiProfile?.name || "",
+          name: apiProfile?.full_name || apiProfile?.name || "",
           email: apiProfile?.email || "",
-          phone: apiProfile?.phone || "",
+          phone: apiProfile?.phone || apiProfile?.mobile_number || "",
+          mobile_number: apiProfile?.mobile_number || apiProfile?.phone || "",
           designation: apiProfile?.designation || "",
           work_area: apiProfile?.work_area || "",
+          address: apiProfile?.address || "",
           shift_type: apiProfile?.shift_type || "DAY",
+          shift_time: apiProfile?.shift_timing || apiProfile?.shift_time || apiProfile?.shift || "",
           employment_type: apiProfile?.employment_type || "FULL_TIME",
           experience_years: apiProfile?.experience_years || 0,
+          blood_group: apiProfile?.blood_group || "",
+          gender: apiProfile?.gender || "",
+          join_date: apiProfile?.joining_date || apiProfile?.join_date || apiProfile?.date_of_joining || "",
           profile_photo_url: apiProfile?.profile_photo || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS9B-uq-hoK_JiRml8oo37F6A0ro-ondfH0cQ&s",
           permissions: apiProfile?.permissions || {},
           is_active: apiProfile?.is_active !== false
@@ -94,10 +106,16 @@ const ReceptionProfile = () => {
 
     try {
       const payload = new FormData()
-      payload.append('name', profile.name)
+      payload.append('full_name', profile.name)
       payload.append('phone', profile.phone)
+      payload.append('mobile_number', profile.mobile_number)
       payload.append('work_area', profile.work_area)
+      payload.append('address', profile.address)
       payload.append('experience_years', profile.experience_years)
+      payload.append('blood_group', profile.blood_group)
+      payload.append('gender', profile.gender)
+      payload.append('shift_timing', profile.shift_time)
+      payload.append('joining_date', profile.join_date)
       if (profile.profile_photo) {
         payload.append('profile_photo', profile.profile_photo)
       }
@@ -130,21 +148,11 @@ const ReceptionProfile = () => {
       <p className="text-gray-600 mt-2">Manage your professional information</p>
 
 
-      {/* Loading State */}
-      {loading && (
-        <div className="flex items-center justify-center py-32 px-4">
-          <div className="text-center">
-            <div className="inline-block">
-              <div className="w-16 h-16 rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin"></div>
-            </div>
-            <p className="mt-4 text-gray-600 font-medium">Loading profile...</p>
-          </div>
-        </div>
-      )}
+   
 
       {/* Error Message */}
       {error && (
-        <div className="mx-4 sm:mx-6 lg:mx-8 mt-6 p-4 rounded-xl bg-white border-l-4 border-red-600 text-gray-800 flex items-center justify-between shadow-sm">
+        <div className="mx-4 sm:mx-6 lg:mx-8 mt-6 p-4 rounded-xl bg-white border border-red-600 text-gray-800 flex items-center justify-between shadow-sm">
           <span className="flex items-center"><ErrorOutline className="text-red-600 mr-3" />{error}</span>
           <button
             onClick={() => window.location.reload()}
@@ -162,7 +170,9 @@ const ReceptionProfile = () => {
         </div>
       )}
 
-      {!loading && (
+      
+
+     
         <div className=" px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Profile Card - Left Column */}
@@ -205,13 +215,6 @@ const ReceptionProfile = () => {
                     </div>
                   </div>
                   <div className="border-t border-gray-100 pt-4 flex items-start">
-                    <AccessTime className="text-blue-600 w-5 mt-1 mr-4 flex-shrink-0" />
-                    <div className="flex-1">
-                      <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Shift</p>
-                      <p className="text-sm text-gray-700 font-medium mt-1">{profile.shift_type || 'N/A'}</p>
-                    </div>
-                  </div>
-                  <div className="border-t border-gray-100 pt-4 flex items-start">
                     <LocationOn className="text-blue-600 w-5 mt-1 mr-4 flex-shrink-0" />
                     <div className="flex-1">
                       <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Work Area</p>
@@ -233,6 +236,41 @@ const ReceptionProfile = () => {
                   </button>
                 </div>
               </div>
+
+              {/* Your Responsibilities Card - Below Left Sidebar */}
+              {(profile.permissions?.can_schedule_appointments || profile.permissions?.can_modify_appointments ||
+                profile.permissions?.can_register_patients || profile.permissions?.can_collect_payments) && (
+                <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-300 mt-8">
+                  <div className="bg-gradient-to-r from-blue-100 to-blue-100 px-6 sm:px-8 py-4 border-b border-blue-100">
+                    <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
+                      <Assignment className="text-blue-600" />
+                      Your Responsibilities
+                    </h3>
+                  </div>
+                  <div className="p-6 sm:p-8">
+                    <div className="space-y-2">
+                      {profile.permissions?.can_schedule_appointments && (
+                        <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg border border-blue-100 hover:border-blue-300 transition-all">
+                          <Check className="text-green-600 mt-1 flex-shrink-0 font-bold" />
+                          <span className="text-gray-700 font-medium text-lg">Schedule and manage appointments</span>
+                        </div>
+                      )}
+                      {profile.permissions?.can_modify_appointments && (
+                        <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg border border-blue-100 hover:border-blue-300 transition-all">
+                          <Check className="text-green-600 mt-1 flex-shrink-0 font-bold" />
+                          <span className="text-gray-700 font-medium text-lg">Modify existing appointments</span>
+                        </div>
+                      )}
+                      {profile.permissions?.can_register_patients && (
+                        <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg border border-blue-100 hover:border-blue-300 transition-all">
+                          <Check className="text-green-600 mt-1 flex-shrink-0 font-bold" />
+                          <span className="text-gray-700 font-medium text-lg">Register new patients</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Professional Information - Right Column */}
@@ -337,6 +375,76 @@ const ReceptionProfile = () => {
                         />
                       </div>
 
+                      {/* Blood Group */}
+                      <div className="group">
+                        <label className="block text-sm font-semibold text-gray-700 mb-2 uppercase tracking-wide">Blood Group</label>
+                        <select
+                          value={profile.blood_group}
+                          onChange={(e) => setProfile({ ...profile, blood_group: e.target.value })}
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-gray-50 focus:bg-white"
+                        >
+                          <option value="">Select Blood Group</option>
+                          <option value="A+">A+</option>
+                          <option value="A-">A-</option>
+                          <option value="B+">B+</option>
+                          <option value="B-">B-</option>
+                          <option value="AB+">AB+</option>
+                          <option value="AB-">AB-</option>
+                          <option value="O+">O+</option>
+                          <option value="O-">O-</option>
+                        </select>
+                      </div>
+
+                      {/* Gender */}
+                      <div className="group">
+                        <label className="block text-sm font-semibold text-gray-700 mb-2 uppercase tracking-wide">Gender</label>
+                        <select
+                          value={profile.gender}
+                          onChange={(e) => setProfile({ ...profile, gender: e.target.value })}
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-gray-50 focus:bg-white"
+                        >
+                          <option value="">Select Gender</option>
+                          <option value="male">Male</option>
+                          <option value="female">Female</option>
+                          <option value="other">Other</option>
+                        </select>
+                      </div>
+
+                      {/* Join Date */}
+                      <div className="group">
+                        <label className="block text-sm font-semibold text-gray-700 mb-2 uppercase tracking-wide">Date of Joining</label>
+                        <input
+                          type="date"
+                          value={profile.join_date}
+                          onChange={(e) => setProfile({ ...profile, join_date: e.target.value })}
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-gray-50 focus:bg-white"
+                        />
+                      </div>
+
+                      {/* Shift Time */}
+                      <div className="group">
+                        <label className="block text-sm font-semibold text-gray-700 mb-2 uppercase tracking-wide">Shift Time</label>
+                        <input
+                          type="text"
+                          value={profile.shift_time}
+                          onChange={(e) => setProfile({ ...profile, shift_time: e.target.value })}
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-gray-50 focus:bg-white"
+                          placeholder="e.g., 09:00 AM - 05:00 PM"
+                        />
+                      </div>
+
+                      {/* Address */}
+                      <div className="group">
+                        <label className="block text-sm font-semibold text-gray-700 mb-2 uppercase tracking-wide">Address</label>
+                        <textarea
+                          value={profile.address}
+                          onChange={(e) => setProfile({ ...profile, address: e.target.value })}
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-gray-50 focus:bg-white"
+                          placeholder="Enter your address"
+                          rows="3"
+                        />
+                      </div>
+
                       <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
                         <button
                           onClick={handleSave}
@@ -365,12 +473,56 @@ const ReceptionProfile = () => {
                             <p className="text-lg font-bold text-gray-800 mt-2">{profile.experience_years} <span className="text-sm">yrs</span></p>
                           </div>
                           <div className="bg-gradient-to-br from-blue-50 to-white p-4 rounded-xl border border-blue-100">
-                            <p className="text-xs text-gray-500 uppercase font-semibold tracking-wide">Shift</p>
-                            <p className="text-lg font-bold text-gray-800 mt-2">{profile.shift_type || 'N/A'}</p>
+                            <p className="text-xs text-gray-500 uppercase font-semibold tracking-wide">Staff ID</p>
+                            <p className="text-sm font-bold text-gray-800 mt-2">{profile.receptionist_id || 'ID: N/A'}</p>
                           </div>
                           <div className="bg-gradient-to-br from-blue-50 to-white p-4 rounded-xl border border-blue-100">
                             <p className="text-xs text-gray-500 uppercase font-semibold tracking-wide">Type</p>
                             <p className="text-sm font-bold text-gray-800 mt-2">{profile.employment_type?.replace('_', ' ') || 'N/A'}</p>
+                          </div>
+                        </div>
+
+                        {/* Additional Information Grid */}
+                        <div className="border-t border-gray-200 pt-6">
+                          <h4 className="text-lg font-bold text-gray-800 mb-5">Personal Information</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="bg-gradient-to-br from-blue-50 to-white p-4 rounded-xl border border-blue-200">
+                              <p className="text-xs text-gray-500 uppercase font-semibold tracking-wide">Blood Group</p>
+                              <p className="text-lg font-bold text-gray-800 mt-2">{profile.blood_group || 'N/A'}</p>
+                            </div>
+                            <div className="bg-gradient-to-br from-blue-50 to-white p-4 rounded-xl border border-blue-200">
+                              <p className="text-xs text-gray-500 uppercase font-semibold tracking-wide">Gender</p>
+                              <p className="text-lg font-bold text-gray-800 mt-2">{profile.gender ? profile.gender.charAt(0).toUpperCase() + profile.gender.slice(1) : 'N/A'}</p>
+                            </div>
+                            <div className="bg-gradient-to-br from-blue-50 to-white p-4 rounded-xl border border-blue-200">
+                              <p className="text-xs text-gray-500 uppercase font-semibold tracking-wide">Mobile Number</p>
+                              <p className="text-lg font-bold text-gray-800 mt-2">{profile.mobile_number || profile.phone || 'N/A'}</p>
+                            </div>
+                            <div className="bg-gradient-to-br from-blue-50 to-white p-4 rounded-xl border border-blue-200">
+                              <p className="text-xs text-gray-500 uppercase font-semibold tracking-wide">Date of Joining</p>
+                              <p className="text-lg font-bold text-gray-800 mt-2">{profile.join_date ? new Date(profile.join_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A'}</p>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                            <div className="bg-gradient-to-br from-blue-50 to-white p-4 rounded-xl border border-blue-200">
+                              <p className="text-xs text-gray-500 uppercase font-semibold tracking-wide">Shift Type</p>
+                              <p className="text-lg font-bold text-gray-800 mt-2">{profile.shift_type || 'N/A'}</p>
+                            </div>
+                            <div className="bg-gradient-to-br from-blue-50 to-white p-4 rounded-xl border border-blue-200">
+                              <p className="text-xs text-gray-500 uppercase font-semibold tracking-wide">Shift Timing</p>
+                              <p className="text-lg font-bold text-gray-800 mt-2">{profile.shift_time || 'N/A'}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Address Section */}
+                        <div className="border-t border-gray-200 pt-6">
+                          <h4 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                            <LocationOn className="text-blue-600" />
+                            Address
+                          </h4>
+                          <div className="bg-gradient-to-br from-blue-50 to-white p-4 rounded-xl border border-blue-200">
+                            <p className="text-gray-700">{profile.address || 'No address added'}</p>
                           </div>
                         </div>
 
@@ -443,41 +595,7 @@ const ReceptionProfile = () => {
                           </div>
                         </div>
 
-                        {(profile.permissions?.can_schedule_appointments || profile.permissions?.can_modify_appointments ||
-                          profile.permissions?.can_register_patients || profile.permissions?.can_collect_payments) && (
-                            <div className="border-t border-gray-200 pt-6">
-                              <h4 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                <Assignment className="text-blue-600" />
-                                Your Responsibilities
-                              </h4>
-                              <div className="space-y-3">
-                                {profile.permissions?.can_schedule_appointments && (
-                                  <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                                    <Check className="text-green-600 mt-1 flex-shrink-0" />
-                                    <span className="text-gray-700 font-medium">Schedule and manage appointments</span>
-                                  </div>
-                                )}
-                                {profile.permissions?.can_modify_appointments && (
-                                  <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                                    <Check className="text-green-600 mt-1 flex-shrink-0" />
-                                    <span className="text-gray-700 font-medium">Modify existing appointments</span>
-                                  </div>
-                                )}
-                                {profile.permissions?.can_register_patients && (
-                                  <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                                    <Check className="text-green-600 mt-1 flex-shrink-0" />
-                                    <span className="text-gray-700 font-medium">Register new patients</span>
-                                  </div>
-                                )}
-                                {profile.permissions?.can_collect_payments && (
-                                  <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                                    <Check className="text-green-600 mt-1 flex-shrink-0" />
-                                    <span className="text-gray-700 font-medium">Collect and process payments</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          )}
+
                       </div>
                     </>
                   )}
@@ -486,7 +604,7 @@ const ReceptionProfile = () => {
             </div>
           </div>
         </div>
-      )}
+     
     </div>
   )
 }

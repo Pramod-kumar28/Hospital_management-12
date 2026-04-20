@@ -30,6 +30,7 @@ const AppointmentScheduling = () => {
 
   const [showForm, setShowForm] = useState(false)
   const [selectedAppointment, setSelectedAppointment] = useState(null)
+  const [selectedPatientProfile, setSelectedPatientProfile] = useState(null)
   
   // Search and Filter States
   const [searchTerm, setSearchTerm] = useState('')
@@ -254,7 +255,7 @@ const AppointmentScheduling = () => {
     }
   }, [])
 
-  const handleSelectPatient = (patient) => {
+  const handleSelectPatient = async (patient) => {
     setFormData({
       ...formData,
       patientId: patient.name,
@@ -262,6 +263,20 @@ const AppointmentScheduling = () => {
     })
     setPatientSearchTerm(patient.name)
     setIsPatientDropdownOpen(false)
+
+    if (patient.id !== 'new' && patient.referralId) {
+      try {
+        const res = await apiFetch(`/api/v1/receptionist/patients/${patient.referralId}/profile`)
+        if (res.ok) {
+          const data = await res.json()
+          setSelectedPatientProfile(data.data || null)
+        }
+      } catch (err) {
+        console.error('Error fetching patient profile', err)
+      }
+    } else {
+      setSelectedPatientProfile(null)
+    }
   }
 
   const handleSelectDept = (dept) => {
@@ -298,8 +313,10 @@ const AppointmentScheduling = () => {
     d.name.toLowerCase().includes(docSearchTerm.toLowerCase())
   )
 
-  const getDoctorName = (doctorId) => {
-    return DOCTORS.find(d => d.id === doctorId)?.name || 'Unknown Doctor'
+  const getDoctorName = (doctorIdOrName) => {
+    if (!doctorIdOrName) return ''
+    const doc = DOCTORS.find(d => d.id === doctorIdOrName || d.name === doctorIdOrName)
+    return doc ? doc.name : doctorIdOrName
   }
 
   const handleDepartmentChange = (e) => {
@@ -385,6 +402,7 @@ const AppointmentScheduling = () => {
         setPatientSearchTerm('')
         setDeptSearchTerm('')
         setDocSearchTerm('')
+        setSelectedPatientProfile(null)
       } else {
         if (typeof toast !== 'undefined') toast.error(data.message || 'Error saving appointment');
       }
@@ -401,13 +419,14 @@ const AppointmentScheduling = () => {
 
   const handleReschedule = (appointment) => {
     setSelectedAppointment(null) // Close details modal
+    setSelectedPatientProfile(null)
     const doctorObj = DOCTORS.find(d => d.id === appointment.doctorId) || DOCTORS.find(d => d.name === appointment.doctor);
     setFormData({
       id: appointment.id,
       patientId: appointment.patient || '', // Use name since we switched to names
       referralId: appointment.referralId || patients.find(p => p.name === appointment.patient)?.referralId || '',
       department: doctorObj?.department || appointment.department || '',
-      doctorId: doctorObj?.id || appointment.doctorId || '',
+      doctorId: doctorObj?.id || appointment.doctorId || appointment.doctor || '',
       date: appointment.date,
       time: appointment.time?.includes('AM') || appointment.time?.includes('PM')
         ? convertTo24Hour(appointment.time)
@@ -437,9 +456,9 @@ const AppointmentScheduling = () => {
     return `${hours}:${minutes}`
   }
 
-  // Handle new appointment
   const handleNewAppointment = () => {
     setSelectedAppointment(null)
+    setSelectedPatientProfile(null)
     setFormData({
       id: null,
       patientId: '',
@@ -524,12 +543,6 @@ const AppointmentScheduling = () => {
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
           <h2 className="text-xl md:text-2xl lg:text-2xl font-semibold text-gray-700">Appointment Scheduling</h2>
-          <button
-            onClick={handleNewAppointment}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center justify-center transition-colors"
-          >
-            <AddIcon className="mr-1" style={{ fontSize: '1.25rem' }} /> Schedule Appointment
-          </button>
         </div>
 
         {/* KPI Statistics Cards */}
@@ -817,6 +830,12 @@ const AppointmentScheduling = () => {
                 placeholder="ID Example: PAT-DAVE-211"
                 required
               />
+              {selectedPatientProfile && (
+                <div className="mt-2 text-xs text-blue-800 bg-blue-50 p-2 rounded border border-blue-100 flex flex-col gap-1">
+                  <div><span className="font-semibold">Info:</span> {selectedPatientProfile.gender || 'Unknown'}, DOB: {selectedPatientProfile.date_of_birth || 'Unknown'}</div>
+                  <div><span className="font-semibold">Contact:</span> {selectedPatientProfile.phone || 'No Phone'} | {selectedPatientProfile.email || 'No Email'}</div>
+                </div>
+              )}
             </div>
           </div>
 

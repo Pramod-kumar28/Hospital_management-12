@@ -157,11 +157,11 @@ const SampleTracking = () => {
     const updatedSamples = samples.map((sample) =>
       sample.id === sampleId
         ? {
-            ...sample,
-            status: newStatus,
-            location: newLocation || sample.location,
-            nextAction: getNextAction(newStatus),
-          }
+          ...sample,
+          status: newStatus,
+          location: newLocation || sample.location,
+          nextAction: getNextAction(newStatus),
+        }
         : sample,
     );
     setSamples(updatedSamples);

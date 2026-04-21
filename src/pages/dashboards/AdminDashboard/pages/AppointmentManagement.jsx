@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import LoadingSpinner from '../../../../components/common/LoadingSpinner/LoadingSpinner'
 import DataTable from '../../../../components/ui/Tables/DataTable'
 import Modal from '../../../../components/common/Modal/Modal'
+import { apiFetch } from '../../../../services/apiClient'
+import { HOSPITAL_ADMIN_APPOINTMENTS, HOSPITAL_ADMIN_APPOINTMENT_STATUS_UPDATE } from '../../../../config/api'
 
 const AppointmentManagement = () => {
   const [loading, setLoading] = useState(true)
@@ -11,7 +13,7 @@ const AppointmentManagement = () => {
   const [modalState, setModalState] = useState({ add: false, edit: false, delete: false, view: false })
   const [currentAppointment, setCurrentAppointment] = useState(null)
   const [formData, setFormData] = useState({
-    patient: '', doctor: '', date: '', time: '', reason: '', 
+    patient: '', doctor: '', date: '', time: '', reason: '',
     type: 'Consultation', priority: 'Normal', notes: ''
   })
 
@@ -26,16 +28,38 @@ const AppointmentManagement = () => {
 
   const loadAppointments = async () => {
     setLoading(true)
-    setTimeout(() => {
-      setAppointments([
-        { id: 'APT-3001', patient: 'Ravi Kumar', doctor: 'Dr. Meena Rao', dateTime: '2023-10-15 10:30 AM', status: 'Confirmed', reason: 'Fever', type: 'Consultation', priority: 'Normal', notes: '' },
-        { id: 'APT-3002', patient: 'Anita Sharma', doctor: 'Dr. Sharma', dateTime: '2023-10-15 11:00 AM', status: 'Pending', reason: 'Back Pain', type: 'Consultation', priority: 'Normal', notes: '' },
-        { id: 'APT-3003', patient: 'Suresh Patel', doctor: 'Dr. Menon', dateTime: '2023-10-15 11:30 AM', status: 'Confirmed', reason: 'Routine Checkup', type: 'Routine Checkup', priority: 'Normal', notes: '' },
-        { id: 'APT-3004', patient: 'Priya Singh', doctor: 'Dr. Desai', dateTime: '2023-10-15 12:00 PM', status: 'Confirmed', reason: 'Migraine', type: 'Consultation', priority: 'Urgent', notes: 'Severe headache' },
-        { id: 'APT-3005', patient: 'Rajesh Kumar', doctor: 'Dr. Iyer', dateTime: '2023-10-15 02:00 PM', status: 'Pending', reason: 'Diabetes Review', type: 'Follow-up', priority: 'Normal', notes: '' }
-      ])
+    try {
+      const response = await apiFetch(`${HOSPITAL_ADMIN_APPOINTMENTS}?page=1&limit=50`)
+      if (response.ok) {
+        const data = await response.json()
+        // Map API response to component's expected format
+        const mappedAppointments = data.appointments.map(apt => ({
+          id: apt.appointment_number,
+          patient: apt.patient_name,
+          doctor: apt.doctor_name,
+          dateTime: `${apt.appointment_date} ${apt.appointment_time}`,
+          status: apt.status,
+          reason: apt.chief_complaint,
+          type: apt.appointment_type,
+          priority: apt.is_emergency ? 'Emergency' : 'Normal',
+          notes: apt.notes || '',
+          department: apt.department_name,
+          phone: apt.patient_phone,
+          fee: apt.consultation_fee,
+          createdAt: apt.created_at,
+          updatedAt: apt.updated_at
+        }))
+        setAppointments(mappedAppointments)
+      } else {
+        console.error('Failed to fetch appointments')
+        setAppointments([])
+      }
+    } catch (error) {
+      console.error('Error fetching appointments:', error)
+      setAppointments([])
+    } finally {
       setLoading(false)
-    }, 1000)
+    }
   }
 
   // Modal handlers
@@ -48,7 +72,6 @@ const AppointmentManagement = () => {
         patient: appointment.patient,
         doctor: appointment.doctor,
         date: date,
-        
         time: time + ' ' + appointment.dateTime.split(' ')[2],
         reason: appointment.reason,
         type: appointment.type,
@@ -81,9 +104,9 @@ const AppointmentManagement = () => {
 
   const handleUpdateAppointment = () => {
     if (!validateForm()) return
-    setAppointments(prev => prev.map(apt => 
-      apt.id === currentAppointment.id ? { 
-        ...apt, 
+    setAppointments(prev => prev.map(apt =>
+      apt.id === currentAppointment.id ? {
+        ...apt,
         ...formData,
         dateTime: `${formData.date} ${formData.time}`
       } : apt
@@ -96,15 +119,30 @@ const AppointmentManagement = () => {
     closeModal('delete')
   }
 
-  const handleStatusChange = (appointmentId, newStatus) => {
-    setAppointments(prev => prev.map(apt => 
-      apt.id === appointmentId ? { ...apt, status: newStatus } : apt
-    ))
+  const handleStatusChange = async (appointmentId, newStatus) => {
+    try {
+      const response = await apiFetch(HOSPITAL_ADMIN_APPOINTMENT_STATUS_UPDATE(appointmentId), {
+        method: 'PATCH',
+        body: { status: newStatus }
+      })
+
+      if (response.ok) {
+        setAppointments(prev => prev.map(apt =>
+          apt.id === appointmentId ? { ...apt, status: newStatus } : apt
+        ))
+      } else {
+        console.error('Failed to update appointment status')
+        alert('Failed to update appointment status')
+      }
+    } catch (error) {
+      console.error('Error updating appointment status:', error)
+      alert('Error updating appointment status')
+    }
   }
 
   const resetForm = () => {
     setFormData({
-      patient: '', doctor: '', date: '', time: '', reason: '', 
+      patient: '', doctor: '', date: '', time: '', reason: '',
       type: 'Consultation', priority: 'Normal', notes: ''
     })
     setCurrentAppointment(null)
@@ -126,8 +164,8 @@ const AppointmentManagement = () => {
 
   // Filter appointments
   const filteredAppointments = appointments.filter(apt => {
-    const matchesSearch = !searchTerm || 
-      [apt.patient, apt.doctor, apt.reason].some(field => 
+    const matchesSearch = !searchTerm ||
+      [apt.patient, apt.doctor, apt.reason].some(field =>
         field.toLowerCase().includes(searchTerm.toLowerCase())
       )
     const matchesStatus = !statusFilter || apt.status === statusFilter
@@ -137,10 +175,9 @@ const AppointmentManagement = () => {
   // Statistics
   const stats = [
     { label: 'Scheduled', value: appointments.length, color: 'blue', icon: 'calendar-alt' },
-    { label: 'Confirmed', value: appointments.filter(a => a.status === 'Confirmed').length, color: 'green', icon: 'check-circle' },
-    { label: 'Pending', value: appointments.filter(a => a.status === 'Pending').length, color: 'orange', icon: 'hourglass-half' },
-    { label: 'Completed', value: appointments.filter(a => a.status === 'Completed').length, color: 'purple', icon: 'tasks' },
-    { label: 'Cancelled', value: appointments.filter(a => a.status === 'Cancelled').length, color: 'red', icon: 'times-circle' }
+    { label: 'Requested', value: appointments.filter(a => a.status === 'REQUESTED').length, color: 'orange', icon: 'hourglass-half' },
+    { label: 'Completed', value: appointments.filter(a => a.status === 'COMPLETED').length, color: 'green', icon: 'check-circle' },
+    { label: 'Cancelled', value: appointments.filter(a => a.status === 'CANCELLED').length, color: 'red', icon: 'times-circle' }
   ]
 
   if (loading) return <LoadingSpinner />
@@ -152,7 +189,7 @@ const AppointmentManagement = () => {
         <h2 className="text-2xl font-semibold text-gray-700">
           Appointment Management
         </h2>
-        <button 
+        <button
           onClick={() => openModal('add')}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
         >
@@ -163,23 +200,22 @@ const AppointmentManagement = () => {
       {/* Search and Filter */}
       <div className="bg-white p-4 rounded-lg card-shadow border mb-6">
         <div className="flex flex-wrap gap-4">
-          <input 
-            type="text" 
-            placeholder="Search appointments..." 
+          <input
+            type="text"
+            placeholder="Search appointments..."
             className="p-2 border rounded flex-1 focus:outline-none focus:border-blue-500"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <select 
+          <select
             className="p-2 border rounded focus:outline-none focus:border-blue-500"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
             <option value="">All Status</option>
-            <option value="Confirmed">Confirmed</option>
-            <option value="Pending">Pending</option>
-            <option value="Completed">Completed</option>
-            <option value="Cancelled">Cancelled</option>
+            <option value="REQUESTED">Requested</option>
+            <option value="COMPLETED">Completed</option>
+            <option value="CANCELLED">Cancelled</option>
           </select>
         </div>
       </div>
@@ -195,60 +231,59 @@ const AppointmentManagement = () => {
       </div> */}
 
       {/* Statistics - KPI Cards */}
-<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-10">
-  {stats.map(({ label, value, color, icon }) => {
-    const colorConfigs = {
-      blue: { bg: 'bg-blue-500', from: 'from-blue-50', to: 'to-transparent', bars: ['bg-blue-400', 'bg-blue-300', 'bg-blue-500', 'bg-blue-400', 'bg-blue-300'] },
-      green: { bg: 'bg-green-500', from: 'from-green-50', to: 'to-transparent', bars: ['bg-green-300', 'bg-green-400', 'bg-green-300', 'bg-green-500', 'bg-green-400'] },
-      orange: { bg: 'bg-orange-500', from: 'from-orange-50', to: 'to-transparent', bars: ['bg-orange-400', 'bg-orange-300', 'bg-orange-400', 'bg-orange-500', 'bg-orange-400'] },
-      purple: { bg: 'bg-purple-500', from: 'from-purple-50', to: 'to-transparent', bars: ['bg-purple-400', 'bg-purple-300', 'bg-purple-400', 'bg-purple-500', 'bg-purple-300'] },
-      red: { bg: 'bg-red-500', from: 'from-red-50', to: 'to-transparent', bars: ['bg-red-400', 'bg-red-300', 'bg-red-400', 'bg-red-500', 'bg-red-400'] }
-    }
-    
-    const config = colorConfigs[color] || colorConfigs.blue
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-10">
+        {stats.map(({ label, value, color, icon }) => {
+          const colorConfigs = {
+            blue: { bg: 'bg-blue-500', from: 'from-blue-50', to: 'to-transparent', bars: ['bg-blue-400', 'bg-blue-300', 'bg-blue-500', 'bg-blue-400', 'bg-blue-300'] },
+            green: { bg: 'bg-green-500', from: 'from-green-50', to: 'to-transparent', bars: ['bg-green-300', 'bg-green-400', 'bg-green-300', 'bg-green-500', 'bg-green-400'] },
+            orange: { bg: 'bg-orange-500', from: 'from-orange-50', to: 'to-transparent', bars: ['bg-orange-400', 'bg-orange-300', 'bg-orange-400', 'bg-orange-500', 'bg-orange-400'] },
+            red: { bg: 'bg-red-500', from: 'from-red-50', to: 'to-transparent', bars: ['bg-red-400', 'bg-red-300', 'bg-red-400', 'bg-red-500', 'bg-red-400'] }
+          }
 
-    return (
-      <div 
-        key={label}
-        className={`relative ${config.bg} bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow`}
-      >
-        <div className={`absolute inset-0 bg-gradient-to-br ${config.from} ${config.to} pointer-events-none`}></div>
-        <div className="relative flex justify-between items-end">
-          <div>
-            <div className={`w-10 h-10 flex items-center justify-center rounded-full ${config.bg} mb-3`}>
-              <i className={`fas fa-${icon} text-white`}></i>
-            </div>
-            <p className="text-sm text-gray-500">{label}</p>
-            <p className="text-2xl font-bold text-gray-900">{value}</p>
-            <p className="text-xs text-gray-400 mt-1">appointments</p>
-          </div>
-          <div className="flex items-end gap-1 h-14">
-            {config.bars.map((barColor, idx) => (
-              <div key={idx} className={`w-1.5 rounded`} style={{ 
-                height: ['28px', '40px', '32px', '48px', '36px'][idx],
-                backgroundColor: barColor === 'bg-blue-400' ? '#60a5fa' : 
-                                barColor === 'bg-blue-300' ? '#93c5fd' :
-                                barColor === 'bg-blue-500' ? '#3b82f6' :
-                                barColor === 'bg-green-300' ? '#86efac' :
-                                barColor === 'bg-green-400' ? '#4ade80' :
+          const config = colorConfigs[color] || colorConfigs.blue
+
+          return (
+            <div
+              key={label}
+              className={`relative ${config.bg} bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow`}
+            >
+              <div className={`absolute inset-0 bg-gradient-to-br ${config.from} ${config.to} pointer-events-none`}></div>
+              <div className="relative flex justify-between items-end">
+                <div>
+                  <div className={`w-10 h-10 flex items-center justify-center rounded-full ${config.bg} mb-3`}>
+                    <i className={`fas fa-${icon} text-white`}></i>
+                  </div>
+                  <p className="text-sm text-gray-500">{label}</p>
+                  <p className="text-2xl font-bold text-gray-900">{value}</p>
+                  <p className="text-xs text-gray-400 mt-1">appointments</p>
+                </div>
+                <div className="flex items-end gap-1 h-14">
+                  {config.bars.map((barColor, idx) => (
+                    <div key={idx} className={`w-1.5 rounded`} style={{
+                      height: ['28px', '40px', '32px', '48px', '36px'][idx],
+                      backgroundColor: barColor === 'bg-blue-400' ? '#60a5fa' :
+                        barColor === 'bg-blue-300' ? '#93c5fd' :
+                          barColor === 'bg-blue-500' ? '#3b82f6' :
+                            barColor === 'bg-green-300' ? '#86efac' :
+                              barColor === 'bg-green-400' ? '#4ade80' :
                                 barColor === 'bg-green-500' ? '#22c55e' :
-                                barColor === 'bg-orange-400' ? '#fb923c' :
-                                barColor === 'bg-orange-300' ? '#fed7aa' :
-                                barColor === 'bg-orange-500' ? '#f97316' :
-                                barColor === 'bg-purple-400' ? '#c084fc' :
-                                barColor === 'bg-purple-300' ? '#d8b4fe' :
-                                barColor === 'bg-purple-500' ? '#a855f7' :
-                                barColor === 'bg-red-400' ? '#f87171' :
-                                barColor === 'bg-red-300' ? '#fca5a5' :
-                                '#ef4444'
-              }}></div>
-            ))}
-          </div>
-        </div>
+                                  barColor === 'bg-orange-400' ? '#fb923c' :
+                                    barColor === 'bg-orange-300' ? '#fed7aa' :
+                                      barColor === 'bg-orange-500' ? '#f97316' :
+                                        barColor === 'bg-purple-400' ? '#c084fc' :
+                                          barColor === 'bg-purple-300' ? '#d8b4fe' :
+                                            barColor === 'bg-purple-500' ? '#a855f7' :
+                                              barColor === 'bg-red-400' ? '#f87171' :
+                                                barColor === 'bg-red-300' ? '#fca5a5' :
+                                                  '#ef4444'
+                    }}></div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )
+        })}
       </div>
-    )
-  })}
-</div>
 
       {/* Appointments Table */}
       <div className="bg-white rounded-xl card-shadow border overflow-hidden">
@@ -256,23 +291,26 @@ const AppointmentManagement = () => {
           columns={[
             { key: 'id', title: 'Appointment ID', sortable: true },
             { key: 'patient', title: 'Patient', sortable: true },
+            { key: 'phone', title: 'Phone', sortable: false },
             { key: 'doctor', title: 'Doctor', sortable: true },
+            { key: 'department', title: 'Department', sortable: true },
             { key: 'dateTime', title: 'Date & Time', sortable: true },
-            { 
-              key: 'status', 
-              title: 'Status', 
+            {
+              key: 'status',
+              title: 'Status',
               sortable: true,
               render: (value) => (
-                <span className={`px-2 py-1 rounded text-xs ${
-                  value === 'Confirmed' ? 'bg-blue-100 text-blue-800' :
-                  value === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                  value === 'Completed' ? 'bg-green-100 text-green-800' :
-                  'bg-red-100 text-red-800'
-                }`}>
+                <span className={`px-2 py-1 rounded text-xs ${value === 'COMPLETED' ? 'bg-green-100 text-green-800' :
+                    value === 'REQUESTED' ? 'bg-yellow-100 text-yellow-800' :
+                      value === 'CANCELLED' ? 'bg-red-100 text-red-800' :
+                        'bg-gray-100 text-gray-800'
+                  }`}>
                   {value}
                 </span>
               )
             },
+            { key: 'reason', title: 'Chief Complaint', sortable: false },
+            { key: 'fee', title: 'Fee (₹)', sortable: true },
             {
               key: 'actions',
               title: 'Actions',
@@ -339,7 +377,7 @@ const AppointmentManagement = () => {
 
 // Sub-components
 const ActionButton = ({ icon, color, onClick, title }) => (
-  <button 
+  <button
     onClick={onClick}
     className={`text-${color}-600 hover:text-${color}-800 p-1 rounded hover:bg-${color}-50 transition-colors`}
     title={title}
@@ -350,8 +388,8 @@ const ActionButton = ({ icon, color, onClick, title }) => (
 
 const AppointmentFormModal = ({ isOpen, onClose, title, onSubmit, formData, onInputChange, submitText, submitIcon }) => (
   <Modal isOpen={isOpen} onClose={onClose} title={title} size="lg">
-    <AppointmentForm 
-      formData={formData} 
+    <AppointmentForm
+      formData={formData}
       onInputChange={onInputChange}
       onCancel={onClose}
       onSubmit={onSubmit}
@@ -480,13 +518,16 @@ const ViewAppointmentModal = ({ isOpen, onClose, appointment, onStatusChange }) 
           <DetailItem label="Appointment ID" value={appointment.id} />
           <DetailItem label="Status" value={appointment.status} />
           <DetailItem label="Patient" value={appointment.patient} />
+          <DetailItem label="Phone" value={appointment.phone} />
           <DetailItem label="Doctor" value={appointment.doctor} />
+          <DetailItem label="Department" value={appointment.department} />
           <DetailItem label="Date & Time" value={appointment.dateTime} />
           <DetailItem label="Type" value={appointment.type} />
           <DetailItem label="Priority" value={appointment.priority} />
-          <DetailItem label="Reason" value={appointment.reason} />
+          <DetailItem label="Fee" value={`₹${appointment.fee}`} />
+          <DetailItem label="Chief Complaint" value={appointment.reason} />
         </div>
-        
+
         {appointment.notes && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
@@ -495,15 +536,14 @@ const ViewAppointmentModal = ({ isOpen, onClose, appointment, onStatusChange }) 
         )}
 
         <div className="flex justify-between gap-2 pt-4 border-t">
-          <select 
+          <select
             value={appointment.status}
             onChange={(e) => onStatusChange(appointment.id, e.target.value)}
             className="flex-1 p-2 border rounded focus:outline-none focus:border-blue-500"
           >
-            <option value="Pending">Pending</option>
-            <option value="Confirmed">Confirmed</option>
-            <option value="Completed">Completed</option>
-            <option value="Cancelled">Cancelled</option>
+            <option value="REQUESTED">Requested</option>
+            <option value="COMPLETED">Completed</option>
+            <option value="CANCELLED">Cancelled</option>
           </select>
           <button onClick={onClose} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
             Close
@@ -529,7 +569,7 @@ const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, name, type }) => 
       </div>
       <h3 className="text-lg font-semibold text-gray-800 mb-2">Confirm Cancellation</h3>
       <p className="text-gray-600 mb-6">
-        Are you sure you want to cancel <span className="font-semibold">{name}</span>? 
+        Are you sure you want to cancel <span className="font-semibold">{name}</span>?
         This action cannot be undone.
       </p>
       <div className="flex justify-center gap-3">

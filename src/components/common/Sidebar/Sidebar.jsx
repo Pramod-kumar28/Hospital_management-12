@@ -1,3 +1,4 @@
+// src/components/common/Sidebar/Sidebar.jsx
 import React from 'react'
 import { useAuth } from '../../../hooks/useAuth'
 
@@ -25,6 +26,7 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
 
   const labMenu = [
     { id: 'lab-dashboard', label: 'Lab Dashboard', icon: 'fas fa-flask' },
+    { id: 'critical-results', label: 'Critical Results', icon: 'fas fa-exclamation-circle' },
     { id: 'test-registration', label: 'Test Registration', icon: 'fas fa-vial' },
     { id: 'sample-tracking', label: 'Sample Tracking', icon: 'fas fa-qrcode' },
     { id: 'report-generation', label: 'Report Generation', icon: 'fas fa-file-medical' },

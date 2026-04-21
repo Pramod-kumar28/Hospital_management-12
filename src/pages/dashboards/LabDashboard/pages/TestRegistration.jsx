@@ -1,3 +1,4 @@
+// src/pages/dashboards/LabDashboard/pages/TestRegistration.jsx
 import React, { useState, useEffect } from 'react'
 import DataTable from '../../../../components/ui/Tables/DataTable'
 import SearchBar from '../../../../components/common/SearchBar/SearchBar'
@@ -19,6 +20,9 @@ const TestRegistration = () => {
     referringDoctor: '',
     instructions: ''
   })
+  const [selectedTest, setSelectedTest] = useState(null)
+  const [showBarcodeModal, setShowBarcodeModal] = useState(false)
+  const [showPrintModal, setShowPrintModal] = useState(false)
 
   useEffect(() => {
     loadTestData()
@@ -82,9 +86,7 @@ const TestRegistration = () => {
     console.log('Registering new test:', newTest)
     // Generate barcode/QR code here
     const barcode = `BC${Math.floor(Math.random() * 10000).toString().padStart(3, '0')}`
-    
     const testId = `TEST-${new Date().getFullYear()}-${(tests.length + 1).toString().padStart(3, '0')}`
-    
     const newTestEntry = {
       id: testId,
       patientName: newTest.patientName,
@@ -96,7 +98,6 @@ const TestRegistration = () => {
       priority: newTest.priority,
       barcode: barcode
     }
-    
     setTests([newTestEntry, ...tests])
     setShowRegistrationModal(false)
     setNewTest({
@@ -124,13 +125,17 @@ const TestRegistration = () => {
   const handleGenerateBarcode = (testId) => {
     const test = tests.find(t => t.id === testId)
     if (test) {
-      alert(`Generating barcode/QR for: ${test.id}\nBarcode: ${test.barcode}`)
-      // In real app, this would open barcode/QR generation modal
+      setSelectedTest(test)
+      setShowBarcodeModal(true)
     }
   }
 
   const handlePrintLabels = (testId) => {
-    alert(`Printing labels for test: ${testId}`)
+    const test = tests.find(t => t.id === testId)
+    if (test) {
+      setSelectedTest(test)
+      setShowPrintModal(true)
+    }
   }
 
   const filteredTests = tests.filter(test =>
@@ -143,9 +148,9 @@ const TestRegistration = () => {
   const sampleTypes = ['Blood', 'Urine', 'Stool', 'Sputum', 'CSF', 'Swab', 'Tissue']
 
   if (loading) return <LoadingSpinner />
-
   return (
     <>
+    {/* Test Registration Page */}
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -154,18 +159,10 @@ const TestRegistration = () => {
           <p className="text-gray-500">Register new lab tests and manage test requests</p>
         </div>
         <div className="flex gap-3">
-          <Button
-            variant="outline"
-            icon="fas fa-print"
-            onClick={() => alert('Bulk print labels feature')}
-          >
+          <Button variant="outline" icon="fas fa-print" onClick={() => alert('Bulk print labels feature')}>
             Print Labels
           </Button>
-          <Button
-            variant="primary"
-            icon="fas fa-plus"
-            onClick={() => setShowRegistrationModal(true)}
-          >
+          <Button variant="primary" icon="fas fa-plus" onClick={() => setShowRegistrationModal(true)}>
             Register New Test
           </Button>
         </div>
@@ -175,11 +172,8 @@ const TestRegistration = () => {
       <div className="bg-white p-4 rounded border card-shadow">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
-            <SearchBar
-              placeholder="Search by patient name, test ID, or test type..."
-              onSearch={handleSearch}
-              className="w-full"
-            />
+            <SearchBar placeholder="Search by patient name, test ID, or test type..."
+            onSearch={handleSearch} className="w-full"/>
           </div>
           <div className="flex gap-2">
             <select className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
@@ -208,10 +202,7 @@ const TestRegistration = () => {
             { key: 'testType', title: 'Test Type', sortable: true },
             { key: 'sampleType', title: 'Sample Type', sortable: true },
             { key: 'registeredDate', title: 'Registered Date', sortable: true },
-            { 
-              key: 'status', 
-              title: 'Status', 
-              sortable: true,
+            { key: 'status', title: 'Status', sortable: true,
               render: (value) => (
                 <span className={`px-2 py-1 rounded-full text-xs ${
                   value === 'Completed' ? 'bg-green-100 text-green-800' :
@@ -241,32 +232,19 @@ const TestRegistration = () => {
               title: 'Actions',
               render: (_, row) => (
                 <div className="flex gap-2">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleGenerateBarcode(row.id)
-                    }}
-                    className="px-3 py-1 text-xs bg-blue-100 text-blue-800 rounded hover:bg-blue-200"
-                    title="Generate Barcode/QR"
-                  >
+                  <button onClick={(e) => { e.stopPropagation(); handleGenerateBarcode(row.id) }}
+                    className="px-3 py-1 text-xs bg-blue-100 text-blue-800 rounded hover:bg-blue-200" title="Generate Barcode/QR">
                     <i className="fas fa-barcode mr-1"></i> Barcode
                   </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handlePrintLabels(row.id)
-                    }}
-                    className="px-3 py-1 text-xs bg-gray-100 text-gray-800 rounded hover:bg-gray-200"
-                  >
+                  <button onClick={(e) => { e.stopPropagation(); handlePrintLabels(row.id) }}
+                  className="px-3 py-1 text-xs bg-gray-100 text-gray-800 rounded hover:bg-gray-200">
                     <i className="fas fa-print"></i>
                   </button>
                 </div>
               )
             }
           ]}
-          data={filteredTests}
-          onRowClick={handleRowClick}
-          emptyMessage="No tests found. Register a new test to get started."
+          data={filteredTests} onRowClick={handleRowClick} emptyMessage="No tests found. Register a new test to get started."
         />
       </div>
 
@@ -279,11 +257,11 @@ const TestRegistration = () => {
             </div>
             <div>
               <p className="text-gray-500 text-sm">Total Tests Today</p>
-              <p className="text-2xl font-bold text-blue-600 mt-1">{tests.filter(t => t.registeredDate === new Date().toISOString().split('T')[0]).length}</p>
+              <p className="text-2xl font-bold text-blue-600 mt-1">
+              {tests.filter(t => t.registeredDate === new Date().toISOString().split('T')[0]).length}</p>
             </div>
           </div>
         </div>
-        
         <div className="bg-white p-4 rounded border card-shadow">
           <div className="flex items-center">
             <div className="p-3 bg-green-100 rounded-lg mr-4">
@@ -295,7 +273,6 @@ const TestRegistration = () => {
             </div>
           </div>
         </div>
-        
         <div className="bg-white p-4 rounded border card-shadow">
           <div className="flex items-center">
             <div className="p-3 bg-yellow-100 rounded-lg mr-4">
@@ -307,7 +284,6 @@ const TestRegistration = () => {
             </div>
           </div>
         </div>
-        
         <div className="bg-white p-4 rounded border card-shadow">
           <div className="flex items-center">
             <div className="p-3 bg-red-100 rounded-lg mr-4">
@@ -322,53 +298,29 @@ const TestRegistration = () => {
       </div>
     </div>
 
-        {/* Registration Modal */}
-      <Modal
-        isOpen={showRegistrationModal}
-        onClose={() => setShowRegistrationModal(false)}
-        title="Register New Test"
-        size="lg"
-      >
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Patient ID
-              </label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter patient ID or search..."
-                value={newTest.patientId}
-                onChange={(e) => setNewTest({...newTest, patientId: e.target.value})}
-              />
+    {/* Registration Modal */}
+    <Modal isOpen={showRegistrationModal} onClose={() => setShowRegistrationModal(false)} title="Register New Test" size="lg">
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Patient ID</label>
+              <input type="text" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter patient ID or search..." value={newTest.patientId}
+                onChange={(e) => setNewTest({...newTest, patientId: e.target.value})} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Patient Name
-              </label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter patient name"
-                value={newTest.patientName}
-                onChange={(e) => setNewTest({...newTest, patientName: e.target.value})}
-                required
+              <label className="block text-sm font-medium text-gray-700 mb-1">Patient Name</label>
+              <input type="text" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter patient name" value={newTest.patientName}
+                onChange={(e) => setNewTest({...newTest, patientName: e.target.value})} required
               />
             </div>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Test Type
-              </label>
-              <select
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                value={newTest.testType}
-                onChange={(e) => setNewTest({...newTest, testType: e.target.value})}
-                required
-              >
+              <label className="block text-sm font-medium text-gray-700 mb-1">Test Type</label>
+              <select className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                value={newTest.testType} onChange={(e) => setNewTest({...newTest, testType: e.target.value})} required >
                 <option value="">Select test type</option>
                 {testTypes.map(type => (
                   <option key={type} value={type}>{type}</option>
@@ -376,32 +328,20 @@ const TestRegistration = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Priority
-              </label>
-              <select
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                value={newTest.priority}
-                onChange={(e) => setNewTest({...newTest, priority: e.target.value})}
-              >
+              <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+              <select className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                value={newTest.priority} onChange={(e) => setNewTest({...newTest, priority: e.target.value})} >
                 <option value="routine">Routine</option>
                 <option value="urgent">Urgent</option>
                 <option value="stat">STAT</option>
               </select>
             </div>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Sample Type
-              </label>
-              <select
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                value={newTest.sampleType}
-                onChange={(e) => setNewTest({...newTest, sampleType: e.target.value})}
-                required
-              >
+              <label className="block text-sm font-medium text-gray-700 mb-1">Sample Type</label>
+              <select className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                value={newTest.sampleType} onChange={(e) => setNewTest({...newTest, sampleType: e.target.value})} required >
                 <option value="">Select sample type</option>
                 {sampleTypes.map(type => (
                   <option key={type} value={type}>{type}</option>
@@ -409,49 +349,155 @@ const TestRegistration = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Referring Doctor
-              </label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Doctor's name"
-                value={newTest.referringDoctor}
-                onChange={(e) => setNewTest({...newTest, referringDoctor: e.target.value})}
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Referring Doctor</label>
+              <input type="text" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Doctor's name" value={newTest.referringDoctor}
+                onChange={(e) => setNewTest({...newTest, referringDoctor: e.target.value})} />
             </div>
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Special Instructions
-            </label>
-            <textarea
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              rows="3"
-              placeholder="Any special instructions for sample collection or testing..."
-              value={newTest.instructions}
-              onChange={(e) => setNewTest({...newTest, instructions: e.target.value})}
-            />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Special Instructions</label>
+            <textarea className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            rows="3" placeholder="Any special instructions for sample collection or testing..." value={newTest.instructions}
+            onChange={(e) => setNewTest({...newTest, instructions: e.target.value})} />
           </div>
-
           <div className="flex justify-end gap-3 pt-4 border-t">
-            <Button
-              variant="outline"
-              onClick={() => setShowRegistrationModal(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              icon="fas fa-vial"
-              onClick={handleRegisterTest}
-              disabled={!newTest.patientName || !newTest.testType || !newTest.sampleType}
-            >
+            <Button variant="outline" onClick={() => setShowRegistrationModal(false)} >Cancel</Button>
+            <Button variant="primary" icon="fas fa-vial" onClick={handleRegisterTest}
+            disabled={!newTest.patientName || !newTest.testType || !newTest.sampleType} >
               Register Test
             </Button>
           </div>
         </div>
+        </Modal>
+
+      {/* Barcode Visualization Modal */}
+      <Modal isOpen={showBarcodeModal} onClose={() => setShowBarcodeModal(false)} title="Test Identity & Barcode" size="md">
+        {selectedTest && (
+          <div className="space-y-6 text-center animate-fade-in">
+            <div className="bg-gray-50 p-6 rounded-2xl border-2 border-dashed border-gray-200 inline-block w-full">
+              {/* Stylized Barcode Placeholder */}
+              <div className="mb-4">
+                <div className="h-24 w-full bg-white flex items-center justify-center border rounded shadow-inner overflow-hidden">
+                  <div className="flex items-end gap-1 px-4">
+                    {[1, 3, 2, 4, 1, 5, 2, 3, 1, 2, 4, 1, 3, 2, 1, 4, 3, 1, 2, 3, 4, 1, 2, 3, 1, 2, 4, 1, 3].map((w, i) => (
+                      <div key={i} className="bg-black" style={{ width: `${w}px`, height: '60px' }}></div>
+                    ))}
+                  </div>
+                </div>
+                <p className="mt-2 text-xl font-mono tracking-widest font-bold text-gray-800">{selectedTest.barcode}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 text-left border-t pt-4">
+                <div>
+                  <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Test ID</p>
+                  <p className="text-sm font-semibold text-gray-800">{selectedTest.id}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Date</p>
+                  <p className="text-sm font-semibold text-gray-800">{selectedTest.registeredDate}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Patient Name</p>
+                  <p className="text-sm font-semibold text-gray-800 uppercase">{selectedTest.patientName}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Test Type</p>
+                  <p className="text-sm font-semibold text-blue-600 font-bold">{selectedTest.testType}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Priority</p>
+                  <p className={`text-sm font-bold ${selectedTest.priority === 'urgent' ? 'text-red-600' : 'text-green-600'}`}>
+                    {selectedTest.priority.toUpperCase()}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 justify-center">
+              <Button variant="outline" icon="fas fa-copy" onClick={() => {
+                navigator.clipboard.writeText(selectedTest.barcode);
+                alert('Barcode copied to clipboard!');
+              }}>Copy ID</Button>
+              <Button variant="primary" icon="fas fa-print" onClick={() => window.print()}>Print Barcode</Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Patient Report / Label Print Modal */}
+      <Modal isOpen={showPrintModal} onClose={() => setShowPrintModal(false)} title="Print Preview" size="lg">
+        {selectedTest && (
+          <div className="space-y-6">
+            <div id="printable-report" className="bg-white p-8 border rounded-lg shadow-sm font-serif max-w-2xl mx-auto">
+              <div className="flex justify-between border-b-2 border-blue-600 pb-4 mb-6">
+                <div>
+                  <h1 className="text-2xl font-bold font-sans text-blue-700 tracking-tighter">LEVITICA <span className="font-light text-gray-500">HMS</span></h1>
+                  <p className="text-xs text-gray-500 font-sans">Advanced Diagnostic Center & Laboratory</p>
+                </div>
+                <div className="text-right text-[10px] text-gray-500 font-sans leading-tight">
+                  <p>Madhapur, Hyderabad</p>
+                  <p>Tel: +91 7337572543</p>
+                  <p>Email: reports@levitica.com</p>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 p-4 rounded mb-6 grid grid-cols-2 gap-4 text-sm font-sans">
+                <div>
+                  <p><span className="text-gray-400">Patient:</span> <span className="font-bold">{selectedTest.patientName}</span></p>
+                  <p><span className="text-gray-400">ID:</span> <span className="font-bold">{selectedTest.patientId}</span></p>
+                </div>
+                <div className="text-right">
+                  <p><span className="text-gray-400">Date:</span> {selectedTest.registeredDate}</p>
+                  <p><span className="text-gray-400">Ref By:</span> Dr. Self</p>
+                </div>
+              </div>
+
+              <div className="mb-8 font-sans">
+                <h2 className="text-center text-lg font-bold border-b border-gray-200 pb-2 mb-4 uppercase tracking-widest text-gray-700">Detailed Report / Test Label</h2>
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="text-xs text-gray-400 uppercase tracking-widest border-b">
+                      <th className="py-2">Parameter</th>
+                      <th className="py-2 text-right">Result</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b">
+                      <td className="py-3 font-semibold">{selectedTest.testType}</td>
+                      <td className="py-3 text-right">
+                        {selectedTest.status === 'Completed' ? (
+                          <span className="text-green-600 font-bold">NORMAL</span>
+                        ) : (
+                          <span className="italic text-gray-400">{selectedTest.status}</span>
+                        )}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="py-3 font-semibold italic text-xs text-gray-500">Sample: {selectedTest.sampleType}</td>
+                      <td className="py-3 text-right text-xs text-gray-400">ID: {selectedTest.id}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="mt-12 text-[10px] text-gray-400 italic text-center font-sans">
+                <p>*** END OF REPORT ***</p>
+                <p className="mt-2">This is an electronically generated report. Signatures are not required.</p>
+              </div>
+
+              <div className="mt-8 pt-4 border-t flex justify-between items-center opacity-30 grayscale blur-[0.5px]">
+                 <div className="h-10 w-32 bg-black flex items-center justify-center text-white text-[8px]">QR CODE SCANNER</div>
+                 <div className="text-[10px] uppercase tracking-tighter">Verified by Levitica System</div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setShowPrintModal(false)}>Cancel</Button>
+              <Button variant="primary" icon="fas fa-print" onClick={() => window.print()}>Print Document</Button>
+            </div>
+          </div>
+        )}
       </Modal>
     </>
   )

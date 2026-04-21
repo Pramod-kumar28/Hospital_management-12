@@ -1,3 +1,4 @@
+// src/pages/dashboards/SuperAdminDashboard/pages/Notifications.jsx
 import React, { useState, useEffect } from 'react';
 
 const NotifyHospitalAdminsForm = () => {
@@ -6,12 +7,14 @@ const NotifyHospitalAdminsForm = () => {
     subject: '',
     message: '',
   });
+
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState({
     show: false,
     message: '',
     type: 'success'
   });
+
   const [hospitals, setHospitals] = useState([]);
   const [loadingHospitals, setLoadingHospitals] = useState(false);
   const [showHospitalDropdown, setShowHospitalDropdown] = useState(false);
@@ -45,10 +48,15 @@ const NotifyHospitalAdminsForm = () => {
         showNotification(responseData?.message || 'Failed to fetch hospitals', 'error');
         return;
       }
+
       setHospitals(getHospitalItems(responseData));
-    } catch (error) {
+    }
+    
+    catch (error) {
       showNotification(`Failed to fetch hospitals: ${error.message || 'Unknown error'}`, 'error');
-    } finally {
+    }
+    
+    finally {
       setLoadingHospitals(false);
     }
   };
@@ -112,13 +120,13 @@ const NotifyHospitalAdminsForm = () => {
     e.preventDefault();
     
     if (!validateForm()) return;
-
     const token = localStorage.getItem('access_token') || localStorage.getItem('token');
     if (!token) {
       showNotification('Please login to send notifications', 'error');
       handleLogout();
       return;
     }
+
     const notificationApiKey =
       localStorage.getItem('notification_api_key') ||
       localStorage.getItem('NOTIFICATION_API_KEY') ||
@@ -131,23 +139,25 @@ const NotifyHospitalAdminsForm = () => {
       const selectedHospital = hospitals.find(
         (hospital) => String(hospital?.id) === String(formData.hospitalId)
       );
+
       const requestBody = {
         hospital_id: formData.hospitalId || null,
         hospital_name: selectedHospital ? getHospitalName(selectedHospital) : null,
         subject: formData.subject,
         message: formData.message,
       };
+
       if (notificationApiKey) {
         requestBody.notification_api_key = notificationApiKey;
       }
 
       console.log('Sending notification:', requestBody);
-
       const requestHeaders = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
         'Accept': 'application/json',
       };
+
       if (notificationApiKey) {
         requestHeaders['x-api-key'] = notificationApiKey;
       }
@@ -159,7 +169,6 @@ const NotifyHospitalAdminsForm = () => {
       });
 
       console.log('Response status:', response.status);
-      
       const responseData = await response.json();
       console.log('Full response data:', responseData);
 
@@ -182,26 +191,30 @@ const NotifyHospitalAdminsForm = () => {
           message: '',
         });
         setShowHospitalDropdown(false);
-      } else {
+      }
+      
+      else {
         // Extract detailed error message
         let errorMsg = 'Failed to send notification';
-        
         if (responseData.errors && responseData.errors.length > 0) {
           errorMsg = responseData.errors[0];
         } else if (responseData.message) {
           errorMsg = responseData.message;
         }
-        
         showNotification(errorMsg, 'error');
       }
       
-    } catch (error) {
+    }
+    
+    catch (error) {
       console.error('Error sending notification:', error);
       showNotification(
         `Network Error: ${error.message || 'Please check your connection'}`,
         'error'
       );
-    } finally {
+    }
+    
+    finally {
       setLoading(false);
     }
   };
@@ -214,10 +227,8 @@ const NotifyHospitalAdminsForm = () => {
           Send Notifications
         </h2>
         {!tokenValid && (
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-200 text-sm"
-          >
+          <button onClick={handleLogout}
+            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-200 text-sm" >
             <i className="fas fa-sign-out-alt mr-2"></i>
             Login Again
           </button>
@@ -241,7 +252,6 @@ const NotifyHospitalAdminsForm = () => {
       <div className="relative bg-gradient-to-br from-white to-indigo-50 p-5 rounded-2xl border border-indigo-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
         <div className="absolute top-0 right-0 w-20 h-20 bg-indigo-200 rounded-full -translate-y-8 translate-x-8 opacity-20"></div>
         <div className="absolute bottom-0 left-0 w-16 h-16 bg-indigo-300 rounded-full translate-y-8 -translate-x-8 opacity-10"></div>
-        
         <div className="relative">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -256,10 +266,8 @@ const NotifyHospitalAdminsForm = () => {
               <i className="fas fa-building text-white text-sm"></i>
             </div>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-            <div
-              className={`cursor-pointer transition-all duration-300 rounded-xl border-2 p-4 ${
+            <div className={`cursor-pointer transition-all duration-300 rounded-xl border-2 p-4 ${
                 formData.hospitalId === '' && !showHospitalDropdown
                   ? 'border-indigo-500 bg-indigo-50 shadow-md'
                   : 'border-gray-200 hover:border-indigo-300 hover:shadow-md'
@@ -267,8 +275,7 @@ const NotifyHospitalAdminsForm = () => {
               onClick={() => {
                 setShowHospitalDropdown(false);
                 setFormData((prev) => ({ ...prev, hospitalId: '' }));
-              }}
-            >
+              }} >
               <div className="flex flex-col items-center text-center">
                 <i className="fas fa-globe text-3xl mb-2 text-green-500"></i>
                 <h4 className="font-semibold text-gray-800 text-sm mb-1">All Hospitals</h4>
@@ -280,15 +287,12 @@ const NotifyHospitalAdminsForm = () => {
                 )}
               </div>
             </div>
-
-            <div
-              className={`cursor-pointer transition-all duration-300 rounded-xl border-2 p-4 ${
+            <div className={`cursor-pointer transition-all duration-300 rounded-xl border-2 p-4 ${
                 showHospitalDropdown || formData.hospitalId
                   ? 'border-indigo-500 bg-indigo-50 shadow-md'
                   : 'border-gray-200 hover:border-indigo-300 hover:shadow-md'
               }`}
-              onClick={() => setShowHospitalDropdown(true)}
-            >
+              onClick={() => setShowHospitalDropdown(true)} >
               <div className="flex flex-col items-center text-center">
                 <i className="fas fa-list text-3xl mb-2 text-purple-500"></i>
                 <h4 className="font-semibold text-gray-800 text-sm mb-1">Enter Hospital Names</h4>
@@ -301,19 +305,16 @@ const NotifyHospitalAdminsForm = () => {
               </div>
             </div>
           </div>
-
           {showHospitalDropdown && (
             <div className="mt-4 p-4 bg-white rounded-xl border border-indigo-200 space-y-3">
               <div>
                 <label className="block text-xs font-semibold text-indigo-600 uppercase tracking-wider mb-2">
                   Hospital Name
                 </label>
-                <select
-                  value={formData.hospitalId}
+                <select value={formData.hospitalId}
                   onChange={(e) => handleSelectChange(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                  disabled={loading || !tokenValid || loadingHospitals}
-                >
+                  disabled={loading || !tokenValid || loadingHospitals} >
                   <option value="">Select hospital name</option>
                   {hospitals
                     .filter((hospital) => hospital?.id)
@@ -332,7 +333,6 @@ const NotifyHospitalAdminsForm = () => {
               </div>
             </div>
           )}
-
           <div className="relative mt-4 pt-3 border-t border-indigo-100">
             <p className="text-xs text-indigo-700 font-medium">
               {formData.hospitalId 
@@ -347,7 +347,6 @@ const NotifyHospitalAdminsForm = () => {
       <div className="relative bg-gradient-to-br from-white to-pink-50 p-5 rounded-2xl border border-pink-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
         <div className="absolute top-0 right-0 w-20 h-20 bg-pink-200 rounded-full -translate-y-8 translate-x-8 opacity-20"></div>
         <div className="absolute bottom-0 left-0 w-16 h-16 bg-pink-300 rounded-full translate-y-8 -translate-x-8 opacity-10"></div>
-        
         <div className="relative">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -362,18 +361,10 @@ const NotifyHospitalAdminsForm = () => {
               <i className="fas fa-tag text-white text-sm"></i>
             </div>
           </div>
-
-          <input
-            type="text"
-            name="subject"
-            value={formData.subject}
-            onChange={handleInputChange}
+          <input type="text" name="subject" value={formData.subject} onChange={handleInputChange}
             placeholder="Enter notification subject"
             className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all bg-white/50"
-            disabled={loading || !tokenValid}
-            required
-          />
-
+            disabled={loading || !tokenValid} required />
           <div className="relative mt-4 pt-3 border-t border-pink-100">
             <p className="text-xs text-pink-700 font-medium">
               Clear and concise subject line
@@ -386,7 +377,6 @@ const NotifyHospitalAdminsForm = () => {
       <div className="relative bg-gradient-to-br from-white to-purple-50 p-5 rounded-2xl border border-purple-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
         <div className="absolute top-0 right-0 w-20 h-20 bg-purple-200 rounded-full -translate-y-8 translate-x-8 opacity-20"></div>
         <div className="absolute bottom-0 left-0 w-16 h-16 bg-purple-300 rounded-full translate-y-8 -translate-x-8 opacity-10"></div>
-        
         <div className="relative">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -401,22 +391,14 @@ const NotifyHospitalAdminsForm = () => {
               <i className="fas fa-comment-dots text-white text-sm"></i>
             </div>
           </div>
-
-          <textarea
-            name="message"
-            value={formData.message}
-            onChange={handleInputChange}
-            placeholder="Write your message here..."
-            rows="5"
+          <textarea name="message" value={formData.message} onChange={handleInputChange}
+            placeholder="Write your message here..." rows="5"
             className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all resize-y bg-white/50"
-            disabled={loading || !tokenValid}
-            required
+            disabled={loading || !tokenValid} required
           />
-          
           <div className="text-right text-xs text-gray-500 mt-2">
             {formData.message.length} characters
           </div>
-
           <div className="relative mt-4 pt-3 border-t border-purple-100">
             <p className="text-xs text-purple-700 font-medium">
               Provide detailed information
@@ -430,7 +412,6 @@ const NotifyHospitalAdminsForm = () => {
         <div className="relative bg-gradient-to-br from-white to-blue-50 p-5 rounded-2xl border border-blue-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
           <div className="absolute top-0 right-0 w-20 h-20 bg-blue-200 rounded-full -translate-y-8 translate-x-8 opacity-20"></div>
           <div className="absolute bottom-0 left-0 w-16 h-16 bg-blue-300 rounded-full translate-y-8 -translate-x-8 opacity-10"></div>
-          
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -445,7 +426,6 @@ const NotifyHospitalAdminsForm = () => {
                 <i className="fas fa-eye text-white text-sm"></i>
               </div>
             </div>
-
             <div className="bg-white rounded-xl p-4 border border-gray-200">
               <h4 className="text-lg font-semibold text-gray-800 mb-2">
                 {formData.subject || 'Your subject will appear here'}
@@ -454,7 +434,6 @@ const NotifyHospitalAdminsForm = () => {
                 {formData.message || 'Your message will appear here...'}
               </p>
             </div>
-
             <div className="relative mt-4 pt-3 border-t border-blue-100">
               <p className="text-xs text-blue-700 font-medium">
                 Preview updates in real-time
@@ -468,7 +447,6 @@ const NotifyHospitalAdminsForm = () => {
       <div className="relative bg-gradient-to-br from-white to-gray-50 p-5 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
         <div className="absolute top-0 right-0 w-20 h-20 bg-gray-200 rounded-full -translate-y-8 translate-x-8 opacity-20"></div>
         <div className="absolute bottom-0 left-0 w-16 h-16 bg-gray-300 rounded-full translate-y-8 -translate-x-8 opacity-10"></div>
-        
         <div className="relative">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -479,28 +457,17 @@ const NotifyHospitalAdminsForm = () => {
                 Review and send notification
               </p>
             </div>
-           
           </div>
-
           <div className="flex gap-3 justify-end">
-            <button
-              type="button"
-              onClick={() => {
-                setFormData({ hospitalId: '', subject: '', message: '' });
-                setShowHospitalDropdown(false);
-              }}
+            <button type="button" onClick={() => {setFormData({ hospitalId: '', subject: '', message: '' }); setShowHospitalDropdown(false);}}
               className="px-5 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 flex items-center gap-2 text-sm"
-              disabled={loading || !tokenValid}
-            >
+              disabled={loading || !tokenValid}>
               <i className="fas fa-times text-red-500"></i>
               Clear
             </button>
-            <button
-              type="submit"
-              disabled={loading || !tokenValid}
+            <button type="submit" disabled={loading || !tokenValid}
               className="px-5 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 flex items-center gap-2 shadow-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={handleSubmit}
-            >
+              onClick={handleSubmit}>
               {loading ? (
                 <>
                   <i className="fas fa-spinner fa-spin"></i>
@@ -514,7 +481,6 @@ const NotifyHospitalAdminsForm = () => {
               )}
             </button>
           </div>
-
           <div className="relative mt-4 pt-3 border-t border-gray-200">
             <p className="text-xs text-gray-600 font-medium">
               Notification will be sent immediately via email
@@ -534,7 +500,6 @@ const NotifyHospitalAdminsForm = () => {
           <span>{notification.message}</span>
         </div>
       )}
-
       <style dangerouslySetInnerHTML={{
         __html: `
           @keyframes slide-in {

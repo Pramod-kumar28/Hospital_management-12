@@ -660,6 +660,24 @@ body.modal-open {
 }
  
 /* ===== ANIMATIONS ===== */
+@keyframes toast-slide-in {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes toast-progress {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+.animate-toast-slide-in {
+  animation: toast-slide-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+.animate-toast-progress {
+  animation: toast-progress linear forwards;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

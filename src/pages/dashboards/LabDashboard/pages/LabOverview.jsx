@@ -1,30 +1,10 @@
+// src/pages/dashboards/LabDashboard/pages/LabOverview.jsx
 import React, { useState, useEffect, useMemo } from 'react'
 import LoadingSpinner from '../../../../components/common/LoadingSpinner/LoadingSpinner'
 import DataTable from '../../../../components/ui/Tables/DataTable'
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip as ReTooltip,
-  Legend,
-  LineChart,
-  Line,
-  CartesianGrid,
-  AreaChart,
-  Area,
-  PieChart,
-  Pie,
-  Cell,
-  RadarChart,
-  Radar,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  ComposedChart,
-  Scatter
-} from 'recharts'
+import {  ResponsiveContainer,  BarChart,  Bar,  XAxis,  YAxis,  Tooltip as ReTooltip,  Legend,  LineChart,
+  Line,  CartesianGrid,  AreaChart,  Area,  PieChart,  Pie,  Cell,  RadarChart,  Radar,  PolarGrid,
+  PolarAngleAxis,  PolarRadiusAxis,  ComposedChart,  Scatter} from 'recharts'
 
 const LabOverview = () => {
   const [loading, setLoading] = useState(true)
@@ -245,16 +225,12 @@ const LabOverview = () => {
           <p className="text-sm text-gray-500">Real-time overview of lab operations and performance</p>
         </div>
         <div className="flex gap-2">
-          <button
-            onClick={() => handleQuickAction('critical-results')}
-            className="px-4 py-2 bg-gradient-to-r from-red-100 to-red-50 text-red-700 rounded-lg hover:from-red-200 hover:to-red-100 transition-all text-sm font-medium border border-red-200"
-          >
+          <button onClick={() => handleQuickAction('critical-results')}
+            className="px-4 py-2 bg-gradient-to-r from-red-100 to-red-50 text-red-700 rounded-lg hover:from-red-200 hover:to-red-100 transition-all text-sm font-medium border border-red-200" >
             <i className="fas fa-flask mr-2"></i>Critical Results
           </button>
-          <button
-            onClick={() => handleQuickAction('report-generation')}
-            className="px-4 py-2 bg-gradient-to-r from-blue-100 to-blue-50 text-blue-700 rounded-lg hover:from-blue-200 hover:to-blue-100 transition-all text-sm font-medium border border-blue-200"
-          >
+          <button onClick={() => handleQuickAction('report-generation')}
+            className="px-4 py-2 bg-gradient-to-r from-blue-100 to-blue-50 text-blue-700 rounded-lg hover:from-blue-200 hover:to-blue-100 transition-all text-sm font-medium border border-blue-200" >
             <i className="fas fa-file-medical-alt mr-2"></i>Lab Reports
           </button>
         </div>

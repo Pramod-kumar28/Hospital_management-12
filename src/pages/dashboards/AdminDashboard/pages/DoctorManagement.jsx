@@ -39,7 +39,6 @@ const DoctorManagement = () => {
   const [departmentFilter, setDepartmentFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [consultationTypeFilter, setConsultationTypeFilter] = useState('')
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
@@ -128,52 +127,6 @@ const DoctorManagement = () => {
     } finally {
       setLoading(false)
     }
-  }
-
-  // Add new doctor
-  const handleAddDoctor = () => {
-    if (!validateForm()) return
-    
-    // Password validation for add mode
-    if (isAddMode) {
-      if (!formData.password || !formData.confirmPassword) {
-        alert('Please enter both password and confirm password')
-        return
-      }
-      
-      if (formData.password !== formData.confirmPassword) {
-        alert('Passwords do not match. Please check and try again.')
-        return
-      }
-      
-      if (formData.password.length < 8) {
-        alert('Password must be at least 8 characters long')
-        return
-      }
-    }
-
-    const doctor = {
-      id: `DOC-${Math.floor(1000 + Math.random() * 9000)}`,
-      name: formData.name,
-      specialization: formData.specialization,
-      department: formData.department,
-      availability: formData.availability,
-      fee: parseInt(formData.consultationFee),
-      contact: formData.phone,
-      status: 'Active',
-      image: `https://i.pravatar.cc/100?img=${Math.floor(Math.random() * 70) + 1}`,
-      email: formData.email,
-      personalEmail: formData.personalEmail,
-      password: formData.password,
-      qualification: formData.qualification,
-      experience: formData.experience,
-      consultationType: formData.consultationType,
-     
-    }
-    
-    setDoctors(prev => [doctor, ...prev])
-    setIsAddModalOpen(false)
-    resetForm()
   }
 
   // Edit doctor
@@ -633,34 +586,19 @@ const DoctorManagement = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Sticky Header */}
-      <div className="sticky top-0 z-40 backdrop-blur-xl bg-white/70 border-b border-white/20 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+        <div className=" px-4 sm:px-6 lg:px-8 py-5">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex items-center gap-3 flex-1">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
-                <LocalHospital className="text-white" style={{fontSize: '24px'}} />
-              </div>
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Doctor Management</h1>
-                <p className="text-gray-600 text-xs sm:text-sm">Manage your medical team efficiently</p>
+                <h1 className="text-2xl sm:text-3xl font-bold">Doctor Management</h1>
+                <p className="text-gray-600 mt-2 text-xs sm:text-sm">Manage your medical team efficiently</p>
               </div>
             </div>
-            <button 
-              onClick={() => {
-                setIsAddMode(true)
-                setIsAddModalOpen(true)
-              }}
-              className="w-full sm:w-auto group relative bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-semibold overflow-hidden transition-all duration-300 transform hover:scale-105 hover:shadow-xl active:scale-95 flex items-center justify-center gap-2"
-            >
-              <Add style={{fontSize: '20px'}} />
-              <span>Add Doctor</span>
-            </button>
           </div>
         </div>
-      </div>
+      
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="px-4 sm:px-6 lg:px-8 py-8">
         {/* Premium Search & Filter Bar */}
         <div className="backdrop-blur-xl bg-white/60 border border-gray-300 rounded-2xl p-5 sm:p-6 shadow-lg mb-8 hover:shadow-xl transition-all">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -806,56 +744,10 @@ const DoctorManagement = () => {
               <LocalHospital className="text-gray-600/80" style={{fontSize: '72px'}} />
             </div>
             <h3 className="text-4xl font-bold text-gray-800/95 mb-4">No Doctors Found</h3>
-            <p className="text-gray-700/80 mb-10 text-lg font-medium">Try adjusting your filters or add a new doctor</p>
-            <button
-              onClick={() => {
-                setIsAddMode(true)
-                setIsAddModalOpen(true)
-              }}
-              className="inline-flex items-center gap-2 backdrop-blur-md bg-white/15 hover:bg-white/28 border border-white/45 hover:border-white/65 text-gray-800/95 px-10 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 active:scale-95 hover:shadow-lg"
-            >
-              <Add style={{fontSize: '20px'}} />
-              Add First Doctor
-            </button>
+            <p className="text-gray-700/80 mb-10 text-lg font-medium">Try adjusting your filters</p>
           </div>
         )}
       </div>
-
-      {/* Add Doctor Modal */}
-      <Modal 
-        isOpen={isAddModalOpen} 
-        onClose={() => {
-          setIsAddModalOpen(false)
-          resetForm()
-        }} 
-        title="Add New Doctor"
-        size="lg"
-      >
-        <div className="bg-gradient-to-b from-blue-50/50 to-white/50 rounded-lg p-2">
-          {renderFormFields()}
-        </div>
-        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-6 border-t border-gray-200/50 mt-6">
-          <button
-            type="button"
-            onClick={() => {
-              setIsAddModalOpen(false)
-              resetForm()
-            }}
-            className="px-6 py-3 border-2 border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 active:scale-95"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleAddDoctor}
-            disabled={!formData.name || !formData.email || !formData.department || !formData.specialization}
-            className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 active:scale-95 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
-          >
-            <Add style={{fontSize: '20px'}} />
-            Add Doctor
-          </button>
-        </div>
-      </Modal>
 
       {/* Edit Doctor Modal */}
       <Modal 

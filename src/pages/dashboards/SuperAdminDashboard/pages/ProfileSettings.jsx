@@ -73,39 +73,7 @@ const ProfileSettings = () => {
   // Check if security settings have changed
   const hasSecurityChanges = JSON.stringify(securitySettings) !== JSON.stringify(originalSecuritySettings)
 
-  // Sessions & Devices State
-  const [devices, setDevices] = useState([
-    {
-      id: 1,
-      name: 'MacBook Pro 16"',
-      type: 'desktop',
-      browser: 'Chrome',
-      location: 'San Francisco, CA',
-      ipAddress: '192.168.1.1',
-      lastActive: 'Active Now',
-      isCurrent: true,
-    },
-    {
-      id: 2,
-      name: 'samsung Galaxy S21',
-      type: 'mobile',
-      browser: 'Safari',
-      location: 'Los Angeles, CA',
-      ipAddress: '192.168.1.50',
-      lastActive: '2 hours ago',
-      isCurrent: false,
-    },
-    {
-      id: 3,
-      name: 'iPad Air',
-      type: 'tablet',
-      browser: 'Safari',
-      location: 'San Francisco, CA',
-      ipAddress: '192.168.1.75',
-      lastActive: '1 day ago',
-      isCurrent: false,
-    },
-  ])
+ 
 
   // Confirmation Dialog State
   const [confirmation, setConfirmation] = useState({
@@ -1070,106 +1038,6 @@ const ProfileSettings = () => {
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            {/* Sessions & Devices Section */}
-            <div className="mb-6 sm:mb-8">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
-                <div className="flex items-center gap-2">
-                  <DesktopMac className="text-cyan-600" sx={{ fontSize: '1.5rem' }} />
-                  <h3 className="text-base sm:text-lg font-bold text-gray-900">Sessions & Devices</h3>
-                </div>
-                <button
-                  onClick={() => openConfirmation(
-                    'Sign Out All Sessions',
-                    'This will sign you out from all other devices. You will remain logged in on this device. Are you sure you want to continue?',
-                    'signOutAll'
-                  )}
-                  disabled={loading || devices.length <= 1}
-                  className="text-red-600 hover:text-red-700 disabled:text-gray-400 disabled:border-gray-400 disabled:cursor-not-allowed text-xs sm:text-sm font-bold uppercase tracking-wide transition-colors border border-red-600 hover:border-red-700 disabled:border-gray-300 rounded-lg sm:rounded-xl px-2 sm:px-3 py-1 whitespace-nowrap flex items-center justify-center gap-1"
-                  title={devices.length <= 1 ? 'Only one session active' : 'Sign out from all other devices'}
-                >
-                  <Logout sx={{ fontSize: '1rem' }} />
-                  SIGN OUT ALL
-                </button>
-              </div>
-
-              <div className="space-y-3">
-                {devices.length > 0 ? (
-                  devices.map((device) => (
-                    <div
-                      key={device.id}
-                      className={`rounded-lg sm:rounded-xl p-3 sm:p-4 border transition-all ${
-                        device.isCurrent
-                          ? 'bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200'
-                          : 'bg-white border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 justify-between">
-                        <div className="flex items-start gap-3 sm:gap-4 flex-1">
-                          <div
-                            className={`text-xl sm:text-2xl flex-shrink-0 ${
-                              device.isCurrent ? 'text-blue-600' : 'text-gray-400'
-                            }`}
-                          >
-                            {device.type === 'mobile'
-                              ? <PhoneIphone sx={{ fontSize: '1.5rem' }} />
-                              : device.type === 'tablet'
-                              ? <Tablet sx={{ fontSize: '1.5rem' }} />
-                              : <DesktopMac sx={{ fontSize: '1.5rem' }} />}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                              <p className="font-semibold text-gray-900 text-sm sm:text-base">
-                                {device.name}
-                              </p>
-                              {device.isCurrent && (
-                                <span className="px-2 py-0.5 bg-blue-200 text-blue-700 text-xs font-bold rounded w-fit">
-                                  CURRENT
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-xs sm:text-sm text-gray-700 mt-1 overflow-auto">
-                              {device.browser} • {device.location} • {device.ipAddress}
-                            </p>
-                            <p className="text-xs text-gray-600 mt-1">
-                              <span
-                                className={`px-2 py-0.5 rounded text-xs font-medium ${
-                                  device.lastActive === 'Active Now'
-                                    ? 'bg-green-100 text-green-700'
-                                    : 'bg-gray-100 text-gray-700'
-                                }`}
-                              >
-                                {device.lastActive}
-                              </span>
-                            </p>
-                          </div>
-                        </div>
-                        {!device.isCurrent && (
-                          <button
-                            onClick={() =>
-                              openConfirmation(
-                                'Revoke Device Access',
-                                `Are you sure you want to revoke access for "${device.name}"? This device will be logged out immediately.`,
-                                'revokeDevice',
-                                device.id
-                              )
-                            }
-                            disabled={loading}
-                            className="text-red-600 hover:text-red-700 disabled:text-gray-400 disabled:border-gray-300 disabled:cursor-not-allowed font-medium text-xs sm:text-sm flex-shrink-0 transition-colors border border-red-600 hover:border-red-700 disabled:border-gray-400 rounded-lg sm:rounded-xl px-2 sm:px-3 py-1 w-full sm:w-auto text-center"
-                          >
-                            Revoke
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="bg-white rounded-lg sm:rounded-xl p-6 border border-gray-200 text-center">
-                    <p className="text-gray-600 text-sm">No devices found</p>
-                  </div>
-                )}
               </div>
             </div>
 

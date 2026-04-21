@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { API_BASE_URL, API_HEADERS, SUPER_ADMIN_HOSPITALS, SUPER_ADMIN_SUBSCRIPTION_PLANS } from '../../../../config/api'
+import { API_BASE_URL, API_HEADERS, SUPER_ADMIN_HOSPITALS, SUPER_ADMIN_SUBSCRIPTION_PLANS, SUPER_ADMIN_DASHBOARD_OVERVIEW_CARDS } from '../../../../config/api'
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital'
 import GroupIcon from '@mui/icons-material/Group'
 import CreditCardIcon from '@mui/icons-material/CreditCard'
@@ -48,6 +48,14 @@ const SuperAdminOverview = ({ onPageChange }) => {
       totalPlans: 0,
       monthlyRevenuePotential: 0,
       yearlyRevenuePotential: 0
+    },
+    dashboardCards: {
+      totalHospitals: 0,
+      totalHospitalsGrowth: 0,
+      activePlans: 0,
+      activePlansGrowth: 0,
+      platformRevenue: 0,
+      platformRevenueGrowth: 0
     }
   })
 
@@ -101,6 +109,61 @@ const SuperAdminOverview = ({ onPageChange }) => {
       const errorMsg = err?.message || 'Network error: Unable to fetch analytics data'
       setError(` ${errorMsg}`)
       return null
+    }
+  }
+
+  // Fetch dashboard overview cards with growth metrics
+  const fetchDashboardOverviewCards = async () => {
+    const authToken = localStorage.getItem('authToken')
+    const demoToken = localStorage.getItem('token')
+    const reduxToken = authState?.token
+
+    const finalToken = authToken || reduxToken || demoToken
+
+    if (!finalToken) {
+      return
+    }
+
+    try {
+      const url = `${API_BASE_URL}${SUPER_ADMIN_DASHBOARD_OVERVIEW_CARDS()}`
+      const headers = {
+        ...API_HEADERS,
+        'Authorization': `Bearer ${finalToken}`,
+        'Content-Type': 'application/json'
+      }
+
+      const res = await fetch(url, { headers })
+      const data = await res.json().catch(() => ({}))
+
+      console.log('Dashboard Overview Cards Response:', data)
+
+      if (res.status === 401) {
+        return
+      }
+
+      if (!res.ok) {
+        console.error('Failed to fetch dashboard cards:', res.status, data)
+        return
+      }
+
+      // Extract dashboard cards data - support multiple response formats
+      let cards = data?.data?.cards || data?.cards || data?.data || {}
+      
+      console.log('Extracted cards:', cards)
+      
+      setState(prev => ({
+        ...prev,
+        dashboardCards: {
+          totalHospitals: cards?.total_hospitals?.value || cards?.totalHospitals || 0,
+          totalHospitalsGrowth: cards?.total_hospitals?.growth_percent || cards?.totalHospitalsGrowth || 0,
+          activePlans: cards?.active_plans?.value || cards?.activePlans || 0,
+          activePlansGrowth: cards?.active_plans?.growth_percent || cards?.activePlansGrowth || 0,
+          platformRevenue: cards?.platform_revenue?.value || cards?.platformRevenue || 0,
+          platformRevenueGrowth: cards?.platform_revenue?.growth_percent || cards?.platformRevenueGrowth || 0
+        }
+      }))
+    } catch (err) {
+      console.error('Error fetching dashboard overview cards:', err)
     }
   }
 
@@ -265,16 +328,12 @@ const SuperAdminOverview = ({ onPageChange }) => {
         occupiedBeds: occupiedBeds,
         activeSubscriptionsCount: activeSubscriptionsCount,
         revenue: totalRevenue,
-        hospitalGrowth: data.hospitalGrowth || 12,
-        patientGrowth: data.patientGrowth || 8,
-        appointmentGrowth: data.appointmentGrowth || 15,
-        revenueGrowth: data.revenueGrowth || 20,
         systemHealth: data.systemHealth || {}
       }))
     }
 
-    // Fetch recent hospitals and plan stats separately from real API
-    await Promise.all([fetchRecentHospitals(), fetchPlanStats()])
+    // Fetch recent hospitals, plan stats, and dashboard overview cards separately from real API
+    await Promise.all([fetchRecentHospitals(), fetchPlanStats(), fetchDashboardOverviewCards()])
     setLoading(false)
   }
 
@@ -294,13 +353,16 @@ const SuperAdminOverview = ({ onPageChange }) => {
     }
   }, [token])
 
-  const totalHospitals = state.hospitals?.total ?? ensureArray(state.hospitals).length ?? 0
+  const totalHospitals = (state.dashboardCards?.totalHospitals || state.hospitals?.total) ?? ensureArray(state.hospitals).length ?? 0
+  const totalHospitalsGrowth = state.dashboardCards?.totalHospitalsGrowth || 0
   const activeHospitalCount = state.hospitals?.active ?? 0
-  const activeSubscriptions = state.activeSubscriptionsCount ?? 0
+  const activeSubscriptions = (state.dashboardCards?.activePlans || state.activeSubscriptionsCount) ?? 0
+  const activePlansGrowth = state.dashboardCards?.activePlansGrowth || 0
   const totalUsers = ensureArray(state.users).length
-  const monthlyRevenue = state.revenue || ensureArray(state.subscriptions)
+  const monthlyRevenue = state.dashboardCards?.platformRevenue || state.revenue || ensureArray(state.subscriptions)
     .filter(s => s.status === 'Paid')
     .reduce((sum, sub) => sum + (sub.amount || 0), 0)
+  const platformRevenueGrowth = state.dashboardCards?.platformRevenueGrowth || 0
 
   if (loading) {
     return (
@@ -320,7 +382,7 @@ const SuperAdminOverview = ({ onPageChange }) => {
     <div className="space-y-6 animate-fade-in">
       {/* Premium Header */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">Dashboard Overview</h1>
+        <h1 className="text-4xl font-bold ">Dashboard Overview</h1>
         <p className="text-gray-500 text-sm mt-2">Real-time analytics and hospital management metrics</p>
       </div>
 
@@ -329,53 +391,69 @@ const SuperAdminOverview = ({ onPageChange }) => {
 
         {/* Total Hospitals */}
         <div onClick={()=>navigate('users')}
-         className="group relative bg-gradient-to-br from-blue-500/10 via-blue-400/5 to-cyan-500/10 backdrop-blur-xl rounded-2xl p-4 border border-blue-400/20 shadow-xl overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-2xl hover:border-blue-400/40">
+         className="group relative bg-gradient-to-br from-blue-500/10 via-blue-400/5 to-cyan-500/10 backdrop-blur-xl rounded-2xl p-4 border border-blue-400/20 shadow-xl overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-2xl hover:border-blue-400/40 min-h-[200px]">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-600/0 via-transparent to-cyan-600/0 pointer-events-none group-hover:from-blue-600/5" />
           <div className="absolute -top-20 -right-20 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
 
-          <span className="absolute top-4 right-4 bg-gradient-to-r from-emerald-400 to-cyan-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-            +{state.hospitalGrowth || 0}%
-          </span>
+          {/* Growth Badge */}
+          <div className="absolute top-3 right-3 flex items-center gap-1 bg-blue-500/20 border border-blue-400/30 rounded-lg px-2.5 py-1">
+            <svg className="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8L5.586 19.414M19 7l-14 14" />
+            </svg>
+            <span className={`text-xs font-bold ${totalHospitalsGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {totalHospitalsGrowth >= 0 ? '+' : ''}{totalHospitalsGrowth?.toFixed(1)}%
+            </span>
+          </div>
 
-          <div className="relative">
-            <div className="w-10 h-10 flex items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-600 mb-2 shadow-lg group-hover:shadow-xl transition-shadow">
-              <LocalHospitalIcon className="text-white" sx={{ fontSize: 20 }} />
+          <div className="relative flex flex-col justify-between h-full">
+            <div>
+              <div className="w-10 h-10 flex items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-600 mb-2 shadow-lg group-hover:shadow-xl transition-shadow">
+                <LocalHospitalIcon className="text-white" sx={{ fontSize: 20 }} />
+              </div>
+              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Total Hospitals</p>
+              <p className="text-3xl font-bold text-gray-900 mt-1">{totalHospitals}</p>
+              <p className="text-xs text-gray-500 mt-2">Currently operational</p>
             </div>
-            <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Total Hospitals</p>
-            <p className="text-3xl font-bold text-gray-900 mt-1">{totalHospitals}</p>
-            <p className="text-xs text-gray-500 mt-1">Currently operational</p>
-            <div className="flex items-end gap-1 h-10 mt-2">
-              <div className="w-1.5 h-4 bg-gradient-to-t from-blue-600 to-blue-400 rounded-full blur-sm"></div>
-              <div className="w-1.5 h-6 bg-gradient-to-t from-blue-500 to-cyan-400 rounded-full blur-sm"></div>
+            <div className="absolute bottom-4 right-4 flex items-end gap-1 h-10">
+              <div className="w-1.5 h-4 bg-gradient-to-t from-blue-600 to-blue-400 rounded-full"></div>
+              <div className="w-1.5 h-6 bg-gradient-to-t from-blue-500 to-cyan-400 rounded-full "></div>
               <div className="w-1.5 h-10 bg-gradient-to-t from-blue-600 to-blue-400 rounded-full"></div>
-              <div className="w-1.5 h-7 bg-gradient-to-t from-blue-500 to-cyan-400 rounded-full blur-sm"></div>
-              <div className="w-1.5 h-11 bg-gradient-to-t from-blue-600 to-blue-400 rounded-full blur-sm"></div>
+              <div className="w-1.5 h-7 bg-gradient-to-t from-blue-500 to-cyan-400 rounded-full "></div>
+              <div className="w-1.5 h-11 bg-gradient-to-t from-blue-600 to-blue-400 rounded-full "></div>
             </div>
           </div>
         </div>
 
         {/* Active Subscriptions */}
-        <div className="group relative bg-gradient-to-br from-purple-500/10 via-violet-400/5 to-indigo-500/10 backdrop-blur-xl rounded-2xl p-4 border border-purple-400/20 shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:border-purple-400/40">
+        <div className="group relative bg-gradient-to-br from-purple-500/10 via-violet-400/5 to-indigo-500/10 backdrop-blur-xl rounded-2xl p-4 border border-purple-400/20 shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:border-purple-400/40 min-h-[200px]">
           <div className="absolute inset-0 bg-gradient-to-br from-purple-600/0 via-transparent to-indigo-600/0 pointer-events-none group-hover:from-purple-600/5" />
           <div className="absolute -top-20 -right-20 w-40 h-40 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
 
-          <span className="absolute top-4 right-4 bg-gradient-to-r from-emerald-400 to-cyan-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-            +{state.appointmentGrowth}%
-          </span>
+          {/* Growth Badge */}
+          <div className="absolute top-3 right-3 flex items-center gap-1 bg-purple-500/20 border border-purple-400/30 rounded-lg px-2.5 py-1">
+            <svg className="w-3.5 h-3.5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8L5.586 19.414M19 7l-14 14" />
+            </svg>
+            <span className={`text-xs font-bold ${activePlansGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {activePlansGrowth >= 0 ? '+' : ''}{activePlansGrowth?.toFixed(1)}%
+            </span>
+          </div>
 
-          <div className="relative">
-            <div className="w-10 h-10 flex items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 mb-2 shadow-lg group-hover:shadow-xl transition-shadow">
-              <CreditCardIcon className="text-white" sx={{ fontSize: 20 }} />
+          <div className="relative flex flex-col justify-between h-full">
+            <div>
+              <div className="w-10 h-10 flex items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 mb-2 shadow-lg group-hover:shadow-xl transition-shadow">
+                <CreditCardIcon className="text-white" sx={{ fontSize: 20 }} />
+              </div>
+              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Active Plans</p>
+              <p className="text-3xl font-bold text-gray-900 mt-1">{activeSubscriptions}</p>
+              <p className="text-xs text-gray-500 mt-2">Paid subscriptions</p>
             </div>
-            <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Active Plans</p>
-            <p className="text-3xl font-bold text-gray-900 mt-1">{activeSubscriptions}</p>
-            <p className="text-xs text-gray-500 mt-1">Paid subscriptions</p>
-            <div className="flex items-end gap-1.5 h-10 mt-2">
-              <div className="w-1.5 h-7 bg-gradient-to-t from-purple-600 to-purple-400 rounded-full blur-sm"></div>
-              <div className="w-1.5 h-5 bg-gradient-to-t from-purple-500 to-violet-400 rounded-full blur-sm"></div>
+            <div className="absolute bottom-4 right-4 flex items-end gap-1.5 h-10">
+              <div className="w-1.5 h-7 bg-gradient-to-t from-purple-600 to-purple-400 rounded-full "></div>
+              <div className="w-1.5 h-5 bg-gradient-to-t from-purple-500 to-violet-400 rounded-full "></div>
               <div className="w-1.5 h-9 bg-gradient-to-t from-purple-600 to-purple-400 rounded-full"></div>
-              <div className="w-1.5 h-6 bg-gradient-to-t from-purple-500 to-violet-400 rounded-full blur-sm"></div>
-              <div className="w-1.5 h-8 bg-gradient-to-t from-purple-600 to-purple-400 rounded-full blur-sm"></div>
+              <div className="w-1.5 h-6 bg-gradient-to-t from-purple-500 to-violet-400 rounded-full "></div>
+              <div className="w-1.5 h-8 bg-gradient-to-t from-purple-600 to-purple-400 rounded-full "></div>
             </div>
           </div>
         </div>
@@ -383,23 +461,31 @@ const SuperAdminOverview = ({ onPageChange }) => {
     
 
         {/* Platform Revenue */}
-        <div className="group relative bg-gradient-to-br from-emerald-500/10 via-green-400/5 to-teal-500/10 backdrop-blur-xl rounded-2xl p-4 border border-emerald-400/20 shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:border-emerald-400/40">
+        <div className="group relative bg-gradient-to-br from-emerald-500/10 via-green-400/5 to-teal-500/10 backdrop-blur-xl rounded-2xl p-4 border border-emerald-400/20 shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:border-emerald-400/40 min-h-[200px]">
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/0 via-transparent to-teal-600/0 pointer-events-none group-hover:from-emerald-600/5" />
           <div className="absolute -top-20 -right-20 w-40 h-40 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
 
-          <span className="absolute top-4 right-4 bg-gradient-to-r from-emerald-400 to-cyan-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-            +{state.revenueGrowth}%
-          </span>
+          {/* Growth Badge */}
+          <div className="absolute top-3 right-3 flex items-center gap-1 bg-emerald-500/20 border border-emerald-400/30 rounded-lg px-2.5 py-1">
+            <svg className="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8L5.586 19.414M19 7l-14 14" />
+            </svg>
+            <span className={`text-xs font-bold ${platformRevenueGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {platformRevenueGrowth >= 0 ? '+' : ''}{platformRevenueGrowth?.toFixed(1)}%
+            </span>
+          </div>
 
-          <div className="relative">
-            <div className="w-10 h-10 flex items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 mb-2 shadow-lg group-hover:shadow-xl transition-shadow">
-              <CurrencyRupeeIcon className="text-white" sx={{ fontSize: 20 }} />
+          <div className="relative flex flex-col justify-between h-full">
+            <div>
+              <div className="w-10 h-10 flex items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 mb-2 shadow-lg group-hover:shadow-xl transition-shadow">
+                <CurrencyRupeeIcon className="text-white" sx={{ fontSize: 20 }} />
+              </div>
+              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Platform Revenue</p>
+              <p className="text-3xl font-bold text-gray-900 mt-1">₹{(monthlyRevenue || 0).toLocaleString('en-IN')}</p>
+              <p className="text-xs text-gray-500 mt-2">All hospitals combined</p>
             </div>
-            <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Platform Revenue</p>
-            <p className="text-3xl font-bold text-gray-900 mt-1">{monthlyRevenue || 0}</p>
-            <p className="text-xs text-gray-500 mt-1">All hospitals combined</p>
-            <div className="mt-2">
-              <svg width="100%" height="32" viewBox="0 0 100 40" className="opacity-60">
+            <div className="absolute bottom-4 right-4 flex items-end gap-1.5 h-10">
+              <svg width="100" height="32" viewBox="0 0 100 40" className="opacity-60">
                 <defs>
                   <linearGradient id="lineGradient3" x1="0%" y1="0%" x2="100%" y2="0%">
                     <stop offset="0%" style={{stopColor: '#10b981', stopOpacity: 0.3}} />
@@ -418,11 +504,7 @@ const SuperAdminOverview = ({ onPageChange }) => {
             </div>
           </div>
         </div>
-
       </div>
-
-
-
       {/* Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
         <div className="relative bg-white/50 backdrop-blur-xl rounded-2xl border border-gray-300 shadow-xl p-6 overflow-hidden hover:shadow-2xl transition-shadow">

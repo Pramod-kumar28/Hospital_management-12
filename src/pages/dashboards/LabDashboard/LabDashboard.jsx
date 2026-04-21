@@ -1,3 +1,4 @@
+// src/pages/dashboards/LabDashboard/LabDashboard.jsx
 import React, { useState, useEffect } from 'react'
 import Header from '../../../components/common/Header/Header'
 import Sidebar from '../../../components/common/Sidebar/Sidebar'
@@ -10,6 +11,7 @@ import TestCatalogue from './pages/TestCatalogue'
 import EquipmentTracking from './pages/EquipmentTracking'
 import QualityControl from './pages/QualityControl'
 import LabOverview from './pages/LabOverview'
+import CriticalResults from './pages/CriticalResults'
 import LabProfile from './pages/LabProfile'
 import RaiseticketLab from './pages/RaiseticketLab'
 
@@ -28,7 +30,6 @@ const LabDashboard = () => {
         setIsMobileSidebarOpen(false);
       }
     };
-
     window.addEventListener('dashboard-navigation', handleDashboardNavigation);
 
     return () => {
@@ -63,12 +64,14 @@ const LabDashboard = () => {
         return <EquipmentTracking />
       case 'quality-control':
         return <QualityControl />
-        case 'raise-ticket':
-          return <RaiseticketLab/>
+      case 'critical-results':
+        return <CriticalResults />
+      case 'raise-ticket':
+        return <RaiseticketLab />
       case 'profile':
-        return <LabProfile/>
+        return <LabProfile />
       default:
-        return <LabsOverview />
+        return <LabOverview />
     }
   }
 

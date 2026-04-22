@@ -1,24 +1,24 @@
 // src/pages/dashboards/LabDashboard/pages/SampleTracking.jsx
-import React, { useState, useEffect, useRef } from "react";
-import DataTable from "../../../../components/ui/Tables/DataTable";
-import SearchBar from "../../../../components/common/SearchBar/SearchBar";
-import Button from "../../../../components/common/Button/Button";
-import Modal from "../../../../components/common/Modal/Modal";
-import LoadingSpinner from "../../../../components/common/LoadingSpinner/LoadingSpinner";
-import Toast from "../../../../components/common/Toast/Toast";
-import { QRCodeSVG } from "qrcode.react";
+import React, { useState, useEffect, useRef } from 'react'
+import DataTable from '../../../../components/ui/Tables/DataTable'
+import SearchBar from '../../../../components/common/SearchBar/SearchBar'
+import Button from '../../../../components/common/Button/Button'
+import Modal from '../../../../components/common/Modal/Modal'
+import LoadingSpinner from '../../../../components/common/LoadingSpinner/LoadingSpinner'
+import Toast from '../../../../components/common/Toast/Toast'
+import { QRCodeSVG } from 'qrcode.react'
 
 const SampleTracking = () => {
-  const [loading, setLoading] = useState(true);
-  const [samples, setSamples] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [showScannerModal, setShowScannerModal] = useState(false);
-  const [showQRModal, setShowQRModal] = useState(false);
-  const [qrSample, setQRSample] = useState(null);
-  const [scannedCode, setScannedCode] = useState("");
-  const [currentSample, setCurrentSample] = useState(null);
-  const [toast, setToast] = useState(null);
-  const printRef = useRef(null);
+  const [loading, setLoading] = useState(true)
+  const [samples, setSamples] = useState([])
+  const [searchTerm, setSearchTerm] = useState('')
+  const [showScannerModal, setShowScannerModal] = useState(false)
+  const [showQRModal, setShowQRModal] = useState(false)
+  const [qrSample, setQRSample] = useState(null)
+  const [scannedCode, setScannedCode] = useState('')
+  const [currentSample, setCurrentSample] = useState(null)
+  const [toast, setToast] = useState(null)
+  const printRef = useRef(null)
 
   // Status to stage mapping for timeline
   const statusStageMap = {

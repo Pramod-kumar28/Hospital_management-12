@@ -1894,11 +1894,33 @@ const OPDManagement = () => {
         onClose={() => setShowConsultationForm(false)}
         title={`Consultation - ${selectedPatient?.patientName || 'Patient'}`}
         size="xl"
+        footer={selectedPatient && (
+          <div className="flex flex-col sm:flex-row justify-end gap-3 w-full">
+            <button
+              onClick={() => setShowConsultationForm(false)}
+              className="px-4 py-2 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 transition-colors shadow-sm text-sm font-medium w-full sm:w-auto"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleCompleteConsultation}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-md flex items-center justify-center text-sm font-medium w-full sm:w-auto"
+            >
+              <CheckCircleIcon className="mr-2" fontSize="small" /> Complete Consultation
+            </button>
+            <button
+              onClick={handlePrintPrescription}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-md flex items-center justify-center text-sm font-medium w-full sm:w-auto"
+            >
+              <PrintIcon className="mr-2" fontSize="small" /> Print Prescription
+            </button>
+          </div>
+        )}
       >
         {selectedPatient && (
           <div className="space-y-6">
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
                   <p className="text-sm text-gray-600">Patient</p>
                   <p className="font-medium text-gray-900">{selectedPatient.patientName}</p>
@@ -1920,7 +1942,7 @@ const OPDManagement = () => {
 
             <div>
               <h4 className="font-semibold text-gray-800 mb-3">Vital Signs</h4>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <div>
                   <label className="form-label">Blood Pressure</label>
                   <input
@@ -2048,7 +2070,7 @@ const OPDManagement = () => {
 
             <div>
               <label className="form-label">Tests Recommended</label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                 {['Blood Test', 'X-Ray', 'ECG', 'MRI', 'Ultrasound', 'CT Scan', 'Urine Test', 'Other'].map(test => (
                   <label key={test} className="flex items-center">
                     <input
@@ -2099,29 +2121,6 @@ const OPDManagement = () => {
                   })}
                 />
               </div>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4">
-              <button
-                onClick={() => setShowConsultationForm(false)}
-                className="px-4 py-2 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 transition-colors shadow-sm text-sm font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCompleteConsultation}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-md flex items-center text-sm font-medium"
-              >
-                <CheckCircleIcon className="mr-2" fontSize="small" /> Complete Consultation
-              </button>
-
-              <button
-                onClick={handlePrintPrescription}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-md flex items-center text-sm font-medium"
-              >
-                <PrintIcon className="mr-2" fontSize="small" /> Print Prescription
-              </button>
-
             </div>
           </div>
         )}
@@ -2317,17 +2316,17 @@ const OPDManagement = () => {
               </select>
             </div>
 
-            <div className="flex justify-end gap-3 pt-6 border-t">
+            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t w-full">
               <button
                 type="button"
                 onClick={() => setShowTokenModal(false)}
-                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors w-full sm:w-auto"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md transition-all flex items-center"
+                className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md transition-all flex items-center justify-center w-full sm:w-auto"
               >
                 <ConfirmationNumberIcon className="mr-2" /> Generate Token
               </button>
@@ -2366,7 +2365,7 @@ const OPDManagement = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-y-5 gap-x-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-5 gap-x-4 mb-6">
                   <div>
                     <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Age / Gender</p>
                     <p className="font-semibold text-gray-800">{generatedToken?.age}Y / {generatedToken?.gender}</p>
@@ -2433,7 +2432,7 @@ const OPDManagement = () => {
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-gray-500 mb-1">Age / Gender</p>
                 <p className="font-semibold text-gray-800">{selectedPatientForView.age} Years / {selectedPatientForView.gender}</p>
@@ -2454,7 +2453,7 @@ const OPDManagement = () => {
 
             <div className="bg-blue-50 p-4 rounded-lg mt-4">
               <h4 className="text-sm font-semibold text-blue-800 mb-3">Consultation Info</h4>
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-blue-600 mb-1">Department</p>
                   <p className="font-semibold text-blue-900">{selectedPatientForView.department}</p>
@@ -2476,10 +2475,10 @@ const OPDManagement = () => {
               </div>
             </div>
 
-            <div className="flex justify-end pt-4">
+            <div className="flex flex-col sm:flex-row justify-end pt-4 w-full">
               <button
                 onClick={() => setShowViewPatientModal(false)}
-                className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 w-full sm:w-auto text-center"
               >
                 Close
               </button>
@@ -2685,21 +2684,21 @@ const OPDManagement = () => {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center justify-end gap-3 mt-5 pt-4 border-t border-gray-200">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 mt-5 pt-4 border-t border-gray-200 w-full">
               <button
                 onClick={() => {
                   setShowTransferModal(false);
                   setTransferPatient(null);
                   setSelectedTransferDoctor(null);
                 }}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors w-full sm:w-auto text-center"
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirmTransfer}
                 disabled={!selectedTransferDoctor}
-                className={`px-5 py-2 text-sm font-medium rounded-lg transition-all flex items-center gap-2 ${selectedTransferDoctor
+                className={`px-5 py-2 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-2 w-full sm:w-auto ${selectedTransferDoctor
                   ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm'
                   : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                   }`}
@@ -2753,20 +2752,20 @@ const OPDManagement = () => {
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 pt-4 border-t border-gray-100 w-full">
               <button
                 onClick={() => {
                   setShowDeactivateModal(false);
                   setDoctorToDeactivate(null);
                   setPatientsToReassign([]);
                 }}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors w-full sm:w-auto text-center"
               >
                 No, Keep Active
               </button>
               <button
                 onClick={handleConfirmDeactivation}
-                className="px-6 py-2 text-sm font-bold text-white bg-red-600 rounded-lg hover:bg-red-700 shadow-md transition-all flex items-center gap-2"
+                className="px-6 py-2 text-sm font-bold text-white bg-red-600 rounded-lg hover:bg-red-700 shadow-md transition-all flex items-center justify-center gap-2 w-full sm:w-auto"
               >
                 <PowerSettingsNewIcon style={{ fontSize: 18 }} />
                 Confirm & Reassign

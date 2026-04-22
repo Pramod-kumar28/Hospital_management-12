@@ -52,8 +52,8 @@ const Button = ({
       {...props}
     >
       {icon && (
-        <span className={`${children ? 'mr-2' : ''}`}>
-          <i className={icon}></i>
+        <span className={`${children ? 'mr-2' : ''} flex items-center`}>
+          {typeof icon === 'string' ? <i className={icon}></i> : icon}
         </span>
       )}
       {children}

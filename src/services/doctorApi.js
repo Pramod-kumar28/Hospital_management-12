@@ -16,6 +16,14 @@ const DOCTOR_APPOINTMENT_TRACKING_BASE_CANDIDATES = [
   '/api/v1/doctor-appointment-tracking',
 ]
 
+const DOCTOR_PATIENT_RECORDS_BASE_CANDIDATES = [
+  '/api/v1/doctor-management',
+  '/api/v1/doctor-dashboard',
+  '/api/v1/doctor-patient-records',
+  '/api/v1/doctor',
+  '/api/v1/doctors',
+]
+
 function normalizeApiData(payload) {
   return payload?.data ?? payload ?? {}
 }
@@ -73,6 +81,21 @@ function buildAppointmentTrackingPaths({ appointmentRef, action = 'today', query
     if (action === 'createCommunicationLog') return `${base}/communication/log`
     if (action === 'metricsSummary') return withQuery(`${base}/metrics/summary`, query)
     if (action === 'notificationSettings') return `${base}/settings/notifications`
+    return ''
+  }).filter(Boolean)
+}
+
+function buildPatientRecordPaths({ patientRef, action = 'search', query = {} } = {}) {
+  return DOCTOR_PATIENT_RECORDS_BASE_CANDIDATES.map((base) => {
+    if (action === 'search') return withQuery(`${base}/patients/search`, query)
+    if (action === 'advancedSearch') return `${base}/patients/advanced-search`
+    if (action === 'allMedicalRecords') return withQuery(`${base}/medical-records`, query)
+    if (action === 'patientSummary') return `${base}/patients/${encodeURIComponent(patientRef)}/summary`
+    if (action === 'patientMedicalRecords') return withQuery(`${base}/patients/${encodeURIComponent(patientRef)}/medical-records`, query)
+    if (action === 'patientTimeline') return withQuery(`${base}/patients/${encodeURIComponent(patientRef)}/timeline`, query)
+    if (action === 'patientCaseHistory') return withQuery(`${base}/patients/${encodeURIComponent(patientRef)}/case-history`, query)
+    if (action === 'patientClinicalAlerts') return withQuery(`${base}/patients/${encodeURIComponent(patientRef)}/clinical-alerts`, query)
+    if (action === 'patientDocuments') return withQuery(`${base}/patients/${encodeURIComponent(patientRef)}/documents`, query)
     return ''
   }).filter(Boolean)
 }
@@ -264,5 +287,95 @@ export function getAppointmentMetricsSummary(period = 'month') {
 export function getDoctorNotificationSettings() {
   return doctorApiFetchWithFallback(
     buildAppointmentTrackingPaths({ action: 'notificationSettings' })
+  )
+}
+
+export function searchDoctorPatients(filters = {}) {
+  const query = {
+    query: filters.query,
+    search_scope: filters.search_scope,
+    include_inactive: filters.include_inactive,
+    limit: filters.limit ?? 20,
+  }
+  return doctorApiFetchWithFallback(buildPatientRecordPaths({ action: 'search', query }))
+}
+
+export function advancedSearchDoctorPatients(searchRequest = {}, filters = {}) {
+  return doctorApiFetchWithFallback(buildPatientRecordPaths({ action: 'advancedSearch' }), {
+    method: 'POST',
+    body: {
+      search_request: searchRequest,
+      filters,
+    },
+  })
+}
+
+export function getDoctorAllMedicalRecords(filters = {}) {
+  const query = {
+    page: filters.page ?? 1,
+    limit: filters.limit ?? 50,
+    patient_search: filters.patient_search,
+    date_from: filters.date_from,
+    date_to: filters.date_to,
+  }
+  return doctorApiFetchWithFallback(buildPatientRecordPaths({ action: 'allMedicalRecords', query }))
+}
+
+export function getDoctorPatientSummary(patientRef) {
+  return doctorApiFetchWithFallback(
+    buildPatientRecordPaths({ action: 'patientSummary', patientRef })
+  )
+}
+
+export function getDoctorPatientMedicalRecords(patientRef, filters = {}) {
+  const query = {
+    record_type: filters.record_type,
+    date_from: filters.date_from,
+    date_to: filters.date_to,
+    limit: filters.limit ?? 50,
+  }
+  return doctorApiFetchWithFallback(
+    buildPatientRecordPaths({ action: 'patientMedicalRecords', patientRef, query })
+  )
+}
+
+export function getDoctorPatientTimeline(patientRef, filters = {}) {
+  const query = {
+    grouping: filters.grouping,
+    date_from: filters.date_from,
+    date_to: filters.date_to,
+  }
+  return doctorApiFetchWithFallback(
+    buildPatientRecordPaths({ action: 'patientTimeline', patientRef, query })
+  )
+}
+
+export function getDoctorPatientCaseHistory(patientRef, analysisPeriod = '1year') {
+  return doctorApiFetchWithFallback(
+    buildPatientRecordPaths({
+      action: 'patientCaseHistory',
+      patientRef,
+      query: { analysis_period: analysisPeriod },
+    })
+  )
+}
+
+export function getDoctorPatientClinicalAlerts(patientRef, includeResolved = false) {
+  return doctorApiFetchWithFallback(
+    buildPatientRecordPaths({
+      action: 'patientClinicalAlerts',
+      patientRef,
+      query: { include_resolved: includeResolved },
+    })
+  )
+}
+
+export function getDoctorPatientDocuments(patientRef, documentType) {
+  return doctorApiFetchWithFallback(
+    buildPatientRecordPaths({
+      action: 'patientDocuments',
+      patientRef,
+      query: { document_type: documentType },
+    })
   )
 }

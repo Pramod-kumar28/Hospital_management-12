@@ -91,10 +91,7 @@ const ReceptionOverview = ({ setActivePage }) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 
         {/* TOTAL PATIENTS */}
-        <div
-          className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition"
-          onClick={() => handleQuickAction('records')}
-        >
+        <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent pointer-events-none" />
 
           <div className="relative flex justify-between items-end">
@@ -121,10 +118,7 @@ const ReceptionOverview = ({ setActivePage }) => {
         </div>
 
         {/* TODAY'S APPOINTMENTS */}
-        <div
-          className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition"
-          onClick={() => handleQuickAction('appointments')}
-        >
+        <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition">
           <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent pointer-events-none" />
 
           <div className="relative flex justify-between items-end">
@@ -152,10 +146,7 @@ const ReceptionOverview = ({ setActivePage }) => {
         </div>
 
         {/* PENDING BILLS */}
-        <div
-          className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition"
-          onClick={() => handleQuickAction('billing')}
-        >
+        <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition" >
           <div className="absolute inset-0 bg-gradient-to-br from-yellow-50 to-transparent pointer-events-none" />
 
           <div className="relative flex justify-between items-end">
@@ -182,10 +173,7 @@ const ReceptionOverview = ({ setActivePage }) => {
         </div>
 
         {/* NEW REGISTRATIONS */}
-        <div
-          className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition"
-          onClick={() => handleQuickAction('registration')}
-        >
+        <div className="relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition">
           <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent pointer-events-none" />
 
           <div className="relative flex justify-between items-end">

@@ -104,6 +104,9 @@ export const HOSPITAL_ADMIN_DASHBOARD_OVERVIEW = '/api/v1/hospital-admin/dashboa
 export const HOSPITAL_ADMIN_DASHBOARD_APPOINTMENT_STATS = '/api/v1/hospital-admin/dashboard/appointment-stats';
 export const HOSPITAL_ADMIN_DASHBOARD_STAFF_STATS = '/api/v1/hospital-admin/dashboard/staff-stats';
 
+/** Hospital Admin: audit logs */
+export const HOSPITAL_ADMIN_AUDIT_LOGS = '/api/v1/hospital-admin/audit-logs';
+
 // HOSPITAL ADMIN - STAFF MANAGEMENT ENDPOINTS
 export const HOSPITAL_ADMIN_STAFF = '/api/v1/hospital-admin/staff';
 export const HOSPITAL_ADMIN_STAFF_DETAILS = (staffId) => `/api/v1/hospital-admin/staff/${encodeURIComponent(staffId)}`;

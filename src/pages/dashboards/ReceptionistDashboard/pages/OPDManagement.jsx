@@ -1894,6 +1894,28 @@ const OPDManagement = () => {
         onClose={() => setShowConsultationForm(false)}
         title={`Consultation - ${selectedPatient?.patientName || 'Patient'}`}
         size="xl"
+        footer={selectedPatient && (
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setShowConsultationForm(false)}
+              className="px-4 py-2 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 transition-colors shadow-sm text-sm font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleCompleteConsultation}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-md flex items-center text-sm font-medium"
+            >
+              <CheckCircleIcon className="mr-2" fontSize="small" /> Complete Consultation
+            </button>
+            <button
+              onClick={handlePrintPrescription}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-md flex items-center text-sm font-medium"
+            >
+              <PrintIcon className="mr-2" fontSize="small" /> Print Prescription
+            </button>
+          </div>
+        )}
       >
         {selectedPatient && (
           <div className="space-y-6">
@@ -2099,29 +2121,6 @@ const OPDManagement = () => {
                   })}
                 />
               </div>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4">
-              <button
-                onClick={() => setShowConsultationForm(false)}
-                className="px-4 py-2 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 transition-colors shadow-sm text-sm font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCompleteConsultation}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-md flex items-center text-sm font-medium"
-              >
-                <CheckCircleIcon className="mr-2" fontSize="small" /> Complete Consultation
-              </button>
-
-              <button
-                onClick={handlePrintPrescription}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-md flex items-center text-sm font-medium"
-              >
-                <PrintIcon className="mr-2" fontSize="small" /> Print Prescription
-              </button>
-
             </div>
           </div>
         )}

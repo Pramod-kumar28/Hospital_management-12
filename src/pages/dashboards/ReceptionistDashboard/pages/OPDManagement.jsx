@@ -1,17 +1,17 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import LoadingSpinner from '../../../../components/common/LoadingSpinner/LoadingSpinner';
-import DataTable from '../../../../components/ui/Tables/DataTable';
 import Modal from '../../../../components/common/Modal/Modal';
 import {
-  KeyboardArrowDown as KeyboardArrowDownIcon, Search as SearchIcon, Print as PrintIcon, 
+  KeyboardArrowDown as KeyboardArrowDownIcon, Search as SearchIcon, Print as PrintIcon,
   CheckCircle as CheckCircleIcon, ConfirmationNumber as ConfirmationNumberIcon,
-   MedicalServices as MedicalServicesIcon, Queue as QueueIcon, Person as PersonIcon,
+  MedicalServices as MedicalServicesIcon, Queue as QueueIcon, Person as PersonIcon,
   AccessTime as AccessTimeIcon, Warning as WarningIcon, PersonAdd as PersonAddIcon,
   PlayArrow as PlayArrowIcon, SwapHoriz as SwapHorizIcon, Visibility as VisibilityIcon,
   Close as CloseIcon, PowerSettingsNew as PowerSettingsNewIcon, Check as CheckIcon,
   Add as AddIcon, Description as DescriptionIcon, KeyboardArrowUp as KeyboardArrowUpIcon,
-  Groups as GroupsIcon, PendingActions as PendingActionsIcon, TaskAlt as TaskAltIcon
+  Groups as GroupsIcon, PendingActions as PendingActionsIcon, TaskAlt as TaskAltIcon,
+  Delete as DeleteIcon
 } from '@mui/icons-material';
 
 
@@ -22,7 +22,6 @@ const OPDManagement = () => {
   const [showConsultationForm, setShowConsultationForm] = useState(false);
   const [showQueueModal, setShowQueueModal] = useState(false);
   const [showDoctorModal, setShowDoctorModal] = useState(false);
-  const [showAssignModal, setShowAssignModal] = useState(false);
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [tokenStep, setTokenStep] = useState('form'); // 'form' or 'slip'
   const [generatedToken, setGeneratedToken] = useState(null);
@@ -43,17 +42,23 @@ const OPDManagement = () => {
   const [showDeactivateModal, setShowDeactivateModal] = useState(false);
   const [doctorToDeactivate, setDoctorToDeactivate] = useState(null);
   const [patientsToReassign, setPatientsToReassign] = useState([]);
+  const [selectedDoctorForQueue, setSelectedDoctorForQueue] = useState(null);
 
   // Token Form State
   const [tokenForm, setTokenForm] = useState({
+    patientId: '',
     patientName: '',
     phoneNo: '',
+    email: '',
     age: '',
     gender: 'Male',
+    bloodGroup: '',
+    Type:'',
+    address: '',
     department: '',
     doctorId: '',
     type: 'Regular',
-    bloodGroup: '',
+    priority: 'Normal'
   });
 
   // Searchable Dropdown State for Token Creation
@@ -64,11 +69,23 @@ const OPDManagement = () => {
   const [docSearchTerm, setDocSearchTerm] = useState('');
   const [isDocDropdownOpen, setIsDocDropdownOpen] = useState(false);
   const docDropdownRef = useRef(null);
+
+  const [docNameSearchTerm, setDocNameSearchTerm] = useState('');
+  const [isDocNameDropdownOpen, setIsDocNameDropdownOpen] = useState(false);
+  const docNameDropdownRef = useRef(null);
+
+  const [patientSearchTerm, setPatientSearchTerm] = useState('');
+  const [isPatientDropdownOpen, setIsPatientDropdownOpen] = useState(false);
+  const patientDropdownRef = useRef(null);
+
+  const [patientQueueSearch, setPatientQueueSearch] = useState('');
   const [doctorForm, setDoctorForm] = useState({
     name: '',
     department: '',
     opdRoom: '',
     specialization: '',
+    qualification: '',
+    email: '',
     contact: '',
     isActive: true
   });
@@ -86,18 +103,17 @@ const OPDManagement = () => {
       height: ''
     },
     symptoms: '',
+    history: '',
+    allergies: '',
+    examination: '',
     diagnosis: '',
     prescription: '',
-    testsRecommended: [],
+    testsRecommended: [{ id: 1, description: '', customDescription: '', samples: '', customSamples: '' }],
+    instructions: '',
     nextVisitDate: '',
     remarks: ''
   });
 
-  const [assignForm, setAssignForm] = useState({
-    patientId: '',
-    doctorId: '',
-    priority: 'Normal'
-  });
 
   useEffect(() => {
     loadOPDData();
@@ -112,6 +128,12 @@ const OPDManagement = () => {
       if (docDropdownRef.current && !docDropdownRef.current.contains(event.target)) {
         setIsDocDropdownOpen(false);
       }
+      if (docNameDropdownRef.current && !docNameDropdownRef.current.contains(event.target)) {
+        setIsDocNameDropdownOpen(false);
+      }
+      if (patientDropdownRef.current && !patientDropdownRef.current.contains(event.target)) {
+        setIsPatientDropdownOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
@@ -120,6 +142,22 @@ const OPDManagement = () => {
   }, []);
 
   const DEPARTMENTS = [...new Set(doctors.map(d => d.department))];
+  const TEST_OPTIONS = ['Blood Test', 'X-Ray', 'ECG', 'MRI', 'Ultrasound', 'CT Scan', 'Urine Test', 'Biopsy', 'Other'];
+  const SAMPLE_OPTIONS = ['None', 'Blood', 'Urine', 'Stool', 'Saliva', 'Tissue', 'Swab', 'Other'];
+  const AVAILABLE_DOCTORS = [
+    { name: 'Dr. Arun Varma', department: 'Cardiology', specialization: 'Senior Cardiologist', qualification: 'MBBS, MD (Cardiology)', email: 'arun.varma@hospital.com', contact: '+91 9998887771' },
+    { name: 'Dr. Sarah Khan', department: 'Pediatrics', specialization: 'Pediatrician', qualification: 'MBBS, MD (Pediatrics)', email: 'sarah.khan@hospital.com', contact: '+91 9998887772' },
+    { name: 'Dr. John Doe', department: 'Neurology', specialization: 'Neurosurgeon', qualification: 'MBBS, MS, MCh (Neuro)', email: 'john.doe@hospital.com', contact: '+91 9998887773' },
+    { name: 'Dr. Emily Blunt', department: 'Dermatology', specialization: 'Dermatologist', qualification: 'MBBS, MD (Derm)', email: 'emily.blunt@hospital.com', contact: '+91 9998887774' },
+    { name: 'Dr. Robert Miller', department: 'Orthopedics', specialization: 'Orthopedic Surgeon', qualification: 'MBBS, MS (Ortho)', email: 'robert.miller@hospital.com', contact: '+91 9998887775' }
+  ];
+
+  const REGISTERED_PATIENTS = [
+    { id: 'PAT-101', name: 'Rahul Sharma', phoneNo: '9876543210', email: 'rahul@example.com', age: '28', gender: 'Male', bloodGroup: 'O+', address: 'Andheri West, Mumbai' },
+    { id: 'PAT-102', name: 'Surbhi Gupta', phoneNo: '9988776655', email: 'surbhi@example.com', age: '24', gender: 'Female', bloodGroup: 'B+', address: 'Bandra East, Mumbai' },
+    { id: 'PAT-103', name: 'Anita Verma', phoneNo: '9123456789', email: 'anita@example.com', age: '45', gender: 'Female', bloodGroup: 'A-', address: 'Khar Road, Mumbai' },
+    { id: 'PAT-104', name: 'Vikram Singh', phoneNo: '9822334455', email: 'vikram@example.com', age: '35', gender: 'Male', bloodGroup: 'AB+', address: 'Goregaon, Mumbai' }
+  ];
 
   const handleSelectDept = (dept) => {
     setTokenForm({
@@ -139,6 +177,36 @@ const OPDManagement = () => {
     });
     setDocSearchTerm(doc.name);
     setIsDocDropdownOpen(false);
+  };
+
+  const handleSelectDocName = (doc) => {
+    setDoctorForm({
+      ...doctorForm,
+      name: doc.name,
+      department: doc.department,
+      specialization: doc.specialization,
+      qualification: doc.qualification || '',
+      email: doc.email || '',
+      contact: doc.contact || ''
+    });
+    setDocNameSearchTerm(doc.name);
+    setIsDocNameDropdownOpen(false);
+  };
+
+  const handleSelectPatient = (patient) => {
+    setTokenForm({
+      ...tokenForm,
+      patientId: patient.id,
+      patientName: patient.name,
+      phoneNo: patient.phoneNo,
+      email: patient.email,
+      age: patient.age,
+      gender: patient.gender,
+      bloodGroup: patient.bloodGroup,
+      address: patient.address
+    });
+    setPatientSearchTerm(patient.name);
+    setIsPatientDropdownOpen(false);
   };
 
   const filteredDepartments = DEPARTMENTS.filter(dept =>
@@ -161,6 +229,8 @@ const OPDManagement = () => {
           department: 'Cardiology',
           opdRoom: 'Room 101',
           specialization: 'Cardiologist',
+          qualification: 'MBBS, MD (Cardiology)',
+          email: 'meena.rao@health.com',
           contact: '+91 9876543210',
           isActive: true,
           currentPatient: null,
@@ -177,6 +247,8 @@ const OPDManagement = () => {
           department: 'Orthopedics',
           opdRoom: 'Room 102',
           specialization: 'Orthopedic Surgeon',
+          qualification: 'MBBS, MS (Ortho)',
+          email: 'dr.sharma@health.com',
           contact: '+91 9876543211',
           isActive: true,
           currentPatient: null,
@@ -193,6 +265,8 @@ const OPDManagement = () => {
           department: 'Neurology',
           opdRoom: 'Room 103',
           specialization: 'Neurologist',
+          qualification: 'MBBS, MD, DM (Neurology)',
+          email: 'dr.menon@health.com',
           contact: '+91 9876543212',
           isActive: false,
           currentPatient: null,
@@ -209,6 +283,8 @@ const OPDManagement = () => {
           department: 'General Medicine',
           opdRoom: 'Room 104',
           specialization: 'General Physician',
+          qualification: 'MBBS, MD (Medicine)',
+          email: 'dr.gupta@health.com',
           contact: '+91 9876543213',
           isActive: true,
           currentPatient: null,
@@ -320,6 +396,32 @@ const OPDManagement = () => {
       setOpdPatients(initialPatients);
       setLoading(false);
     }, 1000);
+  };
+
+  const addTestRow = () => {
+    setConsultationForm(prev => ({
+      ...prev,
+      testsRecommended: [
+        ...prev.testsRecommended,
+        { id: prev.testsRecommended.length + 1, description: '', customDescription: '', samples: '', customSamples: '' }
+      ]
+    }));
+  };
+
+  const removeTestRow = (index) => {
+    setConsultationForm(prev => {
+      const updatedTests = prev.testsRecommended.filter((_, i) => i !== index)
+        .map((test, i) => ({ ...test, id: i + 1 }));
+      return { ...prev, testsRecommended: updatedTests };
+    });
+  };
+
+  const updateTestRow = (index, field, value) => {
+    setConsultationForm(prev => {
+      const updatedTests = [...prev.testsRecommended];
+      updatedTests[index] = { ...updatedTests[index], [field]: value };
+      return { ...prev, testsRecommended: updatedTests };
+    });
   };
 
   const handleStartConsultation = (patient) => {
@@ -441,9 +543,13 @@ const OPDManagement = () => {
         height: ''
       },
       symptoms: '',
+      history: '',
+      allergies: '',
+      examination: '',
       diagnosis: '',
       prescription: '',
-      testsRecommended: [],
+      testsRecommended: [{ id: 1, description: '', customDescription: '', samples: '', customSamples: '' }],
+      instructions: '',
       nextVisitDate: '',
       remarks: ''
     });
@@ -452,16 +558,20 @@ const OPDManagement = () => {
   const generateToken = () => {
     setTokenStep('form');
     setTokenForm({
+      patientId: '',
       patientName: '',
       phoneNo: '',
+      email: '',
       age: '',
       gender: 'Male',
+      bloodGroup: '',
+      address: '',
       department: '',
       doctorId: '',
       type: 'Regular',
-      priority: 'Normal',
-      bloodGroup: ''
+      priority: 'Normal'
     });
+    setPatientSearchTerm('');
     setDeptSearchTerm('');
     setDocSearchTerm('');
     setShowTokenModal(true);
@@ -488,9 +598,10 @@ const OPDManagement = () => {
 
     const newToken = {
       id: `OPD-${Date.now()}`,
-      patientId: `PAT-${Date.now().toString().slice(-6)}`,
+      patientId: tokenForm.patientId || `UHID-${Math.floor(100000 + Math.random() * 900000)}`,
       patientName: tokenForm.patientName,
       phoneNo: tokenForm.phoneNo || 'Not specified',
+      email: tokenForm.email || 'Not specified',
       age: tokenForm.age || 'Not specified',
       gender: tokenForm.gender,
       token: `T-${tokenNumber}`,
@@ -503,7 +614,8 @@ const OPDManagement = () => {
       priority: tokenForm.priority,
       queuePosition: queuePosition,
       arrivalTime: arrivalTime,
-      bloodGroup: tokenForm.bloodGroup || 'Not specified'
+      bloodGroup: tokenForm.bloodGroup || 'Not specified',
+      address: tokenForm.address || 'Not specified'
     };
 
     setOpdPatients([newToken, ...opdPatients]);
@@ -520,31 +632,29 @@ const OPDManagement = () => {
     setGeneratedToken(newToken);
     setTokenStep('slip');
   };
-
   const handlePrintSlip = () => {
     const printWindow = window.open('', '', 'width=800,height=800');
 
-    // Centered Invoice Style
     const invoiceHTML = `
       <html>
         <head>
           <title>Print Token - ${generatedToken?.token}</title>
           <style>
-            @page {
-              margin: 0;
-            }
+            @page { margin: 0; }
             body {
               font-family: 'Courier New', Courier, monospace;
-              padding: 40px;
+              padding: 0;
               display: flex;
               justify-content: center;
+              align-items: center;
+              height: 100vh;
               background: #f3f4f6 !important;
               color: black;
               margin: 0;
             }
             .invoice-wrapper {
-              width: 40%;
-              max-width: 500px;
+              width: 100%;
+              max-width: 400px;
               background: white;
               padding: 40px;
               border: 1px solid #ccc;
@@ -555,135 +665,63 @@ const OPDManagement = () => {
               text-align: center;
               margin-bottom: 25px;
               border-bottom: 2px dashed black;
-              padding-bottom: 40px;
+              padding-bottom: 20px;
             }
             .header h2 {
               margin: 0 0 10px 0;
-              font-size: 26px;
+              font-size: 24px;
               text-transform: uppercase;
               letter-spacing: 2px;
-            }
-            .header p {
-              margin: 0;
-              font-size: 14px;
             }
             .token-container {
               text-align: center;
               margin: 30px 0;
             }
-            .token-label {
-              font-size: 16px;
-              text-transform: uppercase;
-              letter-spacing: 2px;
-            }
             .token-number {
-              font-size: 56px;
+              font-size: 64px;
               font-weight: bold;
               margin: 10px 0;
               line-height: 1;
-            }
-            .divider {
-              border-top: 2px dashed black;
-              margin: 20px 0;
             }
             .info-row {
               display: flex;
               justify-content: space-between;
               margin-bottom: 12px;
-              font-size: 16px;
-            }
-            .info-label {
-              font-weight: normal;
-            }
-            .info-value {
-              font-weight: bold;
-              text-align: right;
-              max-width: 65%;
-              word-wrap: break-word;
+              font-size: 14px;
             }
             .footer {
               text-align: center;
               margin-top: 30px;
-              font-size: 14px;
+              font-size: 12px;
               border-top: 2px dashed black;
               padding-top: 20px;
             }
             @media print {
-              body { 
-                background: white !important; 
-                padding: 0;
-                align-items: flex-start;
-                -webkit-print-color-adjust: exact; 
-                print-color-adjust: exact; 
-              }
-              .invoice-wrapper {
-                box-shadow: none;
-                border: 2px solid black;
-                margin: 20px auto;
-                max-width: 90%;
-              }
+              body { background: white !important; padding: 0; }
+              .invoice-wrapper { box-shadow: none; border: none; }
             }
           </style>
         </head>
         <body>
           <div class="invoice-wrapper">
             <div class="header">
-              <h2>HOSPITAL OPD</h2>
-              <p>Date: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</p>
+              <h2>OPD TOKEN</h2>
+              <p>${new Date().toLocaleString()}</p>
             </div>
-            
             <div class="token-container">
-              <div class="token-label">Token Number</div>
+              <div style="font-size: 12px; text-transform: uppercase;">Token Number</div>
               <div class="token-number">${generatedToken?.token || '-'}</div>
             </div>
-            
-            <div class="divider"></div>
-            
-            <div class="info-row">
-              <span class="info-label">Patient:</span>
-              <span class="info-value">${generatedToken?.patientName || '-'}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Age/Sex:</span>
-              <span class="info-value">${generatedToken?.age || '-'}Y / ${generatedToken?.gender || '-'}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Phone:</span>
-              <span class="info-value">${generatedToken?.phoneNo || '-'}</span>
-            </div>
-            
-            <div class="divider"></div>
-            
-            <div class="info-row">
-              <span class="info-label">Department:</span>
-              <span class="info-value">${generatedToken?.department || '-'}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Doctor:</span>
-              <span class="info-value">${generatedToken?.doctor || '-'}</span>
-            </div>
-
-            <div class="divider"></div>
-            
-            <div class="info-row">
-              <span class="info-label">Type:</span>
-              <span class="info-value">${generatedToken?.type || '-'}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Priority:</span>
-              <span class="info-value">${generatedToken?.priority || 'Normal'}</span>
-            </div>
-            
+            <div class="info-row"><span>Patient:</span> <b>${generatedToken?.patientName || '-'}</b></div>
+            <div class="info-row"><span>UHID:</span> <b>${generatedToken?.patientId || '-'}</b></div>
+            <div class="info-row"><span>Doctor:</span> <b>${generatedToken?.doctor || '-'}</b></div>
+            <div class="info-row"><span>Dept:</span> <b>${generatedToken?.department || '-'}</b></div>
             <div class="footer">
-              <p>Please wait for your turn.</p>
-              <p>Thank you!</p>
+              <p>Please wait for your turn. Thank you!</p>
             </div>
           </div>
           <script>
-            setTimeout(() => {
-              window.print();
-              window.close();
-            }, 500);
+            setTimeout(() => { window.print(); window.close(); }, 500);
           </script>
         </body>
       </html>
@@ -808,30 +846,85 @@ const OPDManagement = () => {
             </div>
           </div>
 
-          <!-- Symptoms -->
+          <!-- Vitals -->
           <div class="section">
-            <p class="label">Symptoms</p>
-            <div class="box">${consultationForm.symptoms || '-'}</div>
+            <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; background: #f9f9f9; padding: 10px; border: 1px solid #eee;">
+              <div><span class="label" style="font-size: 10px;">BP</span><br/>${consultationForm.vitalSigns.bp || '-'}</div>
+              <div><span class="label" style="font-size: 10px;">PULSE</span><br/>${consultationForm.vitalSigns.pulse || '-'}</div>
+              <div><span class="label" style="font-size: 10px;">TEMP</span><br/>${consultationForm.vitalSigns.temperature || '-'}°F</div>
+              <div><span class="label" style="font-size: 10px;">SPO2</span><br/>${consultationForm.vitalSigns.spo2 || '-'}%</div>
+              <div><span class="label" style="font-size: 10px;">WT/HT</span><br/>${consultationForm.vitalSigns.weight || '-'}kg / ${consultationForm.vitalSigns.height || '-'}cm</div>
+            </div>
+          </div>
+
+          <!-- History & Allergies -->
+          <div class="section" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div>
+              <p class="label">Clinical History</p>
+              <div class="box" style="min-height: 40px; font-size: 13px;">${consultationForm.history || '-'}</div>
+            </div>
+            <div>
+              <p class="label" style="color: #d32f2f;">Allergies</p>
+              <div class="box" style="min-height: 40px; font-size: 13px; border-color: #ffcdd2; background: #fff8f8;">${consultationForm.allergies || 'NIL'}</div>
+            </div>
+          </div>
+
+          <!-- Symptoms & Examination -->
+          <div class="section" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div>
+              <p class="label">Symptoms / Complaints</p>
+              <div class="box" style="min-height: 50px; font-size: 13px;">${consultationForm.symptoms || '-'}</div>
+            </div>
+            <div>
+              <p class="label">Physical Examination</p>
+              <div class="box" style="min-height: 50px; font-size: 13px;">${consultationForm.examination || '-'}</div>
+            </div>
           </div>
 
           <!-- Diagnosis -->
           <div class="section">
-            <p class="label">Diagnosis</p>
-            <div class="box">${consultationForm.diagnosis || '-'}</div>
+            <p class="label">Diagnosis / Impression</p>
+            <div class="box" style="font-weight: bold; color: #1a237e;">${consultationForm.diagnosis || '-'}</div>
           </div>
 
           <!-- Prescription -->
           <div class="section">
-            <p class="label">Prescription</p>
-            <div class="box">${consultationForm.prescription || '-'}</div>
+            <p class="label">Prescription (Rx)</p>
+            <div class="box" style="min-height: 120px; font-family: 'Courier New', monospace; white-space: pre-line;">${consultationForm.prescription || '-'}</div>
           </div>
 
           <!-- Tests -->
           <div class="section">
             <p class="label">Tests Recommended</p>
             <div class="box">
-              ${consultationForm.testsRecommended?.join(', ') || 'None'}
+              <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                <thead>
+                  <tr style="border-bottom: 1px solid #000; text-align: left;">
+                    <th style="padding: 4px;">id</th>
+                    <th style="padding: 4px;">Test Description</th>
+                    <th style="padding: 4px;">Samples</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${consultationForm.testsRecommended?.length > 0
+        ? consultationForm.testsRecommended.map(t => `
+                    <tr style="border-bottom: 1px dotted #ccc;">
+                      <td style="padding: 4px;">${t.id}</td>
+                      <td style="padding: 4px;">${t.description === 'Other' ? t.customDescription : (t.description || '-')}</td>
+                      <td style="padding: 4px;">${t.samples === 'Other' ? t.customSamples : (t.samples || '-')}</td>
+                    </tr>
+                  `).join('')
+        : '<tr><td colspan="3" style="padding: 4px; text-align: center;">None</td></tr>'
+      }
+                </tbody>
+              </table>
             </div>
+          </div>
+
+          <!-- Instructions -->
+          <div class="section">
+            <p class="label">Patient Instructions / Advice</p>
+            <div class="box" style="min-height: 50px; font-size: 13px; background: #fffde7; border-color: #fff59d;">${consultationForm.instructions || '-'}</div>
           </div>
 
           <!-- Footer -->
@@ -962,6 +1055,8 @@ const OPDManagement = () => {
       department: doctorForm.department,
       opdRoom: doctorForm.opdRoom || `Room ${Math.floor(Math.random() * 50) + 100}`,
       specialization: doctorForm.specialization || doctorForm.department,
+      qualification: doctorForm.qualification || 'Not specified',
+      email: doctorForm.email || 'Not specified',
       contact: doctorForm.contact || 'Not specified',
       isActive: doctorForm.isActive,
       currentPatient: null,
@@ -981,89 +1076,16 @@ const OPDManagement = () => {
       department: '',
       opdRoom: '',
       specialization: '',
+      qualification: '',
+      email: '',
       contact: '',
       isActive: true
     });
+    setDocNameSearchTerm('');
 
     alert(`Dr. ${doctorForm.name} added successfully!`);
   };
 
-  const handleAssignDoctor = (patient) => {
-    setSelectedPatient(patient);
-    setAssignForm({
-      patientId: patient.id,
-      doctorId: '',
-      priority: patient.priority || 'Normal'
-    });
-    setShowAssignModal(true);
-  };
-
-  const handleConfirmAssignment = () => {
-    if (!assignForm.doctorId) {
-      alert('Please select a doctor');
-      return;
-    }
-
-    const selectedDoctor = doctors.find(d => d.id === assignForm.doctorId);
-    if (!selectedDoctor) {
-      alert('Selected doctor not found');
-      return;
-    }
-
-    if (!selectedDoctor.isActive) {
-      alert('This doctor is currently inactive');
-      return;
-    }
-
-    const doctorWaitingPatients = opdPatients.filter(
-      p => p.assignedDoctorId === assignForm.doctorId && p.status === 'Waiting'
-    );
-    const queuePosition = doctorWaitingPatients.length;
-
-    let finalQueuePosition = queuePosition;
-    let updatedPatients = [...opdPatients];
-
-    if (assignForm.priority === 'Urgent') {
-      updatedPatients = opdPatients.map(p => {
-        if (p.assignedDoctorId === assignForm.doctorId && p.status === 'Waiting') {
-          return { ...p, queuePosition: p.queuePosition + 1 };
-        }
-        return p;
-      });
-      finalQueuePosition = 0;
-    }
-
-    updatedPatients = updatedPatients.map(patient => {
-      if (patient.id === assignForm.patientId) {
-        return {
-          ...patient,
-          assignedDoctorId: assignForm.doctorId,
-          doctor: selectedDoctor.name,
-          department: selectedDoctor.department,
-          priority: assignForm.priority,
-          status: 'Waiting',
-          queuePosition: finalQueuePosition,
-          waitingTime: `${(finalQueuePosition + 1) * 15} mins`
-        };
-      }
-      return patient;
-    });
-
-    const updatedDoctors = doctors.map(doctor => {
-      if (doctor.id === assignForm.doctorId) {
-        return {
-          ...doctor,
-          queue: doctor.queue + 1
-        };
-      }
-      return doctor;
-    });
-
-    setOpdPatients(updatedPatients);
-    setDoctors(updatedDoctors);
-    setShowAssignModal(false);
-    alert(`Patient assigned to ${selectedDoctor.name}`);
-  };
 
   const handleTransferPatient = (patient) => {
     const availableDoctors = doctors.filter(d =>
@@ -1172,23 +1194,6 @@ const OPDManagement = () => {
     }
   };
 
-  const getPriorityColor = (priority) => {
-    return priority === 'Urgent'
-      ? 'bg-red-50 text-red-700 border border-red-200'
-      : 'bg-gray-50 text-gray-700 border border-gray-200';
-  };
-
-  const calculateAverageWaitingTime = () => {
-    const waitingPatients = opdPatients.filter(p => p.status === 'Waiting');
-    if (waitingPatients.length === 0) return '0 mins';
-
-    const totalMinutes = waitingPatients.reduce((sum, patient) => {
-      const mins = parseInt(patient.waitingTime) || 0;
-      return sum + mins;
-    }, 0);
-
-    return `${Math.round(totalMinutes / waitingPatients.length)} mins`;
-  };
 
   const activeDoctors = doctors.filter(d => d.isActive);
   const inactiveDoctors = doctors.filter(d => !d.isActive);
@@ -1329,6 +1334,8 @@ const OPDManagement = () => {
                   type="text"
                   placeholder="Search patients..."
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  value={patientQueueSearch}
+                  onChange={(e) => setPatientQueueSearch(e.target.value)}
                 />
                 <SearchIcon className="absolute left-3 top-2.5 text-gray-400 text-sm" fontSize="small" />
               </div>
@@ -1362,154 +1369,184 @@ const OPDManagement = () => {
 
               {/* Table Body */}
               <tbody className="divide-y divide-gray-200">
-                {opdPatients.map(patient => (
-                  <tr key={patient.id} className="hover:bg-gray-50">
-
-                    {/* Patient */}
-                    <td className="px-4 py-4 align-middle">
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          {patient.patientName}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {patient.token} • {patient.age}y, {patient.gender}
-                        </p>
+                {opdPatients.filter(patient =>
+                  patient.patientName.toLowerCase().includes(patientQueueSearch.toLowerCase()) ||
+                  patient.token.toLowerCase().includes(patientQueueSearch.toLowerCase()) ||
+                  patient.patientId.toLowerCase().includes(patientQueueSearch.toLowerCase())
+                ).length === 0 ? (
+                  <tr>
+                    <td colSpan="5" className="px-4 py-10 text-center text-gray-500">
+                      <div className="flex flex-col items-center justify-center">
+                        <SearchIcon className="text-gray-300 mb-2" sx={{ fontSize: 40 }} />
+                        <p className="font-medium">No patients found</p>
+                        <p className="text-xs">Try adjusting your search term</p>
                       </div>
                     </td>
+                  </tr>
+                ) : (
+                  opdPatients.filter(patient =>
+                    patient.patientName.toLowerCase().includes(patientQueueSearch.toLowerCase()) ||
+                    patient.token.toLowerCase().includes(patientQueueSearch.toLowerCase()) ||
+                    patient.patientId.toLowerCase().includes(patientQueueSearch.toLowerCase())
+                  ).map(patient => (
+                    <tr key={patient.id} className="hover:bg-gray-50">
 
-                    {/* Doctor */}
-                    <td className="px-4 py-4 align-middle">
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          {patient.doctor}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {patient.department}
-                        </p>
-                      </div>
-                    </td>
+                      {/* Patient */}
+                      <td className="px-4 py-4 align-middle">
+                        <div>
+                          <p className="font-medium text-gray-900">
+                            {patient.patientName}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {patient.token} • {patient.age}y, {patient.gender}
+                          </p>
+                        </div>
+                      </td>
 
-                    {/* Queue */}
-                    <td className="px-4 py-4 align-middle">
-                      <div className="flex items-center min-h-[32px]">
-                        {patient.status === 'Waiting' && patient.assignedDoctorId && (
-                          <>
-                            <span className="w-7 h-7 mr-2 rounded-full bg-yellow-100 text-yellow-800 flex items-center justify-center text-xs font-semibold">
-                              {patient.queuePosition + 1}
+                      {/* Doctor */}
+                      <td className="px-4 py-4 align-middle">
+                        <div>
+                          <p className="font-medium text-gray-900">
+                            {patient.doctor}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {patient.department}
+                          </p>
+                        </div>
+                      </td>
+
+                      {/* Queue */}
+                      <td className="px-4 py-4 align-middle">
+                        <div className="flex items-center min-h-[32px]">
+                          {patient.status === 'Waiting' && patient.assignedDoctorId && (
+                            <>
+                              <span className="w-7 h-7 mr-2 rounded-full bg-yellow-100 text-yellow-800 flex items-center justify-center text-xs font-semibold">
+                                {patient.queuePosition + 1}
+                              </span>
+                              <span className="text-sm text-gray-700">
+                                {patient.waitingTime}
+                              </span>
+                            </>
+                          )}
+
+                          {patient.status === 'Waiting' && !patient.assignedDoctorId && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-orange-500">
+                                Not Assigned
+                              </span>
+                              <button
+                                onClick={() => handleAssignDoctor(patient)}
+                                title="Assign Doctor Now"
+                                className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                              >
+                                <PersonAddIcon style={{ fontSize: 16 }} />
+                              </button>
+                            </div>
+                          )}
+
+                          {patient.status === 'In Consultation' && (
+                            <span className="text-sm font-medium text-blue-600">
+                              Consulting Now
                             </span>
-                            <span className="text-sm text-gray-700">
-                              {patient.waitingTime}
+                          )}
+
+                          {patient.status === 'Completed' && (
+                            <span className="flex items-center gap-1.5">
+                              <CheckCircleIcon style={{ fontSize: 18 }} className="text-green-500" />
+                              <span className="text-sm font-medium text-green-600">Completed</span>
                             </span>
-                          </>
-                        )}
+                          )}
+                        </div>
+                      </td>
 
-                        {patient.status === 'Waiting' && !patient.assignedDoctorId && (
-                          <span className="text-sm font-medium text-orange-500">
-                            Not Assigned
-                          </span>
-                        )}
-
-                        {patient.status === 'In Consultation' && (
-                          <span className="text-sm font-medium text-blue-600">
-                            Consulting Now
-                          </span>
-                        )}
-
-                        {patient.status === 'Completed' && (
-                          <span className="flex items-center gap-1.5">
-                            <CheckCircleIcon style={{ fontSize: 18 }} className="text-green-500" />
-                            <span className="text-sm font-medium text-green-600">Completed</span>
-                          </span>
-                        )}
-                      </div>
-                    </td>
-
-                    {/* Status */}
-                    <td className="px-4 py-4 align-middle">
-                      <div className="flex flex-col gap-1">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium w-fit ${getStatusColor(
-                            patient.status
-                          )}`}
-                        >
-                          {patient.status}
-                        </span>
-
-                        {patient.priority === 'Urgent' && (
-                          <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-50 text-red-700 w-fit">
-                            Urgent
-                          </span>
-                        )}
-                      </div>
-                    </td>
-
-                    {/* Actions */}
-                    <td className="px-4 py-4 align-middle">
-                      <div className="flex items-center gap-2">
-
-                        <button
-                          onClick={() => {
-                            setSelectedPatientForView(patient);
-                            setShowViewPatientModal(true);
-                          }}
-                          title="View Patient Details"
-                          className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded"
-                        >
-                          <VisibilityIcon fontSize="small" />
-                        </button>
-
-                        {patient.status === 'Waiting' && !patient.assignedDoctorId && (
-                          <button
-                            onClick={() => handleAssignDoctor(patient)}
-                            title="Assign Doctor"
-                            className="w-8 h-8 flex items-center justify-center text-blue-600 hover:bg-blue-50 rounded"
+                      {/* Status */}
+                      <td className="px-4 py-4 align-middle">
+                        <div className="flex flex-col gap-1">
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium w-fit ${getStatusColor(
+                              patient.status
+                            )}`}
                           >
-                            <PersonAddIcon fontSize="small" />
-                          </button>
-                        )}
+                            {patient.status}
+                          </span>
 
-                        {patient.status === 'Waiting' && patient.assignedDoctorId && (
-                          <>
+                          {patient.priority === 'Urgent' && (
+                            <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-50 text-red-700 w-fit">
+                              Urgent
+                            </span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Actions */}
+                      <td className="px-4 py-4 align-middle">
+                        <div className="flex items-center gap-2">
+
+                          <button
+                            onClick={() => {
+                              setSelectedPatientForView(patient);
+                              setShowViewPatientModal(true);
+                            }}
+                            title="View Patient Details"
+                            className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded"
+                          >
+                            <VisibilityIcon fontSize="small" />
+                          </button>
+
+                          {patient.status === 'Waiting' && !patient.assignedDoctorId && (
+                            <button
+                              onClick={() => handleAssignDoctor(patient)}
+                              title="Assign Doctor"
+                              className="w-8 h-8 flex items-center justify-center text-blue-600 hover:bg-blue-50 rounded"
+                            >
+                              <PersonAddIcon fontSize="small" />
+                            </button>
+                          )}
+
+
+                          {patient.status === 'Waiting' && patient.assignedDoctorId && (
+                            <>
+                              <button
+                                onClick={() => handleStartConsultation(patient)}
+                                title="Start Consultation"
+                                className="w-8 h-8 flex items-center justify-center text-green-600 hover:bg-green-50 rounded"
+                              >
+                                <PlayArrowIcon fontSize="small" />
+                              </button>
+
+                              <button
+                                onClick={() => handleTransferPatient(patient)}
+                                title="Transfer"
+                                className="w-8 h-8 flex items-center justify-center text-yellow-600 hover:bg-yellow-50 rounded"
+                              >
+                                <SwapHorizIcon fontSize="small" />
+                              </button>
+                            </>
+                          )}
+
+                          {patient.status === 'In Consultation' && (
                             <button
                               onClick={() => handleStartConsultation(patient)}
-                              title="Start Consultation"
-                              className="w-8 h-8 flex items-center justify-center text-green-600 hover:bg-green-50 rounded"
+                              title="View Consultation"
+                              className="w-8 h-8 flex items-center justify-center text-blue-600 hover:bg-blue-50 rounded"
                             >
-                              <PlayArrowIcon fontSize="small" />
+                              <DescriptionIcon fontSize="small" />
                             </button>
+                          )}
 
-                            <button
-                              onClick={() => handleTransferPatient(patient)}
-                              title="Transfer"
-                              className="w-8 h-8 flex items-center justify-center text-yellow-600 hover:bg-yellow-50 rounded"
-                            >
-                              <SwapHorizIcon fontSize="small" />
-                            </button>
-                          </>
-                        )}
-
-                        {patient.status === 'In Consultation' && (
                           <button
-                            onClick={() => handleStartConsultation(patient)}
-                            title="View Consultation"
-                            className="w-8 h-8 flex items-center justify-center text-blue-600 hover:bg-blue-50 rounded"
+                            onClick={() => handleCancelPatient(patient)}
+                            title="Cancel"
+                            className="w-8 h-8 flex items-center justify-center text-red-600 hover:bg-red-50 rounded"
                           >
-                            <DescriptionIcon fontSize="small" />
+                            <CloseIcon fontSize="small" />
                           </button>
-                        )}
+                        </div>
+                      </td>
 
-                        <button
-                          onClick={() => handleCancelPatient(patient)}
-                          title="Cancel"
-                          className="w-8 h-8 flex items-center justify-center text-red-600 hover:bg-red-50 rounded"
-                        >
-                          <CloseIcon fontSize="small" />
-                        </button>
-                      </div>
-                    </td>
-
-                  </tr>
-                ))}
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -1570,10 +1607,8 @@ const OPDManagement = () => {
                     <button
                       className="flex-1 px-3 py-1.5 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium shadow-sm"
                       onClick={() => {
-                        const doctorPatients = opdPatients.filter(p => p.assignedDoctorId === doctor.id);
-                        if (doctorPatients.length > 0) {
-                          setShowQueueModal(true);
-                        }
+                        setSelectedDoctorForQueue(doctor);
+                        setShowQueueModal(true);
                       }}
                     >
                       View Queue
@@ -1658,15 +1693,62 @@ const OPDManagement = () => {
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-5">
             <h4 className="font-semibold text-gray-800 mb-4">Add New Doctor</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+              <div className="relative" ref={docNameDropdownRef}>
                 <label className="form-label">Doctor Name *</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="Enter doctor name"
-                  value={doctorForm.name}
-                  onChange={(e) => setDoctorForm({ ...doctorForm, name: e.target.value })}
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    className="form-input pr-10"
+                    placeholder="Search or enter doctor name"
+                    value={docNameSearchTerm}
+                    onChange={(e) => {
+                      setDocNameSearchTerm(e.target.value);
+                      setIsDocNameDropdownOpen(true);
+                      setDoctorForm({ ...doctorForm, name: e.target.value });
+                    }}
+                    onFocus={() => setIsDocNameDropdownOpen(true)}
+                  />
+                  <KeyboardArrowDownIcon
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer hover:text-gray-600 transition-colors"
+                    onClick={() => setIsDocNameDropdownOpen(!isDocNameDropdownOpen)}
+                  />
+                </div>
+                {isDocNameDropdownOpen && (
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                    {AVAILABLE_DOCTORS.filter(d =>
+                      d.name.toLowerCase().includes(docNameSearchTerm.toLowerCase()) ||
+                      d.department.toLowerCase().includes(docNameSearchTerm.toLowerCase())
+                    ).length > 0 ? (
+                      AVAILABLE_DOCTORS.filter(d =>
+                        d.name.toLowerCase().includes(docNameSearchTerm.toLowerCase()) ||
+                        d.department.toLowerCase().includes(docNameSearchTerm.toLowerCase())
+                      ).map(doc => (
+                        <div
+                          key={doc.name}
+                          className="p-3 hover:bg-blue-50 cursor-pointer border-b last:border-0 border-gray-100 transition-colors"
+                          onClick={() => handleSelectDocName(doc)}
+                        >
+                          <div className="font-bold text-gray-800 text-sm">{doc.name}</div>
+                          <div className="text-xs text-blue-600 font-medium">{doc.department} • {doc.specialization}</div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-4 text-center">
+                        <p className="text-sm text-gray-500 mb-2">No matching doctor found</p>
+                        <button
+                          type="button"
+                          className="text-xs text-blue-600 font-bold hover:underline"
+                          onClick={() => {
+                            setDoctorForm({ ...doctorForm, name: docNameSearchTerm });
+                            setIsDocNameDropdownOpen(false);
+                          }}
+                        >
+                          + Use custom name: "{docNameSearchTerm}"
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               <div>
                 <label className="form-label">Department *</label>
@@ -1695,6 +1777,16 @@ const OPDManagement = () => {
                 />
               </div>
               <div>
+                <label className="form-label">Qualification</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="e.g., MBBS, MD"
+                  value={doctorForm.qualification}
+                  onChange={(e) => setDoctorForm({ ...doctorForm, qualification: e.target.value })}
+                />
+              </div>
+              <div>
                 <label className="form-label">OPD Room</label>
                 <input
                   type="text"
@@ -1702,6 +1794,17 @@ const OPDManagement = () => {
                   placeholder="e.g., Room 101"
                   value={doctorForm.opdRoom}
                   onChange={(e) => setDoctorForm({ ...doctorForm, opdRoom: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label className="form-label">Email ID</label>
+                <input
+                  type="email"
+                  className="form-input"
+                  placeholder="doctor@hospital.com"
+                  value={doctorForm.email}
+                  onChange={(e) => setDoctorForm({ ...doctorForm, email: e.target.value })}
                 />
               </div>
               <div>
@@ -1758,7 +1861,8 @@ const OPDManagement = () => {
                       <td className="px-4 py-3">
                         <div>
                           <p className="font-medium text-gray-900">{doctor.name}</p>
-                          <p className="text-sm text-gray-600">{doctor.specialization}</p>
+                          <p className="text-xs text-blue-600 font-medium">{doctor.qualification}</p>
+                          <p className="text-[10px] text-gray-500">{doctor.email}</p>
                         </div>
                       </td>
                       <td className="px-4 py-3">
@@ -1791,101 +1895,6 @@ const OPDManagement = () => {
             </div>
           </div>
         </div>
-      </Modal>
-
-      {/* Assign Doctor Modal */}
-      <Modal
-        isOpen={showAssignModal}
-        onClose={() => setShowAssignModal(false)}
-        title={`Assign Doctor to ${selectedPatient?.patientName || 'Patient'}`}
-        size="md"
-      >
-        {selectedPatient && (
-          <div className="space-y-6">
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-600">Patient</p>
-                  <p className="font-medium text-gray-900">{selectedPatient.patientName}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Token No</p>
-                  <p className="font-medium text-gray-900">{selectedPatient.token}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Priority</p>
-                  <p className={`font-medium ${selectedPatient.priority === 'Urgent' ? 'text-red-600' : 'text-gray-900'}`}>
-                    {selectedPatient.priority}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Arrival Time</p>
-                  <p className="font-medium text-gray-900">{selectedPatient.arrivalTime}</p>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <label className="form-label">Select Doctor *</label>
-              <select
-                className="form-input"
-                value={assignForm.doctorId}
-                onChange={(e) => setAssignForm({ ...assignForm, doctorId: e.target.value })}
-              >
-                <option value="">Select a doctor</option>
-                {activeDoctors.map(doctor => (
-                  <option key={doctor.id} value={doctor.id}>
-                    {doctor.name} - {doctor.department} (Queue: {doctor.queue}, Room: {doctor.opdRoom})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="form-label">Priority</label>
-              <div className="space-y-2">
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="priority"
-                    value="Normal"
-                    checked={assignForm.priority === 'Normal'}
-                    onChange={(e) => setAssignForm({ ...assignForm, priority: e.target.value })}
-                    className="mr-2"
-                  />
-                  <span>Normal (Will be placed at end of queue)</span>
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="priority"
-                    value="Urgent"
-                    checked={assignForm.priority === 'Urgent'}
-                    onChange={(e) => setAssignForm({ ...assignForm, priority: e.target.value })}
-                    className="mr-2"
-                  />
-                  <span className="text-red-600">Urgent (Will be placed at front of queue)</span>
-                </label>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4">
-              <button
-                onClick={() => setShowAssignModal(false)}
-                className="px-4 py-2 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 transition-colors shadow-sm text-sm font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleConfirmAssignment}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-md flex items-center text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={!assignForm.doctorId}
-              >
-                <PersonAddIcon className="mr-2" fontSize="small" /> Assign Doctor
-              </button>
-            </div>
-          </div>
-        )}
       </Modal>
 
       {/* Consultation Modal */}
@@ -2025,148 +2034,397 @@ const OPDManagement = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="form-label">Symptoms *</label>
-                <textarea
-                  className="form-input"
-                  rows="4"
-                  placeholder="Describe symptoms..."
-                  value={consultationForm.symptoms}
-                  onChange={(e) => setConsultationForm({
-                    ...consultationForm, symptoms: e.target.value
-                  })}
-                  required
-                />
+            {/* Clinical Assessment Section */}
+            <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+              <div className="flex items-center gap-2 mb-4 text-blue-800 border-b pb-2">
+                <MedicalServicesIcon fontSize="small" />
+                <h4 className="font-bold uppercase tracking-wider text-sm">Clinical Assessment</h4>
               </div>
-              <div>
-                <label className="form-label">Diagnosis *</label>
-                <textarea
-                  className="form-input"
-                  rows="4"
-                  placeholder="Enter diagnosis..."
-                  value={consultationForm.diagnosis}
-                  onChange={(e) => setConsultationForm({
-                    ...consultationForm, diagnosis: e.target.value
-                  })}
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="form-label">Prescription *</label>
-              <textarea
-                className="form-input"
-                rows="4"
-                placeholder="Medications, dosage, frequency..."
-                value={consultationForm.prescription}
-                onChange={(e) => setConsultationForm({
-                  ...consultationForm, prescription: e.target.value
-                })}
-                required
-              />
-            </div>
-
-            <div>
-              <label className="form-label">Tests Recommended</label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {['Blood Test', 'X-Ray', 'ECG', 'MRI', 'Ultrasound', 'CT Scan', 'Urine Test', 'Other'].map(test => (
-                  <label key={test} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      className="rounded border-gray-300 text-blue-600 mr-2"
-                      checked={consultationForm.testsRecommended.includes(test)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setConsultationForm({
-                            ...consultationForm,
-                            testsRecommended: [...consultationForm.testsRecommended, test]
-                          });
-                        } else {
-                          setConsultationForm({
-                            ...consultationForm,
-                            testsRecommended: consultationForm.testsRecommended.filter(t => t !== test)
-                          });
-                        }
-                      }}
-                    />
-                    <span>{test}</span>
-                  </label>
-                ))}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="form-label">Medical History</label>
+                  <textarea
+                    className="form-input bg-gray-50/50"
+                    rows="3"
+                    placeholder="Past medical conditions, surgeries, chronic illnesses..."
+                    value={consultationForm.history}
+                    onChange={(e) => setConsultationForm({ ...consultationForm, history: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="form-label text-red-700 font-semibold">Known Allergies</label>
+                  <textarea
+                    className="form-input bg-gray-50/50"
+                    rows="3"
+                    placeholder="Drug allergies, food allergies, environmental..."
+                    value={consultationForm.allergies}
+                    onChange={(e) => setConsultationForm({ ...consultationForm, allergies: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="form-label">Chief Complaints / Symptoms *</label>
+                  <textarea
+                    className="form-input"
+                    rows="3"
+                    placeholder="Presenting symptoms and duration..."
+                    value={consultationForm.symptoms}
+                    onChange={(e) => setConsultationForm({ ...consultationForm, symptoms: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="form-label">Physical Examination</label>
+                  <textarea
+                    className="form-input bg-gray-50/50"
+                    rows="3"
+                    placeholder="General appearance, systemic examination findings..."
+                    value={consultationForm.examination}
+                    onChange={(e) => setConsultationForm({ ...consultationForm, examination: e.target.value })}
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="form-label">Next Visit Date</label>
-                <input
-                  type="date"
-                  className="form-input"
-                  value={consultationForm.nextVisitDate}
-                  onChange={(e) => setConsultationForm({
-                    ...consultationForm, nextVisitDate: e.target.value
-                  })}
-                />
+            {/* Diagnosis & Treatment Section */}
+            <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+              <div className="flex items-center gap-2 mb-4 text-green-800 border-b pb-2">
+                <TaskAltIcon fontSize="small" />
+                <h4 className="font-bold uppercase tracking-wider text-sm">Diagnosis & Treatment Plan</h4>
               </div>
-              <div>
-                <label className="form-label">Remarks</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="Any additional remarks..."
-                  value={consultationForm.remarks}
-                  onChange={(e) => setConsultationForm({
-                    ...consultationForm, remarks: e.target.value
-                  })}
-                />
+              <div className="space-y-6">
+                <div>
+                  <label className="form-label">Final Diagnosis / Impression *</label>
+                  <input
+                    type="text"
+                    className="form-input font-semibold text-blue-900"
+                    placeholder="Primary diagnosis..."
+                    value={consultationForm.diagnosis}
+                    onChange={(e) => setConsultationForm({ ...consultationForm, diagnosis: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="form-label">Prescription (Medications) *</label>
+                  <textarea
+                    className="form-input font-mono text-sm leading-relaxed"
+                    rows="5"
+                    placeholder="Rx:
+1. Drug Name - Dosage - Frequency - Duration
+2. ..."
+                    value={consultationForm.prescription}
+                    onChange={(e) => setConsultationForm({ ...consultationForm, prescription: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-3">
+                    <label className="form-label mb-0">Laboratory & Imaging Tests</label>
+                    <button
+                      type="button"
+                      onClick={addTestRow}
+                      className="flex items-center text-blue-600 hover:text-blue-700 text-sm font-bold bg-blue-50 px-3 py-1.5 rounded-lg transition-colors border border-blue-100"
+                    >
+                      <AddIcon className="mr-1" fontSize="small" /> Add Investigation
+                    </button>
+                  </div>
+                  <div className="border border-gray-200 rounded-xl overflow-hidden shadow-sm bg-white">
+                    <table className="w-full text-sm text-left border-collapse">
+                      <thead>
+                        <tr className="bg-gray-50 border-b">
+                          <th className="px-4 py-3 font-bold text-gray-700 w-16 text-center">#</th>
+                          <th className="px-4 py-3 font-bold text-gray-700">Test Description</th>
+                          <th className="px-4 py-3 font-bold text-gray-700">Required Samples</th>
+                          <th className="px-4 py-3 font-bold text-gray-700 w-20 text-center">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {consultationForm.testsRecommended.map((test, index) => (
+                          <tr key={index} className="hover:bg-blue-50/30 transition-colors">
+                            <td className="px-4 py-3 text-center">
+                              <span className="text-gray-400 font-mono">{test.id}</span>
+                            </td>
+                            <td className="px-4 py-3">
+                              {test.description === 'Other' ? (
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="text"
+                                    autoFocus
+                                    className="w-full p-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-blue-50/30 text-sm"
+                                    placeholder="Enter test name..."
+                                    value={test.customDescription}
+                                    onChange={(e) => updateTestRow(index, 'customDescription', e.target.value)}
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => updateTestRow(index, 'description', '')}
+                                    className="text-gray-400 hover:text-gray-600 p-1"
+                                    title="Change selection"
+                                  >
+                                    <CloseIcon sx={{ fontSize: 16 }} />
+                                  </button>
+                                </div>
+                              ) : (
+                                <select
+                                  className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white transition-all text-sm"
+                                  value={test.description}
+                                  onChange={(e) => updateTestRow(index, 'description', e.target.value)}
+                                >
+                                  <option value="">-- Select Test --</option>
+                                  {TEST_OPTIONS.map(opt => (
+                                    <option key={opt} value={opt}>{opt}</option>
+                                  ))}
+                                </select>
+                              )}
+                            </td>
+                            <td className="px-4 py-3">
+                              {test.samples === 'Other' ? (
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="text"
+                                    autoFocus
+                                    className="w-full p-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-blue-50/30 text-sm"
+                                    placeholder="Enter sample type..."
+                                    value={test.customSamples}
+                                    onChange={(e) => updateTestRow(index, 'customSamples', e.target.value)}
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => updateTestRow(index, 'samples', '')}
+                                    className="text-gray-400 hover:text-gray-600 p-1"
+                                    title="Change selection"
+                                  >
+                                    <CloseIcon sx={{ fontSize: 16 }} />
+                                  </button>
+                                </div>
+                              ) : (
+                                <select
+                                  className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white transition-all text-sm"
+                                  value={test.samples}
+                                  onChange={(e) => updateTestRow(index, 'samples', e.target.value)}
+                                >
+                                  <option value="">-- Select Sample --</option>
+                                  {SAMPLE_OPTIONS.map(opt => (
+                                    <option key={opt} value={opt}>{opt}</option>
+                                  ))}
+                                </select>
+                              )}
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              {index > 0 && (
+                                <button
+                                  type="button"
+                                  onClick={() => removeTestRow(index)}
+                                  className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100"
+                                >
+                                  <DeleteIcon fontSize="small" />
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            {/* Follow-up Section */}
+            <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+              <div className="flex items-center gap-2 mb-4 text-orange-800 border-b pb-2">
+                <PendingActionsIcon fontSize="small" />
+                <h4 className="font-bold uppercase tracking-wider text-sm">Advice & Follow-up</h4>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="md:col-span-2">
+                  <label className="form-label">Instructions for Patient</label>
+                  <textarea
+                    className="form-input bg-orange-50/10 border-orange-100 focus:border-orange-200 focus:ring-orange-100"
+                    rows="3"
+                    placeholder="Dietary advice, lifestyle changes, how to use medications..."
+                    value={consultationForm.instructions}
+                    onChange={(e) => setConsultationForm({ ...consultationForm, instructions: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="form-label">Next Visit Date</label>
+                  <input
+                    type="date"
+                    className="form-input"
+                    value={consultationForm.nextVisitDate}
+                    onChange={(e) => setConsultationForm({ ...consultationForm, nextVisitDate: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="form-label">Internal Remarks</label>
+                  <input
+                    type="text"
+                    className="form-input bg-gray-50/50"
+                    placeholder="Confidential notes for clinic staff..."
+                    value={consultationForm.remarks}
+                    onChange={(e) => setConsultationForm({ ...consultationForm, remarks: e.target.value })}
+                  />
+                </div>
               </div>
             </div>
           </div>
         )}
       </Modal>
 
-      {/* Token Generation Modal */}
       <Modal
         isOpen={showTokenModal}
         onClose={() => setShowTokenModal(false)}
         title={tokenStep === 'form' ? "Generate Patient Token" : "Token Generated Successfully"}
         size="md"
+        footer={
+          tokenStep === 'form' ? (
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowTokenModal(false)}
+                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                form="opd-token-form"
+                className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md transition-all flex items-center text-sm font-medium"
+              >
+                <ConfirmationNumberIcon className="mr-2" fontSize="small" /> Generate Token
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col sm:flex-row justify-center gap-4 w-full max-w-sm mx-auto">
+              <button
+                onClick={handlePrintSlip}
+                className="flex-1 py-3 bg-gray-900 text-white font-medium rounded-xl hover:bg-gray-800 transition-all shadow-md flex items-center justify-center text-sm"
+              >
+                <PrintIcon className="mr-2" fontSize="small" /> Print Record
+              </button>
+              <button
+                onClick={() => setShowTokenModal(false)}
+                className="flex-1 py-3 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-all shadow-md flex items-center justify-center text-sm"
+              >
+                Complete
+              </button>
+            </div>
+          )
+        }
       >
         {tokenStep === 'form' ? (
-          <form onSubmit={handleTokenSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="md:col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+          <form id="opd-token-form" onSubmit={handleTokenSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="md:col-span-1 relative" ref={patientDropdownRef}>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                   Patient Name <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    required
+                    className="w-full p-2.5 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder:text-gray-400"
+                    placeholder="Search or enter full name"
+                    value={patientSearchTerm}
+                    onChange={(e) => {
+                      setPatientSearchTerm(e.target.value);
+                      setIsPatientDropdownOpen(true);
+                      setTokenForm({ ...tokenForm, patientName: e.target.value });
+                    }}
+                    onFocus={() => setIsPatientDropdownOpen(true)}
+                  />
+                  <KeyboardArrowDownIcon
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer hover:text-gray-600 transition-colors"
+                    onClick={() => setIsPatientDropdownOpen(!isPatientDropdownOpen)}
+                  />
+                </div>
+                {isPatientDropdownOpen && (
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-48 overflow-y-auto">
+                    {REGISTERED_PATIENTS.filter(p =>
+                      p.name.toLowerCase().includes(patientSearchTerm.toLowerCase()) ||
+                      p.phoneNo.includes(patientSearchTerm) ||
+                      p.id.toLowerCase().includes(patientSearchTerm.toLowerCase())
+                    ).length > 0 ? (
+                      REGISTERED_PATIENTS.filter(p =>
+                        p.name.toLowerCase().includes(patientSearchTerm.toLowerCase()) ||
+                        p.phoneNo.includes(patientSearchTerm) ||
+                        p.id.toLowerCase().includes(patientSearchTerm.toLowerCase())
+                      ).map(patient => (
+                        <div
+                          key={patient.id}
+                          className="p-3 hover:bg-blue-50 cursor-pointer border-b last:border-0 border-gray-100 transition-colors"
+                          onClick={() => handleSelectPatient(patient)}
+                        >
+                          <div className="font-bold text-gray-800 text-sm">{patient.name}</div>
+                          <div className="text-[10px] text-gray-500">{patient.id} • {patient.phoneNo}</div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-3 text-center text-gray-500 text-sm">
+                        No matching patient found
+                        <div className="mt-1">
+                          <button
+                            type="button"
+                            className="text-xs text-blue-600 font-bold hover:underline"
+                            onClick={() => {
+                              setTokenForm({ ...tokenForm, patientName: patientSearchTerm });
+                              setIsPatientDropdownOpen(false);
+                            }}
+                          >
+                            + Use "{patientSearchTerm}" as new
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="md:col-span-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  Patient ID
                 </label>
                 <input
                   type="text"
-                  required
-                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                  placeholder="Enter full name"
-                  value={tokenForm.patientName}
-                  onChange={(e) => setTokenForm({ ...tokenForm, patientName: e.target.value })}
+                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder:text-gray-400"
+                  placeholder="Optional for new"
+                  value={tokenForm.patientId}
+                  onChange={(e) => setTokenForm({ ...tokenForm, patientId: e.target.value })}
                 />
               </div>
 
               <div className="md:col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                   Phone Number <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="tel"
                   required
-                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                  placeholder="Enter phone number"
+                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder:text-gray-400"
+                  placeholder="10-digit number"
                   value={tokenForm.phoneNo}
                   onChange={(e) => setTokenForm({ ...tokenForm, phoneNo: e.target.value })}
                 />
               </div>
 
+              <div className="md:col-span-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder:text-gray-400"
+                  placeholder="patient@email.com"
+                  value={tokenForm.email}
+                  onChange={(e) => setTokenForm({ ...tokenForm, email: e.target.value })}
+                />
+              </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Age <span className="text-red-500">*</span>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  Age  <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
@@ -2179,11 +2437,11 @@ const OPDManagement = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                   Gender <span className="text-red-500">*</span>
                 </label>
                 <select
-                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
                   value={tokenForm.gender}
                   onChange={(e) => setTokenForm({ ...tokenForm, gender: e.target.value })}
                 >
@@ -2194,7 +2452,7 @@ const OPDManagement = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                   Blood Group
                 </label>
                 <input
@@ -2207,23 +2465,32 @@ const OPDManagement = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Consultation Type</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Consultation Type</label>
                 <select
-                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all bg-white"
                   value={tokenForm.type}
                   onChange={(e) => setTokenForm({ ...tokenForm, type: e.target.value })}
                 >
                   <option value="Regular">Regular</option>
-                  <option value="New">New Patient</option>
+                  <option value="New Patient">New Patient</option>
                   <option value="Follow-up">Follow-up</option>
                   <option value="Emergency">Emergency</option>
                 </select>
               </div>
 
+              <div className="md:col-span-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Residential Address</label>
+                <input
+                  type="text"
+                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                  placeholder="Street, Locality, City, State"
+                  value={tokenForm.address}
+                  onChange={(e) => setTokenForm({ ...tokenForm, address: e.target.value })}
+                />
+              </div>
 
-              {/* Searchable Department */}
               <div className="relative" ref={deptDropdownRef}>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                   Department <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
@@ -2239,7 +2506,10 @@ const OPDManagement = () => {
                     }}
                     onFocus={() => setIsDeptDropdownOpen(true)}
                   />
-                  <KeyboardArrowDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <KeyboardArrowDownIcon
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer hover:text-gray-600 transition-colors"
+                    onClick={() => setIsDeptDropdownOpen(!isDeptDropdownOpen)}
+                  />
                 </div>
                 {isDeptDropdownOpen && (
                   <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-48 overflow-y-auto">
@@ -2260,10 +2530,8 @@ const OPDManagement = () => {
                 )}
               </div>
 
-
-              {/* Searchable Doctor */}
               <div className="relative" ref={docDropdownRef}>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                   Doctor <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
@@ -2279,7 +2547,10 @@ const OPDManagement = () => {
                     }}
                     onFocus={() => tokenForm.department && setIsDocDropdownOpen(true)}
                   />
-                  <KeyboardArrowDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <KeyboardArrowDownIcon
+                    className={`absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 ${tokenForm.department ? 'cursor-pointer hover:text-gray-600' : 'cursor-not-allowed'} transition-colors`}
+                    onClick={() => tokenForm.department && setIsDocDropdownOpen(!isDocDropdownOpen)}
+                  />
                 </div>
                 {isDocDropdownOpen && tokenForm.department && (
                   <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-48 overflow-y-auto">
@@ -2290,8 +2561,8 @@ const OPDManagement = () => {
                           className="p-3 hover:bg-blue-50 cursor-pointer border-b last:border-0 border-gray-100 transition-colors text-sm"
                           onClick={() => handleSelectDoc(doc)}
                         >
-                          <div className="font-medium text-gray-800">{doc.name}</div>
-                          <div className="text-xs text-gray-500">Queue: {doc.queue} patients</div>
+                          <div className="font-medium text-gray-800 text-sm">{doc.name}</div>
+                          <div className="text-[10px] text-gray-500">Queue: {doc.queue} patients</div>
                         </div>
                       ))
                     ) : (
@@ -2301,202 +2572,243 @@ const OPDManagement = () => {
                 )}
               </div>
 
+              <div className="md:col-span-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Priority Level</label>
+                <select
+                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all bg-white"
+                  value={tokenForm.priority}
+                  onChange={(e) => setTokenForm({ ...tokenForm, priority: e.target.value })}
+                >
+                  <option value="Normal">Normal</option>
+                  <option value="Urgent">Urgent</option>
+                </select>
+              </div>
 
-
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
-              <select
-                className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                value={tokenForm.priority}
-                onChange={(e) => setTokenForm({ ...tokenForm, priority: e.target.value })}
-              >
-                <option value="Normal">Normal</option>
-                <option value="Urgent">Urgent</option>
-              </select>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-6 border-t">
-              <button
-                type="button"
-                onClick={() => setShowTokenModal(false)}
-                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md transition-all flex items-center"
-              >
-                <ConfirmationNumberIcon className="mr-2" /> Generate Token
-              </button>
             </div>
           </form>
         ) : (
-          <div className="py-6 flex flex-col items-center">
+          <div className="py-2 flex flex-col items-center">
             {/* Token Slip UI Card */}
-            <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 flex flex-col">
+            <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 flex flex-col mx-auto transform transition-all duration-500 animate-in fade-in zoom-in slide-in-from-bottom-4">
 
               {/* Header */}
-              <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white text-center relative">
-                <div className="absolute top-0 right-0 p-4 opacity-20 transform translate-x-4 -translate-y-4">
-                  <ConfirmationNumberIcon sx={{ fontSize: 100 }} />
+              <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 p-8 text-white text-center relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-6 -translate-y-6 rotate-12">
+                  <ConfirmationNumberIcon sx={{ fontSize: 140 }} />
                 </div>
                 <div className="relative z-10">
-                  <h4 className="text-sm font-bold tracking-widest text-blue-100 uppercase mb-1">Hospital OPD</h4>
-                  <p className="text-4xl font-black mb-1">{generatedToken?.token}</p>
-                  <p className="text-sm font-medium text-blue-100 mt-2">
-                    {new Date().toLocaleDateString()} • {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </p>
+                  <h4 className="text-[10px] font-black tracking-[0.3em] text-blue-200 uppercase mb-3 drop-shadow-sm">OPD TOKEN SLIP</h4>
+                  <p className="text-6xl font-black mb-3 tracking-tighter drop-shadow-md">{generatedToken?.token}</p>
+                  <div className="inline-block px-3 py-1 bg-white/10 backdrop-blur-md rounded-full">
+                    <p className="text-[11px] font-bold text-blue-50 uppercase tracking-widest">
+                      {new Date().toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })} • {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
                 </div>
               </div>
 
               {/* Body */}
-              <div className="p-6 bg-white relative">
-                <div className="flex justify-between items-center mb-6">
-                  <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Patient</p>
-                    <p className="font-bold text-gray-900 text-lg">{generatedToken?.patientName}</p>
+              <div className="p-8 bg-white relative">
+                <div className="flex justify-between items-start mb-8">
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-gray-400 uppercase tracking-[0.1em] font-black">Patient ID</p>
+                    <p className="font-mono text-xs text-blue-900 font-black bg-blue-50 px-2 py-0.5 rounded inline-block">{generatedToken?.patientId}</p>
+                    <div className="pt-2">
+                      <p className="text-[10px] text-gray-400 uppercase tracking-[0.1em] font-black mb-1">Full Name</p>
+                      <p className="font-black text-gray-900 text-xl leading-tight tracking-tight">{generatedToken?.patientName}</p>
+                    </div>
                   </div>
                   <div className="text-right">
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${generatedToken?.priority === 'Urgent' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                      {generatedToken?.priority === 'Urgent' ? 'URGENT' : ' NORMAL'}
+                    <span className={`inline-flex items-center px-4 py-1.5 rounded-full text-[9px] font-black tracking-[0.1em] ${generatedToken?.priority === 'Urgent' ? 'bg-red-500 text-white shadow-sm ring-4 ring-red-50' : 'bg-green-500 text-white shadow-sm ring-4 ring-green-50'}`}>
+                      {generatedToken?.priority === 'Urgent' ? 'URGENT' : 'NORMAL'}
                     </span>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-y-5 gap-x-4 mb-6">
+                <div className="grid grid-cols-2 gap-y-6 gap-x-6 mb-8">
                   <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Age / Gender</p>
-                    <p className="font-semibold text-gray-800">{generatedToken?.age}Y / {generatedToken?.gender}</p>
+                    <p className="text-[9px] text-gray-400 uppercase tracking-[0.2em] font-black mb-1.5">Age / Gender</p>
+                    <p className="text-sm font-black text-gray-800">{generatedToken?.age}Y / {generatedToken?.gender}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Phone</p>
-                    <p className="font-semibold text-gray-800">{generatedToken?.phoneNo}</p>
+                    <p className="text-[9px] text-gray-400 uppercase tracking-[0.2em] font-black mb-1.5">Blood Group</p>
+                    <p className="text-sm font-black text-gray-800">{generatedToken?.bloodGroup}</p>
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Department</p>
-                    <p className="font-semibold text-gray-800">{generatedToken?.department}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Consulting</p>
-                    <p className="font-bold text-blue-600">{generatedToken?.doctor}</p>
+                  <div className="col-span-2 p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-between group transition-all hover:bg-blue-50 hover:border-blue-100">
+                    <div>
+                      <p className="text-[9px] text-gray-400 uppercase tracking-[0.2em] font-black mb-1.5">Consulting Doctor</p>
+                      <p className="text-base font-black text-blue-800 tracking-tight">{generatedToken?.doctor}</p>
+                      <p className="text-[10px] font-bold text-blue-600 mt-0.5 uppercase tracking-widest">{generatedToken?.department}</p>
+                    </div>
+                    <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-blue-600 shadow-sm border border-gray-100 group-hover:scale-110 transition-transform">
+                      <PersonIcon fontSize="small" />
+                    </div>
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-dashed border-gray-300 text-center">
-                  <div className="inline-flex items-center justify-center space-x-2 text-green-600 mb-1">
-                    <CheckCircleIcon fontSize="small" />
-                    <span className="font-semibold text-sm">Token Generated Successfully</span>
+                <div className="pt-6 border-t-2 border-dashed border-gray-200 text-center relative">
+                  <div className="absolute -left-10 -top-3 w-6 h-6 bg-gray-100 rounded-full"></div>
+                  <div className="absolute -right-10 -top-3 w-6 h-6 bg-gray-100 rounded-full"></div>
+
+                  <div className="inline-flex items-center justify-center space-x-2 text-green-600 mb-2">
+                    <CheckCircleIcon sx={{ fontSize: 18 }} />
+                    <span className="font-black text-[11px] uppercase tracking-[0.3em]">REGISTRATION CONFIRMED</span>
                   </div>
-                  <p className="text-xs text-gray-500">Please proceed to the waiting area</p>
+                  <div className="flex items-center justify-center space-x-3 text-gray-500 font-bold text-[10px]">
+                    <span className="flex items-center gap-1"><AccessTimeIcon sx={{ fontSize: 14 }} /> Est. Wait: {generatedToken?.waitingTime}</span>
+                    <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                    <span>No: {generatedToken?.queuePosition + 1} in queue</span>
+                  </div>
                 </div>
               </div>
 
-            </div>
-
-            <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8 w-full max-w-sm">
-              <button
-                onClick={handlePrintSlip}
-                className="flex-1 py-3 bg-gray-900 text-white font-medium rounded-xl hover:bg-gray-800 transition-all shadow-md flex items-center justify-center"
-              >
-                <PrintIcon className="mr-2" fontSize="small" /> Print Record
-              </button>
-              <button
-                onClick={() => setShowTokenModal(false)}
-                className="flex-1 py-3 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-all shadow-md flex items-center justify-center"
-              >
-                Complete
-              </button>
             </div>
           </div>
         )}
       </Modal>
 
-      {/* View Patient Details Modal */}
       <Modal
         isOpen={showViewPatientModal}
         onClose={() => setShowViewPatientModal(false)}
         title="Patient Details"
         size="md"
+        footer={
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => {
+                setGeneratedToken(selectedPatientForView);
+                setTimeout(() => handlePrintSlip(), 100);
+              }}
+              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors flex items-center gap-2"
+            >
+              <PrintIcon fontSize="small" /> Print Token
+            </button>
+            <button
+              onClick={() => setShowViewPatientModal(false)}
+              className="px-6 py-2 bg-blue-600 border border-blue-500 text-white rounded-lg hover:bg-blue-800 font-medium transition-colors"
+            >
+              Close Record
+            </button>
+          </div>
+        }
       >
         {selectedPatientForView && (
-          <div className="p-4 space-y-4">
-            <div className="flex items-center justify-between border-b pb-4">
-              <div>
-                <h3 className="text-xl font-bold text-gray-800">{selectedPatientForView.patientName}</h3>
-                <p className="text-sm text-gray-500">{selectedPatientForView.token}</p>
-              </div>
-              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(selectedPatientForView.status)}`}>
-                {selectedPatientForView.status}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="text-gray-500 mb-1">Age / Gender</p>
-                <p className="font-semibold text-gray-800">{selectedPatientForView.age} Years / {selectedPatientForView.gender}</p>
-              </div>
-              <div>
-                <p className="text-gray-500 mb-1">Phone Number</p>
-                <p className="font-semibold text-gray-800">{selectedPatientForView.phoneNo || 'Not Specified'}</p>
-              </div>
-              <div>
-                <p className="text-gray-500 mb-1">Blood Group</p>
-                <p className="font-semibold text-gray-800">{selectedPatientForView.bloodGroup || 'Not Specified'}</p>
-              </div>
-              <div>
-                <p className="text-gray-500 mb-1">Arrival Time</p>
-                <p className="font-semibold text-gray-800">{selectedPatientForView.arrivalTime}</p>
-              </div>
-            </div>
-
-            <div className="bg-blue-50 p-4 rounded-lg mt-4">
-              <h4 className="text-sm font-semibold text-blue-800 mb-3">Consultation Info</h4>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-blue-600 mb-1">Department</p>
-                  <p className="font-semibold text-blue-900">{selectedPatientForView.department}</p>
+          <div className="space-y-8 py-2">
+            {/* Clinical Identity Header */}
+            <div className="flex flex-col md:flex-row justify-between items-start border-b border-gray-100 pb-8 gap-6">
+              <div className="flex items-center gap-6">
+                <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 border border-gray-200 shadow-sm">
+                  <PersonIcon sx={{ fontSize: 36 }} />
                 </div>
                 <div>
-                  <p className="text-blue-600 mb-1">Assigned Doctor</p>
-                  <p className="font-semibold text-blue-900">{selectedPatientForView.doctor}</p>
+                  <h3 className="text-3xl font-bold text-gray-900 tracking-tight leading-none mb-2">
+                    {selectedPatientForView.patientName}
+                  </h3>
+                  <div className="flex items-center gap-4 text-xs font-bold uppercase tracking-wider text-gray-500">
+                    <span className="text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
+                      {selectedPatientForView.patientId || 'UHID-291088'}
+                    </span>
+                    <span>•</span>
+                    <span className="flex items-center gap-1.5">
+                      <AccessTimeIcon sx={{ fontSize: 14 }} className="text-gray-400" />
+                      Reg: 12-Mar-2024
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-blue-600 mb-1">Visit Type</p>
-                  <p className="font-semibold text-blue-900">{selectedPatientForView.type || 'Regular'}</p>
-                </div>
-                <div>
-                  <p className="text-blue-600 mb-1">Priority</p>
-                  <p className={`font-semibold ${selectedPatientForView.priority === 'Urgent' ? 'text-red-600' : 'text-blue-900'}`}>
-                    {selectedPatientForView.priority}
-                  </p>
-                </div>
+              </div>
+              <div className="flex flex-col items-end gap-3">
+                <span className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-[0.2em] border-2 ${selectedPatientForView.status === 'Waiting' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                  selectedPatientForView.status === 'In Consultation' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-blue-50 text-blue-700 border-blue-200'
+                  }`}>
+                  {selectedPatientForView.status}
+                </span>
+                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+                  Current Token: <span className="text-gray-900 font-black ml-1">{selectedPatientForView.token}</span>
+                </p>
               </div>
             </div>
 
-            <div className="flex justify-end pt-4">
-              <button
-                onClick={() => setShowViewPatientModal(false)}
-                className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
-              >
-                Close
-              </button>
+            {/* Information Architecture */}
+            <div className="space-y-10">
+
+              {/* Section 1: Demographic & Contact */}
+              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                <div className="bg-gray-50 px-5 py-3 border-b border-gray-200">
+                  <h4 className="text-[11px] font-black text-gray-500 uppercase tracking-[0.25em]">Personal Information</h4>
+                </div>
+                <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-y-8 gap-x-6">
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Age / Gender</p>
+                    <p className="text-sm font-bold text-gray-800">{selectedPatientForView.age}Y / {selectedPatientForView.gender}</p>
+                  </div>
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Blood Group</p>
+                    <p className="text-sm font-bold text-gray-800">{selectedPatientForView.bloodGroup || 'B+'}</p>
+                  </div>
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Phone Number</p>
+                    <p className="text-sm font-bold text-gray-800">{selectedPatientForView.phoneNo || '+91 9988776655'}</p>
+                  </div>
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Email Identity</p>
+                    <p className="text-sm font-bold text-gray-800 truncate">
+                      {selectedPatientForView.email || `${selectedPatientForView.patientName?.toLowerCase().split(' ')[0]}.p@health.com`}
+                    </p>
+                  </div>
+                  <div className="col-span-2 md:col-span-4 space-y-1.5 pt-2">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Registered Residential Address</p>
+                    <p className="text-sm font-medium text-gray-700 leading-relaxed max-w-2xl">
+                      {selectedPatientForView.address || 'Suite 405, Green Valley Residency, Sector 12, Navi Mumbai, Maharashtra - 400706'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 2: Clinical Details */}
+              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                <div className="bg-gray-50 px-5 py-3 border-b border-gray-200">
+                  <h4 className="text-[11px] font-black text-gray-500 uppercase tracking-[0.25em]">Consultation Details</h4>
+                </div>
+                <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-y-8 gap-x-6">
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Department</p>
+                    <p className="text-sm font-bold text-gray-800">{selectedPatientForView.department}</p>
+                  </div>
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Primary Doctor</p>
+                    <p className="text-sm font-bold text-blue-700 underline decoration-blue-200 underline-offset-4">{selectedPatientForView.doctor}</p>
+                  </div>
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Visit Category</p>
+                    <p className="text-sm font-bold text-gray-800">{selectedPatientForView.type || 'Standard Follow-up'}</p>
+                  </div>
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Priority status</p>
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-widest ${selectedPatientForView.priority === 'Urgent' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-600'
+                      }`}>
+                      {selectedPatientForView.priority}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
         )}
       </Modal>
 
-      {/* Queue Modal */}
       <Modal
         isOpen={showQueueModal}
-        onClose={() => setShowQueueModal(false)}
-        title="OPD Queue Status"
+        onClose={() => {
+          setShowQueueModal(false);
+          setSelectedDoctorForQueue(null);
+        }}
+        title={selectedDoctorForQueue ? `Queue Status: ${selectedDoctorForQueue.name}` : "OPD Queue Status"}
         size="lg"
       >
         <div className="space-y-4">
           {doctors
-            .filter(doctor => doctor.isActive)
+            .filter(doctor => doctor.isActive && (!selectedDoctorForQueue || doctor.id === selectedDoctorForQueue.id))
             .map(doctor => {
               const doctorPatients = opdPatients.filter(p => p.assignedDoctorId === doctor.id);
               const waitingPatients = doctorPatients.filter(p => p.status === 'Waiting');
@@ -2709,7 +3021,7 @@ const OPDManagement = () => {
             </div>
           </div>
         )}
-    </Modal>
+      </Modal>
 
       {/* Deactivate Doctor Modal */}
       <Modal

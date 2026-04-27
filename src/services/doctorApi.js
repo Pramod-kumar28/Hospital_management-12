@@ -24,6 +24,14 @@ const DOCTOR_PATIENT_RECORDS_BASE_CANDIDATES = [
   '/api/v1/doctors',
 ]
 
+const DOCTOR_TREATMENT_PLANS_BASE_CANDIDATES = [
+  '/api/v1/doctor-treatment-plans',
+  '/api/v1/doctor-management',
+  '/api/v1/doctor-dashboard',
+  '/api/v1/doctor',
+  '/api/v1/doctors',
+]
+
 function normalizeApiData(payload) {
   return payload?.data ?? payload ?? {}
 }
@@ -96,6 +104,24 @@ function buildPatientRecordPaths({ patientRef, action = 'search', query = {} } =
     if (action === 'patientCaseHistory') return withQuery(`${base}/patients/${encodeURIComponent(patientRef)}/case-history`, query)
     if (action === 'patientClinicalAlerts') return withQuery(`${base}/patients/${encodeURIComponent(patientRef)}/clinical-alerts`, query)
     if (action === 'patientDocuments') return withQuery(`${base}/patients/${encodeURIComponent(patientRef)}/documents`, query)
+    return ''
+  }).filter(Boolean)
+}
+
+function buildTreatmentPlanPaths({ planId, action = 'list', query = {} } = {}) {
+  return DOCTOR_TREATMENT_PLANS_BASE_CANDIDATES.map((base) => {
+    if (action === 'list') return withQuery(`${base}/plans`, query)
+    if (action === 'details') return `${base}/plans/${encodeURIComponent(planId)}`
+    if (action === 'create') return `${base}/plans`
+    if (action === 'update') return `${base}/plans/${encodeURIComponent(planId)}`
+    if (action === 'progress') return `${base}/plans/${encodeURIComponent(planId)}/progress`
+    if (action === 'status') return `${base}/plans/${encodeURIComponent(planId)}/status`
+    if (action === 'recordOutcome') return `${base}/plans/${encodeURIComponent(planId)}/outcome`
+    if (action === 'getOutcome') return `${base}/plans/${encodeURIComponent(planId)}/outcome`
+    if (action === 'templates') return withQuery(`${base}/templates`, query)
+    if (action === 'createFromTemplate') return `${base}/plans/from-template`
+    if (action === 'analytics') return withQuery(`${base}/analytics/summary`, query)
+    if (action === 'cleanupDates') return `${base}/maintenance/cleanup-dates`
     return ''
   }).filter(Boolean)
 }
@@ -377,5 +403,113 @@ export function getDoctorPatientDocuments(patientRef, documentType) {
       patientRef,
       query: { document_type: documentType },
     })
+  )
+}
+
+export function getDoctorTreatmentPlans(filters = {}) {
+  const query = {
+    status: filters.status,
+    priority: filters.priority,
+    patient_ref: filters.patient_ref,
+    limit: filters.limit ?? 50,
+    offset: filters.offset ?? 0,
+  }
+  return doctorApiFetchWithFallback(buildTreatmentPlanPaths({ action: 'list', query }))
+}
+
+export function getDoctorTreatmentPlanDetails(planId) {
+  return doctorApiFetchWithFallback(
+    buildTreatmentPlanPaths({ action: 'details', planId })
+  )
+}
+
+export function createDoctorTreatmentPlan(body) {
+  return doctorApiFetchWithFallback(
+    buildTreatmentPlanPaths({ action: 'create' }),
+    {
+      method: 'POST',
+      body,
+    }
+  )
+}
+
+export function updateDoctorTreatmentPlan(planId, body) {
+  return doctorApiFetchWithFallback(
+    buildTreatmentPlanPaths({ action: 'update', planId }),
+    {
+      method: 'PUT',
+      body,
+    }
+  )
+}
+
+export function updateDoctorTreatmentPlanProgress(planId, body) {
+  return doctorApiFetchWithFallback(
+    buildTreatmentPlanPaths({ action: 'progress', planId }),
+    {
+      method: 'POST',
+      body,
+    }
+  )
+}
+
+export function getDoctorTreatmentPlanStatus(planId) {
+  return doctorApiFetchWithFallback(
+    buildTreatmentPlanPaths({ action: 'status', planId })
+  )
+}
+
+export function recordDoctorTreatmentPlanOutcome(planId, body) {
+  return doctorApiFetchWithFallback(
+    buildTreatmentPlanPaths({ action: 'recordOutcome', planId }),
+    {
+      method: 'POST',
+      body,
+    }
+  )
+}
+
+export function getDoctorTreatmentPlanOutcome(planId) {
+  return doctorApiFetchWithFallback(
+    buildTreatmentPlanPaths({ action: 'getOutcome', planId })
+  )
+}
+
+export function getDoctorTreatmentPlanTemplates(filters = {}) {
+  const query = {
+    diagnosis: filters.diagnosis,
+    specialty: filters.specialty,
+  }
+  return doctorApiFetchWithFallback(
+    buildTreatmentPlanPaths({ action: 'templates', query })
+  )
+}
+
+export function createDoctorTreatmentPlanFromTemplate(body) {
+  return doctorApiFetchWithFallback(
+    buildTreatmentPlanPaths({ action: 'createFromTemplate' }),
+    {
+      method: 'POST',
+      body,
+    }
+  )
+}
+
+export function getDoctorTreatmentPlanAnalytics(filters = {}) {
+  const query = {
+    date_from: filters.date_from,
+    date_to: filters.date_to,
+  }
+  return doctorApiFetchWithFallback(
+    buildTreatmentPlanPaths({ action: 'analytics', query })
+  )
+}
+
+export function cleanupDoctorTreatmentPlanDates() {
+  return doctorApiFetchWithFallback(
+    buildTreatmentPlanPaths({ action: 'cleanupDates' }),
+    {
+      method: 'POST',
+    }
   )
 }

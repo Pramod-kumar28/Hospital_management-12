@@ -8,7 +8,7 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: 'https://hospital-backend-9mg3.onrender.com',
+        target: 'https://hms-backend-t9m3.onrender.com',
         changeOrigin: true
       }
     }

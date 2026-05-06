@@ -6,12 +6,12 @@ import Button from '../../../../components/common/Button/Button'
 import Modal from '../../../../components/common/Modal/Modal'
 import LoadingSpinner from '../../../../components/common/LoadingSpinner/LoadingSpinner'
 import Toast from '../../../../components/common/Toast/Toast'
+import { apiFetch } from '../../../../services/apiClient'
 
 const ResultAccess = ({ initialSearch }) => {
   const [loading, setLoading] = useState(true)
   const [accessLogs, setAccessLogs] = useState([])
   const [patients, setPatients] = useState([])
-  const [doctors, setDoctors] = useState([])
   const [searchTerm, setSearchTerm] = useState(initialSearch || '')
   const [statusFilter, setStatusFilter] = useState('all')
   const [showAccessModal, setShowAccessModal] = useState(false)
@@ -21,6 +21,13 @@ const ResultAccess = ({ initialSearch }) => {
   const [selectedPatient, setSelectedPatient] = useState(null)
   const [selectedLogs, setSelectedLogs] = useState([])
   const [toast, setToast] = useState(null)
+  const [dashboardStats, setDashboardStats] = useState({
+    active_access: 0,
+    doctor_access: 0,
+    todays_accesses: 0,
+    mobile_accesses: 0
+  })
+  const [securityFeatures, setSecurityFeatures] = useState([])
   const [accessRequest, setAccessRequest] = useState({
     patientId: '',
     doctorEmail: '',
@@ -30,138 +37,39 @@ const ResultAccess = ({ initialSearch }) => {
   })
 
   useEffect(() => {
-    loadData()
-  }, [])
+    loadData(searchTerm, statusFilter)
+  }, [searchTerm, statusFilter])
 
-  const loadData = async () => {
+  const loadData = async (searchStr, statusStr) => {
     setLoading(true)
-    setTimeout(() => {
-      const patientData = [
-        {
-          id: 'PAT-001',
-          name: 'Rajesh Kumar',
-          email: 'rajesh@email.com',
-          phone: '+91 9876543210',
-          lastAccess: '2024-01-15 10:30:45',
-          accessCount: 3,
-          status: 'active',
-          accessCode: 'ACC123456',
-          expiryDate: '2024-12-31',
-          reports: ['CBC Report', 'Lipid Profile']
-        },
-        {
-          id: 'PAT-002',
-          name: 'Priya Sharma',
-          email: 'priya@email.com',
-          phone: '+91 9876543211',
-          lastAccess: '2024-01-15 09:15:22',
-          accessCount: 5,
-          status: 'active',
-          accessCode: 'ACC789012',
-          expiryDate: '2024-12-31',
-          reports: ['Thyroid Profile', 'Liver Function']
-        },
-        {
-          id: 'PAT-003',
-          name: 'Suresh Patel',
-          email: 'suresh@email.com',
-          phone: '+91 9876543212',
-          lastAccess: '2024-01-14 16:45:10',
-          accessCount: 2,
-          status: 'active',
-          accessCode: 'ACC345678',
-          expiryDate: '2024-12-31',
-          reports: ['Kidney Function', 'Urine Culture']
-        },
-        {
-          id: 'PAT-004',
-          name: 'Anita Mehta',
-          email: 'anita@email.com',
-          phone: '+91 9876543213',
-          lastAccess: '2024-01-14 14:20:33',
-          accessCount: 4,
-          status: 'expired',
-          accessCode: 'ACC901234',
-          expiryDate: '2024-01-01',
-          reports: ['Diabetes Panel']
-        }
-      ]
-
-      const doctorData = [
-        { id: 'DOC-001', name: 'Dr. Sharma', email: 'dr.sharma@hospital.com', specialization: 'Cardiology', phone: '+91 9876543220' },
-        { id: 'DOC-002', name: 'Dr. Mehta', email: 'dr.mehta@hospital.com', specialization: 'Neurology', phone: '+91 9876543221' },
-        { id: 'DOC-003', name: 'Dr. Gupta', email: 'dr.gupta@hospital.com', specialization: 'Pediatrics', phone: '+91 9876543222' },
-        { id: 'DOC-004', name: 'Dr. Rao', email: 'dr.rao@hospital.com', specialization: 'Orthopedics', phone: '+91 9876543223' }
-      ]
-
-      const logData = [
-        {
-          id: 'LOG-001',
-          patientName: 'Rajesh Kumar',
-          patientId: 'PAT-001',
-          accessedBy: 'rajesh@email.com',
-          accessTime: '2024-01-15 10:30:45',
-          action: 'View Report',
-          ipAddress: '192.168.1.100',
-          device: 'Mobile - Chrome',
-          reportType: 'CBC Report',
-          duration: '5 minutes'
-        },
-        {
-          id: 'LOG-002',
-          patientName: 'Priya Sharma',
-          patientId: 'PAT-002',
-          accessedBy: 'dr.sharma@hospital.com',
-          accessTime: '2024-01-15 09:15:22',
-          action: 'Download Report',
-          ipAddress: '203.0.113.50',
-          device: 'Desktop - Firefox',
-          reportType: 'Thyroid Profile',
-          duration: '3 minutes'
-        },
-        {
-          id: 'LOG-003',
-          patientName: 'Suresh Patel',
-          patientId: 'PAT-003',
-          accessedBy: 'suresh@email.com',
-          accessTime: '2024-01-14 16:45:10',
-          action: 'View Report',
-          ipAddress: '192.168.1.150',
-          device: 'Tablet - Safari',
-          reportType: 'Kidney Function',
-          duration: '8 minutes'
-        },
-        {
-          id: 'LOG-004',
-          patientName: 'Rajesh Kumar',
-          patientId: 'PAT-001',
-          accessedBy: 'dr.mehta@hospital.com',
-          accessTime: '2024-01-15 11:20:33',
-          action: 'View Report',
-          ipAddress: '203.0.113.75',
-          device: 'Desktop - Chrome',
-          reportType: 'Lipid Profile',
-          duration: '4 minutes'
-        },
-        {
-          id: 'LOG-005',
-          patientName: 'Anita Mehta',
-          patientId: 'PAT-004',
-          accessedBy: 'anita@email.com',
-          accessTime: '2024-01-10 14:20:33',
-          action: 'View Report',
-          ipAddress: '192.168.1.200',
-          device: 'Mobile - Safari',
-          reportType: 'Diabetes Panel',
-          duration: '6 minutes'
-        }
-      ]
-
-      setPatients(patientData)
-      setDoctors(doctorData)
-      setAccessLogs(logData)
+    try {
+      const queryParams = new URLSearchParams()
+      if (searchStr) queryParams.append('search', searchStr)
+      if (statusStr && statusStr !== 'all') queryParams.append('status', statusStr.toUpperCase())
+      
+      const queryString = queryParams.toString()
+      const endpoint = `/api/v1/lab/result-access${queryString ? `?${queryString}` : ''}`
+      
+      const response = await apiFetch(endpoint)
+      if (response.ok) {
+        const data = await response.json()
+        setPatients(data.patients || [])
+        setAccessLogs(data.access_logs || [])
+        setDashboardStats(data.stats || {
+          active_access: 0,
+          doctor_access: 0,
+          todays_accesses: 0,
+          mobile_accesses: 0
+        })
+        setSecurityFeatures(data.security_features || [])
+      } else {
+        console.error('Failed to fetch data')
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error)
+    } finally {
       setLoading(false)
-    }, 1000)
+    }
   }
 
   const handleSearch = (term) => {
@@ -225,52 +133,77 @@ const ResultAccess = ({ initialSearch }) => {
     }
   }
 
-  const handleGrantAccessSubmit = () => {
+  const handleGrantAccessSubmit = async () => {
     if (!accessRequest.doctorEmail) {
       setToast({ message: 'Please enter email address', type: 'error' })
       return
     }
 
-    const updatedPatients = patients.map(patient =>
-      patient.id === accessRequest.patientId
-        ? { 
-            ...patient, 
-            status: 'active',
-            accessCode: accessRequest.accessCode,
-            expiryDate: accessRequest.expiryDate,
-            accessCount: patient.accessCount + 1
-          }
-        : patient
-    )
-    setPatients(updatedPatients)
-    
-    const newLog = {
-      id: `LOG-${Date.now()}`,
-      patientName: selectedPatient?.name || patients.find(p => p.id === accessRequest.patientId)?.name,
-      patientId: accessRequest.patientId,
-      accessedBy: accessRequest.doctorEmail,
-      accessTime: new Date().toISOString().replace('T', ' ').slice(0, 19),
-      action: `Access Granted (${accessRequest.accessType.toUpperCase()})`,
-      ipAddress: 'System',
-      device: 'Admin Panel',
-      reportType: 'All Reports',
-      duration: 'N/A'
+    try {
+      const response = await apiFetch('/api/v1/lab/result-access/grant', {
+        method: 'POST',
+        body: {
+          patientId: accessRequest.patientId,
+          doctorEmail: accessRequest.doctorEmail,
+          accessType: accessRequest.accessType,
+          expiryDate: accessRequest.expiryDate,
+          accessCode: accessRequest.accessCode
+        }
+      })
+
+      if (response.ok) {
+        const responseData = await response.json().catch(() => ({}))
+        const updatedPatients = patients.map(patient =>
+          patient.id === accessRequest.patientId
+            ? { 
+                ...patient, 
+                status: 'active',
+                accessCode: accessRequest.accessCode,
+                expiryDate: accessRequest.expiryDate,
+                accessCount: patient.accessCount + 1
+              }
+            : patient
+        )
+        setPatients(updatedPatients)
+        
+        const newLog = {
+          id: responseData.logId || `LOG-${Date.now()}`,
+          patientName: selectedPatient?.name || patients.find(p => p.id === accessRequest.patientId)?.name,
+          patientId: accessRequest.patientId,
+          accessedBy: accessRequest.doctorEmail,
+          accessTime: new Date().toISOString().replace('T', ' ').slice(0, 19),
+          action: `Access Granted (${accessRequest.accessType.toUpperCase()})`,
+          ipAddress: 'System',
+          device: 'Admin Panel',
+          reportType: 'All Reports',
+          duration: 'N/A'
+        }
+        
+        setAccessLogs([newLog, ...accessLogs])
+        setToast({ 
+          message: responseData.message || `Access granted to ${accessRequest.doctorEmail}. Access Code: ${accessRequest.accessCode}`, 
+          type: 'success' 
+        })
+        setShowAccessModal(false)
+        setAccessRequest({
+          patientId: '',
+          doctorEmail: '',
+          accessType: 'view',
+          expiryDate: '',
+          accessCode: ''
+        })
+        setSelectedPatient(null)
+      } else {
+        const errorData = await response.json().catch(() => ({}))
+        setToast({ 
+          message: errorData.detail || 'Failed to grant access on the server.', 
+          type: 'error' 
+        })
+      }
+    } catch (error) {
+      console.error('Error granting access:', error)
+      setToast({ message: 'A network error occurred while granting access.', type: 'error' })
     }
-    
-    setAccessLogs([newLog, ...accessLogs])
-    setToast({ 
-      message: `Access granted to ${accessRequest.doctorEmail}. Access Code: ${accessRequest.accessCode}`, 
-      type: 'success' 
-    })
-    setShowAccessModal(false)
-    setAccessRequest({
-      patientId: '',
-      doctorEmail: '',
-      accessType: 'view',
-      expiryDate: '',
-      accessCode: ''
-    })
-    setSelectedPatient(null)
   }
 
   const handleShareSubmit = (method) => {
@@ -339,23 +272,14 @@ const ResultAccess = ({ initialSearch }) => {
     }
   }
 
-  const filteredPatients = patients.filter(patient => {
-    const matchesSearch = patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.email.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === 'all' || patient.status === statusFilter
-    return matchesSearch && matchesStatus
-  })
+  // The backend now handles the filtering based on search and status query parameters
+  const filteredPatients = patients
 
   // Calculate statistics
-  const activeAccessCount = patients.filter(p => p.status === 'active').length
-  const doctorAccessCount = doctors.length
-  const todayAccesses = accessLogs.filter(log => 
-    log.accessTime.includes(new Date().toISOString().split('T')[0])
-  ).length
-  const mobileAccesses = accessLogs.filter(log => 
-    log.device.toLowerCase().includes('mobile')
-  ).length
+  const activeAccessCount = dashboardStats.active_access || 0
+  const doctorAccessCount = dashboardStats.doctor_access || 0
+  const todayAccesses = dashboardStats.todays_accesses || 0
+  const mobileAccesses = dashboardStats.mobile_accesses || 0
 
   if (loading) return <LoadingSpinner />
   return (
@@ -590,6 +514,7 @@ const ResultAccess = ({ initialSearch }) => {
             Security Features
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {securityFeatures.includes('Encrypted Links') && (
             <div className="p-4 border rounded-lg hover:shadow-md transition-shadow group">
               <div className="flex items-center mb-3">
                 <div className="p-2 bg-blue-100 rounded-lg mr-3 group-hover:bg-blue-200 transition-colors">
@@ -599,7 +524,9 @@ const ResultAccess = ({ initialSearch }) => {
               </div>
               <p className="text-sm text-gray-600">All shared links are encrypted using AES-256 and time-limited for maximum security</p>
             </div>
+            )}
             
+            {securityFeatures.includes('Access Control') && (
             <div className="p-4 border rounded-lg hover:shadow-md transition-shadow group">
               <div className="flex items-center mb-3">
                 <div className="p-2 bg-green-100 rounded-lg mr-3 group-hover:bg-green-200 transition-colors">
@@ -609,7 +536,9 @@ const ResultAccess = ({ initialSearch }) => {
               </div>
               <p className="text-sm text-gray-600">Granular permissions for viewing, downloading, or sharing reports with expiration dates</p>
             </div>
+            )}
             
+            {securityFeatures.includes('Audit Trail') && (
             <div className="p-4 border rounded-lg hover:shadow-md transition-shadow group">
               <div className="flex items-center mb-3">
                 <div className="p-2 bg-purple-100 rounded-lg mr-3 group-hover:bg-purple-200 transition-colors">
@@ -619,6 +548,7 @@ const ResultAccess = ({ initialSearch }) => {
               </div>
               <p className="text-sm text-gray-600">Complete logs of all access and sharing activities for HIPAA compliance and audits</p>
             </div>
+            )}
           </div>
         </div>
       </div>

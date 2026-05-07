@@ -4,6 +4,7 @@ import Sidebar from '../../../components/common/Sidebar/Sidebar'
 import PatientOverview from './pages/PatientOverview'
 import Appointments from './pages/Appointments'
 import MedicalRecords from './pages/MedicalRecords'
+import DischargeSummary from './pages/DischargeSummary'
 import Prescriptions from './pages/Prescriptions'
 import TestResults from './pages/TestResults'
 import Billing from './pages/Billing'
@@ -50,6 +51,8 @@ const PatientDashboard = () => {
         return <Appointments />
       case 'records':
         return <MedicalRecords />
+      case 'discharge':
+        return <DischargeSummary />
       case 'prescriptions':
         return <Prescriptions />
       case 'tests':

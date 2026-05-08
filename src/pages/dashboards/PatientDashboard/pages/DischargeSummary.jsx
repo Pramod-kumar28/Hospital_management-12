@@ -27,10 +27,12 @@ const DischargeSummary = () => {
         console.error('Failed to fetch discharge summaries:', response.status);
         setSummaries([]);
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Error fetching discharge summaries:', error);
       setSummaries([]);
-    } finally {
+    }
+    finally {
       setLoading(false);
     }
   };
@@ -45,10 +47,12 @@ const DischargeSummary = () => {
           totalAdmissions: statsData.totalAdmissions || statsData.total_admissions || 0,
           lastDischarge: statsData.lastDischarge || statsData.last_discharge || 'N/A'
         });
-      } else {
+      }
+      else {
         console.error('Failed to fetch statistics:', response.status);
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Error fetching statistics:', error);
     }
   };

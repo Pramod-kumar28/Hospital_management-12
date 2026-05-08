@@ -27,10 +27,12 @@ const DischargeSummary = () => {
         console.error('Failed to fetch discharge summaries:', response.status);
         setSummaries([]);
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Error fetching discharge summaries:', error);
       setSummaries([]);
-    } finally {
+    }
+    finally {
       setLoading(false);
     }
   };

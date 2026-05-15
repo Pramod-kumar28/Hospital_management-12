@@ -34,6 +34,15 @@ export const AUTH_PATIENT_VERIFY_OTP = '/api/v1/auth/patient/verify-otp';
 
 /** Patient portal: authenticated appointment booking (Bearer patient JWT) */
 export const PATIENT_APPOINTMENT_BOOKING_BASE = '/api/v1/patient-appointment-booking';
+export const PATIENT_DOCUMENT_STORAGE_BASE = '/api/v1/patient-document-storage';
+export const PATIENT_MEDICAL_HISTORY_BASE = '/api/v1/patient-medical-history';
+export const PATIENT_PORTAL_DASHBOARD_BASE = '/api/v1/patient-dashboard';
+export const PATIENT_PRESCRIPTIONS_BASE = '/api/v1/patient-prescriptions';
+export const PATIENT_BILLING_BASE = '/api/v1/patient-billing';
+export const PATIENT_PROFILE_BASE = '/api/v1/patient-profile';
+export const PATIENT_LAB_TESTS_BASE = '/api/v1/patient-lab-tests';
+export const PATIENT_MESSAGING_BASE = '/api/v1/patient-messaging';
+export const PATIENT_DISCHARGE_SUMMARY_BASE = '/api/v1/patient-discharge-summary';
 
 /** Auth: hospital-admin change password (e.g. after first login with temp password) */
 export const AUTH_HOSPITAL_ADMIN_CHANGE_PASSWORD = '/api/v1/auth/hospital-admin/change-password';
@@ -49,7 +58,7 @@ export const SUPER_ADMIN_HOSPITAL_ADMINS_CREATE = (hospitalId) => `/api/v1/auth/
 
 /** Super Admin: GET list, GET one, PUT, PATCH status, DELETE (separate router on backend) */
 export const SUPER_ADMIN_HOSPITALS = '/api/v1/super-admin/hospitals';
- 
+
 /** Super Admin: subscription plan management */
 export const SUPER_ADMIN_SUBSCRIPTION_PLANS = '/api/v1/super-admin/plans';
 
@@ -59,7 +68,7 @@ export const SUPER_ADMIN_NOTIFY_HOSPITAL_ADMINS = '/api/v1/super-admin/notificat
 /** Super Admin: hospital subscription management */
 export const SUPER_ADMIN_HOSPITAL_SUBSCRIPTION = (hospitalName) => `/api/v1/super-admin/hospitals/${encodeURIComponent(hospitalName)}/subscription`;
 export const SUPER_ADMIN_HOSPITAL_ASSIGN_PLAN = (hospitalName) => `/api/v1/super-admin/hospitals/${encodeURIComponent(hospitalName)}/assign-plan`;
- 
+
 /** Super Admin: Profile management */
 export const SUPER_ADMIN_PROFILE = '/api/v1/super-admin/profile';
 export const SUPER_ADMIN_ME = '/api/v1/super-admin/me';
@@ -72,9 +81,9 @@ export const ANALYTICS_OVERVIEW = '/api/v1/analytics/overview';
 export const SUPER_ADMIN_ANALYTICS_OVERVIEW = '/api/v1/super-admin/analytics/overview';
 
 /** Super Admin: Dashboard Overview Cards with growth metrics */
-export const SUPER_ADMIN_DASHBOARD_OVERVIEW_CARDS = (periodDays = 30, trendMonths = 6) => 
+export const SUPER_ADMIN_DASHBOARD_OVERVIEW_CARDS = (periodDays = 30, trendMonths = 6) =>
   `/api/v1/super-admin/dashboard/overview-cards?period_days=${periodDays}&trend_months=${trendMonths}`;
- 
+
 /** Analytics: GET audit logs with filters */
 export const ANALYTICS_AUDIT_LOGS = (resourceType = 1, skip = 0, limit = 50) => `/api/v1/analytics/audit-logs?resource_type=${resourceType}&skip=${skip}&limit=${limit}`;
 
@@ -157,7 +166,6 @@ export const RECEPTIONIST_PROFILE = '/api/v1/receptionist/profile';
 
 /** Receptionist: profile update */
 export const RECEPTIONIST_PROFILE_UPDATE = '/api/v1/receptionist/profile';
-
 /** Receptionist: patient registration */
 export const RECEPTIONIST_PATIENT_REGISTER = '/api/v1/receptionist/patients/register';
 

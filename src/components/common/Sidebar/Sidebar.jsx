@@ -4,7 +4,6 @@ import { useAuth } from '../../../hooks/useAuth'
 
 const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
   const { user } = useAuth()
-
   // Get role-based title
   const getSidebarTitle = () => {
     switch (user?.role) {
@@ -17,13 +16,11 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
       case 'LAB': return 'Laboratory Portal'
       case 'PHARMACY': return 'Pharmacy Portal'
       case 'TELEMEDICINE': return 'Telemedicine Portal'
-
       default: return 'Dashboard'
     }
   }
 
   const sidebarTitle = getSidebarTitle()
-
   const labMenu = [
     { id: 'lab-dashboard', label: 'Lab Dashboard', icon: 'fas fa-flask' },
     { id: 'critical-results', label: 'Critical Results', icon: 'fas fa-exclamation-circle' },
@@ -35,7 +32,6 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
     { id: 'equipment-tracking', label: 'Equipment Tracking', icon: 'fas fa-microscope' },
     { id: 'quality-control', label: 'Quality Control', icon: 'fas fa-chart-line' },
     { id: 'profile', label: 'Lab Profile', icon: 'fas fa-user-md' }, { id: 'raise-ticket', label: 'Raise Ticket', icon: 'fa-envelope-open-text' }
-  
   ]
 
   const doctorMenu = [
@@ -48,6 +44,7 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
     { id: 'prescriptions', label: 'Prescriptions', icon: 'fa-prescription-bottle-medical' },
     { id: 'labs', label: 'Lab Results', icon: 'fa-flask' },
     { id: 'inpatient', label: 'Inpatient Visits', icon: 'fa-procedures' },
+    { id: 'discharge', label: 'Discharge Summary', icon: 'fa-file-contract' },
     { id: 'messages', label: 'Messaging', icon: 'fa-comments' },
     { id: 'profile', label: 'My Profile', icon: 'fa-user-md' },
     { id: 'raise-ticket', label: 'Raise Ticket', icon: 'fa-envelope-open-text' }
@@ -66,7 +63,7 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
     { id: 'pharmacy', label: 'Pharmacy Management', icon: 'fa-prescription-bottle-alt' },
     { id: 'lab', label: 'Lab Management', icon: 'fa-microscope' },
     { id: 'reports', label: 'Reports', icon: 'fa-chart-bar' },
-      { id: 'audit', label: 'Audit Logs', icon: 'fa-clipboard-check' },
+    { id: 'audit', label: 'Audit Logs', icon: 'fa-clipboard-check' },
     { id: 'settings', label: 'Settings', icon: 'fa-cog' },{ id: 'raise-ticket', label: 'Raise Ticket', icon: 'fa-envelope-open-text' }
   ]
 
@@ -80,7 +77,6 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
     { id: 'notes', label: 'Nursing Notes', icon: 'fa-notes-medical' },
     { id: 'discharge', label: 'Discharge Summary', icon: 'fa-file-medical' },
     { id: 'profile', label: 'My Profile', icon: 'fa-user-nurse' }, { id: 'raise-ticket', label: 'Raise Ticket', icon: 'fa-envelope-open-text' }
-  
   ]
 
   const receptionistMenu = [
@@ -94,7 +90,7 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
     { id: 'billing', label: 'Billing', icon: 'fa-receipt' },
     { id: 'discharge', label: 'Discharge Summary', icon: 'fas fa-file-contract' },
     { id: 'profile', label: 'My Profile', icon: 'fa-user-tie' },
-        { id: 'raise-ticket', label: 'Raise Ticket', icon: 'fa-envelope-open-text' }
+    { id: 'raise-ticket', label: 'Raise Ticket', icon: 'fa-envelope-open-text' }
   ]
 
   const superAdminMenu = [
@@ -106,11 +102,8 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
     { id: 'users', label: 'User Accounts', icon: 'fa-user-cog' },
     { id: 'settings', label: 'Platform Settings', icon: 'fa-sliders-h' },
     { id: 'reports', label: 'Reports & Analytics', icon: 'fa-chart-pie' },
-  
     { id: 'analytics', label: 'Analytics & Monitoring', icon: 'fa-chart-line' },
     { id: 'notifications', label: 'Notifications', icon: 'fa-bell' },
-
-
   ]
 
   // NEW: Patient Menu
@@ -122,6 +115,8 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
     { id: 'tests', label: 'Test Results', icon: 'fa-flask' },
     { id: 'billing', label: 'Billing & Payments', icon: 'fa-credit-card' },
     { id: 'messages', label: 'Messages', icon: 'fa-comments' },
+    { id: 'documentstorage', label: 'Document Storage', icon: 'fa-folder-open' },
+    { id: 'discharge', label: 'Discharge Summary', icon: 'fa-file-contract' },
     { id: 'profile', label: 'My Profile', icon: 'fa-user' }
   ]
 
@@ -134,8 +129,7 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
     { id: "suppliermanagement", label: "Supplier Management", icon: "fas fa-truck" },
     { id: "medicinedatabase", label: "Medicine Database", icon: "fas fa-database" },
     { id: "settings", label: "Settings", icon: "fas fa-cog" },
-     { id: 'raise-ticket', label: 'Raise Ticket', icon: 'fa-envelope-open-text' }
-  
+    { id: 'raise-ticket', label: 'Raise Ticket', icon: 'fa-envelope-open-text' }
   ];
 
 const teleMedicineMenu = [
@@ -149,8 +143,7 @@ const teleMedicineMenu = [
   { id: "messages", label: "Messaging", icon: "fa-comments" },
   { id: "doctoroverview", label: "Doctor Overview", icon: "fa-solid fa-clipboard-list" },
   { id: "doctorprofile", label: "Doctor Profile", icon: "fa-solid fa-user-doctor" },
-   { id: 'raise-ticket', label: 'Raise Ticket', icon: 'fa-envelope-open-text' }
-  
+  { id: 'raise-ticket', label: 'Raise Ticket', icon: 'fa-envelope-open-text' }
 ];
 
   const getMenuItems = () => {
@@ -170,7 +163,6 @@ const teleMedicineMenu = [
   }
 
   const menuItems = getMenuItems()
-
   const handleItemClick = (itemId) => {
     onPageChange(itemId)
     onClose?.()
@@ -179,21 +171,17 @@ const teleMedicineMenu = [
   return (
     <>
       {/* Mobile Sidebar */}
-      <aside
-        className={`fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-white border-r transform transition-transform duration-300 z-40 md:hidden ${
+      <aside className={`fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-white border-r transform transition-transform duration-300 z-40 md:hidden ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
+        }`} >
         <div className="h-full flex flex-col">
           {/* Header */}
           <div className="flex-shrink-0 p-4 border-b">
             <div className="flex justify-between items-center">
               <h2 className="text-gray-700 font-semibold text-lg">{sidebarTitle}</h2>
-              <button
+              <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
                 onClick={onClose}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                aria-label="Close menu"
-              >
+                aria-label="Close menu" >
                 <i className="fas fa-times text-gray-600 text-lg"></i>
               </button>
             </div>
@@ -203,15 +191,12 @@ const teleMedicineMenu = [
           <nav className="flex-1 overflow-y-auto py-2">
             <div className="space-y-1 px-2">
               {menuItems.map(item => (
-                <button
-                  key={item.id}
-                  onClick={() => handleItemClick(item.id)}
+                <button key={item.id} onClick={() => handleItemClick(item.id)}
                   className={`w-full text-left p-3 rounded-lg flex items-center transition-all duration-200 ${
                     activePage === item.id
                       ? 'bg-blue-100 text-blue-700 font-semibold border-l-4 border-l-blue-500'
                       : 'hover:bg-gray-50 text-gray-700'
-                  }`}
-                >
+                  }`} >
                   <span className={`text-lg mr-3 w-6 text-center ${
                     activePage === item.id ? 'text-blue-600' : 'text-blue-500'
                   }`}>
@@ -233,10 +218,8 @@ const teleMedicineMenu = [
             <div className="flex justify-between items-center">
               <h2 className="text-gray-700 font-semibold text-lg">{sidebarTitle}</h2>
               <button
-                onClick={onClose}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                aria-label="Close sidebar"
-              >
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors" aria-label="Close sidebar"
+                onClick={onClose} >
                 <i className="fas fa-times text-gray-600 text-lg"></i>
               </button>
             </div>
@@ -246,15 +229,12 @@ const teleMedicineMenu = [
           <nav className="flex-1 overflow-y-auto py-2">
             <div className="space-y-1 px-2">
               {menuItems.map(item => (
-                <button
-                  key={item.id}
-                  onClick={() => onPageChange(item.id)}
+                <button key={item.id} onClick={() => onPageChange(item.id)}
                   className={`w-full text-left p-3 rounded-lg flex items-center transition-all duration-200 ${
                     activePage === item.id
                       ? 'bg-blue-100 text-blue-700 font-semibold border-l-4 border-l-blue-500'
                       : 'hover:bg-gray-50 text-gray-700'
-                  }`}
-                >
+                  }`} >
                   <span className={`text-lg mr-3 w-6 text-center ${
                     activePage === item.id ? 'text-blue-600' : 'text-blue-500'
                   }`}>
@@ -271,9 +251,7 @@ const teleMedicineMenu = [
       {/* Mobile Overlay */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden" 
-          onClick={onClose} 
-        />
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden" onClick={onClose} />
       )}
     </>
   )

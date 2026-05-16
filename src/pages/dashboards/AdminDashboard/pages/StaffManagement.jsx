@@ -613,7 +613,7 @@ const StaffCard = ({ staffMember, onDetails, onToggleStatus, onResetPassword, ac
             className="text-blue-600 hover:text-blue-800 p-2 rounded-full hover:bg-blue-50 transition-colors"
             title="View Details"
           >
-            <i className="fas fa-info-circle"></i>
+            <i className="fas fa-eye"></i>
           </button>
           <button
             onClick={onToggleStatus}

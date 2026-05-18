@@ -567,9 +567,13 @@ const StaffCard = ({ staffMember, onDetails, onToggleStatus, onResetPassword, ac
     <div className="bg-white rounded-xl shadow-md border border-gray-200 p-5 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
       <div className="flex items-center gap-3 mb-4">
         <div className="relative">
-          <img src={staffMember.image} className="w-12 h-12 rounded-full" alt="Staff" />
-          <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white ${status.bg} flex items-center justify-center`}>
-            <i className={`${status.icon} ${status.color} text-xs`}></i>
+          <div className="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center font-semibold text-lg">
+            {staffMember.name
+              ?.split(" ")
+              .map((word) => word[0])
+              .join("")
+              .slice(0, 2)
+              .toUpperCase()}
           </div>
         </div>
         <div className="flex-1">
@@ -609,7 +613,7 @@ const StaffCard = ({ staffMember, onDetails, onToggleStatus, onResetPassword, ac
             className="text-blue-600 hover:text-blue-800 p-2 rounded-full hover:bg-blue-50 transition-colors"
             title="View Details"
           >
-            <i className="fas fa-info-circle"></i>
+            <i className="fas fa-eye"></i>
           </button>
           <button
             onClick={onToggleStatus}

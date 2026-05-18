@@ -1,11 +1,4 @@
-// src/config/api.js  apiConfig.js - Add support endpoints
-/*
- * Backend API base URL (`BASE_URL` + paths = e.g. http://localhost:8060/api/v1/...).
- * In dev: empty string so requests use the Vite dev server origin and `/api` is proxied to the backend (avoids CORS).
- * In production: set `VITE_API_BASE_URL` (e.g. http://localhost:8060).
-*/
-// In local dev, use Vite proxy (/api -> Render backend) to avoid browser CORS.
-// In production builds, call backend directly.
+
 export const API_BASE_URL = import.meta.env.DEV
   ? ''
   : (import.meta.env.VITE_API_BASE_URL || 'https://hms-backend-t9m3.onrender.com').replace(/\/$/, '');
@@ -34,6 +27,15 @@ export const AUTH_PATIENT_VERIFY_OTP = '/api/v1/auth/patient/verify-otp';
 
 /** Patient portal: authenticated appointment booking (Bearer patient JWT) */
 export const PATIENT_APPOINTMENT_BOOKING_BASE = '/api/v1/patient-appointment-booking';
+export const PATIENT_DOCUMENT_STORAGE_BASE = '/api/v1/patient-document-storage';
+export const PATIENT_MEDICAL_HISTORY_BASE = '/api/v1/patient-medical-history';
+export const PATIENT_PORTAL_DASHBOARD_BASE = '/api/v1/patient-dashboard';
+export const PATIENT_PRESCRIPTIONS_BASE = '/api/v1/patient-prescriptions';
+export const PATIENT_BILLING_BASE = '/api/v1/patient-billing';
+export const PATIENT_PROFILE_BASE = '/api/v1/patient-profile';
+export const PATIENT_LAB_TESTS_BASE = '/api/v1/patient-lab-tests';
+export const PATIENT_MESSAGING_BASE = '/api/v1/patient-messaging';
+export const PATIENT_DISCHARGE_SUMMARY_BASE = '/api/v1/patient-discharge-summary';
 
 /** Auth: hospital-admin change password (e.g. after first login with temp password) */
 export const AUTH_HOSPITAL_ADMIN_CHANGE_PASSWORD = '/api/v1/auth/hospital-admin/change-password';
@@ -66,6 +68,21 @@ export const SUPER_ADMIN_ME = '/api/v1/super-admin/me';
 export const SUPER_ADMIN_ME_AVATAR = '/api/v1/super-admin/me/avatar';
 export const SUPER_ADMIN_ME_SECURITY = '/api/v1/super-admin/me/security';
 export const SUPER_ADMIN_ME_CHANGE_PASSWORD = '/api/v1/super-admin/me/change-password';
+
+/** Hospital Admin: personal profile */
+export const HOSPITAL_ADMIN_ME = '/api/v1/hospital-admin/me';
+export const HOSPITAL_ADMIN_ME_AVATAR = '/api/v1/hospital-admin/me/avatar';
+export const HOSPITAL_ADMIN_ME_SECURITY = '/api/v1/hospital-admin/me/security';
+export const HOSPITAL_ADMIN_ME_CHANGE_PASSWORD = '/api/v1/hospital-admin/me/change-password';
+
+/** Hospital Admin: Platform Settings */
+export const HOSPITAL_ADMIN_PLATFORM_FEATURES = '/api/v1/hospital-admin/platform-settings/features';
+export const HOSPITAL_ADMIN_PLATFORM_SUBSCRIPTION = '/api/v1/hospital-admin/platform-settings/subscription';
+export const HOSPITAL_ADMIN_PLATFORM_PLAN = '/api/v1/hospital-admin/platform-settings/plan';
+export const HOSPITAL_ADMIN_PLATFORM_HOSPITAL = '/api/v1/hospital-admin/platform-settings/hospital';
+export const HOSPITAL_ADMIN_PLATFORM_MODULES = '/api/v1/hospital-admin/platform-settings/modules';
+export const HOSPITAL_ADMIN_PLATFORM_USAGE = '/api/v1/hospital-admin/platform-settings/usage';
+export const HOSPITAL_ADMIN_PLATFORM_COMBINED = '/api/v1/hospital-admin/platform-settings';
 
 /** Analytics: GET overview (hospitals, subscriptions, revenue, patients, occupancy) */
 export const ANALYTICS_OVERVIEW = '/api/v1/analytics/overview';
@@ -171,12 +188,91 @@ export const RECEPTIONIST_PROFILE = '/api/v1/receptionist/profile';
 export const RECEPTIONIST_PROFILE_UPDATE = '/api/v1/receptionist/profile';
 /** Receptionist: patient registration */
 export const RECEPTIONIST_PATIENT_REGISTER = '/api/v1/receptionist/patients/register';
+export const RECEPTIONIST_PATIENT_SEARCH = '/api/v1/receptionist/patients/search';
+export const RECEPTIONIST_PATIENT_PROFILE = (patientId) => `/api/v1/receptionist/patients/${encodeURIComponent(patientId)}/profile`;
+export const RECEPTIONIST_PATIENT_UPDATE = (patientId) => `/api/v1/receptionist/patients/${encodeURIComponent(patientId)}`;
 
 /** Receptionist: dashboard overview */
 export const RECEPTIONIST_DASHBOARD_OVERVIEW = '/api/v1/receptionist/dashboard';
 
+/** Receptionist: Department management */
+export const DEPARTMENT_LIST = '/api/v1/departments';
+export const DEPARTMENT_SEARCH = '/api/v1/departments/search';
+export const DEPARTMENT_STATISTICS = '/api/v1/departments/statistics';
+export const DEPARTMENT_DETAILS = (id) => `/api/v1/departments/${encodeURIComponent(id)}`;
+export const DEPARTMENT_DOCTORS = (id) => `/api/v1/receptionist/departments/${encodeURIComponent(id)}/doctors`;
+export const DEPARTMENT_NURSES = (id) => `/api/v1/receptionist/departments/${encodeURIComponent(id)}/nurses`;
+export const DEPARTMENT_BEDS = (id) => `/api/v1/receptionist/departments/${encodeURIComponent(id)}/beds`;
+
+/** Receptionist: Doctor management */
+export const DOCTOR_LIST = '/api/v1/doctors';
+export const DOCTOR_SEARCH = '/api/v1/doctors/search';
+export const DOCTOR_DROPDOWN = '/api/v1/doctors/dropdown';
+export const DOCTOR_STATISTICS = '/api/v1/doctors/statistics';
+export const DOCTOR_DETAILS = (id) => `/api/v1/doctors/${encodeURIComponent(id)}`;
+
+/** Prescription Management - Doctor endpoints */
+export const PRESCRIPTION_MEDICINES_SEARCH = '/api/v1/simple-prescription/doctor/medicines/search';
+export const PRESCRIPTION_CREATE = '/api/v1/simple-prescription/doctor/prescriptions/create';
+export const PRESCRIPTION_DOCTOR_LIST = '/api/v1/simple-prescription/doctor/prescriptions';
+
+/** Prescription Management - Pharmacist endpoints */
+export const PRESCRIPTION_PHARMACIST_LIST = '/api/v1/simple-prescription/pharmacist/prescriptions';
+export const PRESCRIPTION_DISPENSE = (prescriptionId) => `/api/v1/simple-prescription/pharmacist/prescriptions/${encodeURIComponent(prescriptionId)}/dispense`;
+
+/** Prescription Management - Patient endpoints */
+export const PRESCRIPTION_PATIENT_LIST = '/api/v1/simple-prescription/patient/prescriptions';
+
+/** Prescription Management - Common endpoints */
+export const PRESCRIPTION_DETAILS = (prescriptionId) => `/api/v1/simple-prescription/prescriptions/${encodeURIComponent(prescriptionId)}`;
+export const PRESCRIPTION_PDF_DOWNLOAD = (prescriptionId) => `/api/v1/simple-prescription/prescriptions/${encodeURIComponent(prescriptionId)}/pdf`;
 /** Receptionist: patient management */
 export const RECEPTIONIST_PATIENTS = '/api/v1/receptionist/patients';
-export const RECEPTIONIST_PATIENT_SEARCH = '/api/v1/receptionist/patients/search';
-export const RECEPTIONIST_PATIENT_PROFILE = (patientRef) => `/api/v1/receptionist/patients/${encodeURIComponent(patientRef)}/profile`;
-export const RECEPTIONIST_PATIENT_UPDATE = (patientId) => `/api/v1/receptionist/patients/${encodeURIComponent(patientId)}`;
+// --- PHARMACY REPORTS ---
+export const PHARMACY_REPORTS_BASE = '/api/v1/pharmacy/reports';
+export const PHARMACY_REPORTS_SALES_SUMMARY = `${PHARMACY_REPORTS_BASE}/sales-summary`;
+export const PHARMACY_REPORTS_STOCK_VALUATION = `${PHARMACY_REPORTS_BASE}/stock-valuation`;
+export const PHARMACY_REPORTS_EXPIRY = `${PHARMACY_REPORTS_BASE}/expiry`;
+export const PHARMACY_REPORTS_FAST_SLOW_MOVING = `${PHARMACY_REPORTS_BASE}/fast-slow-moving`;
+export const PHARMACY_REPORTS_PROFIT_MARGINS = `${PHARMACY_REPORTS_BASE}/profit-margins`;
+ 
+// --- PHARMACY ---
+export const PHARMACY_INVENTORY_BASE = '/api/v1/pharmacy/inventory';
+export const PHARMACY_MEDICINES_BASE = '/api/v1/pharmacy/medicines';
+export const PHARMACY_SUPPLIERS_BASE = '/api/v1/pharmacy/suppliers';
+export const PHARMACY_PURCHASE_ORDERS_BASE = '/api/v1/pharmacy/purchase-orders';
+export const PHARMACY_GRN_BASE = '/api/v1/pharmacy/grn';
+export const PHARMACY_STOCK_BASE = '/api/v1/pharmacy/stock';
+export const PHARMACY_SALES_BASE = '/api/v1/pharmacy/sales';
+export const PHARMACY_RETURNS_BASE = '/api/v1/pharmacy/returns';
+export const PHARMACY_ALERTS_BASE = '/api/v1/pharmacy/alerts';
+export const PHARMACY_DASHBOARD_OVERVIEW = '/api/v1/pharmacy/dashboard/overview';
+export const PHARMACY_SETTINGS_BASE = '/api/v1/pharmacy/settings';
+ 
+// --- NURSE ---
+export const NURSE_BASE = '/api/v1/nurse';
+// NURSE DASHBOARD APIs
+export const NURSE_DASHBOARD_OVERVIEW =
+  '/api/v1/nurse/dashboard';
+
+export const NURSE_ADD_VITALS =
+  '/api/v1/nurse/vitals';
+
+export const NURSE_GET_VITALS =
+  '/api/v1/nurse/vitals';
+
+export const NURSE_ASSIGNED_PATIENTS =
+  '/api/v1/nurse/assigned-patients';
+
+export const NURSE_MEDICATIONS =
+  '/api/v1/nurse/medications';
+
+export const NURSE_BEDS =
+  '/api/v1/nurse/beds';
+
+export const NURSE_LAB_TESTS =
+  '/api/v1/nurse/lab-tests';
+
+export const NURSE_NURSING_NOTES =
+  '/api/v1/nurse/nursing-notes';
+  

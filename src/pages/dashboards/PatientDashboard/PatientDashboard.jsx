@@ -10,6 +10,7 @@ import TestResults from './pages/TestResults'
 import Billing from './pages/Billing'
 import Profile from './pages/Profile'
 import Messages from './pages/Messages'
+import DocumentStorage from './pages/DocumentStorage'
 
 const PatientDashboard = () => {
   const [activePage, setActivePage] = useState('dashboard')
@@ -63,6 +64,8 @@ const PatientDashboard = () => {
         return <Profile />
       case 'messages':
         return <Messages />
+      case 'documentstorage':
+        return <DocumentStorage />
       default:
         return <PatientOverview setActivePage={setActivePage} />
     }

@@ -14,6 +14,7 @@ import RaiseticketDoctor from './pages/RaiseticketDoctor'
 import ScheduleManagement from './pages/ScheduleManagement'
 import AppointmentTracking from './pages/AppointmentTracking'
 import TreatmentPlans from './pages/TreatmentPlans'
+import ReportsAndAnalytics from './pages/ReportsAndAnalytics'
 
 const DoctorDashboard = () => {
   const [activePage, setActivePage] = useState('dashboard')
@@ -78,6 +79,8 @@ const DoctorDashboard = () => {
         return <RaiseticketDoctor {...pageProps} />
       case 'profile':
         return <DoctorProfile {...pageProps} />
+      case 'reports-analytics':
+        return <ReportsAndAnalytics {...pageProps} />
 
       default:
         return <DoctorOverview {...pageProps} />

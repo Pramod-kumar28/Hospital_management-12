@@ -36,7 +36,7 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
 
   const doctorMenu = [
     { id: 'dashboard', label: 'Dashboard Overview', icon: 'fa-chart-line' },
-    { id: 'appointments', label: 'Appointments', icon: 'fa-calendar-alt' },
+    //{ id: 'appointments', label: 'Appointments', icon: 'fa-calendar-alt' },
     { id: 'appointment-tracking', label: 'Appointment Tracking', icon: 'fa-route' },
     { id: 'schedule', label: 'Schedule Management', icon: 'fa-calendar-week' },
     { id: 'patients', label: 'Patient Records', icon: 'fa-user-injured' },
@@ -46,6 +46,7 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
     { id: 'inpatient', label: 'Inpatient Visits', icon: 'fa-procedures' },
     { id: 'discharge', label: 'Discharge Summary', icon: 'fa-file-contract' },
     { id: 'messages', label: 'Messaging', icon: 'fa-comments' },
+    { id: 'reports-analytics', label: 'Reports & Analytics', icon: 'fa-chart-pie' },
     { id: 'profile', label: 'My Profile', icon: 'fa-user-md' },
     { id: 'raise-ticket', label: 'Raise Ticket', icon: 'fa-envelope-open-text' }
   ]

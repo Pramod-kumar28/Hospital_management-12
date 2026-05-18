@@ -83,8 +83,10 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
   const receptionistMenu = [
     { id: 'dashboard', label: 'Dashboard Overview', icon: 'fa-chart-line' },
     { id: 'registration', label: 'Patient Registration', icon: 'fa-user-plus' },
-    { id: 'appointments', label: 'Appointment Scheduling', icon: 'fa-calendar-check' },
     { id: 'records', label: 'Patient Records', icon: 'fa-folder' },
+    { id: 'appointments', label: 'Appointment Scheduling', icon: 'fa-calendar-check' },
+    { id: "Doctors", label: "Doctors", icon: "fa-user-md" },
+    { id: "Departments", label: "Departments", icon: "fa-building" },
     { id: 'opd', label: 'OPD Management', icon: 'fas fa-stethoscope' },
     { id: 'ipd', label: 'IPD Management', icon: 'fas fa-procedures' },
     { id: 'documents', label: 'Document Management', icon: 'fas fa-file-upload' },

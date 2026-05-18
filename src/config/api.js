@@ -177,12 +177,30 @@ export const RECEPTIONIST_PROFILE_UPDATE = '/api/v1/receptionist/profile';
 /** Receptionist: patient registration */
 export const RECEPTIONIST_PATIENT_REGISTER = '/api/v1/receptionist/patients/register';
 export const RECEPTIONIST_PATIENT_SEARCH = '/api/v1/receptionist/patients/search';
-export const RECEPTIONIST_PATIENT_PROFILE = (patientId) => `/api/v1/receptionist/patients/${encodeURIComponent(patientId)}`;
+export const RECEPTIONIST_PATIENT_PROFILE = (patientId) => `/api/v1/receptionist/patients/${encodeURIComponent(patientId)}/profile`;
 export const RECEPTIONIST_PATIENT_UPDATE = (patientId) => `/api/v1/receptionist/patients/${encodeURIComponent(patientId)}`;
 
 /** Receptionist: dashboard overview */
 export const RECEPTIONIST_DASHBOARD_OVERVIEW = '/api/v1/receptionist/dashboard';
 
+<<<<<<< Updated upstream
+=======
+/** Receptionist: Department management */
+export const DEPARTMENT_LIST = '/api/v1/departments';
+export const DEPARTMENT_SEARCH = '/api/v1/departments/search';
+export const DEPARTMENT_STATISTICS = '/api/v1/departments/statistics';
+export const DEPARTMENT_DETAILS = (id) => `/api/v1/departments/${encodeURIComponent(id)}`;
+export const DEPARTMENT_DOCTORS = (id) => `/api/v1/receptionist/departments/${encodeURIComponent(id)}/doctors`;
+export const DEPARTMENT_NURSES = (id) => `/api/v1/receptionist/departments/${encodeURIComponent(id)}/nurses`;
+export const DEPARTMENT_BEDS = (id) => `/api/v1/receptionist/departments/${encodeURIComponent(id)}/beds`;
+
+/** Receptionist: Doctor management */
+export const DOCTOR_LIST = '/api/v1/doctors';
+export const DOCTOR_SEARCH = '/api/v1/doctors/search';
+export const DOCTOR_DROPDOWN = '/api/v1/doctors/dropdown';
+export const DOCTOR_STATISTICS = '/api/v1/doctors/statistics';
+export const DOCTOR_DETAILS = (id) => `/api/v1/doctors/${encodeURIComponent(id)}`;
+>>>>>>> Stashed changes
 
 /** Prescription Management - Doctor endpoints */
 export const PRESCRIPTION_MEDICINES_SEARCH = '/api/v1/simple-prescription/doctor/medicines/search';

@@ -151,6 +151,18 @@ export const DOCTOR_SCHEDULE_WEEKLY = '/api/v1/doctor-management/schedule/weekly
 export const DOCTOR_SCHEDULE_SLOTS = '/api/v1/doctor-management/schedule/slots';
 export const DOCTOR_SCHEDULE_CREATE = '/api/v1/doctor-management/schedule/create';
 export const DOCTOR_SCHEDULE_SLOT_DETAILS = (scheduleId) => `/api/v1/doctor-management/schedule/${encodeURIComponent(scheduleId)}`;
+export const DOCTOR_STATISTICS_SUMMARY = (period = 'month') => `/api/v1/doctor-management/statistics/summary?period=${period}`;
+
+/** Doctor: reports and analytics */
+export const DOCTOR_REPORTS_PRACTICE_OVERVIEW = '/api/v1/doctor-management/reports/practice-overview';
+export const DOCTOR_REPORTS_PATIENT_ANALYTICS = '/api/v1/doctor-management/reports/patient-analytics';
+export const DOCTOR_REPORTS_APPOINTMENT_ANALYTICS = '/api/v1/doctor-management/reports/appointment-analytics';
+export const DOCTOR_REPORTS_CLINICAL_OUTCOMES = '/api/v1/doctor-management/reports/clinical-outcomes';
+export const DOCTOR_REPORTS_FINANCIAL_SUMMARY = '/api/v1/doctor-management/reports/financial-summary';
+export const DOCTOR_REPORTS_PERFORMANCE_METRICS = '/api/v1/doctor-management/reports/performance-metrics';
+export const DOCTOR_REPORTS_COMPARATIVE_ANALYSIS = '/api/v1/doctor-management/reports/comparative-analysis';
+export const DOCTOR_REPORTS_GENERATE_CUSTOM_REPORT = '/api/v1/doctor-management/reports/generate-custom-report';
+export const DOCTOR_REPORTS_EXPORT_OPTIONS = '/api/v1/doctor-management/reports/export-options';
 
 /** Receptionist: profile management */
 export const RECEPTIONIST_PROFILE = '/api/v1/receptionist/profile';

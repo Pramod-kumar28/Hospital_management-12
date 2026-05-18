@@ -1,11 +1,4 @@
-// src/config/api.js  apiConfig.js - Add support endpoints
-/*
- * Backend API base URL (`BASE_URL` + paths = e.g. http://localhost:8060/api/v1/...).
- * In dev: empty string so requests use the Vite dev server origin and `/api` is proxied to the backend (avoids CORS).
- * In production: set `VITE_API_BASE_URL` (e.g. http://localhost:8060).
-*/
-// In local dev, use Vite proxy (/api -> Render backend) to avoid browser CORS.
-// In production builds, call backend directly.
+
 export const API_BASE_URL = import.meta.env.DEV
   ? ''
   : (import.meta.env.VITE_API_BASE_URL || 'https://hms-backend-t9m3.onrender.com').replace(/\/$/, '');
@@ -78,6 +71,7 @@ export const SUPER_ADMIN_ME_CHANGE_PASSWORD = '/api/v1/super-admin/me/change-pas
 
 /** Hospital Admin: personal profile */
 export const HOSPITAL_ADMIN_ME = '/api/v1/hospital-admin/me';
+export const HOSPITAL_ADMIN_PROFILE = '/api/v1/hospital-admin/profile';
 export const HOSPITAL_ADMIN_ME_AVATAR = '/api/v1/hospital-admin/me/avatar';
 export const HOSPITAL_ADMIN_ME_SECURITY = '/api/v1/hospital-admin/me/security';
 export const HOSPITAL_ADMIN_ME_CHANGE_PASSWORD = '/api/v1/hospital-admin/me/change-password';
@@ -96,8 +90,7 @@ export const ANALYTICS_OVERVIEW = '/api/v1/analytics/overview';
 export const SUPER_ADMIN_ANALYTICS_OVERVIEW = '/api/v1/super-admin/analytics/overview';
 
 /** Super Admin: Dashboard Overview Cards with growth metrics */
-export const SUPER_ADMIN_DASHBOARD_OVERVIEW_CARDS = (periodDays = 30, trendMonths = 6) =>
-  `/api/v1/super-admin/dashboard/overview-cards?period_days=${periodDays}&trend_months=${trendMonths}`;
+export const SUPER_ADMIN_DASHBOARD_OVERVIEW_CARDS = (periodDays = 30, trendMonths = 6) => `/api/v1/super-admin/dashboard/overview-cards?period_days=${periodDays}&trend_months=${trendMonths}`;
 
 /** Analytics: GET audit logs with filters */
 export const ANALYTICS_AUDIT_LOGS = (resourceType = 1, skip = 0, limit = 50) => `/api/v1/analytics/audit-logs?resource_type=${resourceType}&skip=${skip}&limit=${limit}`;
@@ -205,3 +198,42 @@ export const PRESCRIPTION_PATIENT_LIST = '/api/v1/simple-prescription/patient/pr
 /** Prescription Management - Common endpoints */
 export const PRESCRIPTION_DETAILS = (prescriptionId) => `/api/v1/simple-prescription/prescriptions/${encodeURIComponent(prescriptionId)}`;
 export const PRESCRIPTION_PDF_DOWNLOAD = (prescriptionId) => `/api/v1/simple-prescription/prescriptions/${encodeURIComponent(prescriptionId)}/pdf`;
+/** Receptionist: patient management */
+export const RECEPTIONIST_PATIENTS = '/api/v1/receptionist/patients';
+// --- PHARMACY REPORTS ---
+export const PHARMACY_REPORTS_BASE = '/api/v1/pharmacy/reports';
+export const PHARMACY_REPORTS_SALES_SUMMARY = `${PHARMACY_REPORTS_BASE}/sales-summary`;
+export const PHARMACY_REPORTS_STOCK_VALUATION = `${PHARMACY_REPORTS_BASE}/stock-valuation`;
+export const PHARMACY_REPORTS_EXPIRY = `${PHARMACY_REPORTS_BASE}/expiry`;
+export const PHARMACY_REPORTS_FAST_SLOW_MOVING = `${PHARMACY_REPORTS_BASE}/fast-slow-moving`;
+export const PHARMACY_REPORTS_PROFIT_MARGINS = `${PHARMACY_REPORTS_BASE}/profit-margins`;
+
+// --- PHARMACY ---
+export const PHARMACY_INVENTORY_BASE = '/api/v1/pharmacy/inventory';
+export const PHARMACY_MEDICINES_BASE = '/api/v1/pharmacy/medicines';
+export const PHARMACY_SUPPLIERS_BASE = '/api/v1/pharmacy/suppliers';
+export const PHARMACY_PURCHASE_ORDERS_BASE = '/api/v1/pharmacy/purchase-orders';
+export const PHARMACY_GRN_BASE = '/api/v1/pharmacy/grn';
+export const PHARMACY_STOCK_BASE = '/api/v1/pharmacy/stock';
+export const PHARMACY_SALES_BASE = '/api/v1/pharmacy/sales';
+export const PHARMACY_RETURNS_BASE = '/api/v1/pharmacy/returns';
+export const PHARMACY_ALERTS_BASE = '/api/v1/pharmacy/alerts';
+export const PHARMACY_DASHBOARD_OVERVIEW = '/api/v1/pharmacy/dashboard/overview';
+export const PHARMACY_SETTINGS_BASE = '/api/v1/pharmacy/settings';
+
+// --- NURSE ---
+export const NURSE_BASE = '/api/v1/nurse';
+export const NURSE_ASSIGNED_PATIENTS = `${NURSE_BASE}/assigned_patients`;
+
+// --- LAB MANAGEMENT ---
+export const LAB_BASE = '/api/v1/lab';
+export const LAB_TECH_DASHBOARD = `${LAB_BASE}/tech-dashboard`;
+export const LAB_REPORT_GENERATION = `${LAB_BASE}/report-generation`;
+export const LAB_EQUIPMENT = `${LAB_BASE}/equipment-tracking`;
+export const LAB_SAMPLES = `${LAB_BASE}/samples`;
+export const LAB_RESULT_ACCESS = `${LAB_BASE}/result-access`;
+export const LAB_RESULT_ACCESS_GRANT = `${LAB_RESULT_ACCESS}/grant`;
+export const LAB_EQUIPMENT_QC_BASE = `${LAB_BASE}/equipment-qc/equipment`;
+export const LAB_EQUIPMENT_DETAILS = (id) => `${LAB_EQUIPMENT_QC_BASE}/${encodeURIComponent(id)}`;
+export const LAB_EQUIPMENT_LOGS = (id) => `${LAB_EQUIPMENT_QC_BASE}/${encodeURIComponent(id)}/logs`;
+export const LAB_EQUIPMENT_STATUS = (id) => `${LAB_EQUIPMENT_QC_BASE}/${encodeURIComponent(id)}/status`;

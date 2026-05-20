@@ -276,3 +276,17 @@ export const NURSE_NURSING_NOTES =
 
 export const NURSE_DISCHARGE_SUPPORT = '/api/v1/nurse/discharge-support';
 export const NURSE_DISCHARGE_SUMMARY = '/api/v1/nurse/discharge-summary';
+ 
+// --- LAB MANAGEMENT ---
+export const LAB_BASE = '/api/v1/lab';
+export const LAB_TECH_DASHBOARD = `${LAB_BASE}/tech-dashboard`;
+export const LAB_REPORT_GENERATION = `${LAB_BASE}/report-generation`;
+export const LAB_EQUIPMENT = `${LAB_BASE}/equipment-tracking`;
+export const LAB_SAMPLES = `${LAB_BASE}/samples`;
+export const LAB_RESULT_ACCESS = `${LAB_BASE}/result-access`;
+export const LAB_RESULT_ACCESS_GRANT = `${LAB_RESULT_ACCESS}/grant`;
+export const LAB_EQUIPMENT_QC_BASE = `${LAB_BASE}/equipment-qc/equipment`;
+export const LAB_EQUIPMENT_DETAILS = (id) => `${LAB_EQUIPMENT_QC_BASE}/${encodeURIComponent(id)}`;
+export const LAB_EQUIPMENT_LOGS = (id) => `${LAB_EQUIPMENT_QC_BASE}/${encodeURIComponent(id)}/logs`;
+export const LAB_EQUIPMENT_STATUS = (id) => `${LAB_EQUIPMENT_QC_BASE}/${encodeURIComponent(id)}/status`;
+ 

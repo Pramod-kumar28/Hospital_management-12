@@ -83,12 +83,17 @@ const Settings = () => {
   const [isEditingSchedule, setIsEditingSchedule] = useState(false)
   const [editScheduleData, setEditScheduleData] = useState(operatingHours.schedule)
 
+  const [activeTab, setActiveTab] = useState('profile')
+  const tabs = [
+    { id: 'profile', label: 'Hospital Profile', icon: <i className="fas fa-hospital"></i> }
+  ]
+
   const handleInputChange = (field, value) => {
-    setProfile(prev => ({ ...prev, [field]: value }));
+    setEditFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSecurityChange = (field, value) => {
-    setProfile(prev => ({
+    setEditFormData(prev => ({
       ...prev,
       [field]: value
     }))

@@ -182,9 +182,12 @@ export const RECEPTIONIST_PATIENT_REGISTER = '/api/v1/receptionist/patients/regi
 export const RECEPTIONIST_PATIENT_SEARCH = '/api/v1/receptionist/patients/search';
 export const RECEPTIONIST_PATIENT_PROFILE = (patientId) => `/api/v1/receptionist/patients/${encodeURIComponent(patientId)}/profile`;
 export const RECEPTIONIST_PATIENT_UPDATE = (patientId) => `/api/v1/receptionist/patients/${encodeURIComponent(patientId)}`;
+<<<<<<< Updated upstream
 export const RECEPTIONIST_PATIENT_DOCUMENTS_UPLOAD = '/api/v1/receptionist/patient-documents/upload';
 export const RECEPTIONIST_PATIENT_DOCUMENTS = (patientRef) => `/api/v1/receptionist/patients/${encodeURIComponent(patientRef)}/documents`;
 
+=======
+>>>>>>> Stashed changes
 /** Receptionist: dashboard overview */
 export const RECEPTIONIST_DASHBOARD_OVERVIEW = '/api/v1/receptionist/dashboard';
 /** Receptionist: Department management */

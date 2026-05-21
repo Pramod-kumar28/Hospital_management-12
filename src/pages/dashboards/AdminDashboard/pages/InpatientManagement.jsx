@@ -20,7 +20,6 @@ import { apiFetch } from "../../../../services/apiClient";
 const WARD_TYPE_OPTIONS = ["ICU", "GENERAL", "EMERGENCY", "PRIVATE"];
 const BED_TYPE_OPTIONS = ["GENERAL", "ICU", "PRIVATE", "EMERGENCY"];
 const BED_STATUS_OPTIONS = ["available", "occupied", "maintenance", "reserved"];
-
 function parseApiError(data, res) {
   const detailParts = [];
   const appendFromErrorItems = (items) => {
@@ -32,7 +31,8 @@ function parseApiError(data, res) {
           ? x.loc.filter((p) => p !== "body").join(" → ")
           : "";
         detailParts.push(loc ? `${loc}: ${x.msg}` : x.msg);
-      } else if (x?.message) detailParts.push(x.message);
+      }
+      else if (x?.message) detailParts.push(x.message);
     }
   };
   appendFromErrorItems(data?.errors);
@@ -41,7 +41,8 @@ function parseApiError(data, res) {
   else if (d && typeof d === "object") {
     if (d.message) detailParts.push(d.message);
     if (Array.isArray(d.errors)) appendFromErrorItems(d.errors);
-  } else if (Array.isArray(d)) appendFromErrorItems(d);
+  }
+  else if (Array.isArray(d)) appendFromErrorItems(d);
   const unique = [...new Set(detailParts.filter(Boolean))];
   if (unique.length) return unique.join("; ");
   return data?.message || `Request failed (${res.status})`;
@@ -160,13 +161,15 @@ function mapAdmissionToCard(a) {
     diagnosis: a?.diagnosis ?? "",
     treatmentPlan: a?.symptoms ?? a?.treatment_plan ?? "",
     emergencyContact: a?.emergency_contact ?? "",
-    insurance: a?.insurance_details ?? "",
-    insuranceId: "",
-    insuranceAmount: "",
+    insurance: a?.insurance_details ?? a?.insurance ?? "",
+    insuranceId: a?.insuranceId ?? a?.insurance_id ?? "",
+    insuranceAmount: a?.insuranceAmount ?? a?.insurance_amount ?? "",
     status: status || "—",
     department: a?.department ?? "",
     admission_type: a?.admission_type ?? "",
     medical_history: a?.medical_history ?? "",
+    estimated_stay_days: a?.estimated_stay_days ?? "",
+    admission_time: a?.admission_time ?? "",
     discharged,
     needsBedAssignment: !discharged && !bedIdStr,
   };
@@ -446,46 +449,29 @@ const InpatientManagement = () => {
           Inpatient Management
         </h2>
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-          <div
-            className="flex w-full sm:w-auto sm:min-w-[280px] max-w-md rounded-lg border border-gray-200 bg-gray-50 p-1 shadow-sm"
-            role="tablist"
-            aria-label="Inpatient section"
-          >
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mainTab === "inpatients"}
-              onClick={() => setMainTab("inpatients")}
+          <div className="flex w-full sm:w-auto sm:min-w-[280px] max-w-md rounded-lg border border-gray-200 bg-gray-50 p-1 shadow-sm" role="tablist" aria-label="Inpatient section">
+            <button type="button" role="tab" aria-selected={mainTab === "inpatients"} onClick={() => setMainTab("inpatients")}
               className={`flex flex-1 min-w-0 items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors text-center ${
                 mainTab === "inpatients"
                   ? "bg-white text-blue-700 shadow-sm"
                   : "text-gray-600 hover:text-gray-900 hover:bg-white/60"
-              }`}
-            >
+              }`}>
               <i className="fas fa-procedures shrink-0" aria-hidden />
               <span className="truncate">Inpatients</span>
             </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mainTab === "wardsBeds"}
-              onClick={() => setMainTab("wardsBeds")}
+            <button type="button" role="tab" aria-selected={mainTab === "wardsBeds"} onClick={() => setMainTab("wardsBeds")}
               className={`flex flex-1 min-w-0 items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors text-center ${
                 mainTab === "wardsBeds"
                   ? "bg-white text-blue-700 shadow-sm"
                   : "text-gray-600 hover:text-gray-900 hover:bg-white/60"
-              }`}
-            >
+              }`}>
               <i className="fas fa-hospital shrink-0" aria-hidden />
               <span className="truncate">Wards &amp; beds</span>
             </button>
           </div>
           {mainTab === "inpatients" && (
-            <button
-              type="button"
-              onClick={openCreateAdmission}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 shadow-sm"
-            >
+            <button className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 shadow-sm"
+              type="button" onClick={openCreateAdmission}>
               <i className="fas fa-plus" aria-hidden />
               New admission
             </button>
@@ -494,72 +480,49 @@ const InpatientManagement = () => {
       </div>
 
       {mainTab === "wardsBeds" && <WardBedManagementSection />}
-
       {mainTab === "inpatients" && (
         <>
           {/* Search and filters */}
           <div className="bg-white p-4 rounded-lg card-shadow border mb-6 space-y-4">
             <div className="flex flex-wrap gap-3 items-end">
               <div className="flex-1 min-w-[200px]">
-                <label className="block text-xs text-gray-500 mb-1">
-                  Search
-                </label>
-                <input
-                  type="text"
-                  placeholder="Patient, ref, diagnosis, department…"
-                  className="w-full p-2 border rounded-lg focus:outline-none focus:border-blue-500"
-                  value={searchTerm}
+                <label className="block text-xs text-gray-500 mb-1">Search</label>
+                <input className="w-full p-2 border rounded-lg focus:outline-none focus:border-blue-500" type="text"
+                  placeholder="Patient, ref, diagnosis, department…" value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">
-                  Status
-                </label>
-                <select
-                  value={admissionStatusFilter}
+                <label className="block text-xs text-gray-500 mb-1">Status</label>
+                <select className="p-2 border rounded-lg min-w-[140px]" value={admissionStatusFilter}
                   onChange={(e) => {
                     setAdmissionStatusFilter(e.target.value);
                     setAdmissionsPage(1);
-                  }}
-                  className="p-2 border rounded-lg min-w-[140px]"
-                >
+                  }}>
                   {ADMISSION_STATUS_FILTER_OPTIONS.map((o) => (
-                    <option key={o.value || "all"} value={o.value}>
-                      {o.label}
-                    </option>
+                    <option key={o.value || "all"} value={o.value}>{o.label}</option>
                   ))}
                 </select>
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">From</label>
-                <input
-                  type="date"
-                  value={dateFrom}
+                <input className="p-2 border rounded-lg" type="date" value={dateFrom}
                   onChange={(e) => {
                     setDateFrom(e.target.value);
                     setAdmissionsPage(1);
                   }}
-                  className="p-2 border rounded-lg"
                 />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">To</label>
-                <input
-                  type="date"
-                  value={dateTo}
+                <input className="p-2 border rounded-lg" type="date" value={dateTo}
                   onChange={(e) => {
                     setDateTo(e.target.value);
                     setAdmissionsPage(1);
                   }}
-                  className="p-2 border rounded-lg"
                 />
               </div>
-              <button
-                type="button"
-                onClick={() => loadAdmissions()}
-                className="px-3 py-2 border rounded-lg text-sm hover:bg-gray-50"
-              >
+              <button className="px-3 py-2 border rounded-lg text-sm hover:bg-gray-50" type="button" onClick={() => loadAdmissions()}>
                 <i className="fas fa-sync-alt mr-1" />
                 Refresh
               </button>
@@ -572,13 +535,8 @@ const InpatientManagement = () => {
               <div className="flex items-center">
                 <i className="fas fa-exclamation-triangle text-red-500 text-xl mr-3"></i>
                 <div>
-                  <h3 className="font-semibold text-red-700">
-                    Critical Alerts
-                  </h3>
-                  <p className="text-red-600 text-sm">
-                    {pendingBed} patient{pendingBed > 1 ? "s" : ""} pending bed
-                    assignment
-                  </p>
+                  <h3 className="font-semibold text-red-700">Critical Alerts</h3>
+                  <p className="text-red-600 text-sm">{pendingBed} patient{pendingBed > 1 ? "s" : ""} pending bed assignment</p>
                 </div>
               </div>
             </div>
@@ -586,13 +544,13 @@ const InpatientManagement = () => {
 
           {/* Bed Occupancy */}
           {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        {stats.map(({ label, value, color }) => (
-          <div key={label} className="bg-white p-6 rounded-xl card-shadow border text-center">
-            <div className={`text-2xl font-bold text-${color}-600`}>{value}</div>
-            <div className="text-sm text-gray-500">{label}</div>
-          </div>
-        ))}
-      </div> */}
+            {stats.map(({ label, value, color }) => (
+              <div key={label} className="bg-white p-6 rounded-xl card-shadow border text-center">
+                <div className={`text-2xl font-bold text-${color}-600`}>{value}</div>
+                <div className="text-sm text-gray-500">{label}</div>
+              </div>
+            ))}
+          </div> */}
 
           {/* Statistics - Compact 3 Column Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
@@ -624,21 +582,15 @@ const InpatientManagement = () => {
               const config = colorConfigs[color] || colorConfigs.blue;
 
               return (
-                <div
-                  key={label}
-                  className={`${config.bg} border border-gray-200 p-5 rounded-xl hover:shadow-md transition-all duration-300`}
-                >
+                <div className={`${config.bg} border border-gray-200 p-5 rounded-xl hover:shadow-md transition-all duration-300`}
+                  key={label}>
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="text-sm text-gray-500 mb-1">{label}</div>
-                      <div className={`text-2xl font-bold ${config.text}`}>
-                        {value}
-                      </div>
+                      <div className={`text-2xl font-bold ${config.text}`}>{value}</div>
                     </div>
                     <div className={`${config.iconBg} p-3 rounded-lg`}>
-                      <i
-                        className={`${config.icon} ${config.iconColor} text-lg`}
-                      ></i>
+                      <i className={`${config.icon} ${config.iconColor} text-lg`}></i>
                     </div>
                   </div>
                   <div className="mt-3 pt-3 border-t border-gray-100">
@@ -689,20 +641,12 @@ const InpatientManagement = () => {
                 {admissionsTotal} total)
               </span>
               <div className="flex gap-2">
-                <button
-                  type="button"
-                  disabled={admissionsPage <= 1}
-                  onClick={() => setAdmissionsPage((p) => Math.max(1, p - 1))}
-                  className="px-3 py-1.5 border rounded-lg disabled:opacity-40 hover:bg-gray-50"
-                >
+                <button className="px-3 py-1.5 border rounded-lg disabled:opacity-40 hover:bg-gray-50"
+                  type="button" disabled={admissionsPage <= 1} onClick={() => setAdmissionsPage((p) => Math.max(1, p - 1))}>
                   Previous
                 </button>
-                <button
-                  type="button"
-                  disabled={admissionsPage >= admissionTotalPages}
-                  onClick={() => setAdmissionsPage((p) => p + 1)}
-                  className="px-3 py-1.5 border rounded-lg disabled:opacity-40 hover:bg-gray-50"
-                >
+                <button className="px-3 py-1.5 border rounded-lg disabled:opacity-40 hover:bg-gray-50"
+                  type="button" disabled={admissionsPage >= admissionTotalPages} onClick={() => setAdmissionsPage((p) => p + 1)}>
                   Next
                 </button>
               </div>
@@ -716,16 +660,8 @@ const InpatientManagement = () => {
               columns={[
                 { key: "patient", title: "Patient", sortable: true },
                 { key: "roomNo", title: "Room", sortable: true },
-                {
-                  key: "admissionDate",
-                  title: "Admission Date",
-                  sortable: true,
-                },
-                {
-                  key: "dischargeDate",
-                  title: "Discharge Date",
-                  sortable: true,
-                },
+                { key: "admissionDate", title: "Admission Date", sortable: true, },
+                { key: "dischargeDate", title: "Discharge Date", sortable: true, },
                 { key: "doctor", title: "Doctor", sortable: true },
               ]}
               data={inpatients.filter((ip) => ip.discharged)}
@@ -812,7 +748,6 @@ function WardBedManagementSection() {
   const [wards, setWards] = useState([]);
   const [wardsTotal, setWardsTotal] = useState(0);
   const [wardsLoading, setWardsLoading] = useState(false);
-
   const [bedPage, setBedPage] = useState(1);
   const [bedLimit] = useState(50);
   const [bedWardIdFilter, setBedWardIdFilter] = useState("");
@@ -821,25 +756,20 @@ function WardBedManagementSection() {
   const [beds, setBeds] = useState([]);
   const [bedsTotal, setBedsTotal] = useState(0);
   const [bedsLoading, setBedsLoading] = useState(false);
-
   const [wardNamesCache, setWardNamesCache] = useState([]);
   /** Wards for bed filters / create-bed datalist (first page, high limit) */
   const [wardSelectList, setWardSelectList] = useState([]);
-
   const [createWardOpen, setCreateWardOpen] = useState(false);
   const [editWardOpen, setEditWardOpen] = useState(false);
   const [editingWardId, setEditingWardId] = useState("");
   const [wardForm, setWardForm] = useState(defaultWardForm);
   const [wardSubmitting, setWardSubmitting] = useState(false);
-
   const [createBedOpen, setCreateBedOpen] = useState(false);
   const [bedForm, setBedForm] = useState(defaultBedForm);
   const [bedSubmitting, setBedSubmitting] = useState(false);
-
   const [bedDetailOpen, setBedDetailOpen] = useState(false);
   const [bedDetailLoading, setBedDetailLoading] = useState(false);
   const [bedDetail, setBedDetail] = useState(null);
-
   const [bedStatusOpen, setBedStatusOpen] = useState(false);
   const [bedStatusId, setBedStatusId] = useState("");
   const [bedStatusForm, setBedStatusForm] = useState({
@@ -848,7 +778,6 @@ function WardBedManagementSection() {
     patient_id: "",
   });
   const [bedStatusSubmitting, setBedStatusSubmitting] = useState(false);
-
   const loadWards = useCallback(async () => {
     setWardsLoading(true);
     try {
@@ -869,11 +798,13 @@ function WardBedManagementSection() {
         const merged = [...new Set([...names, ...prev])];
         return merged;
       });
-    } catch (e) {
+    }
+    catch (e) {
       toast.error(e?.message || "Could not load wards");
       setWards([]);
       setWardsTotal(0);
-    } finally {
+    }
+    finally {
       setWardsLoading(false);
     }
   }, [wardPage, wardLimit, wardTypeFilter, activeOnlyWards]);
@@ -894,11 +825,13 @@ function WardBedManagementSection() {
       const { items, total } = getPagedList(data);
       setBeds(items);
       setBedsTotal(total);
-    } catch (e) {
+    }
+    catch (e) {
       toast.error(e?.message || "Could not load beds");
       setBeds([]);
       setBedsTotal(0);
-    } finally {
+    }
+    finally {
       setBedsLoading(false);
     }
   }, [bedPage, bedLimit, bedWardIdFilter, bedStatusFilter, bedTypeFilter]);
@@ -917,7 +850,8 @@ function WardBedManagementSection() {
       setWardSelectList(items);
       const names = items.map((w) => w?.name || w?.ward_name).filter(Boolean);
       setWardNamesCache((prev) => [...new Set([...names, ...prev])]);
-    } catch (e) {
+    }
+    catch (e) {
       toast.error(e?.message || "Could not load wards for filters");
       setWardSelectList([]);
     }
@@ -998,9 +932,11 @@ function WardBedManagementSection() {
       toast.success("Ward created");
       setCreateWardOpen(false);
       loadWards();
-    } catch (e) {
+    }
+    catch (e) {
       toast.error(e?.message || "Create ward failed");
-    } finally {
+    }
+    finally {
       setWardSubmitting(false);
     }
   };
@@ -1020,9 +956,11 @@ function WardBedManagementSection() {
       toast.success("Ward updated");
       setEditWardOpen(false);
       loadWards();
-    } catch (e) {
+    }
+    catch (e) {
       toast.error(e?.message || "Update ward failed");
-    } finally {
+    }
+    finally {
       setWardSubmitting(false);
     }
   };
@@ -1039,7 +977,8 @@ function WardBedManagementSection() {
       if (!res.ok) throw new Error(parseApiError(data, res));
       toast.success(nextActive ? "Ward enabled" : "Ward disabled");
       loadWards();
-    } catch (e) {
+    }
+    catch (e) {
       toast.error(e?.message || "Could not update ward status");
     }
   };
@@ -1073,9 +1012,11 @@ function WardBedManagementSection() {
       toast.success("Bed created");
       setCreateBedOpen(false);
       loadBeds();
-    } catch (e) {
+    }
+    catch (e) {
       toast.error(e?.message || "Create bed failed");
-    } finally {
+    }
+    finally {
       setBedSubmitting(false);
     }
   };
@@ -1094,10 +1035,12 @@ function WardBedManagementSection() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(parseApiError(data, res));
       setBedDetail(data?.data ?? data);
-    } catch (e) {
+    }
+    catch (e) {
       toast.error(e?.message || "Could not load bed details");
       setBedDetailOpen(false);
-    } finally {
+    }
+    finally {
       setBedDetailLoading(false);
     }
   };
@@ -1132,9 +1075,11 @@ function WardBedManagementSection() {
       toast.success("Bed status updated");
       setBedStatusOpen(false);
       loadBeds();
-    } catch (e) {
+    }
+    catch (e) {
       toast.error(e?.message || "Update bed status failed");
-    } finally {
+    }
+    finally {
       setBedStatusSubmitting(false);
     }
   };
@@ -1144,35 +1089,21 @@ function WardBedManagementSection() {
 
   return (
     <div className="space-y-6 mb-10">
-      <div
-        className="flex w-full max-w-lg rounded-lg border border-gray-200 bg-gray-50 p-1 shadow-sm"
-        role="tablist"
-        aria-label="Ward or bed list"
-      >
-        <button
-          type="button"
-          role="tab"
-          aria-selected={subTab === "wards"}
-          onClick={() => setSubTab("wards")}
+      <div className="flex w-full max-w-lg rounded-lg border border-gray-200 bg-gray-50 p-1 shadow-sm" role="tablist" aria-label="Ward or bed list">
+        <button type="button" role="tab" aria-selected={subTab === "wards"} onClick={() => setSubTab("wards")}
           className={`flex flex-1 min-w-0 items-center justify-center px-4 py-2.5 text-sm font-medium rounded-md transition-colors ${
             subTab === "wards"
               ? "bg-white text-slate-800 shadow-sm"
               : "text-gray-600 hover:text-gray-900 hover:bg-white/60"
-          }`}
-        >
+          }`}>
           Wards
         </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={subTab === "beds"}
-          onClick={() => setSubTab("beds")}
+        <button type="button" role="tab" aria-selected={subTab === "beds"} onClick={() => setSubTab("beds")}
           className={`flex flex-1 min-w-0 items-center justify-center px-4 py-2.5 text-sm font-medium rounded-md transition-colors ${
             subTab === "beds"
               ? "bg-white text-slate-800 shadow-sm"
               : "text-gray-600 hover:text-gray-900 hover:bg-white/60"
-          }`}
-        >
+          }`}>
           Beds
         </button>
       </div>
@@ -1182,17 +1113,12 @@ function WardBedManagementSection() {
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between mb-4">
             <div className="flex flex-wrap gap-3">
               <div>
-                <label className="block text-xs text-gray-500 mb-1">
-                  Ward type
-                </label>
-                <select
-                  value={wardTypeFilter}
+                <label className="block text-xs text-gray-500 mb-1">Ward type</label>
+                <select className="p-2 border rounded-lg text-sm" value={wardTypeFilter}
                   onChange={(e) => {
                     setWardTypeFilter(e.target.value);
                     setWardPage(1);
-                  }}
-                  className="p-2 border rounded-lg text-sm"
-                >
+                  }}>
                   <option value="">All types</option>
                   {WARD_TYPE_OPTIONS.map((t) => (
                     <option key={t} value={t}>
@@ -1202,9 +1128,7 @@ function WardBedManagementSection() {
                 </select>
               </div>
               <label className="flex items-center gap-2 text-sm text-gray-700 mt-5 lg:mt-0">
-                <input
-                  type="checkbox"
-                  checked={activeOnlyWards}
+                <input type="checkbox" checked={activeOnlyWards}
                   onChange={(e) => {
                     setActiveOnlyWards(e.target.checked);
                     setWardPage(1);
@@ -1214,18 +1138,10 @@ function WardBedManagementSection() {
               </label>
             </div>
             <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => loadWards()}
-                className="px-3 py-2 border rounded-lg text-sm hover:bg-gray-50"
-              >
+              <button className="px-3 py-2 border rounded-lg text-sm hover:bg-gray-50" type="button" onClick={() => loadWards()}>
                 <i className="fas fa-sync-alt mr-1"></i>Refresh
               </button>
-              <button
-                type="button"
-                onClick={openCreateWard}
-                className="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
-              >
+              <button className="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700" type="button" onClick={openCreateWard}>
                 <i className="fas fa-plus mr-1"></i>Create ward
               </button>
             </div>
@@ -1252,10 +1168,7 @@ function WardBedManagementSection() {
                   <tbody>
                     {wards.length === 0 ? (
                       <tr>
-                        <td
-                          colSpan={6}
-                          className="py-8 text-center text-gray-500"
-                        >
+                        <td className="py-8 text-center text-gray-500" colSpan={6}>
                           No wards found
                         </td>
                       </tr>
@@ -1264,41 +1177,24 @@ function WardBedManagementSection() {
                         const wid = wardIdFromRow(w);
                         const active = w?.is_active !== false;
                         return (
-                          <tr
-                            key={wid || w.name}
-                            className="border-b border-gray-100"
-                          >
+                          <tr className="border-b border-gray-100" key={wid || w.name}>
                             <td className="py-2 pr-4 font-medium text-gray-800">
                               {w.name ?? w.ward_name ?? "—"}
                             </td>
                             <td className="py-2 pr-4">{w.ward_type ?? "—"}</td>
-                            <td className="py-2 pr-4">
-                              {w.floor_number ?? "—"}
-                            </td>
+                            <td className="py-2 pr-4">{w.floor_number ?? "—"}</td>
                             <td className="py-2 pr-4">{w.total_beds ?? "—"}</td>
                             <td className="py-2 pr-4">
-                              <span
-                                className={
-                                  active ? "text-green-600" : "text-red-600"
-                                }
-                              >
+                              <span className={active ? "text-green-600" : "text-red-600"}>
                                 {active ? "Yes" : "No"}
                               </span>
                             </td>
                             <td className="py-2 pr-4 text-right space-x-1">
-                              <button
-                                type="button"
-                                className="text-blue-600 hover:underline text-xs"
-                                onClick={() => openEditWard(w)}
-                              >
+                              <button className="text-blue-600 hover:underline text-xs" type="button" onClick={() => openEditWard(w)}>
                                 Edit
                               </button>
-                              <button
-                                type="button"
-                                className="text-gray-700 hover:underline text-xs"
-                                onClick={() => toggleWardActive(w, !active)}
-                              >
-                                {active ? "Disable" : "Enable"}
+                              <button className="text-gray-700 hover:underline text-xs" type="button" onClick={() => toggleWardActive(w, !active)}>
+                                {active ? "Disable" : "Enable"} 
                               </button>
                             </td>
                           </tr>
@@ -1313,20 +1209,12 @@ function WardBedManagementSection() {
                   Page {wardPage} of {wardTotalPages} ({wardsTotal} total)
                 </span>
                 <div className="flex gap-2">
-                  <button
-                    type="button"
-                    disabled={wardPage <= 1}
-                    onClick={() => setWardPage((p) => Math.max(1, p - 1))}
-                    className="px-3 py-1 border rounded disabled:opacity-40"
-                  >
+                  <button className="px-3 py-1 border rounded disabled:opacity-40" type="button"
+                    disabled={wardPage <= 1} onClick={() => setWardPage((p) => Math.max(1, p - 1))}>
                     Previous
                   </button>
-                  <button
-                    type="button"
-                    disabled={wardPage >= wardTotalPages}
-                    onClick={() => setWardPage((p) => p + 1)}
-                    className="px-3 py-1 border rounded disabled:opacity-40"
-                  >
+                  <button className="px-3 py-1 border rounded disabled:opacity-40" type="button"
+                    disabled={wardPage >= wardTotalPages} onClick={() => setWardPage((p) => p + 1)}>
                     Next
                   </button>
                 </div>
@@ -1342,14 +1230,11 @@ function WardBedManagementSection() {
             <div className="flex flex-wrap gap-3">
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Ward</label>
-                <select
-                  value={bedWardIdFilter}
+                <select className="p-2 border rounded-lg text-sm min-w-[180px]" value={bedWardIdFilter}
                   onChange={(e) => {
                     setBedWardIdFilter(e.target.value);
                     setBedPage(1);
-                  }}
-                  className="p-2 border rounded-lg text-sm min-w-[180px]"
-                >
+                  }}>
                   <option value="">All wards</option>
                   {wardSelectList.map((w) => {
                     const wid = wardIdFromRow(w);
@@ -1363,62 +1248,40 @@ function WardBedManagementSection() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">
-                  Status
-                </label>
-                <select
-                  value={bedStatusFilter}
+                <label className="block text-xs text-gray-500 mb-1">Status</label>
+                <select className="p-2 border rounded-lg text-sm" value={bedStatusFilter}
                   onChange={(e) => {
                     setBedStatusFilter(e.target.value);
                     setBedPage(1);
-                  }}
-                  className="p-2 border rounded-lg text-sm"
-                >
+                  }}>
                   <option value="">All</option>
                   {BED_STATUS_OPTIONS.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
+                    <option key={s} value={s}>{s}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">
-                  Bed type
-                </label>
-                <select
-                  value={bedTypeFilter}
+                <label className="block text-xs text-gray-500 mb-1">Bed type</label>
+                <select className="p-2 border rounded-lg text-sm" value={bedTypeFilter}
                   onChange={(e) => {
                     setBedTypeFilter(e.target.value);
                     setBedPage(1);
-                  }}
-                  className="p-2 border rounded-lg text-sm"
-                >
+                  }}>
                   <option value="">All</option>
-                  {BED_TYPE_OPTIONS.map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
+                  {BED_TYPE_OPTIONS.map((t) => (<option key={t} value={t}>{t}</option>))}
                 </select>
               </div>
             </div>
             <div className="flex gap-2">
-              <button
-                type="button"
+              <button className="px-3 py-2 border rounded-lg text-sm hover:bg-gray-50" type="button"
                 onClick={() => {
                   loadBeds();
                   loadWardSelectList();
-                }}
-                className="px-3 py-2 border rounded-lg text-sm hover:bg-gray-50"
-              >
+                }}>
                 <i className="fas fa-sync-alt mr-1"></i>Refresh
               </button>
-              <button
-                type="button"
-                onClick={openCreateBed}
-                className="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
-              >
+              <button className="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
+                type="button" onClick={openCreateBed}>
                 <i className="fas fa-plus mr-1"></i>Create bed
               </button>
             </div>
@@ -1444,44 +1307,22 @@ function WardBedManagementSection() {
                   <tbody>
                     {beds.length === 0 ? (
                       <tr>
-                        <td
-                          colSpan={5}
-                          className="py-8 text-center text-gray-500"
-                        >
-                          No beds found
-                        </td>
+                        <td className="py-8 text-center text-gray-500" colSpan={5}>No beds found</td>
                       </tr>
                     ) : (
                       beds.map((b) => {
                         const bid = bedIdFromRow(b);
                         return (
-                          <tr
-                            key={bid || b.bed_number}
-                            className="border-b border-gray-100"
-                          >
-                            <td className="py-2 pr-4 font-medium">
-                              {b.bed_number ?? "—"}
-                            </td>
-                            <td className="py-2 pr-4">
-                              {b.ward_name ?? b.ward?.name ?? "—"}
-                            </td>
+                          <tr className="border-b border-gray-100" key={bid || b.bed_number}>
+                            <td className="py-2 pr-4 font-medium">{b.bed_number ?? "—"}</td>
+                            <td className="py-2 pr-4">{b.ward_name ?? b.ward?.name ?? "—"}</td>
                             <td className="py-2 pr-4">{b.bed_type ?? "—"}</td>
-                            <td className="py-2 pr-4 capitalize">
-                              {b.status ?? "—"}
-                            </td>
+                            <td className="py-2 pr-4 capitalize">{b.status ?? "—"}</td>
                             <td className="py-2 pr-4 text-right space-x-1">
-                              <button
-                                type="button"
-                                className="text-blue-600 hover:underline text-xs"
-                                onClick={() => openBedDetails(b)}
-                              >
-                                Details
-                              </button>
-                              <button
-                                type="button"
-                                className="text-gray-700 hover:underline text-xs"
-                                onClick={() => openBedStatus(b)}
-                              >
+                              <button type="button" className="text-blue-600 hover:underline text-xs"
+                                onClick={() => openBedDetails(b)}>Details</button>
+                              <button type="button" className="text-gray-700 hover:underline text-xs"
+                                onClick={() => openBedStatus(b)}>
                                 Status
                               </button>
                             </td>
@@ -1493,24 +1334,14 @@ function WardBedManagementSection() {
                 </table>
               </div>
               <div className="flex items-center justify-between mt-4 text-sm text-gray-600">
-                <span>
-                  Page {bedPage} of {bedTotalPages} ({bedsTotal} total)
-                </span>
+                <span>Page {bedPage} of {bedTotalPages} ({bedsTotal} total)</span>
                 <div className="flex gap-2">
-                  <button
-                    type="button"
-                    disabled={bedPage <= 1}
-                    onClick={() => setBedPage((p) => Math.max(1, p - 1))}
-                    className="px-3 py-1 border rounded disabled:opacity-40"
-                  >
+                  <button className="px-3 py-1 border rounded disabled:opacity-40" type="button" 
+                    disabled={bedPage <= 1} onClick={() => setBedPage((p) => Math.max(1, p - 1))}>
                     Previous
                   </button>
-                  <button
-                    type="button"
-                    disabled={bedPage >= bedTotalPages}
-                    onClick={() => setBedPage((p) => p + 1)}
-                    className="px-3 py-1 border rounded disabled:opacity-40"
-                  >
+                  <button className="px-3 py-1 border rounded disabled:opacity-40" type="button"
+                    disabled={bedPage >= bedTotalPages} onClick={() => setBedPage((p) => p + 1)}>
                     Next
                   </button>
                 </div>
@@ -1520,78 +1351,46 @@ function WardBedManagementSection() {
         </div>
       )}
 
-      <Modal
-        isOpen={createWardOpen}
-        onClose={() => setCreateWardOpen(false)}
-        title="Create ward"
-        size="lg"
-      >
+      <Modal isOpen={createWardOpen} onClose={() => setCreateWardOpen(false)}
+        title="Create ward" size="lg">
         <WardFormFields form={wardForm} setForm={setWardForm} />
         <div className="flex justify-end gap-2 pt-4 border-t mt-4">
-          <button
-            type="button"
-            onClick={() => setCreateWardOpen(false)}
-            className="px-4 py-2 border rounded-lg"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            disabled={wardSubmitting}
-            onClick={submitCreateWard}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50"
-          >
+          <button type="button" onClick={() => setCreateWardOpen(false)}
+            className="px-4 py-2 border rounded-lg">Cancel</button>
+          <button type="button" disabled={wardSubmitting} onClick={submitCreateWard}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50">
             {wardSubmitting ? "Saving…" : "Create"}
           </button>
         </div>
       </Modal>
 
-      <Modal
-        isOpen={editWardOpen}
-        onClose={() => setEditWardOpen(false)}
-        title="Edit ward"
-        size="lg"
-      >
+      <Modal isOpen={editWardOpen} onClose={() => setEditWardOpen(false)}
+        title="Edit ward" size="lg">
         <WardFormFields form={wardForm} setForm={setWardForm} />
         <div className="flex justify-end gap-2 pt-4 border-t mt-4">
-          <button
-            type="button"
-            onClick={() => setEditWardOpen(false)}
-            className="px-4 py-2 border rounded-lg"
-          >
+          <button className="px-4 py-2 border rounded-lg" type="button"
+            onClick={() => setEditWardOpen(false)}>
             Cancel
           </button>
-          <button
-            type="button"
-            disabled={wardSubmitting}
-            onClick={submitEditWard}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50"
-          >
+          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50"
+            type="button" disabled={wardSubmitting} onClick={submitEditWard}>
             {wardSubmitting ? "Saving…" : "Save changes"}
           </button>
         </div>
       </Modal>
 
-      <Modal
-        isOpen={createBedOpen}
-        onClose={() => setCreateBedOpen(false)}
-        title="Create bed"
-        size="lg"
-      >
+      <Modal isOpen={createBedOpen} onClose={() => setCreateBedOpen(false)} title="Create bed" size="lg">
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm text-gray-700 mb-1">
                 Ward name <span className="text-red-500">*</span>
               </label>
-              <input
-                list="ward-names-datalist"
-                value={bedForm.ward_name}
+              <input className="w-full p-2 border rounded-lg" placeholder="Exact ward name" 
+                list="ward-names-datalist" value={bedForm.ward_name}
                 onChange={(e) =>
                   setBedForm((f) => ({ ...f, ward_name: e.target.value }))
                 }
-                className="w-full p-2 border rounded-lg"
-                placeholder="Exact ward name"
               />
               <datalist id="ward-names-datalist">
                 {wardNamesCache.map((n) => (
@@ -1603,70 +1402,44 @@ function WardBedManagementSection() {
               <label className="block text-sm text-gray-700 mb-1">
                 Bed number <span className="text-red-500">*</span>
               </label>
-              <input
-                value={bedForm.bed_number}
+              <input className="w-full p-2 border rounded-lg" placeholder="e.g. B-12" value={bedForm.bed_number}
                 onChange={(e) =>
                   setBedForm((f) => ({ ...f, bed_number: e.target.value }))
                 }
-                className="w-full p-2 border rounded-lg"
-                placeholder="e.g. B-12"
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-700 mb-1">
-                Bed type
-              </label>
-              <select
-                value={bedForm.bed_type}
+              <label className="block text-sm text-gray-700 mb-1">Bed type</label>
+              <select className="w-full p-2 border rounded-lg" value={bedForm.bed_type}
                 onChange={(e) =>
                   setBedForm((f) => ({ ...f, bed_type: e.target.value }))
-                }
-                className="w-full p-2 border rounded-lg"
-              >
-                {BED_TYPE_OPTIONS.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
+                }>
+                {BED_TYPE_OPTIONS.map((t) => (<option key={t} value={t}>{t}</option>))}
               </select>
             </div>
             <div>
-              <label className="block text-sm text-gray-700 mb-1">
-                Daily rate
-              </label>
-              <input
-                type="number"
-                min={0}
-                value={bedForm.daily_rate}
+              <label className="block text-sm text-gray-700 mb-1">Daily rate</label>
+              <input className="w-full p-2 border rounded-lg" type="number" min={0} value={bedForm.daily_rate}
                 onChange={(e) =>
                   setBedForm((f) => ({ ...f, daily_rate: e.target.value }))
                 }
-                className="w-full p-2 border rounded-lg"
               />
             </div>
           </div>
           <div>
-            <label className="block text-sm text-gray-700 mb-1">
-              Equipment (comma or newline separated)
-            </label>
-            <textarea
-              rows={2}
-              value={bedForm.equipmentText}
+            <label className="block text-sm text-gray-700 mb-1">Equipment (comma or newline separated)</label>
+            <textarea className="w-full p-2 border rounded-lg" rows={2} value={bedForm.equipmentText}
               onChange={(e) =>
                 setBedForm((f) => ({ ...f, equipmentText: e.target.value }))
               }
-              className="w-full p-2 border rounded-lg"
             />
           </div>
           <div>
             <label className="block text-sm text-gray-700 mb-1">Notes</label>
-            <textarea
-              rows={2}
-              value={bedForm.notes}
+            <textarea className="w-full p-2 border rounded-lg" rows={2} value={bedForm.notes}
               onChange={(e) =>
                 setBedForm((f) => ({ ...f, notes: e.target.value }))
               }
-              className="w-full p-2 border rounded-lg"
             />
           </div>
           <div className="flex flex-wrap gap-4">
@@ -1676,9 +1449,7 @@ function WardBedManagementSection() {
               ["has_monitor", "Monitor"],
             ].map(([key, label]) => (
               <label key={key} className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={bedForm[key]}
+                <input type="checkbox" checked={bedForm[key]}
                   onChange={(e) =>
                     setBedForm((f) => ({ ...f, [key]: e.target.checked }))
                   }
@@ -1689,30 +1460,14 @@ function WardBedManagementSection() {
           </div>
         </div>
         <div className="flex justify-end gap-2 pt-4 border-t mt-4">
-          <button
-            type="button"
-            onClick={() => setCreateBedOpen(false)}
-            className="px-4 py-2 border rounded-lg"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            disabled={bedSubmitting}
-            onClick={submitCreateBed}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50"
-          >
+          <button className="px-4 py-2 border rounded-lg" type="button" onClick={() => setCreateBedOpen(false)}>Cancel</button>
+          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50" type="button" disabled={bedSubmitting} onClick={submitCreateBed}>
             {bedSubmitting ? "Saving…" : "Create bed"}
           </button>
         </div>
       </Modal>
 
-      <Modal
-        isOpen={bedDetailOpen}
-        onClose={() => setBedDetailOpen(false)}
-        title="Bed details"
-        size="lg"
-      >
+      <Modal isOpen={bedDetailOpen} onClose={() => setBedDetailOpen(false)} title="Bed details" size="lg">
         {bedDetailLoading ? (
           <LoadingSpinner />
         ) : bedDetail ? (
@@ -1723,32 +1478,18 @@ function WardBedManagementSection() {
           <p className="text-gray-500">No data</p>
         )}
         <div className="flex justify-end pt-4">
-          <button
-            type="button"
-            onClick={() => setBedDetailOpen(false)}
-            className="px-4 py-2 bg-gray-100 rounded-lg"
-          >
-            Close
-          </button>
+          <button className="px-4 py-2 bg-gray-100 rounded-lg" type="button" onClick={() => setBedDetailOpen(false)}>Close</button>
         </div>
       </Modal>
 
-      <Modal
-        isOpen={bedStatusOpen}
-        onClose={() => setBedStatusOpen(false)}
-        title="Update bed status"
-        size="md"
-      >
+      <Modal isOpen={bedStatusOpen} onClose={() => setBedStatusOpen(false)} title="Update bed status" size="md">
         <div className="space-y-4">
           <div>
             <label className="block text-sm text-gray-700 mb-1">Status</label>
-            <select
-              value={bedStatusForm.status}
+            <select className="w-full p-2 border rounded-lg" value={bedStatusForm.status}
               onChange={(e) =>
                 setBedStatusForm((f) => ({ ...f, status: e.target.value }))
-              }
-              className="w-full p-2 border rounded-lg"
-            >
+              }>
               {BED_STATUS_OPTIONS.map((s) => (
                 <option key={s} value={s}>
                   {s}
@@ -1757,49 +1498,27 @@ function WardBedManagementSection() {
             </select>
           </div>
           <div>
-            <label className="block text-sm text-gray-700 mb-1">
-              Maintenance notes
-            </label>
-            <textarea
-              rows={3}
-              value={bedStatusForm.maintenance_notes}
+            <label className="block text-sm text-gray-700 mb-1">Maintenance notes</label>
+            <textarea className="w-full p-2 border rounded-lg" rows={3} value={bedStatusForm.maintenance_notes}
               onChange={(e) =>
                 setBedStatusForm((f) => ({
                   ...f,
                   maintenance_notes: e.target.value,
                 }))
               }
-              className="w-full p-2 border rounded-lg"
             />
           </div>
           <div>
-            <label className="block text-sm text-gray-700 mb-1">
-              Patient ID (UUID, optional)
-            </label>
-            <input
-              value={bedStatusForm.patient_id}
+            <label className="block text-sm text-gray-700 mb-1">Patient ID (UUID, optional)</label>
+            <input className="w-full p-2 border rounded-lg" value={bedStatusForm.patient_id}
               onChange={(e) =>
                 setBedStatusForm((f) => ({ ...f, patient_id: e.target.value }))
-              }
-              className="w-full p-2 border rounded-lg"
-              placeholder="Leave empty if not applicable"
-            />
+              } placeholder="Leave empty if not applicable" />
           </div>
         </div>
         <div className="flex justify-end gap-2 pt-4 border-t mt-4">
-          <button
-            type="button"
-            onClick={() => setBedStatusOpen(false)}
-            className="px-4 py-2 border rounded-lg"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            disabled={bedStatusSubmitting}
-            onClick={submitBedStatus}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50"
-          >
+          <button className="px-4 py-2 border rounded-lg" type="button" onClick={() => setBedStatusOpen(false)}>Cancel</button>
+          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50" type="button" disabled={bedStatusSubmitting} onClick={submitBedStatus}>
             {bedStatusSubmitting ? "Updating…" : "Update"}
           </button>
         </div>
@@ -1817,19 +1536,12 @@ function WardFormFields({ form, setForm }) {
           <label className="block text-sm text-gray-700 mb-1">
             Name <span className="text-red-500">*</span>
           </label>
-          <input
-            value={form.name}
-            onChange={(e) => set("name", e.target.value)}
-            className="w-full p-2 border rounded-lg"
-          />
+          <input className="w-full p-2 border rounded-lg" value={form.name} onChange={(e) => set("name", e.target.value)}  />
         </div>
         <div>
           <label className="block text-sm text-gray-700 mb-1">Ward type</label>
-          <select
-            value={form.ward_type}
-            onChange={(e) => set("ward_type", e.target.value)}
-            className="w-full p-2 border rounded-lg"
-          >
+          <select className="w-full p-2 border rounded-lg" value={form.ward_type}
+            onChange={(e) => set("ward_type", e.target.value)}>
             {WARD_TYPE_OPTIONS.map((t) => (
               <option key={t} value={t}>
                 {t}
@@ -1838,81 +1550,37 @@ function WardFormFields({ form, setForm }) {
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-700 mb-1">
-            Floor number
-          </label>
-          <input
-            type="number"
-            value={form.floor_number}
-            onChange={(e) => set("floor_number", e.target.value)}
-            className="w-full p-2 border rounded-lg"
-          />
+          <label className="block text-sm text-gray-700 mb-1">Floor number</label>
+          <input className="w-full p-2 border rounded-lg" type="number" value={form.floor_number} onChange={(e) => set("floor_number", e.target.value)} />
         </div>
         <div>
           <label className="block text-sm text-gray-700 mb-1">Total beds</label>
-          <input
-            type="number"
-            min={1}
-            value={form.total_beds}
-            onChange={(e) => set("total_beds", e.target.value)}
-            className="w-full p-2 border rounded-lg"
-          />
+          <input className="w-full p-2 border rounded-lg" type="number" min={1} value={form.total_beds} onChange={(e) => set("total_beds", e.target.value)} />
         </div>
         <div>
           <label className="block text-sm text-gray-700 mb-1">Head nurse</label>
-          <input
-            value={form.head_nurse}
-            onChange={(e) => set("head_nurse", e.target.value)}
-            className="w-full p-2 border rounded-lg"
-          />
+          <input className="w-full p-2 border rounded-lg" value={form.head_nurse} onChange={(e) => set("head_nurse", e.target.value)} />
         </div>
         <div>
           <label className="block text-sm text-gray-700 mb-1">Phone</label>
-          <input
-            value={form.phone}
-            onChange={(e) => set("phone", e.target.value)}
-            className="w-full p-2 border rounded-lg"
-          />
+          <input className="w-full p-2 border rounded-lg" value={form.phone} onChange={(e) => set("phone", e.target.value)} />
         </div>
       </div>
       <div>
         <label className="block text-sm text-gray-700 mb-1">Description</label>
-        <textarea
-          rows={2}
-          value={form.description}
-          onChange={(e) => set("description", e.target.value)}
-          className="w-full p-2 border rounded-lg"
-        />
+        <textarea className="w-full p-2 border rounded-lg" rows={2} value={form.description} onChange={(e) => set("description", e.target.value)} />
       </div>
       <div>
-        <label className="block text-sm text-gray-700 mb-1">
-          Facilities (comma or newline separated)
-        </label>
-        <textarea
-          rows={2}
-          value={form.facilitiesText}
-          onChange={(e) => set("facilitiesText", e.target.value)}
-          className="w-full p-2 border rounded-lg"
-        />
+        <label className="block text-sm text-gray-700 mb-1">Facilities (comma or newline separated)</label>
+        <textarea className="w-full p-2 border rounded-lg" rows={2} value={form.facilitiesText} onChange={(e) => set("facilitiesText", e.target.value)} />
       </div>
       <div>
-        <label className="block text-sm text-gray-700 mb-1">
-          Visiting hours
-        </label>
-        <input
-          value={form.visiting_hours}
-          onChange={(e) => set("visiting_hours", e.target.value)}
-          className="w-full p-2 border rounded-lg"
-        />
+        <label className="block text-sm text-gray-700 mb-1">Visiting hours</label>
+        <input className="w-full p-2 border rounded-lg" value={form.visiting_hours} onChange={(e) => set("visiting_hours", e.target.value)} />
       </div>
       <div>
-        <label className="block text-sm text-gray-700 mb-1">
-          Nurse station location
-        </label>
-        <input
-          value={form.nurse_station_location}
-          onChange={(e) => set("nurse_station_location", e.target.value)}
-          className="w-full p-2 border rounded-lg"
+        <label className="block text-sm text-gray-700 mb-1">Nurse station location</label>
+        <input className="w-full p-2 border rounded-lg" value={form.nurse_station_location} onChange={(e) => set("nurse_station_location", e.target.value)}
         />
       </div>
       <div className="flex flex-wrap gap-4">
@@ -1922,11 +1590,7 @@ function WardFormFields({ form, setForm }) {
           ["oxygen_supply", "Oxygen supply"],
         ].map(([key, label]) => (
           <label key={key} className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={form[key]}
-              onChange={(e) => set(key, e.target.checked)}
-            />
+            <input type="checkbox" checked={form[key]} onChange={(e) => set(key, e.target.checked)}/>
             {label}
           </label>
         ))}
@@ -1958,30 +1622,14 @@ const InpatientCard = ({ patient, onView, onDischarge, onAssignBed }) => {
 
       <div className="space-y-2 text-sm text-gray-600 mb-4">
         {[
-          {
-            label: "Department:",
-            value: patient.department || "—",
-            className: "font-medium",
-          },
-          {
-            label: "Room / ward:",
-            value: patient.roomNo,
-            className: "font-medium",
-          },
+          { className: "font-medium", label: "Department:", value: patient.department || "—", },
+          { className: "font-medium", label: "Room / ward:", value: patient.roomNo, },
           { label: "Bed:", value: patient.bedNo, className: "font-medium" },
-          {
-            label: "Admission:",
-            value: patient.admissionDate,
-            className: "text-gray-500",
-          },
+          { className: "text-gray-500", label: "Admission:", value: patient.admissionDate, },
           { label: "Doctor:", value: patient.doctor, className: "font-medium" },
           ...(patient.diagnosis
             ? [
-                {
-                  label: "Diagnosis:",
-                  value: patient.diagnosis,
-                  className: "text-xs text-gray-500 mt-1",
-                },
+                { className: "text-xs text-gray-500 mt-1", label: "Diagnosis:", value: patient.diagnosis,},
               ]
             : []),
         ].map(({ label, value, className }) => (
@@ -1993,33 +1641,14 @@ const InpatientCard = ({ patient, onView, onDischarge, onAssignBed }) => {
       </div>
 
       <div className="flex justify-between items-center pt-4 border-t gap-2">
-        <span
-          className={`px-2 py-1 rounded text-xs font-medium ${statusClass}`}
-        >
-          {patient.status}
-        </span>
+        <span className={`px-2 py-1 rounded text-xs font-medium ${statusClass}`}>{patient.status}</span>
         <div className="flex gap-1 shrink-0">
-          <ActionButton
-            icon="chart-line"
-            color="blue"
-            onClick={onView}
-            title="View details"
-          />
+          <ActionButton icon="chart-line" color="blue" onClick={onView} title="View details"/>
           {patient.needsBedAssignment && (
-            <ActionButton
-              icon="bed"
-              color="purple"
-              onClick={onAssignBed}
-              title="Assign bed"
-            />
+            <ActionButton icon="bed" color="purple" onClick={onAssignBed} title="Assign bed"/>
           )}
           {!patient.discharged && (
-            <ActionButton
-              icon="sign-out-alt"
-              color="green"
-              onClick={onDischarge}
-              title="Discharge"
-            />
+            <ActionButton icon="sign-out-alt" color="green" onClick={onDischarge} title="Discharge"/>
           )}
         </div>
       </div>
@@ -2028,11 +1657,8 @@ const InpatientCard = ({ patient, onView, onDischarge, onAssignBed }) => {
 };
 
 const ActionButton = ({ icon, color, onClick, title }) => (
-  <button
-    onClick={onClick}
-    className={`text-${color}-600 hover:text-${color}-800 p-1 rounded hover:bg-${color}-50 transition-colors`}
-    title={title}
-  >
+  <button className={`text-${color}-600 hover:text-${color}-800 p-1 rounded hover:bg-${color}-50 transition-colors`}
+    onClick={onClick} title={title}>
     <i className={`fas fa-${icon}`}></i>
   </button>
 );
@@ -2046,70 +1672,58 @@ const ViewPatientModal = ({ isOpen, onClose, patient }) => (
           <DetailItem label="Status" value={patient.status} />
           <DetailItem label="Patient ref" value={patient.patient_ref || "—"} />
           <DetailItem label="Display name" value={patient.patient} />
-          <DetailItem
-            label="Admission type"
-            value={patient.admission_type || "—"}
-          />
+          <DetailItem label="Admission type" value={patient.admission_type || "—"} />
           <DetailItem label="Department" value={patient.department || "—"} />
           <DetailItem label="Ward / room" value={patient.roomNo} />
           <DetailItem label="Bed" value={patient.bedNo} />
           <DetailItem label="Admission date" value={patient.admissionDate} />
+          <DetailItem label="Admission time" value={patient.admission_time || "—"} />
           <DetailItem label="Admitting doctor" value={patient.doctor} />
+          <DetailItem label="Est. stay (days)" value={patient.estimated_stay_days || "—"} />
         </div>
 
-        {patient.insurance ? (
+        {patient.insurance || patient.insuranceId ? (
           <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-            <h4 className="font-semibold text-gray-800 mb-2">Insurance</h4>
-            <p className="text-sm text-gray-700 whitespace-pre-wrap">
-              {patient.insurance}
-            </p>
+            <h4 className="font-semibold text-gray-800 mb-2">Insurance Details</h4>
+            {patient.insurance && <p className="text-sm text-gray-700 whitespace-pre-wrap">{patient.insurance}</p>}
+            {patient.insuranceId && (
+              <p className="text-sm text-gray-700 mt-1">
+                <span className="font-medium">Insurance ID:</span> {patient.insuranceId}
+              </p>
+            )}
+            {patient.insuranceAmount && (
+              <p className="text-sm text-gray-700 mt-1">
+                <span className="font-medium">Amount/Coverage:</span> {patient.insuranceAmount}
+              </p>
+            )}
           </div>
         ) : null}
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Diagnosis
-          </label>
-          <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded min-h-[2.5rem]">
-            {patient.diagnosis || "—"}
-          </p>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Diagnosis</label>
+          <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded min-h-[2.5rem]">{patient.diagnosis || "—"}</p>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Symptoms / notes
-          </label>
-          <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded whitespace-pre-wrap">
-            {patient.treatmentPlan || "—"}
-          </p>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Symptoms / notes</label>
+          <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded whitespace-pre-wrap">{patient.treatmentPlan || "—"}</p>
         </div>
 
         {patient.medical_history ? (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Medical history
-            </label>
-            <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded whitespace-pre-wrap">
-              {patient.medical_history}
-            </p>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Medical history</label>
+            <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded whitespace-pre-wrap">{patient.medical_history}</p>
           </div>
         ) : null}
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Emergency contact
-          </label>
-          <p className="text-sm text-gray-600">
-            {patient.emergencyContact || "—"}
-          </p>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Emergency contact</label>
+          <p className="text-sm text-gray-600">{patient.emergencyContact || "—"}</p>
         </div>
 
         <div className="flex justify-end gap-3 pt-4 border-t">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
+          <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            type="button" onClick={onClose}>
             Close
           </button>
         </div>
@@ -2134,32 +1748,19 @@ const DischargeModal = ({
           <div className="w-14 h-14 mx-auto mb-3 bg-green-100 rounded-full flex items-center justify-center">
             <i className="fas fa-sign-out-alt text-green-600 text-lg" />
           </div>
-          <p className="text-gray-600 text-sm">
-            Discharge{" "}
-            <span className="font-semibold text-gray-800">
-              {patient.patient}
-            </span>
-            {patient.bed_id ? ` (bed assigned)` : ""}
-          </p>
+          <p className="text-gray-600 text-sm">Discharge {patient.patient} {patient.bed_id ? ` (bed assigned)` : ""}</p>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Discharge notes
-          </label>
-          <textarea
-            rows={3}
-            value={form.discharge_notes}
+          <label className="block text-sm font-medium text-gray-700 mb-1">Discharge notes</label>
+          <textarea className="w-full p-3 border border-gray-300 rounded-lg text-sm" placeholder="Clinical notes for discharge…"
+            rows={3} value={form.discharge_notes}
             onChange={(e) =>
               setForm((f) => ({ ...f, discharge_notes: e.target.value }))
             }
-            className="w-full p-3 border border-gray-300 rounded-lg text-sm"
-            placeholder="Clinical notes for discharge…"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Discharge summary (optional)
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Discharge summary (optional)</label>
           <textarea
             rows={2}
             value={form.discharge_summary}
@@ -2384,11 +1985,7 @@ function AssignBedModal({
     <Modal isOpen={isOpen} onClose={onClose} title="Assign bed" size="md">
       {patient && (
         <div className="space-y-4">
-          <p className="text-sm text-gray-600">
-            Admission{" "}
-            <span className="font-medium text-gray-800">{patient.id}</span> —{" "}
-            {patient.patient}
-          </p>
+          <p className="text-sm text-gray-600">Admission {patient.id} — {patient.patient}</p>
           {bedsLoading ? (
             <LoadingSpinner size="sm" text="Loading available beds…" />
           ) : (
@@ -2405,9 +2002,7 @@ function AssignBedModal({
                     [b?.ward_name, b?.bed_number].filter(Boolean).join(" · ") ||
                     bid;
                   return bid ? (
-                    <option key={bid} value={bid}>
-                      {label}
-                    </option>
+                    <option key={bid} value={bid}>{label}</option>
                   ) : null;
                 })}
               </select>
@@ -2427,9 +2022,7 @@ function AssignBedModal({
             />
           </div>
           <div className="flex justify-end gap-2 pt-2 border-t">
-            <button className="px-4 py-2 border rounded-lg" type="button" onClick={onClose}>
-              Cancel
-            </button>
+            <button className="px-4 py-2 border rounded-lg" type="button" onClick={onClose}>Cancel</button>
             <button className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50" type="button"
               disabled={submitting || !form.bed_id} onClick={onSubmit}>
               {submitting ? "Assigning…" : "Assign bed"}

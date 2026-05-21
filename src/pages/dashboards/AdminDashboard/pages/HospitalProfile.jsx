@@ -76,23 +76,18 @@ const HospitalProfile = () => {
   const [formData, setFormData] = useState({})
   const [activeQuickAction, setActiveQuickAction] = useState(null)
   const [downloadingInvoice, setDownloadingInvoice] = useState(null)
-  
   // Modal States for Quick Actions
   const [showInsuranceModal, setShowInsuranceModal] = useState(false)
   const [showHoursModal, setShowHoursModal] = useState(false)
-  
   // Plan Modal States
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [showPlanDetailsModal, setShowPlanDetailsModal] = useState(false)
-  
   // Department Modal States
   const [showDepartmentModal, setShowDepartmentModal] = useState(false)
   const [selectedDepartment, setSelectedDepartment] = useState(null)
-  
   // Form states for modals
   const [newInsurance, setNewInsurance] = useState('')
   const [newHours, setNewHours] = useState('')
-
   // Settings related states
   const [isEditingPhoto, setIsEditingPhoto] = useState(false)
   const [photoPreview, setPhotoPreview] = useState('')
@@ -101,11 +96,11 @@ const HospitalProfile = () => {
   const [editScheduleData, setEditScheduleData] = useState({})
 
   useEffect(() => {
-    loadHospitalData();
-  }, []);
+    loadHospitalData()
+  }, [])
 
   const loadHospitalData = async () => {
-    setLoading(true);
+    setLoading(true)
     setTimeout(() => {
       const hospitalData = HOSPITAL_DATA
       setHospital(hospitalData)
@@ -150,12 +145,10 @@ const HospitalProfile = () => {
           <!-- Right: Receipt & Date -->
           <div style="width: 40%; text-align: right;">
             <h1 style="font-size: 36px; color: #7f8c8d; margin: 0 0 40px 0; font-weight: normal;">RECEIPT</h1>
-            
             <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
               <span style="font-weight: bold; font-size: 12px; margin-right: 20px; color: #0d2c54; padding-top: 2px;">DATE</span>
               <div style="border-bottom: 1px solid #ccc; width: 150px; text-align: center; font-size: 12px; padding-bottom: 2px;">${new Date(payment.date).toLocaleDateString()}</div>
             </div>
-            
             <div style="display: flex; justify-content: flex-end;">
               <span style="font-weight: bold; font-size: 12px; margin-right: 20px; color: #0d2c54; padding-top: 2px;">RECEIPT NO.</span>
               <div style="border-bottom: 1px solid #ccc; width: 150px; text-align: center; font-size: 12px; padding-bottom: 2px;">${payment.invoiceId || payment.id}</div>
@@ -303,7 +296,6 @@ const HospitalProfile = () => {
 
   const handleDownloadInvoice = (payment) => {
     setDownloadingInvoice(payment.id)
-    
     const invoiceHTML = generateInvoiceHTML(payment, hospital)
     
     const opt = {
@@ -342,35 +334,35 @@ const HospitalProfile = () => {
   }
 
   const handleEditProfile = () => {
-    setIsEditing(true);
-  };
+    setIsEditing(true)
+  }
 
   const handleSaveProfile = () => {
-    setHospital(formData);
-    setIsEditing(false);
-    console.log("Saving hospital data:", formData);
-  };
+    setHospital(formData)
+    setIsEditing(false)
+    console.log('Saving hospital data:', formData)
+  }
 
   const handleCancelEdit = () => {
-    setFormData(hospital);
-    setIsEditing(false);
-  };
+    setFormData(hospital)
+    setIsEditing(false)
+  }
 
   const handleInputChange = (field, value) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
-      [field]: value,
-    }));
-  };
+      [field]: value
+    }))
+  }
 
   const handleUpdateLogo = () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'image/*'
     input.onchange = (e) => {
-      const file = e.target.files[0];
+      const file = e.target.files[0]
       if (file) {
-        const reader = new FileReader();
+        const reader = new FileReader()
         reader.onload = (event) => {
           setHospital(prev => ({ ...prev, logo: event.target.result }))
           setFormData(prev => ({ ...prev, logo: event.target.result }))
@@ -379,102 +371,99 @@ const HospitalProfile = () => {
         }
         reader.readAsDataURL(file)
       }
-    };
-    input.click();
-  };
+    }
+    input.click()
+  }
 
   const handlePhotoEdit = () => {
-    setIsEditingPhoto(true);
-    setTempPhotoPreview(photoPreview);
-  };
+    setIsEditingPhoto(true)
+    setTempPhotoPreview(photoPreview)
+  }
 
   const handlePhotoChange = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files[0]
     if (file) {
-      const reader = new FileReader();
+      const reader = new FileReader()
       reader.onloadend = () => {
-        setTempPhotoPreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+        setTempPhotoPreview(reader.result)
+      }
+      reader.readAsDataURL(file)
     }
-  };
+  }
 
   const handleSavePhoto = () => {
-    setPhotoPreview(tempPhotoPreview);
-    setHospital((prev) => ({ ...prev, logo: tempPhotoPreview }));
-    setFormData((prev) => ({ ...prev, logo: tempPhotoPreview }));
-    dispatch(updateLogo(tempPhotoPreview));
-    setIsEditingPhoto(false);
-  };
+    setPhotoPreview(tempPhotoPreview)
+    setHospital(prev => ({ ...prev, logo: tempPhotoPreview }))
+    setFormData(prev => ({ ...prev, logo: tempPhotoPreview }))
+    dispatch(updateLogo(tempPhotoPreview))
+    setIsEditingPhoto(false)
+  }
 
   const handleCancelPhotoEdit = () => {
-    setTempPhotoPreview(photoPreview);
-    setIsEditingPhoto(false);
-  };
+    setTempPhotoPreview(photoPreview)
+    setIsEditingPhoto(false)
+  }
 
   const handleScheduleChange = (day, value) => {
-    setEditScheduleData((prev) => ({
+    setEditScheduleData(prev => ({
       ...prev,
-      [day]: value,
-    }));
-  };
+      [day]: value
+    }))
+  }
 
   const handleSaveSchedule = () => {
-    setHospital((prev) => ({
+    setHospital(prev => ({
       ...prev,
       schedule: editScheduleData,
-      openingHours: Object.values(editScheduleData).join(", "),
-    }));
-    setFormData((prev) => ({
+      openingHours: Object.values(editScheduleData).join(', ')
+    }))
+    setFormData(prev => ({
       ...prev,
       schedule: editScheduleData,
-      openingHours: Object.values(editScheduleData).join(", "),
-    }));
-    setNewHours(Object.values(editScheduleData).join(", "));
-    setIsEditingSchedule(false);
-  };
+      openingHours: Object.values(editScheduleData).join(', ')
+    }))
+    setNewHours(Object.values(editScheduleData).join(', '))
+    setIsEditingSchedule(false)
+  }
 
   const handleCancelScheduleEdit = () => {
-    setEditScheduleData(hospital.schedule);
-    setIsEditingSchedule(false);
-  };
+    setEditScheduleData(hospital.schedule)
+    setIsEditingSchedule(false)
+  }
 
   const handleAddDepartment = () => {
     window.dispatchEvent(
-      new CustomEvent("dashboard-navigation", {
-        detail: { page: "departments" },
-      }),
-    );
-  };
+      new CustomEvent('dashboard-navigation', {
+        detail: { page: 'departments' }
+      })
+    )
+  }
 
   const handleManageInsurance = () => {
     if (newInsurance.trim()) {
-      const updatedInsurance = [
-        ...hospital.insurancePartners,
-        newInsurance.trim(),
-      ];
-      setHospital((prev) => ({ ...prev, insurancePartners: updatedInsurance }));
-      setFormData((prev) => ({ ...prev, insurancePartners: updatedInsurance }));
-      setNewInsurance('');
-      setShowInsuranceModal(false);
+      const updatedInsurance = [...hospital.insurancePartners, newInsurance.trim()]
+      setHospital(prev => ({ ...prev, insurancePartners: updatedInsurance }))
+      setFormData(prev => ({ ...prev, insurancePartners: updatedInsurance }))
+      setNewInsurance('')
+      setShowInsuranceModal(false)
     }
-  };
+  }
 
   const handleUpdateHours = () => {
     if (newHours && newHours.trim()) {
-      setHospital((prev) => ({ ...prev, openingHours: newHours }));
-      setFormData((prev) => ({ ...prev, openingHours: newHours }));
-      setShowHoursModal(false);
+      setHospital(prev => ({ ...prev, openingHours: newHours }))
+      setFormData(prev => ({ ...prev, openingHours: newHours }))
+      setShowHoursModal(false)
     }
-  };
+  }
 
   const handleViewAnalytics = () => {
     window.dispatchEvent(
-      new CustomEvent("dashboard-navigation", {
-        detail: { page: "reports" },
-      }),
-    );
-  };
+      new CustomEvent('dashboard-navigation', {
+        detail: { page: 'reports' }
+      })
+    )
+  }
 
   const removeDepartment = (deptId) => {
     const updatedDepartments = hospital.departments.filter(dept => dept.id !== deptId)
@@ -483,16 +472,14 @@ const HospitalProfile = () => {
   }
 
   const removeInsurance = (insuranceToRemove) => {
-    const updatedInsurance = hospital.insurancePartners.filter(
-      (insurance) => insurance !== insuranceToRemove,
-    );
-    setHospital((prev) => ({ ...prev, insurancePartners: updatedInsurance }));
-    setFormData((prev) => ({ ...prev, insurancePartners: updatedInsurance }));
-  };
+    const updatedInsurance = hospital.insurancePartners.filter(insurance => insurance !== insuranceToRemove)
+    setHospital(prev => ({ ...prev, insurancePartners: updatedInsurance }))
+    setFormData(prev => ({ ...prev, insurancePartners: updatedInsurance }))
+  }
 
   const triggerQuickAction = (actionKey, action) => {
-    setActiveQuickAction(actionKey);
-    action();
+    setActiveQuickAction(actionKey)
+    action()
     setTimeout(() => {
       setActiveQuickAction(current => (current === actionKey ? null : current))
     }, 700)
@@ -501,50 +488,50 @@ const HospitalProfile = () => {
   if (loading) return <LoadingSpinner />
   const quickActions = [
     {
-      key: "department",
-      title: "Add Department",
-      description: "Launch setup for a new specialty unit",
+      key: 'department',
+      title: 'Add Department',
+      description: 'Launch setup for a new specialty unit',
       meta: `${hospital.departments?.length || 0} active departments`,
-      icon: "fas fa-plus",
-      iconBg: "from-cyan-400 to-blue-500",
-      iconGlow: "shadow-cyan-500/30",
-      badge: "Setup",
-      onClick: handleAddDepartment,
+      icon: 'fas fa-plus',
+      iconBg: 'from-cyan-400 to-blue-500',
+      iconGlow: 'shadow-cyan-500/30',
+      badge: 'Setup',
+      onClick: handleAddDepartment
     },
     {
-      key: "insurance",
-      title: "Manage Insurance",
-      description: "Expand supported partners and coverage",
+      key: 'insurance',
+      title: 'Manage Insurance',
+      description: 'Expand supported partners and coverage',
       meta: `${hospital.insurancePartners?.length || 0} insurance partners`,
-      icon: "fas fa-shield-alt",
-      iconBg: "from-emerald-400 to-green-500",
-      iconGlow: "shadow-emerald-500/30",
-      badge: "Coverage",
-      onClick: () => setShowInsuranceModal(true),
+      icon: 'fas fa-shield-alt',
+      iconBg: 'from-emerald-400 to-green-500',
+      iconGlow: 'shadow-emerald-500/30',
+      badge: 'Coverage',
+      onClick: () => setShowInsuranceModal(true)
     },
     {
-      key: "hours",
-      title: "Update Hours",
-      description: "Refresh OPD, emergency, and visit timings",
-      meta: "Keep patient-facing info current",
-      icon: "fas fa-clock",
-      iconBg: "from-violet-400 to-fuchsia-500",
-      iconGlow: "shadow-fuchsia-500/30",
-      badge: "Schedule",
-      onClick: () => setShowHoursModal(true),
+      key: 'hours',
+      title: 'Update Hours',
+      description: 'Refresh OPD, emergency, and visit timings',
+      meta: 'Keep patient-facing info current',
+      icon: 'fas fa-clock',
+      iconBg: 'from-violet-400 to-fuchsia-500',
+      iconGlow: 'shadow-fuchsia-500/30',
+      badge: 'Schedule',
+      onClick: () => setShowHoursModal(true)
     },
     {
-      key: "analytics",
-      title: "View Analytics",
-      description: "Open performance insights and trends",
+      key: 'analytics',
+      title: 'View Analytics',
+      description: 'Open performance insights and trends',
       meta: `${hospital.paymentHistory?.length || 0} recent transactions`,
-      icon: "fas fa-chart-line",
-      iconBg: "from-amber-400 to-orange-500",
-      iconGlow: "shadow-orange-500/30",
-      badge: "Insights",
-      onClick: handleViewAnalytics,
-    },
-  ];
+      icon: 'fas fa-chart-line',
+      iconBg: 'from-amber-400 to-orange-500',
+      iconGlow: 'shadow-orange-500/30',
+      badge: 'Insights',
+      onClick: handleViewAnalytics
+    }
+  ]
 
   return (
     <div className="animate-fade-in space-y-4 sm:space-y-6">
@@ -553,7 +540,6 @@ const HospitalProfile = () => {
           Hospital Profile
         </h2>
       </div>
-      
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Hospital Information Card - Main Profile */}
         <div className="lg:col-span-2 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow border border-gray-100 overflow-hidden">
@@ -574,7 +560,6 @@ const HospitalProfile = () => {
                   </div>
                 </button>
               </div>
-
               <div className="flex-1 min-w-0">
                 {isEditing ? (
                   <input
@@ -600,23 +585,20 @@ const HospitalProfile = () => {
               {/* Left Column */}
               <div className="space-y-4">
                 <div className="bg-gray-50 rounded-xl p-4 hover:bg-blue-50 transition-colors border border-gray-200">
-                  <label className="text-xs font-semibold text-gray-700 mb-2 flex items-center">
+                  <label className="block text-xs font-semibold text-gray-700 mb-2 flex items-center">
                     <i className="fas fa-map-marker-alt text-blue-600 mr-2"></i>Address
                   </label>
                   {isEditing ? (
-                    <textarea
-                      value={formData.address}
+                    <textarea className="w-full p-3 border-2 border-blue-300 rounded-lg focus:outline-none focus:border-blue-500 focus:bg-white transition-colors resize-none"
+                      rows="2" value={formData.address}
                       onChange={(e) => handleInputChange('address', e.target.value)}
-                      className="w-full p-3 border-2 border-blue-300 rounded-lg focus:outline-none focus:border-blue-500 focus:bg-white transition-colors resize-none"
-                      rows="2"
                     />
                   ) : (
                     <p className="text-gray-900 text-sm">{hospital.address}</p>
                   )}
                 </div>
-
                 <div className="bg-gray-50 rounded-xl p-4 hover:bg-green-50 transition-colors border border-gray-200">
-                  <label className="text-xs font-semibold text-gray-700 mb-2 flex items-center">
+                  <label className="block text-xs font-semibold text-gray-700 mb-2 flex items-center">
                     <i className="fas fa-phone text-green-600 mr-2"></i>Contact Numbers
                   </label>
                   {isEditing ? (
@@ -639,7 +621,7 @@ const HospitalProfile = () => {
                 </div>
 
                 <div className="bg-gray-50 rounded-xl p-4 hover:bg-purple-50 transition-colors border border-gray-200">
-                  <label className="text-xs font-semibold text-gray-700 mb-2 flex items-center">
+                  <label className="block text-xs font-semibold text-gray-700 mb-2 flex items-center">
                     <i className="fas fa-envelope text-purple-600 mr-2"></i>Email Addresses
                   </label>
                   {isEditing ? (
@@ -661,11 +643,11 @@ const HospitalProfile = () => {
                   )}
                 </div>
               </div>
-
+              
               {/* Right Column */}
               <div className="space-y-4">
                 <div className="bg-gray-50 rounded-xl p-4 hover:bg-orange-50 transition-colors border border-gray-200">
-                  <label className="text-xs font-semibold text-gray-700 mb-2 flex items-center">
+                  <label className="block text-xs font-semibold text-gray-700 mb-2 flex items-center">
                     <i className="fas fa-clock text-orange-600 mr-2"></i>Operating Hours
                   </label>
                   {isEditing ? (
@@ -674,18 +656,16 @@ const HospitalProfile = () => {
                       onChange={(e) => handleInputChange('openingHours', e.target.value)}
                     />
                   ) : (
-                    <p className="text-gray-900 text-sm">
-                      {hospital.openingHours}
-                    </p>
+                    <p className="text-gray-900 text-sm">{hospital.openingHours}</p>
                   )}
                 </div>
 
                 <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
-                  <label className="text-xs font-semibold text-gray-700 mb-3 flex items-center">
-                    <i className="fas fa-building text-blue-600 mr-2"></i>Departments ({hospital.departments.length})
+                  <label className="block text-xs font-semibold text-gray-700 mb-3 flex items-center">
+                    <i className="fas fa-building text-blue-600 mr-2"></i>Departments ({hospital.departments?.length || 0})
                   </label>
                   <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
-                    {hospital.departments.map((dept) => (
+                    {hospital.departments?.map((dept) => (
                       <span className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center shadow-sm"
                         key={dept.id}>
                         {dept.name}
@@ -699,12 +679,13 @@ const HospitalProfile = () => {
                     ))}
                   </div>
                 </div>
+
                 <div className="bg-green-50 rounded-xl p-4 border border-green-200">
-                  <label className="text-xs font-semibold text-gray-700 mb-3 flex items-center">
-                    <i className="fas fa-shield-alt text-green-600 mr-2"></i>Insurance Partners ({hospital.insurancePartners.length})
+                  <label className="block text-xs font-semibold text-gray-700 mb-3 flex items-center">
+                    <i className="fas fa-shield-alt text-green-600 mr-2"></i>Insurance Partners ({hospital.insurancePartners?.length || 0})
                   </label>
                   <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
-                    {hospital.insurancePartners.map((insurance, idx) => (
+                    {hospital.insurancePartners?.map((insurance, idx) => (
                       <span className="bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center shadow-sm" key={idx}>
                         {insurance}
                         {isEditing && (
@@ -748,9 +729,9 @@ const HospitalProfile = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Quick Actions Panel */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 text-gray-800 shadow-md border border-gray-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+        <div className="lg:col-span-1 relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 text-gray-800 shadow-md border border-gray-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.8),_transparent_38%),radial-gradient(circle_at_bottom_left,_rgba(56,189,248,0.1),_transparent_32%)]"></div>
           <div className="absolute -right-10 top-10 h-28 w-28 rounded-full bg-cyan-300/30 blur-3xl"></div>
           <div className="absolute -left-6 bottom-16 h-24 w-24 rounded-full bg-indigo-300/30 blur-3xl"></div>
@@ -785,6 +766,7 @@ const HospitalProfile = () => {
                         <div className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${action.iconBg} shadow-sm ${action.iconGlow}`}>
                           <i className={`${action.icon} text-sm text-white`}></i>
                         </div>
+
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
                             <span className="text-base font-semibold text-gray-900">{action.title}</span>
@@ -794,6 +776,7 @@ const HospitalProfile = () => {
                           </div>
                         </div>
                       </div>
+
                       <div className="flex flex-col items-end gap-4">
                         <div className={`flex h-10 w-10 items-center justify-center rounded-xl border transition-all duration-300 ${
                           isActive ? 'translate-x-1 bg-blue-100 border-blue-200' : 'bg-gray-50 border-gray-100 group-hover:translate-x-1 group-hover:bg-gray-100'
@@ -803,63 +786,15 @@ const HospitalProfile = () => {
                       </div>
                     </div>
                   </button>
-                );
+                )
               })}
             </div>
           </div>
         </div>
 
-        {/* Location & Map Section (from Settings) */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
-          <div className="bg-gradient-to-r from-indigo-50 to-indigo-100 px-6 py-4 border-b border-gray-200">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
-                <i className="fas fa-map-marked-alt text-white"></i>
-              </div>
-              <div>
-                <h2 className="font-bold text-xl text-gray-800">Location</h2>
-                <p className="text-xs text-gray-500">Main branch location</p>
-              </div>
-            </div>
-          </div>
 
-          <div className="flex-1 p-6">
-            <div className="w-full h-80 rounded-xl overflow-hidden border-2 border-gray-200 shadow-md">
-              <iframe
-                src={hospital.mapEmbedUrl}
-                width="100%"
-                height="100%"
-                style={{ border: 'none' }}
-                allowFullScreen=""
-                loading="lazy"
-                title="Hospital Location"
-              ></iframe>
-            </div>
-
-            <div className="mt-4 space-y-3">
-              {hospital.branches?.map((branch) => (
-                <div key={branch.id} className="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-200 hover:shadow-md transition-shadow">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h4 className="font-bold text-gray-800">{branch.name}</h4>
-                      <p className="text-sm text-gray-600 mt-1">{branch.description}</p>
-                      <p className="text-xs text-gray-500 mt-2 flex items-center gap-2">
-                        <i className="fas fa-map-marker-alt text-blue-600"></i>
-                        {branch.address}
-                      </p>
-                    </div>
-                    <button className="text-blue-600 hover:text-blue-800 transition-colors">
-                      <i className="fas fa-map-pin text-lg"></i>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Operating Hours Card (from Settings) */}
-        <div className="bg-gradient-to-br from-white to-blue-50 rounded-2xl border border-blue-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
+        {/* Operating Hours Card */}
+        <div className="lg:col-span-1 bg-gradient-to-br from-white to-blue-50 rounded-2xl border border-blue-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
           <div className="bg-gradient-to-r from-blue-50 via-cyan-50 to-blue-100 px-6 py-6 text-gray-800 relative overflow-hidden border-b border-gray-200">
             <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-40 rounded-full -mr-16 -mt-16"></div>
             <div className="relative z-10">
@@ -914,8 +849,57 @@ const HospitalProfile = () => {
           </div>
         </div>
 
+        {/* Location & Map Section */}
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+          <div className="bg-gradient-to-r from-indigo-50 to-indigo-100 px-6 py-4 border-b border-gray-200">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
+                <i className="fas fa-map-marked-alt text-white"></i>
+              </div>
+              <div>
+                <h2 className="font-bold text-xl text-gray-800">Location</h2>
+                <p className="text-xs text-gray-500">Main branch location</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex-1 p-6">
+            <div className="w-full h-80 rounded-xl overflow-hidden border-2 border-gray-200 shadow-md">
+              <iframe
+                src={hospital.mapEmbedUrl}
+                width="100%"
+                height="100%"
+                style={{ border: 'none' }}
+                allowFullScreen=""
+                loading="lazy"
+                title="Hospital Location">
+              </iframe>
+            </div>
+
+            <div className="mt-4 space-y-3">
+              {hospital.branches?.map((branch) => (
+                <div key={branch.id} className="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-200 hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h4 className="font-bold text-gray-800">{branch.name}</h4>
+                      <p className="text-sm text-gray-600 mt-1">{branch.description}</p>
+                      <p className="text-xs text-gray-500 mt-2 flex items-center gap-2">
+                        <i className="fas fa-map-marker-alt text-blue-600"></i>
+                        {branch.address}
+                      </p>
+                    </div>
+                    <button className="text-blue-600 hover:text-blue-800 transition-colors">
+                      <i className="fas fa-map-pin text-lg"></i>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
         {/* Departments Full List Card */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="bg-gradient-to-r from-blue-50 to-blue-100 px-6 py-4 border-b border-gray-200">
             <h2 className="font-bold text-2xl text-gray-900 flex items-center gap-3">
               <i className="fas fa-network-wired text-blue-600 text-2xl"></i>
@@ -923,183 +907,46 @@ const HospitalProfile = () => {
             </h2>
             <p className="text-sm text-gray-600 mt-1">Manage hospital departments and units</p>
           </div>
-
           <div className="p-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {hospital.departments?.map((dept) => (
-                <div key={dept.id} className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 p-4 hover:shadow-lg transition-all">
+                <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 p-4 hover:shadow-lg transition-all"
+                  key={dept.id}>
+                  {/* Top Section */}
                   <div className="flex items-start justify-between mb-3">
                     <div className={`w-12 h-12 ${dept.iconBg} rounded-xl flex items-center justify-center shadow-md`}>
                       <i className={`${dept.icon} text-white text-lg`}></i>
                     </div>
-                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${
-                      dept.status === 'HIGH PRIORITY' ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'
-                    }`}>
-                      {dept.status}
-                    </span>
-                  </div>
-                  <h3 className="font-bold text-gray-900 mb-1">{dept.name}</h3>
-                  <p className="text-xs text-gray-600 mb-3">{dept.description}</p>
-                  <button 
-                    onClick={() => { setSelectedDepartment(dept); setShowDepartmentModal(true); }}
-                    className="text-blue-600 hover:text-blue-800 font-semibold text-sm transition-colors flex items-center gap-1"
-                  >
-                    Manage <i className="fas fa-arrow-right text-xs"></i>
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Row 2: Location & Operating Hours Side-by-Side - Full Width */}
-        <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-          {/* Location & Map Section */}
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col hover:shadow-md transition-shadow duration-300">
-            <div className="bg-gradient-to-r from-indigo-50 to-indigo-100 px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center shadow-sm">
-                  <i className="fas fa-map-marked-alt text-white"></i>
-                </div>
-                <div>
-                  <h2 className="font-bold text-xl text-gray-800">Location</h2>
-                  <p className="text-xs text-gray-500">Main branch location</p>
-                </div>
-              </div>
-            </div>
-            <div className="flex-1 p-6">
-              <div className="w-full h-80 rounded-xl overflow-hidden border-2 border-gray-200 shadow-md">
-                <iframe 
-                  src={hospital.mapEmbedUrl}
-                  width="100%"
-                  height="100%"
-                  style={{ border: "none" }}
-                  allowFullScreen=""
-                  loading="lazy"
-                  title="Hospital Location">
-                </iframe>
-              </div>
-              <div className="mt-4 space-y-3">
-                {hospital.branches?.map((branch) => (
-                  <div className="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-200 hover:shadow-md transition-shadow"
-                    key={branch.id}>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h4 className="font-bold text-gray-800">{branch.name}</h4>
-                        <p className="text-sm text-gray-600 mt-1">{branch.description}</p>
-                        <p className="text-xs text-gray-500 mt-2 flex items-center gap-2">
-                          <i className="fas fa-map-marker-alt text-blue-600"></i>
-                          {branch.address}
-                        </p>
-                      </div>
-                      <button className="text-blue-600 hover:text-blue-800 transition-colors">
-                        <i className="fas fa-map-pin text-lg"></i>
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Operating Hours Card */}
-          <div className="bg-gradient-to-br from-white to-blue-50 rounded-2xl border border-blue-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
-            <div className="bg-gradient-to-r from-blue-50 via-cyan-50 to-blue-100 px-6 py-6 text-gray-800 relative overflow-hidden border-b border-gray-200">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-40 rounded-full -mr-16 -mt-16"></div>
-              <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-1">
-                  <div className="bg-white bg-opacity-60 text-blue-600 p-2 rounded-xl backdrop-blur-sm shadow-sm border border-blue-100">
-                    <i className="fas fa-clock text-2xl"></i>
-                  </div>
-                  <h2 className="font-bold text-2xl text-gray-900">Operating Hours</h2>
-                </div>
-                <p className="text-blue-700 text-sm mt-1 font-medium">Timezone: {hospital.timeZone}</p>
-              </div>
-            </div>
-            <div className="p-6 space-y-6">
-              <div className="space-y-3">
-                {Object.entries(hospital.schedule || {}).map(([day, time]) => (
-                  <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200 hover:border-blue-300 transition-all duration-300" key={day}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        {time === "EMERGENCY ONLY" ? (
-                          <div className="bg-red-100 p-2.5 rounded-lg">
-                            <i className="fas fa-ambulance text-red-600"></i>
-                          </div>
-                        ) : (
-                          <div className="bg-blue-100 p-2.5 rounded-lg">
-                            <i className="fas fa-calendar-alt text-blue-600"></i>
-                          </div>
-                        )}
-                        <span className="text-gray-800 font-bold text-base">{day}</span>
-                      </div>
-                      <span className={`font-bold text-sm px-4 py-2 rounded-lg transition-all ${
-                          time === "EMERGENCY ONLY"
-                            ? "bg-red-100 text-red-700 font-black tracking-wide"
-                            : "bg-blue-100 text-blue-700 font-bold"
-                        }`}>
-                        {time}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <button className="w-full mt-4 px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold text-lg rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 transform flex items-center justify-center gap-3 group"
-                onClick={() => {
-                  setEditScheduleData(hospital.schedule);
-                  setIsEditingSchedule(true);
-                }}>
-                <i className="fas fa-edit text-xl group-hover:rotate-12 transition-transform duration-300"></i>
-                <span>Edit Schedule</span>
-                <i className="fas fa-arrow-right text-sm ml-1 group-hover:translate-x-1 transition-transform duration-300"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Row 3: All Departments & Current Plan Side-by-Side */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
-          <div className="bg-gradient-to-r from-blue-50 to-blue-100 px-6 py-4 border-b border-gray-200">
-            <h2 className="font-bold text-2xl text-gray-900 flex items-center gap-3">
-              <i className="fas fa-network-wired text-blue-600 text-2xl"></i>
-              All Departments
-            </h2>
-            <p className="text-sm text-gray-600 mt-1">Manage hospital departments and units across the organization</p>
-          </div>
-          <div className="p-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {hospital.departments?.map((dept) => (
-                <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 p-4 hover:shadow-lg transition-all group" key={dept.id}>
-                  <div className="flex items-start justify-between mb-3">
-                    <div className={`w-12 h-12 ${dept.iconBg} rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform`}>
-                      <i className={`${dept.icon} text-white text-lg`}></i>
-                    </div>
-                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${
-                        dept.status === "HIGH PRIORITY"
-                          ? "bg-orange-100 text-orange-700"
-                          : "bg-green-100 text-green-700"
+                    <span className={`text-xs font-bold px-2 py-1 rounded-full
+                      ${dept.status === "HIGH PRIORITY"
+                        ? "bg-orange-100 text-orange-700"
+                        : "bg-green-100 text-green-700"
                       }`}>
                       {dept.status}
                     </span>
                   </div>
-                  <h3 className="font-bold text-gray-900 mb-1">{dept.name}</h3>
-                  <p className="text-xs text-gray-600 mb-3 line-clamp-2">
-                    {dept.description}
-                  </p>
-                  <button className="text-blue-600 hover:text-blue-800 font-semibold text-sm transition-colors flex items-center gap-1"
-                    onClick={() => {
-                      setSelectedDepartment(dept);
-                      setShowDepartmentModal(true);
-                    }}>
-                    Manage <i className="fas fa-arrow-right text-xs"></i>
-                  </button>
+
+                  {/* Department Info + Manage Button */}
+                  <div className="flex justify-between items-start gap-3">
+                    <div className="flex-1">
+                      <h3 className="font-bold text-gray-900 mb-1">{dept.name}</h3>
+                      <p className="text-xs text-gray-600">{dept.description}</p>
+                    </div>
+                    <button className="text-blue-600 hover:text-blue-800 font-semibold text-sm transition-colors flex items-center gap-1 whitespace-nowrap"
+                      onClick={() => {
+                        setSelectedDepartment(dept);
+                        setShowDepartmentModal(true);
+                      }}>
+                      Manage<i className="fas fa-arrow-right text-xs"></i>
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Current Plan Card - Side by Side with Departments */}
+        {/* Current Plan Card */}
         <div className="lg:col-span-1 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow border border-gray-100 overflow-hidden">
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 sm:p-6 border-b border-gray-200">
             <div className="flex items-center justify-between">
@@ -1113,7 +960,7 @@ const HospitalProfile = () => {
                 </div>
               </div>
               <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">
-                {hospital.currentPlan?.status || "Active"}
+                {hospital.currentPlan?.status || 'Active'}
               </span>
             </div>
           </div>
@@ -1121,7 +968,7 @@ const HospitalProfile = () => {
           <div className="p-4 sm:p-6 space-y-5">
             <div className="text-center pb-4 border-b border-gray-200">
               <h4 className="text-sm sm:text-base font-semibold text-gray-600 mb-2 uppercase tracking-wide">
-                {hospital.currentPlan?.type || "Premium"}
+                {hospital.currentPlan?.type || 'Premium'}
               </h4>
               <div className="flex items-baseline justify-center gap-1">
                 <span className="text-3xl sm:text-4xl font-bold text-blue-600">{hospital.currentPlan?.price || '₹2,250'}</span>
@@ -1145,28 +992,21 @@ const HospitalProfile = () => {
             <div className="bg-blue-50 rounded-lg p-3 text-center border border-blue-200">
               <p className="text-xs text-gray-600 mb-1">Renewal Date</p>
               <p className="text-sm sm:text-base font-semibold text-blue-600">
-                {new Date(hospital.currentPlan?.renewalDate).toLocaleDateString(
-                  "en-IN",
-                  {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  },
-                )}
+                {new Date(hospital.currentPlan?.renewalDate).toLocaleDateString('en-IN', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric'
+                })}
               </p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-2 pt-2">
-              <button 
-                onClick={() => setShowUpgradeModal(true)}
-                className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 sm:py-2.5 rounded-lg hover:from-blue-600 hover:to-blue-700 font-semibold transition-all shadow-md hover:shadow-lg text-sm sm:text-base"
-              >
+              <button className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 sm:py-2.5 rounded-lg hover:from-blue-600 hover:to-blue-700 font-semibold transition-all shadow-md hover:shadow-lg text-sm sm:text-base"
+                onClick={() => setShowUpgradeModal(true)}>
                 <i className="fas fa-arrow-up-right mr-2"></i>Upgrade
               </button>
-              <button 
-                onClick={() => setShowPlanDetailsModal(true)}
-                className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 sm:py-2.5 rounded-lg hover:bg-gray-200 font-semibold transition-all text-sm sm:text-base"
-              >
+              <button className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 sm:py-2.5 rounded-lg hover:bg-gray-200 font-semibold transition-all text-sm sm:text-base"
+                onClick={() => setShowPlanDetailsModal(true)}>
                 <i className="fas fa-info-circle mr-2"></i>Details
               </button>
             </div>
@@ -1174,7 +1014,7 @@ const HospitalProfile = () => {
         </div>
 
         {/* Payment History Section */}
-        <div className="lg:col-span-2 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow border border-gray-100 overflow-hidden">
+        <div className="lg:col-span-3 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow border border-gray-100 overflow-hidden">
           <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 sm:p-6 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -1261,9 +1101,7 @@ const HospitalProfile = () => {
           </div>
 
           <div className="bg-gray-50 px-4 sm:px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-            <p className="text-xs sm:text-sm text-gray-600">
-              Showing {hospital.paymentHistory?.length || 0} transactions
-            </p>
+            <p className="text-xs sm:text-sm text-gray-600">Showing {hospital.paymentHistory?.length || 0} transactions</p>
             <button className="text-blue-600 hover:text-blue-700 text-xs sm:text-sm font-semibold transition-colors">
               View All <i className="fas fa-arrow-right ml-1"></i>
             </button>
@@ -1288,10 +1126,7 @@ const HospitalProfile = () => {
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Insurance Partner Name</label>
                 <input className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-500 font-medium"
-                  type="text"
-                  value={newInsurance}
-                  onChange={(e) => setNewInsurance(e.target.value)}
-                  placeholder="e.g., MediCare Plus"
+                  type="text" value={newInsurance} onChange={(e) => setNewInsurance(e.target.value)} placeholder="e.g., MediCare Plus"
                 />
               </div>
             </div>
@@ -1368,7 +1203,7 @@ const HospitalProfile = () => {
                     src={tempPhotoPreview} alt="Preview" 
                   />
                 </div>
-                <p className="text-gray-600 text-sm font-medium text-center">Current hospital photo</p>
+                <p className="text-gray-700 text-sm font-medium text-center text-gray-600">Current hospital photo</p>
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">Choose New Photo</label>
@@ -1377,7 +1212,6 @@ const HospitalProfile = () => {
                 />
                 <p className="text-xs text-gray-600 mt-2">Supported formats: JPG, PNG. Maximum size: 5MB</p>
               </div>
-
               <div className="bg-blue-50 border-l-4 border-blue-400 rounded p-3">
                 <p className="text-blue-800 text-sm font-medium">
                   <i className="fas fa-info-circle text-blue-600 mr-2"></i>

@@ -15,6 +15,7 @@ import {
 } from '@mui/icons-material';
 import { apiFetch } from '../../../../services/apiClient';
 import {
+  DEPARTMENT_LIST,
   DOCTOR_LIST,
   RECEPTIONIST_PATIENT_SEARCH
 } from '../../../../config/api';
@@ -24,6 +25,7 @@ const OPDManagement = () => {
   const [loading, setLoading] = useState(true);
   const [opdPatients, setOpdPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
+  const [apiDepartments, setApiDepartments] = useState([]);
   const [showConsultationForm, setShowConsultationForm] = useState(false);
   const [showQueueModal, setShowQueueModal] = useState(false);
   const [showDoctorModal, setShowDoctorModal] = useState(false);
@@ -74,15 +76,14 @@ const OPDManagement = () => {
   const [docSearchTerm, setDocSearchTerm] = useState('');
   const [isDocDropdownOpen, setIsDocDropdownOpen] = useState(false);
   const docDropdownRef = useRef(null);
-  const [docNameSearchTerm, setDocNameSearchTerm] = useState('');
   const [isDocNameDropdownOpen, setIsDocNameDropdownOpen] = useState(false);
   const docNameDropdownRef = useRef(null);
 
   const [patientSearchTerm, setPatientSearchTerm] = useState('');
   const [isPatientDropdownOpen, setIsPatientDropdownOpen] = useState(false);
   const patientDropdownRef = useRef(null);
-
-  {/* Add this state near your other state declarations */ }
+  const [registeredPatients, setRegisteredPatients] = useState([]);
+  // State for Payment Modal
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPaymentPatient, setSelectedPaymentPatient] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('cash');
@@ -125,7 +126,21 @@ const OPDManagement = () => {
 
   useEffect(() => {
     loadOPDData();
+    loadApiDepartments();
   }, []);
+
+  // Debounced patient search from API
+  useEffect(() => {
+    if (!patientSearchTerm.trim()) {
+      loadApiPatients('');
+      return;
+    }
+    const delayDebounceFn = setTimeout(() => {
+      loadApiPatients(patientSearchTerm);
+    }, 400);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [patientSearchTerm]);
 
   // Update doctor queues when patients change
   useEffect(() => {
@@ -164,21 +179,11 @@ const OPDManagement = () => {
     };
   }, []);
 
-  const DEPARTMENTS = [...new Set(doctors.map(d => d.department))];
-  const AVAILABLE_DOCTORS = [
-    { name: 'Dr. Arun Varma', department: 'Cardiology', specialization: 'Senior Cardiologist', qualification: 'MBBS, MD (Cardiology)', email: 'arun.varma@hospital.com', contact: '+91 9998887771' },
-    { name: 'Dr. Sarah Khan', department: 'Pediatrics', specialization: 'Pediatrician', qualification: 'MBBS, MD (Pediatrics)', email: 'sarah.khan@hospital.com', contact: '+91 9998887772' },
-    { name: 'Dr. John Doe', department: 'Neurology', specialization: 'Neurosurgeon', qualification: 'MBBS, MS, MCh (Neuro)', email: 'john.doe@hospital.com', contact: '+91 9998887773' },
-    { name: 'Dr. Emily Blunt', department: 'Dermatology', specialization: 'Dermatologist', qualification: 'MBBS, MD (Derm)', email: 'emily.blunt@hospital.com', contact: '+91 9998887774' },
-    { name: 'Dr. Robert Miller', department: 'Orthopedics', specialization: 'Orthopedic Surgeon', qualification: 'MBBS, MS (Ortho)', email: 'robert.miller@hospital.com', contact: '+91 9998887775' }
-  ];
-
-  const REGISTERED_PATIENTS = [
-    { id: 'PAT-101', name: 'Rahul Sharma', phoneNo: '9876543210', email: 'rahul@example.com', age: '28', gender: 'Male', bloodGroup: 'O+', address: 'Andheri West, Mumbai' },
-    { id: 'PAT-102', name: 'Surbhi Gupta', phoneNo: '9988776655', email: 'surbhi@example.com', age: '24', gender: 'Female', bloodGroup: 'B+', address: 'Bandra East, Mumbai' },
-    { id: 'PAT-103', name: 'Anita Verma', phoneNo: '9123456789', email: 'anita@example.com', age: '45', gender: 'Female', bloodGroup: 'A-', address: 'Khar Road, Mumbai' },
-    { id: 'PAT-104', name: 'Vikram Singh', phoneNo: '9822334455', email: 'vikram@example.com', age: '35', gender: 'Male', bloodGroup: 'AB+', address: 'Goregaon, Mumbai' }
-  ];
+  const DEPARTMENTS = [...new Set([
+    ...apiDepartments.map(d => d.name || d),
+    ...doctors.map(d => d.department)
+  ])].filter(Boolean);
+  const AVAILABLE_DOCTORS = doctors;
 
   const TEST_PRICES = {
     'Blood Test': 250,
@@ -431,9 +436,9 @@ const OPDManagement = () => {
           token: 'T-105',
           waitingTime: '0 mins',
           status: 'Exited',
-          assignedDoctorId: 'D-002',
-          doctor: 'Dr. Sharma',
-          department: 'Orthopedics',
+          assignedDoctorId: mappedDoctors[1]?.id || mappedDoctors[0]?.id || 'D-002',
+          doctor: mappedDoctors[1]?.name || mappedDoctors[0]?.name || 'Dr. Sharma',
+          department: mappedDoctors[1]?.department || mappedDoctors[0]?.department || 'Orthopedics',
           priority: 'Normal',
           queuePosition: 1,
           arrivalTime: '8:00 AM',
@@ -463,9 +468,9 @@ const OPDManagement = () => {
           token: 'E-101',
           waitingTime: 'Immediate',
           status: 'Waiting',
-          assignedDoctorId: 'D-004',
-          doctor: 'Dr. Gupta',
-          department: 'General Medicine',
+          assignedDoctorId: mappedDoctors[3]?.id || mappedDoctors[0]?.id || 'D-004',
+          doctor: mappedDoctors[3]?.name || mappedDoctors[0]?.name || 'Dr. Gupta',
+          department: mappedDoctors[3]?.department || mappedDoctors[0]?.department || 'General Medicine',
           priority: 'Urgent',
           queuePosition: 0,
           arrivalTime: '10:45 AM',
@@ -479,8 +484,7 @@ const OPDManagement = () => {
         waitingTime: calculateWaitingTime(p.queuePosition)
       }));
 
-
-      const doctorsWithQueue = initialDoctors.map(doctor => {
+      const doctorsWithQueue = mappedDoctors.map(doctor => {
         const waitingPatients = initialPatients.filter(
           p => p.assignedDoctorId === doctor.id && p.status === 'Waiting'
         );
@@ -508,7 +512,20 @@ const OPDManagement = () => {
     }
   };
 
-  {/* Add this function */ }
+  const loadApiDepartments = async () => {
+    try {
+      const res = await apiFetch(DEPARTMENT_LIST);
+      if (res.ok) {
+        const data = await res.json().catch(() => ({}));
+        const list = data.data?.departments || data.data || data;
+        setApiDepartments(Array.isArray(list) ? list : []);
+      }
+    } catch (e) {
+      console.error('Error fetching departments:', e);
+    }
+  };
+
+  // Open Payment Modal
   const handleOpenPaymentModal = (patient) => {
     setSelectedPaymentPatient(patient);
     setPaymentMethod('cash');
@@ -3496,18 +3513,62 @@ const OPDManagement = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-gray-400 tracking-widest ml-1">Assigned Department</label>
-                <select className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl text-sm font-bold text-gray-800 focus:border-blue-600 focus:bg-white transition-all outline-none">
-                  <option>{selectedQueuePatient.department}</option>
-                  <option>Cardiology</option>
-                  <option>Orthopedics</option>
-                  <option>Neurology</option>
+                <select
+                  className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl text-sm font-bold text-gray-800 focus:border-blue-600 focus:bg-white transition-all outline-none"
+                  value={selectedQueuePatient.department}
+                  onChange={(e) => {
+                    const newDept = e.target.value;
+                    const matchedDoc = AVAILABLE_DOCTORS.find(d => d.department === newDept && d.isActive);
+                    setSelectedQueuePatient(prev => ({
+                      ...prev,
+                      department: newDept,
+                      doctor: matchedDoc ? matchedDoc.name : '',
+                      assignedDoctorId: matchedDoc ? matchedDoc.id : ''
+                    }));
+                    setOpdPatients(prev => prev.map(p =>
+                      p.id === selectedQueuePatient.id ? {
+                        ...p,
+                        department: newDept,
+                        doctor: matchedDoc ? matchedDoc.name : '',
+                        assignedDoctorId: matchedDoc ? matchedDoc.id : ''
+                      } : p
+                    ));
+                  }}
+                >
+                  {Array.from(new Set([selectedQueuePatient.department, ...DEPARTMENTS])).filter(Boolean).map(dept => (
+                    <option key={dept} value={dept}>{dept}</option>
+                  ))}
                 </select>
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-gray-400 tracking-widest ml-1">Consulting Doctor</label>
-                <select className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl text-sm font-bold text-gray-800 focus:border-blue-600 focus:bg-white transition-all outline-none">
-                  <option>{selectedQueuePatient.doctor}</option>
-                  {AVAILABLE_DOCTORS.map(doc => <option key={doc.name}>{doc.name}</option>)}
+                <select
+                  className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl text-sm font-bold text-gray-800 focus:border-blue-600 focus:bg-white transition-all outline-none"
+                  value={selectedQueuePatient.doctor}
+                  onChange={(e) => {
+                    const docName = e.target.value;
+                    const docObj = AVAILABLE_DOCTORS.find(d => d.name === docName);
+                    if (docObj) {
+                      setSelectedQueuePatient(prev => ({
+                        ...prev,
+                        doctor: docObj.name,
+                        assignedDoctorId: docObj.id,
+                        department: docObj.department
+                      }));
+                      setOpdPatients(prev => prev.map(p =>
+                        p.id === selectedQueuePatient.id ? {
+                          ...p,
+                          doctor: docObj.name,
+                          assignedDoctorId: docObj.id,
+                          department: docObj.department
+                        } : p
+                      ));
+                    }
+                  }}
+                >
+                  {AVAILABLE_DOCTORS.filter(d => d.isActive).map(doc => (
+                    <option key={doc.id} value={doc.name}>{doc.name} ({doc.department})</option>
+                  ))}
                 </select>
               </div>
               <div className="space-y-2">

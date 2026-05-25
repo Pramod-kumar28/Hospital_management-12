@@ -14,6 +14,7 @@ const WEEK_DAYS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATU
 
 const EMPTY_FORM = {
   date: '',
+  slot_duration_minutes: 30,
   start_time: '',
   end_time: ''
 }
@@ -110,6 +111,7 @@ const ScheduleManagement = () => {
     setCurrentSlot(slot)
     setFormData({
       date: slot.date || '',
+      slot_duration_minutes: slot.slot_duration_minutes || 30,
       start_time: slot.start_time || '',
       end_time: slot.end_time || ''
     })
@@ -128,13 +130,14 @@ const ScheduleManagement = () => {
 
   const buildPayload = () => ({
     date: formData.date || null,
+    slot_duration_minutes: Number(formData.slot_duration_minutes),
     start_time: formData.start_time,
     end_time: formData.end_time
   })
 
   const validateForm = () => {
-    if (!formData.date || !formData.start_time || !formData.end_time) {
-      window.alert('Please fill date, start time and end time.')
+    if (!formData.date || !formData.slot_duration_minutes || !formData.start_time || !formData.end_time) {
+      window.alert('Please fill date, duration, start time and end time.')
       return false
     }
     if (formData.start_time >= formData.end_time) {
@@ -384,7 +387,7 @@ const ScheduleManagement = () => {
 
 const SlotForm = ({ formData, onChange, onCancel, onSubmit, submitText, submitLoading }) => (
   <div className="space-y-4">
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
         <label className="block text-sm text-gray-700 mb-1">Date</label>
         <input
@@ -392,6 +395,15 @@ const SlotForm = ({ formData, onChange, onCancel, onSubmit, submitText, submitLo
           className="w-full px-3 py-2 border border-gray-300 rounded-lg"
           value={formData.date}
           onChange={(event) => onChange('date', event.target.value)}
+        />
+      </div>
+      <div>
+        <label className="block text-sm text-gray-700 mb-1">Duration (mins)</label>
+        <input
+          type="number"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+          value={formData.slot_duration_minutes}
+          onChange={(event) => onChange('slot_duration_minutes', event.target.value)}
         />
       </div>
       <div>
@@ -471,7 +483,7 @@ function normalizeScheduleSlots(rawData) {
 
   return schedules.map((item) => ({
     schedule_id: item?.schedule_id || item?.id || '',
-    day_of_week: item?.day_of_week || '',
+    day_of_week: item?.day_of_week || item?.day_name || item?.day || (item?.date ? new Date(item.date).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase() : ''),
     start_time: item?.start_time || '',
     end_time: item?.end_time || '',
     slot_duration_minutes: Number(item?.slot_duration_minutes || 0),

@@ -31,6 +31,7 @@ import {
   RECEPTIONIST_APPOINTMENTS_AVAILABLE_SLOTS,
   PUBLIC_APPOINTMENTS_AVAILABLE_SLOTS,
   STAFF_DOCTOR_SCHEDULES,
+  STAFF_DOCTOR_CHECK_SLOTS,
   RECEPTIONIST_APPOINTMENTS_REF,
   RECEPTIONIST_APPOINTMENTS_SCHEDULE,
   RECEPTIONIST_APPOINTMENTS_CANCEL,
@@ -248,9 +249,27 @@ const [formData, setFormData] = useState({
   }
 
   const loadStatistics = async (fallbackData = []) => {
-    // Backend receptionist appointments status-summary & statistics endpoints are not implemented (return 404).
-    // To prevent console 404 errors, we compute metrics completely locally from the loaded appointments.
-    calculateStatistics(fallbackData)
+    try {
+      const res = await apiFetch(RECEPTIONIST_APPOINTMENTS_STATISTICS)
+      if (res.ok) {
+        const data = await res.json()
+        const stats = data.data || data
+        setStatistics({
+          total_appointments: stats.total_appointments ?? stats.total ?? 0,
+          checked_in: stats.checked_in ?? 0,
+          waiting: stats.waiting ?? 0,
+          in_consultation: stats.in_consultation ?? 0,
+          completed: stats.completed ?? 0,
+          cancelled: stats.cancelled ?? 0,
+          no_show: stats.no_show ?? 0
+        })
+      } else {
+        calculateStatistics(fallbackData)
+      }
+    } catch (e) {
+      console.error('Error fetching statistics', e)
+      calculateStatistics(fallbackData)
+    }
   }
 
   const loadAppointments = async (silent = false) => {
@@ -500,6 +519,13 @@ const handleSelectDoc = (doc) => {
         if (!activeSchedule && scheduleData.schedules.length > 0) {
           activeSchedule = scheduleData.schedules[0];
         }
+      } else if (Array.isArray(scheduleData)) {
+        // Find schedule matching the chosen date in the array directly
+        activeSchedule = scheduleData.find(s => s.date === selectedDate);
+        // Fallback to the first schedule in the list if none matches
+        if (!activeSchedule && scheduleData.length > 0) {
+          activeSchedule = scheduleData[0];
+        }
       } else if (scheduleData.start_time) {
         activeSchedule = scheduleData;
       }
@@ -512,7 +538,21 @@ const handleSelectDoc = (doc) => {
     const breaks = activeSchedule?.breaks || [{ start: "13:00", end: "14:30" }];
     
     const toMins = (timeStr) => {
-      const [h, m] = timeStr.split(':').map(Number);
+      if (!timeStr) return 0;
+      let time = timeStr.trim();
+      let h = 0, m = 0;
+      if (time.includes('AM') || time.includes('PM')) {
+        const [timePart, modifier] = time.split(' ');
+        let [hours, mins] = timePart.split(':').map(Number);
+        if (modifier === 'PM' && hours !== 12) hours += 12;
+        if (modifier === 'AM' && hours === 12) hours = 0;
+        h = hours;
+        m = mins || 0;
+      } else {
+        const parts = time.split(':').map(Number);
+        h = parts[0] || 0;
+        m = parts[1] || 0;
+      }
       return h * 60 + m;
     };
     
@@ -555,6 +595,7 @@ const handleSelectDoc = (doc) => {
     // Translate ID to Name since the endpoint path specifically uses {doctor_name}
     const actualDoctor = apiDoctors.find(d => d.name === doctorId || d.id === doctorId);
     const finalDoctorName = actualDoctor ? actualDoctor.name : doctorId;
+    const finalDoctorId = actualDoctor && actualDoctor.id ? actualDoctor.id : doctorId;
 
     try {
       // 1. Fetch Doctor Schedule to dynamically generate slots based on breaks
@@ -581,6 +622,21 @@ const handleSelectDoc = (doc) => {
       
       const generatedSlots = generateSlots(scheduleData, date);
       setSlots(generatedSlots);
+      // 2. Fetch available slots from the actual API endpoint
+      const slotsRes = await apiFetch(STAFF_DOCTOR_CHECK_SLOTS(finalDoctorName, date));
+      if (slotsRes.ok) {
+        const data = await slotsRes.json();
+        const availableSlotsRaw = data.data?.slots || data.slots || data.data?.available_slots || (Array.isArray(data.data) ? data.data : []);
+        if (Array.isArray(availableSlotsRaw) && availableSlotsRaw.length > 0) {
+          const mappedSlots = availableSlotsRaw.map(s => typeof s === 'string' ? s : (s.time || s.slot || s.start_time || s));
+          setSlots(mappedSlots);
+          setAvailableSlotsFromApi(mappedSlots);
+          setHasLoadedAvailableSlots(true);
+          return;
+        }
+      }
+
+      // Fallback
       setAvailableSlotsFromApi(generatedSlots);
       setHasLoadedAvailableSlots(false); // Force local calculation fallback to prevent 404 console errors
     } catch (e) {
@@ -1323,7 +1379,7 @@ const handleNewAppointment = () => {
                   )}
                 </div>
               )}
-            </div>
+            </div>  
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1369,7 +1425,6 @@ const handleNewAppointment = () => {
               />
             </div>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Appointment Date <span className="text-red-500">*</span></label>

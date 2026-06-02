@@ -227,20 +227,21 @@ export const PRESCRIPTION_PDF_DOWNLOAD = (prescriptionId) => `/api/v1/simple-pre
 /** Receptionist: patient management */
 export const RECEPTIONIST_PATIENTS = '/api/v1/receptionist/patients';
 
-/** Receptionist: appointment management */
-export const RECEPTIONIST_APPOINTMENTS_SCHEDULE = '/api/v1/receptionist/appointments/schedule';
-export const RECEPTIONIST_APPOINTMENTS_TODAY = '/api/v1/receptionist/appointments/today';
-export const RECEPTIONIST_APPOINTMENTS_REF = (appointmentRef) => `/api/v1/receptionist/appointments/${encodeURIComponent(appointmentRef)}`;
-export const RECEPTIONIST_APPOINTMENTS_STATUS = (appointmentRef) => `/api/v1/receptionist/appointments/${encodeURIComponent(appointmentRef)}/status`;
-export const RECEPTIONIST_APPOINTMENTS_CANCEL = (appointmentRef) => `/api/v1/receptionist/appointments/${encodeURIComponent(appointmentRef)}/cancel`;
-export const RECEPTIONIST_APPOINTMENTS_CHECK_IN = (appointmentRef) => `/api/v1/receptionist/appointments/${encodeURIComponent(appointmentRef)}/check-in`;
-export const RECEPTIONIST_APPOINTMENTS_STATISTICS = '/api/v1/receptionist/appointments/statistics';
-export const RECEPTIONIST_APPOINTMENTS_AVAILABLE_SLOTS = '/api/v1/receptionist/appointments/available-slots';
-export const PUBLIC_APPOINTMENTS_AVAILABLE_SLOTS = '/api/v1/appointments/available-slots';
-export const RECEPTIONIST_APPOINTMENTS_QUEUE = '/api/v1/receptionist/appointments/queue';
-export const RECEPTIONIST_APPOINTMENTS_STATUS_SUMMARY = '/api/v1/receptionist/appointments/status-summary';
-export const STAFF_DOCTOR_SCHEDULES = (doctorName) => `/api/v1/staff/doctor-schedules/${encodeURIComponent(doctorName)}`;
+// --- RECEPTIONIST APPOINTMENTS ---
 export const RECEPTIONIST_QUICK_ACTIONS = '/api/v1/receptionist/quick-actions';
+export const RECEPTIONIST_APPOINTMENTS_STATUS_SUMMARY = '/api/v1/receptionist/appointments/status-summary';
+export const RECEPTIONIST_APPOINTMENTS_STATISTICS = '/api/v1/receptionist/appointments/statistics';
+export const RECEPTIONIST_APPOINTMENTS_TODAY = '/api/v1/receptionist/appointments/today';
+export const RECEPTIONIST_APPOINTMENTS_AVAILABLE_SLOTS = (doctorId, date) => `/api/v1/receptionist/appointments/available-slots?doctor=${encodeURIComponent(doctorId)}&date=${encodeURIComponent(date)}`;
+export const PUBLIC_APPOINTMENTS_AVAILABLE_SLOTS = (doctorId, date) => `/api/v1/public/appointments/available-slots?doctor=${encodeURIComponent(doctorId)}&date=${encodeURIComponent(date)}`;
+export const STAFF_DOCTOR_SCHEDULES = (doctorName) => `/api/v1/staff/doctor-schedules/${encodeURIComponent(doctorName)}`;
+export const STAFF_DOCTOR_CHECK_SLOTS = (doctorName, date) => `/api/v1/staff/doctor-schedules/${encodeURIComponent(doctorName)}/check-slots?date=${encodeURIComponent(date)}`;
+export const RECEPTIONIST_APPOINTMENTS_REF = (appointmentId) => `/api/v1/receptionist/appointments/${encodeURIComponent(appointmentId)}`;
+export const RECEPTIONIST_APPOINTMENTS_SCHEDULE = '/api/v1/receptionist/appointments/schedule';
+export const RECEPTIONIST_APPOINTMENTS_CANCEL = (appointmentId) => `/api/v1/receptionist/appointments/${encodeURIComponent(appointmentId)}/cancel`;
+export const RECEPTIONIST_APPOINTMENTS_STATUS = (appointmentId) => `/api/v1/receptionist/appointments/${encodeURIComponent(appointmentId)}/status`;
+export const RECEPTIONIST_APPOINTMENTS_CHECK_IN = (appointmentId) => `/api/v1/receptionist/appointments/${encodeURIComponent(appointmentId)}/check-in`;
+
 // --- PHARMACY REPORTS ---
 export const PHARMACY_REPORTS_BASE = '/api/v1/pharmacy/reports';
 export const PHARMACY_REPORTS_SALES_SUMMARY = `${PHARMACY_REPORTS_BASE}/sales-summary`;

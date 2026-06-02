@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import LoadingSpinner from '../../../../components/common/LoadingSpinner/LoadingSpinner';
 import Modal from '../../../../components/common/Modal/Modal';
@@ -22,6 +21,7 @@ import { toast } from 'react-toastify';
 import {
   DEPARTMENT_LIST,
   DOCTOR_LIST,
+  DEPARTMENT_DOCTORS,
   RECEPTIONIST_PATIENT_SEARCH,
   OPD_PATIENT_CREATE, OPD_TOKENS, OPD_TOKEN_DETAILS, OPD_PATIENTS_LIST, 
   OPD_PATIENT_STATUS, OPD_PATIENT_DELETE, OPD_DOCTORS, OPD_DOCTOR_CONFIG, 
@@ -93,6 +93,10 @@ const OPDManagement = () => {
     referredBy: ''
   });
 
+  const [apiDepartments, setApiDepartments] = useState([]);
+  const [deptDoctors, setDeptDoctors] = useState([]);
+  const [loadingDeptDoctors, setLoadingDeptDoctors] = useState(false);
+
   // Searchable Dropdown State for Token Creation
   const [deptSearchTerm, setDeptSearchTerm] = useState('');
   const [isDeptDropdownOpen, setIsDeptDropdownOpen] = useState(false);
@@ -158,11 +162,7 @@ const OPDManagement = () => {
     return (consultation + tests).toFixed(2);
   };
   const [patientQueueSearch, setPatientQueueSearch] = useState('');
-  const [consultationSearch, setConsultationSearch] = useState('');
-  const [labSearch, setLabSearch] = useState('');
   const [billingSearch, setBillingSearch] = useState('');
-  const [pharmacySearch, setPharmacySearch] = useState('');
-  const [reportsSearch, setReportsSearch] = useState('');
   const [exitSearch, setExitSearch] = useState('');
   // Helper function for dynamic waiting time
   const calculateWaitingTime = (queuePosition) => {
@@ -170,24 +170,6 @@ const OPDManagement = () => {
     const time = queuePosition * baseTimePerPatient;
     return time > 0 ? `${time} mins` : 'Immediate';
   };
-  // Helper to update doctor queue counts dynamically
-  const getDoctorQueueCount = (doctorId) => {
-    return opdPatients.filter(p =>
-      p.assignedDoctorId === doctorId &&
-      !['Completed', 'Exited'].includes(p.status)
-    ).length;
-  };
-  const STATUS_WORKFLOW = [
-    'Token Generated',
-    'Waiting',
-    'Vitals Completed',
-    'In Consultation',
-    'Lab Ordered',
-    'Billing Pending',
-    'Pharmacy Pending',
-    'Completed',
-    'Exited'
-  ];
   const [consultationForm, setConsultationForm] = useState({
     patientId: '',
     doctorId: '',
@@ -271,6 +253,53 @@ const OPDManagement = () => {
     return () => clearTimeout(delayDebounceFn);
   }, [patientSearchTerm]);
 
+  // Fetch department specific doctors dynamically
+  useEffect(() => {
+    const fetchDeptDoctors = async () => {
+      if (!tokenForm.department) {
+        setDeptDoctors([]);
+        return;
+      }
+
+      setLoadingDeptDoctors(true);
+      try {
+        // Find the department object to get its ID
+        const deptObj = apiDepartments.find(d => 
+          (typeof d === 'object' ? (d.name || d.department_name) : d) === tokenForm.department
+        );
+
+        if (deptObj && deptObj.id) {
+          const res = await apiFetch(DEPARTMENT_DOCTORS(deptObj.id));
+          if (res.ok) {
+            const data = await res.json();
+            const rawDoctors = data.data?.doctors || data.data || data || [];
+            const mapped = Array.isArray(rawDoctors) ? rawDoctors.map(d => ({
+              id: d.id || d.doctor_id || `D-${Math.floor(100 + Math.random() * 900)}`,
+              name: d.name || `Dr. ${d.first_name || ''} ${d.last_name || ''}`.trim() || 'Dr. Unknown',
+              department: tokenForm.department,
+              isActive: d.status?.toLowerCase() === 'active' || d.isActive || true,
+              queue: d.queue || 0
+            })) : [];
+            setDeptDoctors(mapped);
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching department doctors:', err);
+      } finally {
+        setLoadingDeptDoctors(false);
+      }
+
+      // Fallback: use global doctors list filtered by department name
+      const fallbackDocs = doctors.filter(d => 
+        String(d.department).toLowerCase().trim() === String(tokenForm.department).toLowerCase().trim()
+      );
+      setDeptDoctors(fallbackDocs);
+    };
+
+    fetchDeptDoctors();
+  }, [tokenForm.department, apiDepartments, doctors]);
+
   // Update doctor queues when patients change
   useEffect(() => {
     if (opdPatients.length > 0) {
@@ -308,7 +337,9 @@ const OPDManagement = () => {
     };
   }, []);
 
-  const DEPARTMENTS = [...new Set(doctors.map(d => d.department))];
+  const DEPARTMENTS = apiDepartments.length > 0
+    ? [...new Set(apiDepartments.map(d => typeof d === 'object' ? (d.name || d.department_name) : d).filter(Boolean))]
+    : [...new Set(doctors.map(d => d.department).filter(Boolean))];
   const AVAILABLE_DOCTORS = doctors;
 
   const TEST_PRICES = {
@@ -374,9 +405,8 @@ const OPDManagement = () => {
     dept.toLowerCase().includes(deptSearchTerm.toLowerCase())
   );
 
-  const filteredDoctorsForToken = doctors.filter(d =>
+  const filteredDoctorsForToken = deptDoctors.filter(d =>
     d.isActive &&
-    d.department === tokenForm.department &&
     d.name.toLowerCase().includes(docSearchTerm.toLowerCase())
   );
 
@@ -423,29 +453,55 @@ const OPDManagement = () => {
   const loadOPDData = async () => {
     setLoading(true);
     try {
+      // Fetch departments from live API
+      try {
+        const deptRes = await apiFetch(DEPARTMENT_LIST);
+        const deptData = await deptRes.json().catch(() => ({}));
+        const deptList = deptData.data?.departments || deptData.data || deptData || [];
+        setApiDepartments(Array.isArray(deptList) ? deptList : []);
+      } catch (deptErr) {
+        console.error('Error fetching departments:', deptErr);
+      }
+
       // 1. Fetch doctors from live API
       const docRes = await apiFetch(DOCTOR_LIST);
       const docData = await docRes.json().catch(() => ({}));
       const doctorsList = docData.data?.doctors || docData.data || docData || [];
 
-      const mappedDoctors = Array.isArray(doctorsList) ? doctorsList.map(d => ({
-        id: d.id || d.doctor_id || `D-${Math.floor(100 + Math.random() * 900)}`,
-        name: d.name || `Dr. ${d.first_name || ''} ${d.last_name || ''}`.trim() || 'Dr. Unknown',
-        department: d.department || 'General Medicine',
-        opdRoom: d.opdRoom || d.room || d.opd_room || `Room ${Math.floor(101 + Math.random() * 20)}`,
-        specialization: d.specialization || d.doctor_specialization || 'General Physician',
-        qualification: d.qualification || 'MBBS',
-        email: d.email || 'doctor@health.com',
-        contact: d.phone || d.contact || '+91 9999999999',
-        isActive: d.status?.toLowerCase() === 'active' || d.isActive || true,
-        currentPatient: null,
-        queue: 0,
-        maxPatientsPerDay: d.maxPatientsPerDay || d.max_patients || 30,
-        consultationFee: d.consultationFee || d.consulting_fee || 300,
-        workingHours: d.workingHours || d.working_hours || '9:00 AM - 5:00 PM',
-        rating: d.rating || 4.5,
-        experience: d.experience ? `${d.experience} ${d.experienceUnit || 'years'}` : '10 years'
-      })) : [];
+      const mappedDoctors = Array.isArray(doctorsList) ? doctorsList.map(d => {
+        let deptName = 'General Medicine';
+        if (d.department) {
+          if (typeof d.department === 'object') {
+            deptName = d.department.name || d.department.department_name || 'General Medicine';
+          } else {
+            deptName = d.department;
+          }
+        } else if (d.department_name) {
+          if (typeof d.department_name === 'object') {
+            deptName = d.department_name.name || d.department_name.department_name || 'General Medicine';
+          } else {
+            deptName = d.department_name;
+          }
+        }
+        return {
+          id: d.id || d.doctor_id || `D-${Math.floor(100 + Math.random() * 900)}`,
+          name: d.name || `Dr. ${d.first_name || ''} ${d.last_name || ''}`.trim() || 'Dr. Unknown',
+          department: deptName,
+          opdRoom: d.opdRoom || d.room || d.opd_room || `Room ${Math.floor(101 + Math.random() * 20)}`,
+          specialization: d.specialization || d.doctor_specialization || 'General Physician',
+          qualification: d.qualification || 'MBBS',
+          email: d.email || 'doctor@health.com',
+          contact: d.phone || d.contact || '+91 9999999999',
+          isActive: d.status?.toLowerCase() === 'active' || d.isActive || true,
+          currentPatient: null,
+          queue: 0,
+          maxPatientsPerDay: d.maxPatientsPerDay || d.max_patients || 30,
+          consultationFee: d.consultationFee || d.consulting_fee || 300,
+          workingHours: d.workingHours || d.working_hours || '9:00 AM - 5:00 PM',
+          rating: d.rating || 4.5,
+          experience: d.experience ? `${d.experience} ${d.experienceUnit || 'years'}` : '10 years'
+        };
+      }) : [];
 
       // 2. Fetch OPD tokens (patients in queue)
       const tokenRes = await apiFetch(OPD_TOKENS);
@@ -668,30 +724,7 @@ const OPDManagement = () => {
 
   const generateToken = () => {
     setTokenStep('form');
-    setTokenForm({
-      uhid: '',
-      visitId: '',
-      tokenNumber: '',
-      queueNumber: '',
-      patientId: '',
-      patientName: '',
-      age: '',
-      gender: 'Male',
-      bloodGroup: '',
-      phoneNo: '',
-      email: '',
-      address: '',
-      department: '',
-      doctorId: '',
-      visitType: 'New',
-      appointmentType: 'Walk-in',
-      priority: 'Normal',
-      arrivalTime: '',
-      estimatedWaitTime: '',
-      queuePosition: 0,
-      tokenStatus: 'Waiting',
-      referredBy: ''
-    });
+    setTokenForm({ uhid: '', visitId: '', tokenNumber: '', queueNumber: '', patientId: '', patientName: '', age: '', gender: 'Male', bloodGroup: '', phoneNo: '', email: '', address: '', department: '', doctorId: '', visitType: 'New', appointmentType: 'Walk-in', priority: 'Normal', arrivalTime: '', estimatedWaitTime: '', queuePosition: 0, tokenStatus: 'Waiting', referredBy: ''});
     setPatientSearchTerm('');
     setDeptSearchTerm('');
     setDocSearchTerm('');
@@ -715,10 +748,11 @@ const OPDManagement = () => {
         age: tokenForm.age ? parseInt(tokenForm.age) : null,
         gender: tokenForm.gender || "Male",
         bloodGroup: tokenForm.bloodGroup || null,
+        Type: tokenForm.visitType || "New",
         address: tokenForm.address || null,
         department: tokenForm.department || null,
-        doctorId: tokenForm.doctorId || null, // Must be UUID or null
-        type: tokenForm.visitType || "Regular",
+        doctorId: tokenForm.doctorId || null,
+        type: tokenForm.appointmentType || "Walk-in",
         priority: tokenForm.priority || "Normal"
       };
 
@@ -2117,7 +2151,12 @@ const OPDManagement = () => {
                 </div>
                 {isDocDropdownOpen && tokenForm.department && (
                   <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-48 overflow-y-auto">
-                    {filteredDoctorsForToken.length > 0 ? (
+                    {loadingDeptDoctors ? (
+                      <div className="p-3 text-center text-gray-500 text-sm flex items-center justify-center gap-2">
+                        <div className="inline-block w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                        Fetching department doctors...
+                      </div>
+                    ) : filteredDoctorsForToken.length > 0 ? (
                       filteredDoctorsForToken.map(doc => (
                         <div key={doc.id} className="p-3 hover:bg-blue-50 cursor-pointer border-b last:border-0 border-gray-100 transition-colors text-sm" onClick={() => handleSelectDoc(doc)}>
                           <div className="font-medium text-gray-800 text-sm">{doc.name}</div>

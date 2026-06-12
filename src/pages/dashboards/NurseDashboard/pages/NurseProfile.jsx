@@ -140,7 +140,7 @@ const NurseProfile = () => {
       };
 
       const response = await fetch('/api/v1/nurse/profile', {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`

@@ -336,14 +336,16 @@ const Header = ({ onMenuToggle = () => {}, onSidebarToggle = () => {}, isSidebar
                   <i className="fas fa-user mr-2 text-gray-400 transition-colors duration-200"></i>
                   My Profile
                 </button>
-                <button
-                  onClick={handleSettings}
-                  className="w-full text-left px-3 py-3 text-sm text-gray-700 hover:bg-blue-50 rounded flex items-center touch-target transition-all duration-200 hover:translate-x-1 hover:text-blue-600"
-                  role="menuitem"
-                >
-                  <i className="fas fa-cog mr-2 text-gray-400 transition-colors duration-200"></i>
-                  Settings
-                </button>
+                {user?.role?.toUpperCase() !== 'RECEPTIONIST' && (
+                  <button
+                    onClick={handleSettings}
+                    className="w-full text-left px-3 py-3 text-sm text-gray-700 hover:bg-blue-50 rounded flex items-center touch-target transition-all duration-200 hover:translate-x-1 hover:text-blue-600"
+                    role="menuitem"
+                  >
+                    <i className="fas fa-cog mr-2 text-gray-400 transition-colors duration-200"></i>
+                    Settings
+                  </button>
+                )}
                 <button className="w-full text-left px-3 py-3 text-sm text-red-600 hover:bg-red-50 rounded flex items-center touch-target transition-all duration-200 hover:translate-x-1 hover:text-red-700"
                   onClick={handleLogout} role="menuitem">
                   <i className="fas fa-sign-out-alt mr-2 transition-colors duration-200"></i>

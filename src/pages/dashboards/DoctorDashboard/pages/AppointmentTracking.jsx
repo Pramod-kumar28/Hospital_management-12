@@ -187,7 +187,14 @@ const AppointmentTracking = () => {
 
     if (todayRes.ok) {
       const data = normalizeApiData(todayRes.payload)
-      const appointments = Array.isArray(data?.appointments) ? data.appointments : []
+      let appointments = []
+      if (Array.isArray(data)) {
+        appointments = data
+      } else if (Array.isArray(data?.appointments)) {
+        appointments = data.appointments
+      } else if (Array.isArray(data?.items)) {
+        appointments = data.items
+      }
       setTodaySummary(data?.tracking_summary || {})
       setTodayAppointments(appointments)
       setNotificationForm((prev) => ({

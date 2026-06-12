@@ -41,6 +41,7 @@ const OPDManagement = () => {
   const [tokenStep, setTokenStep] = useState('form'); // 'form' or 'slip'
   const [generatedToken, setGeneratedToken] = useState(null);
   const [activeTab, setActiveTab] = useState('patients');
+  const [opdStats, setOpdStats] = useState({ total_queue: 0, waiting: 0, in_consultation: 0, completed: 0 });
   const [selectedPatient, setSelectedPatient] = useState(null);
   // View Patient Details State
   const [showViewPatientModal, setShowViewPatientModal] = useState(false);
@@ -62,7 +63,7 @@ const OPDManagement = () => {
   const [showExitModal, setShowExitModal] = useState(false);
   const [selectedExitPatient, setSelectedExitPatient] = useState(null);
   const [exitForm, setExitForm] = useState({
-    billingStatus: 'Paid',
+    billingStatus: 'Pending',
     followUpRequired: false,
     followUpDate: '',
     remarks: ''
@@ -453,20 +454,66 @@ const OPDManagement = () => {
   const loadOPDData = async () => {
     setLoading(true);
     try {
+
       // Fetch departments from live API
+      let fetchedDeptList = [];
       try {
         const deptRes = await apiFetch(DEPARTMENT_LIST);
         const deptData = await deptRes.json().catch(() => ({}));
         const deptList = deptData.data?.departments || deptData.data || deptData || [];
-        setApiDepartments(Array.isArray(deptList) ? deptList : []);
+        fetchedDeptList = Array.isArray(deptList) ? deptList : [];
+        setApiDepartments(fetchedDeptList);
       } catch (deptErr) {
         console.error('Error fetching departments:', deptErr);
       }
 
       // 1. Fetch doctors from live API
-      const docRes = await apiFetch(DOCTOR_LIST);
-      const docData = await docRes.json().catch(() => ({}));
-      const doctorsList = docData.data?.doctors || docData.data || docData || [];
+      let doctorsList = [];
+      try {
+        const docRes = await apiFetch(DOCTOR_LIST);
+        const docData = await docRes.json().catch(() => ({}));
+        doctorsList = docData.data?.items || docData.items || docData.data?.doctors || docData.data || docData || [];
+        if (!Array.isArray(doctorsList) && doctorsList.items) doctorsList = doctorsList.items;
+        if (!Array.isArray(doctorsList) && doctorsList.data) doctorsList = doctorsList.data;
+      } catch (err) {
+        console.error('Error fetching DOCTOR_LIST:', err);
+      }
+
+      // FALLBACK: If DOCTOR_LIST is empty, build it by fetching each department's doctors
+      if ((!Array.isArray(doctorsList) || doctorsList.length === 0) && fetchedDeptList.length > 0) {
+        try {
+          const promises = fetchedDeptList.map(async (dept) => {
+            const id = typeof dept === 'object' ? (dept.id || dept.department_id || dept.name) : dept;
+            if (!id) return [];
+            try {
+              const res = await apiFetch(DEPARTMENT_DOCTORS(id));
+              if (res.ok) {
+                const data = await res.json();
+                let dList = data.data?.doctors || data.data || data || [];
+                if (!Array.isArray(dList) && dList.items) dList = dList.items;
+                return Array.isArray(dList) ? dList : [];
+              }
+            } catch(e) {}
+            return [];
+          });
+          const results = await Promise.all(promises);
+          const rawDocs = results.flat();
+          
+          // Deduplicate doctors by id or name
+          const uniqueDocs = [];
+          const seenIds = new Set();
+          for (const doc of rawDocs) {
+             const docId = doc.id || doc.doctor_id || doc.doctor_user_id || doc.name;
+             if (!seenIds.has(docId)) {
+               seenIds.add(docId);
+               uniqueDocs.push(doc);
+             }
+          }
+          doctorsList = uniqueDocs;
+        } catch (fallbackErr) {
+          console.error('Fallback doctor fetch failed:', fallbackErr);
+        }
+      }
 
       const mappedDoctors = Array.isArray(doctorsList) ? doctorsList.map(d => {
         let deptName = 'General Medicine';
@@ -506,28 +553,38 @@ const OPDManagement = () => {
       // 2. Fetch OPD tokens (patients in queue)
       const tokenRes = await apiFetch(OPD_TOKENS);
       const tokenData = await tokenRes.json().catch(() => ({}));
-      const tokensList = tokenData.data || tokenData || [];
+      const tokensList = tokenData.data?.items || tokenData.items || tokenData.data || tokenData || [];
 
-      const initialPatients = Array.isArray(tokensList) ? tokensList.map((t, idx) => ({
-        id: t.id || `OPD-${idx}`,
-        visitId: t.visit_id || t.id,
-        patientId: t.patientId || t.patient_id || 'Unknown',
-        patientName: t.patientName || t.patient_name || 'Unknown Patient',
-        age: t.age || 30,
-        gender: t.gender || 'Male',
-        token: t.tokenNumber || t.token_number || `T-${idx + 100}`,
-        waitingTime: calculateWaitingTime(idx + 1),
-        status: t.status || t.tokenStatus || 'Waiting',
-        assignedDoctorId: t.doctorId || t.doctor_user_id || 'Unknown',
-        doctor: t.doctorName || t.doctor_name || 'Dr. Unknown',
-        department: t.department || t.department_name || 'General',
-        priority: t.priority || 'Normal',
-        queuePosition: idx + 1,
-        arrivalTime: t.arrivalTime || t.arrival_time || '09:00 AM',
-        bloodGroup: t.bloodGroup || t.blood_group || 'O+',
-        visitType: t.visitType || t.visit_type || 'New',
-        phoneNo: t.phoneNo || t.phone || 'Not specified'
-      })) : [];
+      const initialPatients = Array.isArray(tokensList) ? tokensList.map((t, idx) => {
+        const rawStatus = t.status || t.tokenStatus || 'WAITING';
+        const formattedStatus = rawStatus === 'IN_CONSULTATION' ? 'In Consultation' : (rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1).toLowerCase());
+        
+        const assignedDocId = t.doctorId || t.doctor_id || t.doctor_user_id || 'Unknown';
+        const foundDoc = mappedDoctors.find(d => String(d.id) === String(assignedDocId));
+        const doctorName = (foundDoc ? foundDoc.name : null) || t.doctorName || t.doctor_name || 'Dr. Unknown';
+
+        return {
+          id: t.id || `OPD-${idx}`,
+          visitId: t.id || t.visit_id || t.opd_ref,
+          opdRef: t.opd_ref || '',
+          patientId: t.patientId || t.patient_profile_id || t.patient_id || 'Unknown',
+          patientName: t.patientName || t.patient_name || 'Unknown Patient',
+          age: t.age || 0,
+          gender: t.gender || 'Male',
+          token: t.tokenNumber || t.token_no || t.token_number || `T-${idx + 100}`,
+          waitingTime: t.waiting_time !== undefined ? t.waiting_time : calculateWaitingTime(idx + 1),
+          status: formattedStatus,
+          assignedDoctorId: assignedDocId,
+          doctor: doctorName,
+          department: t.department || t.department_name || (foundDoc ? foundDoc.department : 'General'),
+          priority: t.priority || 'Normal',
+          queuePosition: t.queue_position !== undefined ? t.queue_position : idx + 1,
+          arrivalTime: t.arrivalTime || t.arrival_time || '09:00 AM',
+          bloodGroup: t.bloodGroup || t.blood_group || 'O+',
+          visitType: t.visitType || t.visit_type || 'New',
+          phoneNo: t.phoneNo || t.phone_no || t.phone || 'Not specified'
+        };
+      }) : [];
 
       const doctorsWithQueue = mappedDoctors.map(doctor => {
         const waitingPatients = initialPatients.filter(
@@ -547,6 +604,14 @@ const OPDManagement = () => {
 
       setDoctors(doctorsWithQueue);
       setOpdPatients(initialPatients);
+
+      // Dynamically calculate actual exact stats from the loaded patients
+      setOpdStats({
+        total_queue: initialPatients.filter(p => p.status !== 'Cancelled').length,
+        waiting: initialPatients.filter(p => p.status === 'Waiting' || p.status === 'WAITING').length,
+        in_consultation: initialPatients.filter(p => p.status === 'In Consultation' || p.status === 'IN_CONSULTATION').length,
+        completed: initialPatients.filter(p => p.status === 'Completed' || p.status === 'COMPLETED' || p.status === 'Exited').length
+      });
 
       // 3. Load initial patients for dropdown
       await loadApiPatients('');
@@ -687,9 +752,16 @@ const OPDManagement = () => {
     setShowConsultationForm(true);
 
     if (['Token Generated', 'WAITING', 'Waiting', 'Vitals Completed'].includes(patient.status)) {
+      // Create consultation record on backend
+      apiFetch(OPD_CONSULTATION_START, {
+        method: 'POST',
+        body: { patientId: patient.patientId, doctorId: patient.assignedDoctorId, consultationType: 'New' }
+      }).catch(err => console.error('Error starting consultation:', err));
+
+      // Update token status
       apiFetch(OPD_PATIENT_STATUS(patient.visitId), {
         method: 'PUT',
-        body: JSON.stringify({ status: 'IN_CONSULTATION' })
+        body: { status: 'IN_CONSULTATION' }
       }).then(res => {
         if (res.ok) {
           loadOPDData();
@@ -704,9 +776,12 @@ const OPDManagement = () => {
 
   const handlePatientExit = async (patient) => {
     try {
+      // Complete consultation on backend
+      await apiFetch(OPD_CONSULTATION_COMPLETE(patient.visitId), { method: 'POST' }).catch(() => {});
+
       const res = await apiFetch(OPD_PATIENT_STATUS(patient.visitId), {
         method: 'PUT',
-        body: JSON.stringify({ status: 'COMPLETED' })
+        body: { status: 'Exited' }
       });
       
       if (res.ok) {
@@ -758,7 +833,7 @@ const OPDManagement = () => {
 
       const res = await apiFetch(OPD_TOKENS, {
         method: 'POST',
-        body: JSON.stringify(payload)
+        body: payload
       });
 
       if (res.ok) {
@@ -1022,13 +1097,6 @@ const OPDManagement = () => {
   };
 
   const handleTransferPatient = (patient) => {
-    const availableDoctors = doctors.filter(d =>
-      d.isActive && d.id !== patient.assignedDoctorId
-    );
-    if (availableDoctors.length === 0) {
-      alert('No other active doctors available for transfer');
-      return;
-    }
     setTransferPatient(patient);
     setSelectedTransferDoctor(null);
     setShowTransferModal(true);
@@ -1042,9 +1110,9 @@ const OPDManagement = () => {
         to_doctor_user_id: selectedTransferDoctor.id,
         reason: 'Patient transferred from reception'
       };
-      const res = await apiFetch(OPD_TRANSFER_PATIENT, {
+      const res = await apiFetch(OPD_TRANSFER, {
         method: 'POST',
-        body: JSON.stringify(payload)
+        body: payload
       });
       if (res.ok) {
         toast.success('Patient transferred successfully');
@@ -1383,7 +1451,7 @@ const OPDManagement = () => {
         <div className="relative bg-white rounded-xl p-5 border border-gray-200 border-t-[3px] border-t-blue-500 shadow-sm overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50/40 via-transparent to-transparent pointer-events-none" />
           <div className="relative flex flex-col">
-            <p className="text-3xl font-bold text-blue-600 mb-1">{opdPatients.length}</p>
+            <p className="text-3xl font-bold text-blue-600 mb-1">{opdStats.total_queue}</p>
             <p className="text-sm font-semibold text-gray-800">Total Queue</p>
             <p className="text-xs text-blue-500 mt-1">Tokens issued today</p>
           </div>
@@ -1392,25 +1460,25 @@ const OPDManagement = () => {
         <div className="relative bg-white rounded-xl p-5 border border-gray-200 border-t-[3px] border-t-yellow-500 shadow-sm overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-yellow-50/40 via-transparent to-transparent pointer-events-none" />
           <div className="relative flex flex-col">
-            <p className="text-3xl font-bold text-yellow-600 mb-1">{opdPatients.filter(p => p.status?.toUpperCase() === 'WAITING' || p.status === 'Waiting').length}</p>
+            <p className="text-3xl font-bold text-yellow-600 mb-1">{opdStats.waiting}</p>
             <p className="text-sm font-semibold text-gray-800">Waiting Patients</p>
             <p className="text-xs text-yellow-500 mt-1">Patients waiting for doctor</p>
           </div>
         </div>
-        {/* PENDING BILLING */}
+        {/* IN CONSULTATION */}
         <div className="relative bg-white rounded-xl p-5 border border-gray-200 border-t-[3px] border-t-purple-500 shadow-sm overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-purple-50/40 via-transparent to-transparent pointer-events-none" />
           <div className="relative flex flex-col">
-            <p className="text-3xl font-bold text-purple-500 mb-1">{opdPatients.filter(p => p.status?.toUpperCase() === 'COMPLETED' || p.status === 'Completed').length}</p>
-            <p className="text-sm font-semibold text-gray-800">Pending Billing</p>
-            <p className="text-xs text-purple-600 mt-1">Consultation done, awaiting bill</p>
+            <p className="text-3xl font-bold text-purple-500 mb-1">{opdStats.in_consultation}</p>
+            <p className="text-sm font-semibold text-gray-800">In Consultation</p>
+            <p className="text-xs text-purple-600 mt-1">Currently with doctor</p>
           </div>
         </div>
-        {/* PATIENTS EXITED */}
+        {/* PATIENTS EXITED / COMPLETED */}
         <div className="relative bg-white rounded-xl p-5 border border-gray-200 border-t-[3px] border-t-green-500 shadow-sm overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-green-50/40 via-transparent to-transparent pointer-events-none" />
           <div className="relative flex flex-col">
-            <p className="text-3xl font-bold text-green-600 mb-1">{opdPatients.filter(p => p.status?.toUpperCase() === 'EXITED' || p.status === 'Exited').length}</p>
+            <p className="text-3xl font-bold text-green-600 mb-1">{opdStats.completed}</p>
             <p className="text-sm font-semibold text-gray-800">Patients Exited</p>
             <p className="text-xs text-green-500 mt-1">Fully processed today</p>
           </div>
@@ -1421,7 +1489,7 @@ const OPDManagement = () => {
       <div className="flex border-b border-gray-200 mb-6 overflow-x-auto scrollbar-hide">
         {/* Patients */}
         <button className={`px-4 py-3 font-medium text-sm flex items-center whitespace-nowrap ${activeTab === 'patients' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50' : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'}`} onClick={() => setActiveTab('patients')}>
-          <PersonIcon className="mr-2" fontSize="small" />Patients ({opdPatients.length})
+          <PersonIcon className="mr-2" fontSize="small" />Patients ({opdPatients.filter(p => p.status !== 'Exited' && p.status !== 'Cancelled').length})
         </button>
 
         {/* Billing */}
@@ -1470,7 +1538,7 @@ const OPDManagement = () => {
 
               {/* Table Body */}
               <tbody className="divide-y divide-gray-200">
-                {opdPatients.filter(patient => patient.patientName.toLowerCase().includes(patientQueueSearch.toLowerCase()) || patient.token.toLowerCase().includes(patientQueueSearch.toLowerCase()) || patient.patientId.toLowerCase().includes(patientQueueSearch.toLowerCase())).length === 0 ? (
+                {opdPatients.filter(patient => patient.status !== 'Exited' && patient.status !== 'Cancelled' && (patient.patientName.toLowerCase().includes(patientQueueSearch.toLowerCase()) || patient.token.toLowerCase().includes(patientQueueSearch.toLowerCase()) || patient.patientId.toLowerCase().includes(patientQueueSearch.toLowerCase()))).length === 0 ? (
                   <tr>
                     <td colSpan="5" className="px-4 py-10 text-center text-gray-500">
                       <div className="flex flex-col items-center justify-center">
@@ -1481,7 +1549,7 @@ const OPDManagement = () => {
                     </td>
                   </tr>
                 ) : (
-                  opdPatients.filter(patient => patient.status !== 'Exited' && (patient.patientName.toLowerCase().includes(patientQueueSearch.toLowerCase()) || patient.token.toLowerCase().includes(patientQueueSearch.toLowerCase()) || patient.patientId.toLowerCase().includes(patientQueueSearch.toLowerCase()))
+                  opdPatients.filter(patient => patient.status !== 'Exited' && patient.status !== 'Cancelled' && (patient.patientName.toLowerCase().includes(patientQueueSearch.toLowerCase()) || patient.token.toLowerCase().includes(patientQueueSearch.toLowerCase()) || patient.patientId.toLowerCase().includes(patientQueueSearch.toLowerCase()))
                   ).map(patient => (
                     <tr key={patient.id} className="hover:bg-gray-50">
 
@@ -1506,7 +1574,7 @@ const OPDManagement = () => {
                           {patient.status === 'Waiting' && patient.assignedDoctorId && (
                             <>
                               <span className="w-7 h-7 mr-2 rounded-full bg-yellow-100 text-yellow-800 flex items-center justify-center text-xs font-semibold shadow-sm" title="Queue Position">{patient.queuePosition}</span>
-                              <span className="text-sm text-gray-700">{patient.waitingTime}</span>
+                              <span className="text-sm text-gray-700">{patient.waitingTime} mins</span>
                             </>
                           )}
 
@@ -1527,6 +1595,13 @@ const OPDManagement = () => {
                             <span className="flex items-center gap-1.5">
                               <CheckCircleIcon style={{ fontSize: 18 }} className="text-green-500" />
                               <span className="text-sm font-medium text-green-600">Completed</span>
+                            </span>
+                          )}
+
+                          {patient.status === 'Cancelled' && (
+                            <span className="flex items-center gap-1.5">
+                              <CloseIcon style={{ fontSize: 18 }} className="text-red-500" />
+                              <span className="text-sm font-medium text-red-600">Cancelled</span>
                             </span>
                           )}
                         </div>
@@ -1556,32 +1631,41 @@ const OPDManagement = () => {
                           <button onClick={() => {
                             setSelectedPatientForView(patient);
                             setShowViewPatientModal(true);
-                          }} title="View Patient Details" className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded">
-                            <VisibilityIcon fontSize="small" />
+                          }} className="px-3 py-1.5 text-xs font-medium bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200 rounded flex items-center gap-1.5 transition-colors">
+                            <VisibilityIcon fontSize="inherit" /> View
+                          </button>
+
+                          <button onClick={() => {
+                            setSelectedQueuePatient(patient);
+                            setShowQueueDetailModal(true);
+                          }} className="px-3 py-1.5 text-xs font-medium bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 rounded flex items-center gap-1.5 transition-colors">
+                            <EditIcon fontSize="inherit" /> Edit
                           </button>
 
 
                           {['Waiting', 'Token Generated'].includes(patient.status) && patient.assignedDoctorId && (
                             <>
-                              <button onClick={() => handleStartConsultation(patient)} title="Start Consultation" className="w-8 h-8 flex items-center justify-center text-green-600 hover:bg-green-50 rounded">
-                                <PlayArrowIcon fontSize="small" />
+                              <button onClick={() => handleStartConsultation(patient)} className="px-3 py-1.5 text-xs font-medium bg-green-50 text-green-700 hover:bg-green-100 border border-green-200 rounded flex items-center gap-1.5 transition-colors">
+                                <PlayArrowIcon fontSize="inherit" /> Start
                               </button>
 
-                              <button onClick={() => handleTransferPatient(patient)} title="Transfer" className="w-8 h-8 flex items-center justify-center text-yellow-600 hover:bg-yellow-50 rounded">
-                                <SwapHorizIcon fontSize="small" />
+                              <button onClick={() => handleTransferPatient(patient)} className="px-3 py-1.5 text-xs font-medium bg-yellow-50 text-yellow-700 hover:bg-yellow-100 border border-yellow-200 rounded flex items-center gap-1.5 transition-colors">
+                                <SwapHorizIcon fontSize="inherit" /> Transfer
                               </button>
                             </>
                           )}
 
                           {patient.status === 'In Consultation' && (
-                            <button onClick={() => handleStartConsultation(patient)} title="View Consultation" className="w-8 h-8 flex items-center justify-center text-blue-600 hover:bg-blue-50 rounded">
-                              <DescriptionIcon fontSize="small" />
+                            <button onClick={() => handleStartConsultation(patient)} className="px-3 py-1.5 text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded flex items-center gap-1.5 transition-colors">
+                              <DescriptionIcon fontSize="inherit" /> Consult
                             </button>
                           )}
 
-                          <button onClick={() => handleCancelPatient(patient)} title="Cancel" className="w-8 h-8 flex items-center justify-center text-red-600 hover:bg-red-50 rounded">
-                            <CloseIcon fontSize="small" />
-                          </button>
+                          {patient.status !== 'Cancelled' && patient.status !== 'Completed' && patient.status !== 'Exited' && (
+                            <button onClick={() => handleCancelPatient(patient)} className="px-3 py-1.5 text-xs font-medium bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 rounded flex items-center gap-1.5 transition-colors">
+                              <DeleteIcon fontSize="inherit" /> Delete
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -1621,7 +1705,7 @@ const OPDManagement = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {opdPatients.filter(p => p.status !== 'Exited' && p.patientName.toLowerCase().includes(billingSearch.toLowerCase())).map(patient => {
+                {opdPatients.filter(p => p.status !== 'Exited' && p.status !== 'Cancelled' && p.patientName.toLowerCase().includes(billingSearch.toLowerCase())).map(patient => {
                   const total = calculateTotalAmount(patient);
                   const consult = doctors.find(d => d.id === patient.assignedDoctorId)?.consultationFee || 300;
                   const testsTotal = calculateTestsFee(patient);
@@ -1689,7 +1773,7 @@ const OPDManagement = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {opdPatients.filter(p => (p.status === 'Completed' || p.status === 'Exited') && p.patientName.toLowerCase().includes(exitSearch.toLowerCase())).map(patient => (
+            {opdPatients.filter(p => (p.status === 'Completed' || p.status === 'COMPLETED' || p.status === 'Exited') && p.patientName.toLowerCase().includes(exitSearch.toLowerCase())).map(patient => (
               <div key={patient.id} className="bg-white rounded-3xl border border-gray-200 shadow-sm hover:shadow-md transition-all overflow-hidden group flex flex-col">
                 <div className="p-6 border-b border-gray-100 flex justify-between items-start">
                   <div>
@@ -1710,8 +1794,8 @@ const OPDManagement = () => {
                       <p className="text-sm font-bold text-gray-800">{patient.doctor || 'Not Assigned'}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-[10px] font-black text-gray-400 tracking-widest mb-1">Billing Status</p>
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${patient.status === 'Exited' || patient.status === 'Completed' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-yellow-50 text-yellow-700 border border-yellow-200'}`}> {patient.status === 'Exited' || patient.status === 'Completed' ? 'Paid' : 'Pending'} </span>
+                      <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-1">Billing Status</p>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${patient.status === 'Exited' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-yellow-50 text-yellow-700 border border-yellow-200'}`}> {patient.status === 'Exited' ? 'Paid' : 'Pending'} </span>
                     </div>
                   </div>
 
@@ -1752,7 +1836,7 @@ const OPDManagement = () => {
                     </div>
                   ) : (
                     <div className="pt-6 flex justify-end gap-3 border-t border-gray-50 mt-auto">
-                      <button className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-black text-xs tracking-widest hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-100" onClick={() => { setSelectedExitPatient(patient); setShowExitModal(true); }}>
+                      <button className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-black text-xs tracking-widest hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-100" onClick={() => { setSelectedExitPatient(patient); setExitForm({ billingStatus: 'Pending', followUpRequired: false, followUpDate: '', remarks: '' }); setShowExitModal(true); }}>
                         <ExitToAppIcon sx={{ fontSize: 18 }} />Finalize Exit
                       </button>
                     </div>
@@ -2573,7 +2657,11 @@ const OPDManagement = () => {
 
             {/* Doctor Cards Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[340px] overflow-y-auto pr-1">
-              {doctors.filter(d => d.isActive && d.id !== transferPatient.assignedDoctorId).map(doctor => {
+              {doctors.filter(d => d.isActive && String(d.id) !== String(transferPatient.assignedDoctorId)).length === 0 ? (
+                <div className="col-span-1 sm:col-span-2 text-center p-6 bg-gray-50 border border-gray-100 rounded-xl">
+                  <p className="text-gray-500 font-medium text-sm">No other active doctors available to transfer to.</p>
+                </div>
+              ) : doctors.filter(d => d.isActive && String(d.id) !== String(transferPatient.assignedDoctorId)).map(doctor => {
                 const isSelected = selectedTransferDoctor?.id === doctor.id;
                 const queueCount = opdPatients.filter(p => p.assignedDoctorId === doctor.id && p.status === 'Waiting').length;
 
@@ -2919,10 +3007,16 @@ const OPDManagement = () => {
         size="lg"
         footer={selectedQueuePatient && (
           <div className="flex flex-col sm:flex-row gap-4 w-full">
-            <button className="flex-1 py-4 bg-gray-900 text-white rounded-2xl font-black text-xs tracking-[0.2em] hover:bg-black transition-all shadow-xl shadow-gray-200 flex items-center justify-center gap-3" onClick={() => { alert('Updating patient records...'); setShowQueueDetailModal(false); }}>Save All Changes
+            <button className="flex-1 py-4 bg-gray-900 text-white rounded-2xl font-black text-xs tracking-[0.2em] hover:bg-black transition-all shadow-xl shadow-gray-200 flex items-center justify-center gap-3" onClick={() => { toast.success('Patient details updated successfully'); setShowQueueDetailModal(false); }}>Save All Changes
             </button>
-            <button className="flex-1 py-4 border-2 border-red-100 text-red-600 rounded-2xl font-black text-xs tracking-[0.2em] hover:bg-red-600 hover:text-white transition-all flex items-center justify-center gap-3 group" onClick={() => { setSelectedExitPatient(selectedQueuePatient); setShowExitModal(true); }}>  <ExitToAppIcon className="group-hover:translate-x-1 transition-transform" /> Complete & Exit Patient
-            </button>
+            {selectedQueuePatient.status !== 'Exited' && selectedQueuePatient.status !== 'Cancelled' ? (
+              <button className="flex-1 py-4 border-2 border-red-100 text-red-600 rounded-2xl font-black text-xs tracking-[0.2em] hover:bg-red-600 hover:text-white transition-all flex items-center justify-center gap-3 group" onClick={() => { setSelectedExitPatient(selectedQueuePatient); setExitForm({ billingStatus: 'Pending', followUpRequired: false, followUpDate: '', remarks: '' }); setShowExitModal(true); }}>  <ExitToAppIcon className="group-hover:translate-x-1 transition-transform" /> Complete & Exit Patient
+              </button>
+            ) : (
+              <div className="flex-1 py-4 bg-gray-100 text-gray-500 rounded-2xl font-bold text-xs tracking-widest flex items-center justify-center gap-2 border border-gray-200">
+                <CheckCircleIcon sx={{ fontSize: 18 }} className="text-green-500" /> Patient {selectedQueuePatient.status === 'Cancelled' ? 'Cancelled' : 'Exited'}
+              </div>
+            )}
           </div>
         )}
       >
@@ -3199,7 +3293,9 @@ const OPDManagement = () => {
                     <div className="space-y-2 mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
                       <label className="text-[10px] font-black text-gray-400 tracking-widest ml-1">Suggested Re-visit Date</label>
                       <div className="relative">
-                        <input type="date" className="w-full p-4 bg-white border-2 border-gray-100 rounded-2xl text-sm font-bold text-gray-800 focus:border-blue-600 transition-all outline-none" value={exitForm.followUpDate} onChange={(e) => setExitForm({ ...exitForm, followUpDate: e.target.value })} /> <CalendarMonthIcon className="absolute right-4 top-4 text-gray-400" /> </div>
+                        <input type="date" className="w-full p-4 bg-white border-2 border-gray-100 rounded-2xl text-sm font-bold text-gray-800 focus:border-blue-600 transition-all outline-none" value={exitForm.followUpDate} onChange={(e) => setExitForm({ ...exitForm, followUpDate: e.target.value })} /> 
+                        <CalendarMonthIcon className="absolute right-4 top-4 text-gray-400 pointer-events-none" /> 
+                      </div>
                     </div>
                   )}
                 </div>

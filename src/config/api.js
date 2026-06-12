@@ -58,11 +58,11 @@ export const SUPER_ADMIN_ME_SECURITY = '/api/v1/super-admin/me/security';
 export const SUPER_ADMIN_ME_CHANGE_PASSWORD = '/api/v1/super-admin/me/change-password';
 
 /** Hospital Admin: personal profile */
-export const HOSPITAL_ADMIN_ME = '/api/v1/hospital-admin/me';
+export const HOSPITAL_ADMIN_ME = '/api/v1/auth/me';
 export const HOSPITAL_ADMIN_PROFILE = '/api/v1/hospital-admin/profile';
-export const HOSPITAL_ADMIN_ME_AVATAR = '/api/v1/hospital-admin/me/avatar';
-export const HOSPITAL_ADMIN_ME_SECURITY = '/api/v1/hospital-admin/me/security';
-export const HOSPITAL_ADMIN_ME_CHANGE_PASSWORD = '/api/v1/hospital-admin/me/change-password';
+export const HOSPITAL_ADMIN_ME_AVATAR = '/api/v1/super-admin/me/avatar'; // Using placeholder if no specific one exists
+export const HOSPITAL_ADMIN_ME_SECURITY = '/api/v1/auth/me/security';
+export const HOSPITAL_ADMIN_ME_CHANGE_PASSWORD = '/api/v1/auth/hospital-admin/change-password';
 
 /** Hospital Admin: Platform Settings */
 export const HOSPITAL_ADMIN_PLATFORM_FEATURES = '/api/v1/hospital-admin/platform-settings/features';
@@ -166,15 +166,15 @@ export const DOCTOR_PROFILE = '/api/v1/doctor-sidebar/profile';
 export const DOCTOR_PROFILE_UPDATE = '/api/v1/doctor-sidebar/profile';
 
 /** Doctor: reports and analytics */
-export const DOCTOR_REPORTS_PRACTICE_OVERVIEW = '/api/v1/doctor-management/reports/practice-overview';
-export const DOCTOR_REPORTS_PATIENT_ANALYTICS = '/api/v1/doctor-management/reports/patient-analytics';
-export const DOCTOR_REPORTS_APPOINTMENT_ANALYTICS = '/api/v1/doctor-management/reports/appointment-analytics';
-export const DOCTOR_REPORTS_CLINICAL_OUTCOMES = '/api/v1/doctor-management/reports/clinical-outcomes';
-export const DOCTOR_REPORTS_FINANCIAL_SUMMARY = '/api/v1/doctor-management/reports/financial-summary';
-export const DOCTOR_REPORTS_PERFORMANCE_METRICS = '/api/v1/doctor-management/reports/performance-metrics';
-export const DOCTOR_REPORTS_COMPARATIVE_ANALYSIS = '/api/v1/doctor-management/reports/comparative-analysis';
-export const DOCTOR_REPORTS_GENERATE_CUSTOM_REPORT = '/api/v1/doctor-management/reports/generate-custom-report';
-export const DOCTOR_REPORTS_EXPORT_OPTIONS = '/api/v1/doctor-management/reports/export-options';
+export const DOCTOR_REPORTS_PRACTICE_OVERVIEW = '/api/v1/doctor-reports-analytics/practice-overview';
+export const DOCTOR_REPORTS_PATIENT_ANALYTICS = '/api/v1/doctor-reports-analytics/patient-analytics';
+export const DOCTOR_REPORTS_APPOINTMENT_ANALYTICS = '/api/v1/doctor-reports-analytics/appointment-analytics';
+export const DOCTOR_REPORTS_CLINICAL_OUTCOMES = '/api/v1/doctor-reports-analytics/clinical-outcomes';
+export const DOCTOR_REPORTS_FINANCIAL_SUMMARY = '/api/v1/doctor-reports-analytics/financial-summary';
+export const DOCTOR_REPORTS_PERFORMANCE_METRICS = '/api/v1/doctor-reports-analytics/performance-metrics';
+export const DOCTOR_REPORTS_COMPARATIVE_ANALYSIS = '/api/v1/doctor-reports-analytics/comparative-analysis';
+export const DOCTOR_REPORTS_GENERATE_CUSTOM_REPORT = '/api/v1/doctor-reports-analytics/generate-custom-report';
+export const DOCTOR_REPORTS_EXPORT_OPTIONS = '/api/v1/doctor-reports-analytics/export-options';
 
 /** Receptionist: profile management */
 export const RECEPTIONIST_PROFILE = '/api/v1/receptionist/profile';
@@ -232,6 +232,7 @@ export const RECEPTIONIST_QUICK_ACTIONS = '/api/v1/receptionist/quick-actions';
 export const RECEPTIONIST_APPOINTMENTS_STATUS_SUMMARY = '/api/v1/receptionist/appointments/status-summary';
 export const RECEPTIONIST_APPOINTMENTS_STATISTICS = '/api/v1/receptionist/appointments/statistics';
 export const RECEPTIONIST_APPOINTMENTS_TODAY = '/api/v1/receptionist/appointments/today';
+export const RECEPTIONIST_APPOINTMENTS_QUEUE = '/api/v1/receptionist/appointments/queue';
 export const RECEPTIONIST_APPOINTMENTS_AVAILABLE_SLOTS = (doctorId, date) => `/api/v1/receptionist/appointments/available-slots?doctor=${encodeURIComponent(doctorId)}&date=${encodeURIComponent(date)}`;
 export const PUBLIC_APPOINTMENTS_AVAILABLE_SLOTS = (doctorId, date) => `/api/v1/public/appointments/available-slots?doctor=${encodeURIComponent(doctorId)}&date=${encodeURIComponent(date)}`;
 export const STAFF_DOCTOR_SCHEDULES = (doctorName) => `/api/v1/staff/doctor-schedules/${encodeURIComponent(doctorName)}`;
@@ -313,4 +314,24 @@ export const OPD_CONSULTATION_BY_PATIENT = (patientId) => `/api/v1/opd/consultat
 export const OPD_TRANSFER = '/api/v1/opd/transfer';
 export const OPD_TRANSFER_PATIENT = '/api/v1/opd/transfer-patient';
 export const OPD_DASHBOARD_STATS = '/api/v1/opd/dashboard';
+
+/** IPD Management APIs */
+export const IPD_ADMISSIONS = '/api/v1/ipd-management/admissions';
+export const IPD_AVAILABLE_PATIENTS = '/api/v1/ipd-management/available-patients';
+export const IPD_PATIENTS = '/api/v1/ipd-management/patients';
+export const IPD_ADMISSION_DETAILS = (admissionNumber) => `/api/v1/ipd-management/admissions/${encodeURIComponent(admissionNumber)}`;
+export const IPD_DOCTOR_ROUNDS = '/api/v1/ipd-management/doctor-rounds';
+export const IPD_DASHBOARD = '/api/v1/ipd-management/dashboard';
+
+/** Hospital Admin - Ward & Bed Management */
+export const HOSPITAL_WARDS = '/api/v1/hospital-admin/wards';
+export const HOSPITAL_WARD_DETAILS = (wardId) => `/api/v1/hospital-admin/wards/${encodeURIComponent(wardId)}`;
+export const HOSPITAL_WARD_STATUS = (wardId) => `/api/v1/hospital-admin/wards/${encodeURIComponent(wardId)}/status`;
+export const HOSPITAL_BEDS = '/api/v1/hospital-admin/beds';
+export const HOSPITAL_BED_DETAILS = (bedId) => `/api/v1/hospital-admin/beds/${encodeURIComponent(bedId)}`;
+export const HOSPITAL_BED_STATUS = (bedId) => `/api/v1/hospital-admin/beds/${encodeURIComponent(bedId)}/status`;
+
+/** Nurse Module - Beds */
+
+export const NURSE_BED_DETAILS = (bedId) => `/api/v1/nurse/beds/${encodeURIComponent(bedId)}`;
  

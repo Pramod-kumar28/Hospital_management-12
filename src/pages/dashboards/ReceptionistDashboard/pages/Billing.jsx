@@ -13,15 +13,14 @@ const Billing = () => {
 
   const loadBills = async () => {
     setLoading(true)
-    setTimeout(() => {
-      setBills([
-        { id: 'INV-4001', patient: 'Ravi Kumar', date: '2023-10-15', services: 'Consultation, X-Ray', amount: 1200, discount: 0, total: 1200, status: 'Paid' },
-        { id: 'INV-4002', patient: 'Anita Sharma', date: '2023-10-15', services: 'Blood Test', amount: 300, discount: 50, total: 250, status: 'Paid' },
-        { id: 'INV-4003', patient: 'Suresh Patel', date: '2023-10-14', services: 'MRI Scan', amount: 2500, discount: 0, total: 2500, status: 'Pending' },
-        { id: 'INV-4004', patient: 'Priya Singh', date: '2023-10-14', services: 'Consultation, Medication', amount: 650, discount: 0, total: 650, status: 'Paid' }
-      ])
+    try {
+      // Integration point for fetching actual bills
+      setBills([])
+    } catch (error) {
+      console.error('Error loading bills:', error)
+    } finally {
       setLoading(false)
-    }, 1000)
+    }
   }
 
   const generateBill = () => {
@@ -64,9 +63,6 @@ const Billing = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Patient *</label>
                   <select className="w-full border rounded p-2" required>
                     <option value="">Select Patient</option>
-                    <option value="1">Ravi Kumar</option>
-                    <option value="2">Anita Sharma</option>
-                    <option value="3">Suresh Patel</option>
                   </select>
                 </div>
                 <div>
@@ -78,12 +74,7 @@ const Billing = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Services *</label>
                 <div className="space-y-2">
-                  {['Consultation', 'X-Ray', 'Blood Test', 'MRI Scan', 'Medication'].map(service => (
-                    <label key={service} className="flex items-center">
-                      <input type="checkbox" className="rounded border-gray-300 text-blue-600 mr-2" />
-                      <span>{service}</span>
-                    </label>
-                  ))}
+                  <p className="text-sm text-gray-500">No services available</p>
                 </div>
               </div>
               

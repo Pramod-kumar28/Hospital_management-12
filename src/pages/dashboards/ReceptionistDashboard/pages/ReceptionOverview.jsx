@@ -33,20 +33,21 @@ const ReceptionOverview = ({ setActivePage }) => {
       const data = await res.json()
 
       if (res.ok) {
+        const payloadData = data?.data || data;
         setDashboardData({
           stats: {
-            totalPatients: data.stats?.totalPatients || data.stats?.total_patients || 0,
-            todayAppointments: data.stats?.todayAppointments || data.stats?.today_appointments || 0,
-            pendingBills: data.stats?.pendingBills || data.stats?.pending_bills || 0,
-            newRegistrations: data.stats?.newRegistrations || data.stats?.new_registrations || 0,
-            waitingPatients: data.stats?.waitingPatients || data.stats?.waiting_patients || 0,
-            completedAppointments: data.stats?.completedAppointments || data.stats?.completed_appointments || 0,
-            revenueToday: data.stats?.revenueToday || data.stats?.revenue_today || 0,
-            avgWaitTime: data.stats?.avgWaitTime || data.stats?.avg_wait_time || 0
+            totalPatients: payloadData.statistics?.checked_in_patients || 0, // Using checked_in as proxy if total isn't available
+            todayAppointments: payloadData.statistics?.todays_appointments || 0,
+            pendingBills: 0, // Not provided by backend
+            newRegistrations: payloadData.statistics?.patients_registered_today || 0,
+            waitingPatients: payloadData.statistics?.pending_checkins || 0,
+            completedAppointments: 0,
+            revenueToday: 0,
+            avgWaitTime: 0
           },
-          appointments: data.appointments || [],
-          registrations: data.registrations || [],
-          waitingPatients: data.waitingPatients || data.waiting_patients || []
+          appointments: payloadData.appointments || [],
+          registrations: payloadData.registrations || [],
+          waitingPatients: payloadData.waitingPatients || payloadData.waiting_patients || []
         })
       } else {
         console.error('Failed to load dashboard data:', data.message || 'Unknown error')

@@ -3,6 +3,9 @@ import { Hotel, Bed, MonitorHeart, MeetingRoom, Payments, Visibility, SwapHoriz,
 import LoadingSpinner from '../../../../components/common/LoadingSpinner/LoadingSpinner';
 import DataTable from '../../../../components/ui/Tables/DataTable';
 import Modal from '../../../../components/common/Modal/Modal';
+import { apiFetch } from '../../../../services/apiClient';
+import { toast } from 'react-toastify';
+import { IPD_DASHBOARD, IPD_PATIENTS, HOSPITAL_WARDS, HOSPITAL_BEDS, IPD_ADMISSIONS, IPD_AVAILABLE_PATIENTS, IPD_DOCTOR_ROUNDS, NURSE_BEDS } from '../../../../config/api';
 
 const availableNurses = [
   { id: 'NUR-402', name: 'Nurse Sarah Jenkins', specialty: 'Intensive Care' },
@@ -19,17 +22,7 @@ const IPDManagement = () => {
   const [wards, setWards] = useState([]);
 
   // Room state
-  const [rooms, setRooms] = useState([{ room_id: 'RM-101', room_number: '101', ward_id: 'WARD-001', room_type: 'General', floor_number: '1', room_status: 'Occupied', daily_charge: 2500 },
-  { room_id: 'RM-102', room_number: '102', ward_id: 'WARD-001', room_type: 'General', floor_number: '1', room_status: 'Available', daily_charge: 2500 },
-  { room_id: 'RM-103', room_number: '103', ward_id: 'WARD-002', room_type: 'General', floor_number: '1', room_status: 'Occupied', daily_charge: 2200 },
-  { room_id: 'RM-201', room_number: '201', ward_id: 'WARD-003', room_type: 'ICU', floor_number: '2', room_status: 'Occupied', daily_charge: 8500 },
-  { room_id: 'RM-202', room_number: '202', ward_id: 'WARD-003', room_type: 'ICU', floor_number: '2', room_status: 'Available', daily_charge: 8500 },
-  { room_id: 'RM-301', room_number: '301', ward_id: 'WARD-005', room_type: 'Semi-Private', floor_number: '3', room_status: 'Occupied', daily_charge: 3200 },
-  { room_id: 'RM-302', room_number: '302', ward_id: 'WARD-005', room_type: 'Semi-Private', floor_number: '3', room_status: 'Available', daily_charge: 3200 },
-  { room_id: 'RM-401', room_number: '401', ward_id: 'WARD-007', room_type: 'Private', floor_number: '4', room_status: 'Occupied', daily_charge: 5000 },
-  { room_id: 'RM-402', room_number: '402', ward_id: 'WARD-007', room_type: 'Private', floor_number: '4', room_status: 'Available', daily_charge: 5000 },
-  { room_id: 'RM-403', room_number: '403', ward_id: 'WARD-008', room_type: 'Deluxe', floor_number: '4', room_status: 'Available', daily_charge: 8000 }
-  ]);
+  const [rooms, setRooms] = useState([]);
 
   const [showAdmissionForm, setShowAdmissionForm] = useState(false);
   const [showTransferModal, setShowTransferModal] = useState(false);
@@ -61,16 +54,7 @@ const IPDManagement = () => {
   const [wardForm, setWardForm] = useState({ ward_id: '', ward_name: '', ward_type: 'General', floor_number: '', department_id: 'Cardiology', total_rooms: 0, total_beds: 0, occupied_beds: 0, available_beds: 0, ward_status: 'Active', rate: 2000 });
   const [roomForm, setRoomForm] = useState({ room_id: '', room_number: '', ward_id: '', room_type: 'General', floor_number: '', room_status: 'Available', daily_charge: 2000 });
 
-  // bed_id, bed_number, room_id, ward_id, bed_type, bed_status, patient_id, assigned_date, assigned_time, vacant_date, is_oxygen_available, ventilator_available, bed_charges, cleaning_required
-  const [beds, setBeds] = useState([
-    { bed_id: 'BED-101A', bed_number: '101A', room_id: 'RM-101', ward_id: 'WARD-001', bed_type: 'General', bed_status: 'Occupied', patient_id: 'PAT-005', assigned_date: '2023-10-10', assigned_time: '10:30', vacant_date: '', is_oxygen_available: true, ventilator_available: false, bed_charges: 1200, cleaning_required: false },
-    { bed_id: 'BED-101B', bed_number: '101B', room_id: 'RM-101', ward_id: 'WARD-001', bed_type: 'General', bed_status: 'Available', patient_id: '', assigned_date: '', assigned_time: '', vacant_date: '2023-10-14', is_oxygen_available: true, ventilator_available: false, bed_charges: 1200, cleaning_required: false },
-    { bed_id: 'BED-102A', bed_number: '102A', room_id: 'RM-102', ward_id: 'WARD-001', bed_type: 'General', bed_status: 'Available', patient_id: '', assigned_date: '', assigned_time: '', vacant_date: '', is_oxygen_available: false, ventilator_available: false, bed_charges: 1000, cleaning_required: true },
-    { bed_id: 'BED-201A', bed_number: '201A', room_id: 'RM-201', ward_id: 'WARD-003', bed_type: 'ICU', bed_status: 'Occupied', patient_id: 'PAT-006', assigned_date: '2023-10-12', assigned_time: '02:15', vacant_date: '', is_oxygen_available: true, ventilator_available: true, bed_charges: 5000, cleaning_required: false },
-    { bed_id: 'BED-202A', bed_number: '202A', room_id: 'RM-202', ward_id: 'WARD-003', bed_type: 'ICU', bed_status: 'Available', patient_id: '', assigned_date: '', assigned_time: '', vacant_date: '', is_oxygen_available: true, ventilator_available: true, bed_charges: 5000, cleaning_required: false },
-    { bed_id: 'BED-301A', bed_number: '301A', room_id: 'RM-301', ward_id: 'WARD-005', bed_type: 'Semi-Private', bed_status: 'Occupied', patient_id: 'PAT-007', assigned_date: '2023-10-08', assigned_time: '11:45', vacant_date: '', is_oxygen_available: true, ventilator_available: false, bed_charges: 2000, cleaning_required: false },
-    { bed_id: 'BED-302A', bed_number: '302A', room_id: 'RM-302', ward_id: 'WARD-005', bed_type: 'Semi-Private', bed_status: 'Available', patient_id: '', assigned_date: '', assigned_time: '', vacant_date: '', is_oxygen_available: true, ventilator_available: false, bed_charges: 2000, cleaning_required: true }
-  ]);
+  const [beds, setBeds] = useState([]);
 
   // Bed search and filters
   const [bedSearchQuery, setBedSearchQuery] = useState('');
@@ -87,24 +71,12 @@ const IPDManagement = () => {
   const [bedForm, setBedForm] = useState({ bed_id: '', bed_number: '', room_id: '', ward_id: '', bed_type: 'General', bed_status: 'Available', patient_id: '', assigned_date: '', assigned_time: '', vacant_date: '', is_oxygen_available: true, ventilator_available: false, bed_charges: 0, cleaning_required: false, bed_category: 'Standard', bed_priority: 'Normal', bed_cleaning_status: 'Clean', last_cleaned_at: '', bed_maintenance_status: 'Operational', monitor_attached: false, ecg_available: false, suction_available: false, oxygen_flow_meter: false, nurse_call_system: true, smart_bed_enabled: false });
 
   // Nurse Assignments state with required fields:
-  const [nurseAssignments, setNurseAssignments] = useState([
-    { nurse_assignment_id: 'NAS-001', nurse_id: 'NUR-402', patient_id: 'PAT-005', ward_id: 'WARD-001', shift_type: 'Morning', assigned_date: '2023-10-15', vitals_monitoring_frequency: 'Every 2 Hours', special_instructions: 'Keep blood pressure records updated and monitor oxygen saturation hourly.', nursing_notes: 'Patient resting comfortably. Vitals stable.', bp: '120/80', pulse: '72', spo2: '98', temp: '98.6', treatment_cycle: 'Standard Day Cycle', drip_flow_rate: '100 ml/hr' },
-    { nurse_assignment_id: 'NAS-002', nurse_id: 'NUR-109', patient_id: 'PAT-006', ward_id: 'WARD-003', shift_type: 'Night', assigned_date: '2023-10-15', vitals_monitoring_frequency: 'Every 1 Hour', special_instructions: 'Post-op cardiac bypass check, alert on-call doctor for any temperature rise.', nursing_notes: 'Critical monitoring. IV line clean and flowing.', bp: '135/88', pulse: '85', spo2: '95', temp: '99.1', treatment_cycle: 'Triple Action Meds Cycle (TID)', drip_flow_rate: '150 ml/hr' },
-    { nurse_assignment_id: 'NAS-003', nurse_id: 'NUR-255', patient_id: 'PAT-007', ward_id: 'WARD-005', shift_type: 'Evening', assigned_date: '2023-10-16', vitals_monitoring_frequency: 'Every 4 Hours', special_instructions: 'Administer insulin injections before meals.', nursing_notes: 'Insulin scheduled. Routine blood glucose monitoring.', bp: '118/75', pulse: '68', spo2: '99', temp: '98.4', treatment_cycle: 'Diabetes Management Plan', drip_flow_rate: 'None' }
-  ]);
+  const [nurseAssignments, setNurseAssignments] = useState([]);
 
   // Doctor Rounds & Inpatient Treatment Plan states
-  const [doctorRounds, setDoctorRounds] = useState([
-    { round_id: 'RND-701', doctor_name: 'Dr. Alexander Bennett', specialty: 'Cardiology', ward_name: 'Intensive Care Unit (ICU)', round_date: '2026-05-19', round_time: '09:30 AM', patients_visited: 'Sarah Jenkins, Michael Chang', status: 'Completed', clinical_notes: 'ICU patients stable. Cardiac rhythms normal.' },
-    { round_id: 'RND-702', doctor_name: 'Dr. Clara Oswald', specialty: 'Pediatrics', ward_name: 'Pediatric Ward', round_date: '2026-05-19', round_time: '10:15 AM', patients_visited: 'David Chang, Emily Rodriguez', status: 'In Progress', clinical_notes: 'Routine pediatric monitoring.' },
-    { round_id: 'RND-703', doctor_name: 'Dr. Robert Chen', specialty: 'Neurology', ward_name: 'General Ward - Male', round_date: '2026-05-19', round_time: '11:00 AM', patients_visited: 'Arthur Pendragon', status: 'Scheduled', clinical_notes: 'Post-op neurological checkup.' }
-  ]);
+  const [doctorRounds, setDoctorRounds] = useState([]);
 
-  const [treatmentPlans, setTreatmentPlans] = useState([
-    { plan_id: 'TRT-901', patient_id: 'PAT-201', patient_name: 'Sarah Jenkins', diagnosis: 'Acute Coronary Syndrome', doctor_name: 'Dr. Alexander Bennett', treatment_details: 'Dual antiplatelet therapy, Beta-blockers, Continuous ECG monitoring', cycles_prescribed: 'Morning Meds, Night Meds', drip_flow_rate: '80 ml/hr', start_date: '2026-05-15', duration: '7 Days', status: 'Active' },
-    { plan_id: 'TRT-902', patient_id: 'PAT-105', patient_name: 'Michael Chang', diagnosis: 'Severe Pneumonia', doctor_name: 'Dr. Clara Oswald', treatment_details: 'Broad-spectrum IV antibiotics, Oxygen therapy (2L/min), Nebulization', cycles_prescribed: 'Triple Action Meds Cycle (TID)', drip_flow_rate: '120 ml/hr', start_date: '2026-05-16', duration: '5 Days', status: 'Active' },
-    { plan_id: 'TRT-903', patient_id: 'PAT-404', patient_name: 'Arthur Pendragon', diagnosis: 'Laminectomy Post-Op', doctor_name: 'Dr. Robert Chen', treatment_details: 'Pain management (IV PCA), Wound dressing, Physical therapy daily support', cycles_prescribed: 'Standard Day Cycle', drip_flow_rate: '100 ml/hr', start_date: '2026-05-18', duration: '10 Days', status: 'Pending' }
-  ]);
+  const [treatmentPlans, setTreatmentPlans] = useState([]);
 
   const [showAddRoundModal, setShowAddRoundModal] = useState(false);
   const [showAddPlanModal, setShowAddPlanModal] = useState(false);
@@ -150,27 +122,11 @@ const IPDManagement = () => {
   const [billingForm, setBillingForm] = useState({ category: 'Pharmacy / Medications', amount: '', description: '' });
   const [pendingCharges, setPendingCharges] = useState([]);
 
-  const allPatients = [
-    { id: 'PAT-001', name: 'Ravi Kumar', age: 45, gender: 'Male', bloodGroup: 'O+' },
-    { id: 'PAT-002', name: 'Anita Sharma', age: 32, gender: 'Female', bloodGroup: 'A+' },
-    { id: 'PAT-003', name: 'Suresh Patel', age: 58, gender: 'Male', bloodGroup: 'B+' },
-    { id: 'PAT-004', name: 'Priya Singh', age: 28, gender: 'Female', bloodGroup: 'O-' },
-    { id: 'PAT-005', name: 'Rajesh Khanna', age: 50, gender: 'Male', bloodGroup: 'AB+' },
-    { id: 'PAT-006', name: 'Sunita Devi', age: 42, gender: 'Female', bloodGroup: 'B-' },
-    { id: 'PAT-007', name: 'Vikram Joshi', age: 35, gender: 'Male', bloodGroup: 'O+' },
-    { id: 'PAT-008', name: 'Kiran Reddy', age: 29, gender: 'Female', bloodGroup: 'A-' }
-  ];
+  const [allPatients, setAllPatients] = useState([]);
 
-  const doctors = [
-    { name: 'Dr. Meena Rao', dept: 'Cardiology' },
-    { name: 'Dr. Sharma', dept: 'Orthopedics' },
-    { name: 'Dr. Menon', dept: 'Neurology' },
-    { name: 'Dr. Patel', dept: 'General Surgery' },
-    { name: 'Dr. Gupta', dept: 'Pediatrics' },
-    { name: 'Dr. Verma', dept: 'Dermatology' }
-  ];
+  const [doctors, setDoctors] = useState([]);
 
-  const departments = ['Cardiology', 'Orthopedics', 'Neurology', 'General Surgery', 'Pediatrics', 'Dermatology', 'Oncology', 'Gastroenterology'];
+  const [departments, setDepartments] = useState([]);
 
 
   const filteredPatients = allPatients.filter(p =>
@@ -217,176 +173,97 @@ const IPDManagement = () => {
 
   const loadIPDData = async () => {
     setLoading(true);
-    setTimeout(() => {
-      setIpdPatients([
-        { id: 'ADM-001', patientId: 'PAT-005', patientName: 'Rajesh Verma', patientAge: 50, gender: 'Male', bloodGroup: 'AB+', admissionDate: '2023-10-10', admissionTime: '10:30', admissionSource: 'OPD', admissionType: 'Routine', caseType: 'Medical', triageLevel: 'Routine', initialCondition: 'Stable', ward: 'General Ward A', bed: 'A-12', diagnosis: 'Pneumonia', consultant: 'Dr. Meena Rao', department: 'General Medicine', emergencyContact: '+91 98765 43210', estimatedStay: '8', status: 'Admitted', estimatedDischarge: '2023-10-18', roomCharges: 2500, totalBill: 18500, referredBy: 'Self', admissionNotes: 'Patient has history of mild asthma.' },
-        { id: 'ADM-002', patientId: 'PAT-006', patientName: 'Meera Desai', patientAge: 42, gender: 'Female', bloodGroup: 'B-', admissionDate: '2023-10-12', admissionTime: '02:15', admissionSource: 'Emergency', admissionType: 'Emergency', caseType: 'Surgical', triageLevel: 'Critical', initialCondition: 'Poor', ward: 'ICU', bed: 'ICU-03', diagnosis: 'Cardiac Arrest', consultant: 'Dr. Sharma', department: 'Cardiology', emergencyContact: '+91 91234 56789', estimatedStay: '15', status: 'Critical', estimatedDischarge: '2023-10-20', roomCharges: 8500, totalBill: 42500, referredBy: 'City Clinic', admissionNotes: 'Immediate surgery performed.' },
-        { id: 'ADM-003', patientId: 'PAT-007', patientName: 'Vikram Joshi', patientAge: 35, gender: 'Male', bloodGroup: 'O+', admissionDate: '2023-10-08', admissionTime: '11:45', admissionSource: 'Referral', admissionType: 'Scheduled', caseType: 'Surgical', triageLevel: 'Routine', initialCondition: 'Stable', ward: 'Orthopedic Ward', bed: 'OW-07', diagnosis: 'Fractured Femur', consultant: 'Dr. Menon', department: 'Orthopedics', emergencyContact: '+91 88776 65544', estimatedStay: '7', status: 'Admitted', estimatedDischarge: '2023-10-15', roomCharges: 3200, totalBill: 27800, referredBy: 'Dr. Kulkarni', admissionNotes: 'Post-accident trauma.' },
-        { id: 'ADM-004', patientId: 'PAT-008', patientName: 'Kiran Reddy', patientAge: 29, gender: 'Female', bloodGroup: 'A-', admissionDate: '2023-10-05', admissionTime: '09:00', admissionSource: 'Direct', admissionType: 'Routine', caseType: 'Medical', triageLevel: 'Routine', initialCondition: 'Stable', ward: 'Private Room', bed: 'PR-02', diagnosis: 'Appendicitis', consultant: 'Dr. Meena Rao', department: 'General Surgery', emergencyContact: '+91 77665 54433', estimatedStay: '5', status: 'Discharge Pending', estimatedDischarge: '2023-10-12', roomCharges: 5000, totalBill: 35200, referredBy: 'Self', admissionNotes: 'Patient opted for private room.' }
+    try {
+      const responses = await Promise.all([
+        apiFetch(IPD_PATIENTS),
+        apiFetch(HOSPITAL_WARDS),
+        apiFetch(HOSPITAL_BEDS),
+        apiFetch(IPD_AVAILABLE_PATIENTS)
       ]);
+      
+      const patientsData = await responses[0].json().catch(() => ({}));
+      const wardsData = await responses[1].json().catch(() => ({}));
+      const bedsData = await responses[2].json().catch(() => ({}));
+      const availablePatientsData = await responses[3].json().catch(() => ({}));
 
-      setWards([
-        { ward_id: 'WARD-001', id: 'WARD-001', ward_name: 'General Ward A', name: 'General Ward A', ward_type: 'General', floor_number: '1', department_id: 'General Medicine', total_rooms: 5, total_beds: 20, occupied_beds: 12, available_beds: 8, totalBeds: 20, availableBeds: 8, ward_status: 'Active', rate: 2500 },
-        { ward_id: 'WARD-002', id: 'WARD-002', ward_name: 'General Ward B', name: 'General Ward B', ward_type: 'General', floor_number: '1', department_id: 'General Medicine', total_rooms: 5, total_beds: 20, occupied_beds: 8, available_beds: 12, totalBeds: 20, availableBeds: 12, ward_status: 'Active', rate: 2500 },
-        {
-          ward_id: 'WARD-003', id: 'WARD-003', ward_name: 'ICU', name: 'ICU', ward_type: 'ICU', floor_number: '2', department_id: 'Cardiology', total_rooms: 2, total_beds: 10, occupied_beds: 7, available_beds: 3, totalBeds: 10, availableBeds: 3,
-          ward_status: 'Active',
-          rate: 8500
-        },
-        {
-          ward_id: 'WARD-004',
-          id: 'WARD-004',
-          ward_name: 'ICU-2',
-          name: 'ICU-2',
-          ward_type: 'ICU',
-          floor_number: '2',
-          department_id: 'Neurology',
-          total_rooms: 2,
-          total_beds: 8,
-          occupied_beds: 6,
-          available_beds: 2,
-          totalBeds: 8,
-          availableBeds: 2,
-          ward_status: 'Active',
-          rate: 8500
-        },
-        {
-          ward_id: 'WARD-005',
-          id: 'WARD-005',
-          ward_name: 'Orthopedic Ward',
-          name: 'Orthopedic Ward',
-          ward_type: 'Semi-Private',
-          floor_number: '3',
-          department_id: 'Orthopedics',
-          total_rooms: 4,
-          total_beds: 15,
-          occupied_beds: 9,
-          available_beds: 6,
-          totalBeds: 15,
-          availableBeds: 6,
-          ward_status: 'Active',
-          rate: 3200
-        },
-        {
-          ward_id: 'WARD-006',
-          id: 'WARD-006',
-          ward_name: 'Pediatric Ward',
-          name: 'Pediatric Ward',
-          ward_type: 'General',
-          floor_number: '3',
-          department_id: 'Pediatrics',
-          total_rooms: 3,
-          total_beds: 12,
-          occupied_beds: 7,
-          available_beds: 5,
-          totalBeds: 12,
-          availableBeds: 5,
-          ward_status: 'Active',
-          rate: 2800
-        },
-        {
-          ward_id: 'WARD-007',
-          id: 'WARD-007',
-          ward_name: 'Private Room',
-          name: 'Private Room',
-          ward_type: 'Private',
-          floor_number: '4',
-          department_id: 'General Surgery',
-          total_rooms: 8,
-          total_beds: 8,
-          occupied_beds: 6,
-          available_beds: 2,
-          totalBeds: 8,
-          availableBeds: 2,
-          ward_status: 'Active',
-          rate: 5000
-        },
-        {
-          ward_id: 'WARD-008',
-          id: 'WARD-008',
-          ward_name: 'Deluxe Room',
-          name: 'Deluxe Room',
-          ward_type: 'Deluxe',
-          floor_number: '4',
-          department_id: 'General Surgery',
-          total_rooms: 4,
-          total_beds: 4,
-          occupied_beds: 3,
-          available_beds: 1,
-          totalBeds: 4,
-          availableBeds: 1,
-          ward_status: 'Active',
-          rate: 8000
-        }
-      ]);
+      const extractArray = (data) => Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : Array.isArray(data?.data?.items) ? data.data.items : [];
 
+      if (responses[0].ok) setIpdPatients(extractArray(patientsData));
+      if (responses[1].ok) setWards(extractArray(wardsData));
+      if (responses[2].ok) setBeds(extractArray(bedsData));
+      if (responses[3].ok) setAllPatients(extractArray(availablePatientsData));
+    } catch (error) {
+      console.error('Error loading IPD data:', error);
+      toast.error('Failed to load IPD data');
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
-  // WARD MANAGEMENT ACTIONS
-  const handleAddWard = () => {
+  const handleAddWard = async () => {
     if (!wardForm.ward_name || !wardForm.floor_number) {
       alert('Please fill ward name and floor number');
       return;
     }
 
-    const newWardId = `WARD-0${wards.length + 1}`;
-    const newWard = {
-      ...wardForm,
-      ward_id: newWardId,
-      id: newWardId,
-      name: wardForm.ward_name,
-      totalBeds: parseInt(wardForm.total_beds) || 0,
-      availableBeds: parseInt(wardForm.total_beds) || 0,
-      occupied_beds: 0,
-      available_beds: parseInt(wardForm.total_beds) || 0,
-      rate: parseFloat(wardForm.rate) || 2000
-    };
-
-    setWards([...wards, newWard]);
-    setShowAddWardModal(false);
-    setWardForm({
-      ward_id: '',
-      ward_name: '',
-      ward_type: 'General',
-      floor_number: '',
-      department_id: 'Cardiology',
-      total_rooms: 0,
-      total_beds: 0,
-      occupied_beds: 0,
-      available_beds: 0,
-      ward_status: 'Active',
-      rate: 2000
-    });
-    alert('Ward added successfully!');
+    try {
+      const result = await apiFetch(HOSPITAL_WARDS, {
+        method: 'POST',
+        body: JSON.stringify(wardForm)
+      });
+      if (!result.ok) throw new Error('Failed to add ward');
+      toast.success('Ward added successfully');
+      loadIPDData(); // refresh data
+      setShowAddWardModal(false);
+      setWardForm({
+        ward_id: '',
+        ward_name: '',
+        ward_type: 'General',
+        floor_number: '',
+        department_id: 'Cardiology',
+        total_rooms: 0,
+        total_beds: 0,
+        ward_status: 'Active',
+        rate: ''
+      });
+    } catch (error) {
+      console.error('Error adding ward:', error);
+      toast.error('Failed to add ward');
+    }
   };
 
-  const handleEditWard = () => {
+
+  const handleEditWard = async () => {
     if (!wardForm.ward_name || !wardForm.floor_number) {
       alert('Please fill ward name and floor number');
       return;
     }
 
-    setWards(wards.map(w => {
-      if (w.ward_id === selectedWard.ward_id) {
-        return {
-          ...w,
-          ...wardForm,
-          name: wardForm.ward_name,
-          totalBeds: parseInt(wardForm.total_beds) || 0,
-          rate: parseFloat(wardForm.rate) || 2000,
-          // Re-calculate available beds
-          availableBeds: (parseInt(wardForm.total_beds) || 0) - (w.occupied_beds || 0),
-          available_beds: (parseInt(wardForm.total_beds) || 0) - (w.occupied_beds || 0)
-        };
-      }
-      return w;
-    }));
-
-    setShowEditWardModal(false);
-    setSelectedWard(null);
-    alert('Ward details updated successfully!');
+    try {
+      const result = await apiFetch(HOSPITAL_WARD_DETAILS(selectedWard.ward_id), {
+        method: 'PUT',
+        body: JSON.stringify(wardForm)
+      });
+      if (!result.ok) throw new Error('Failed to update ward');
+      toast.success('Ward updated successfully');
+      loadIPDData(); // refresh data
+      setShowEditWardModal(false);
+      setWardForm({
+        ward_id: '',
+        ward_name: '',
+        ward_type: 'General',
+        floor_number: '',
+        department_id: 'Cardiology',
+        total_rooms: 0,
+        total_beds: 0,
+        ward_status: 'Active',
+        rate: ''
+      });
+      setSelectedWard(null);
+    } catch (error) {
+      console.error('Error updating ward:', error);
+      toast.error('Failed to update ward');
+    }
   };
 
   const handleDeleteWard = (wardId) => {
@@ -454,32 +331,32 @@ const IPDManagement = () => {
   };
 
   // BED MANAGEMENT ACTIONS
-  const handleAddBed = () => {
+  const handleAddBed = async () => {
     if (!bedForm.bed_number || !bedForm.room_id || !bedForm.ward_id) {
       alert('Please fill bed number, select a room and select a ward');
       return;
     }
 
-    const newBedId = `BED-${bedForm.bed_number}`;
-    const newBed = {
-      ...bedForm,
-      bed_id: newBedId,
-      bed_charges: parseFloat(bedForm.bed_charges) || 0
-    };
-
-    setBeds([...beds, newBed]);
-    setShowAddBedModal(false);
-    setBedForm({
-      bed_id: '',
-      bed_number: '',
-      room_id: '',
-      ward_id: '',
-      bed_type: 'General',
-      bed_status: 'Available',
-      patient_id: '',
-      assigned_date: '',
-      assigned_time: '',
-      vacant_date: '',
+    try {
+      const result = await apiFetch(HOSPITAL_BEDS, {
+        method: 'POST',
+        body: JSON.stringify(bedForm)
+      });
+      if (!result.ok) throw new Error('Failed to add bed');
+      toast.success('Bed added successfully!');
+      loadIPDData();
+      setShowAddBedModal(false);
+      setBedForm({
+        bed_id: '',
+        bed_number: '',
+        room_id: '',
+        ward_id: '',
+        bed_type: 'General',
+        bed_status: 'Available',
+        patient_id: '',
+        assigned_date: '',
+        assigned_time: '',
+        vacant_date: '',
       is_oxygen_available: true,
       ventilator_available: false,
       bed_charges: 0,
@@ -496,7 +373,10 @@ const IPDManagement = () => {
       nurse_call_system: true,
       smart_bed_enabled: false
     });
-    alert('Bed added successfully!');
+    } catch (error) {
+      console.error('Error adding bed:', error);
+      toast.error('Failed to add bed');
+    }
   };
 
   const handleEditBed = () => {
@@ -664,7 +544,7 @@ const IPDManagement = () => {
     }));
   };
 
-  const handleAdmission = () => {
+  const handleAdmission = async () => {
     if (!admissionForm.patientId || !admissionForm.ward || !admissionForm.diagnosis || !admissionForm.roomId) {
       alert('Please fill all required fields (including Ward and Room)');
       return;
@@ -680,7 +560,6 @@ const IPDManagement = () => {
     const initialConditionVal = admissionForm.triageLevel === 'Critical' ? 'Critical' : admissionForm.triageLevel === 'Urgent' ? 'Fair' : 'Stable';
 
     const newAdmission = {
-      id: `ADM-${Date.now().toString().slice(-4)}`,
       patientId: admissionForm.patientId,
       patientName: patientNameSearch,
       patientAge: admissionForm.patientAge,
@@ -709,43 +588,43 @@ const IPDManagement = () => {
       totalBill: 0
     };
 
-    setIpdPatients([newAdmission, ...ipdPatients]);
+    try {
+      const result = await apiFetch(IPD_ADMISSIONS, {
+        method: 'POST',
+        body: JSON.stringify(newAdmission)
+      });
+      
+      if (!result.ok) throw new Error('Failed to admit patient');
 
-    // Update bed status to Occupied
-    if (firstAvailableBed) {
-      setBeds(beds.map(b => b.bed_id === firstAvailableBed.bed_id ? { ...b, bed_status: 'Occupied', patient_id: admissionForm.patientId } : b));
+      toast.success('Patient admitted successfully and bed assigned!');
+      loadIPDData(); // Refresh data from backend
+      
+      setAdmissionForm({
+        patientId: '',
+        patientAge: '',
+        gender: 'Male',
+        bloodGroup: '',
+        admissionDateTime: new Date().toISOString().slice(0, 16),
+        caseType: 'Medical',
+        triageLevel: 'Routine',
+        diagnosis: '',
+        ward: '',
+        roomId: '',
+        consultant: '',
+        department: '',
+        emergencyContact: '',
+        estimatedStay: '',
+        admissionType: 'Routine',
+        admissionNotes: ''
+      });
+      setPatientNameSearch('');
+      setDoctorSearch('');
+      setDeptSearch('');
+      setShowAdmissionForm(false);
+    } catch (error) {
+      console.error('Error admitting patient:', error);
+      toast.error('Failed to admit patient');
     }
-
-    // Update ward availability
-    setWards(wards.map(ward =>
-      ward.name === admissionForm.ward
-        ? { ...ward, availableBeds: Math.max(0, ward.availableBeds - 1) }
-        : ward
-    ));
-
-    alert('Patient admitted successfully and bed assigned!');
-    setAdmissionForm({
-      patientId: '',
-      patientAge: '',
-      gender: 'Male',
-      bloodGroup: '',
-      admissionDateTime: new Date().toISOString().slice(0, 16),
-      caseType: 'Medical',
-      triageLevel: 'Routine',
-      diagnosis: '',
-      ward: '',
-      roomId: '',
-      consultant: '',
-      department: '',
-      emergencyContact: '',
-      estimatedStay: '',
-      admissionType: 'Routine',
-      admissionNotes: ''
-    });
-    setPatientNameSearch('');
-    setDoctorSearch('');
-    setDeptSearch('');
-    setShowAdmissionForm(false);
   };
 
   const initiateTransfer = (patient) => {

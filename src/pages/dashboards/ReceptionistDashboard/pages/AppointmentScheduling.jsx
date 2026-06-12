@@ -69,6 +69,7 @@ const [formData, setFormData] = useState({
   id: null,
   patient_ref: '',
   patient_name: '',
+  doctor_id: '',
   doctor_name: '',
   department_id: '',
   department_name: '',
@@ -388,6 +389,7 @@ const handleSelectDept = (dept) => {
 const handleSelectDoc = (doc) => {
   setFormData(prev => ({
     ...prev,
+    doctor_id: doc.id || doc.doctor_id || '',
     doctor_name: doc.name
   }))
 
@@ -688,6 +690,7 @@ const payload = {
   patient_ref: formData.patient_ref,
   patient_name: formData.patient_name,
 
+  doctor_id: formData.doctor_id || undefined,
   doctor_name: formData.doctor_name,
 
   department_id: formData.department_id,

@@ -102,11 +102,11 @@ const Sidebar = ({ activePage, onPageChange, isOpen = false, onClose }) => {
     { id: 'hospital-admins', label: 'Hospital Administrator Management', icon: 'fa-user-shield' },
     { id: 'subscriptions', label: 'Subscriptions & Billing', icon: 'fa-credit-card' },
     { id: 'support', label: 'Support Management', icon: 'fa-headset' },
-    { id: 'users', label: 'User Accounts', icon: 'fa-user-cog' },
     { id: 'settings', label: 'Platform Settings', icon: 'fa-sliders-h' },
     { id: 'reports', label: 'Reports & Analytics', icon: 'fa-chart-pie' },
     { id: 'analytics', label: 'Analytics & Monitoring', icon: 'fa-chart-line' },
     { id: 'notifications', label: 'Notifications', icon: 'fa-bell' },
+    { id: 'profile', label: 'My Profile', icon: 'fa-user-circle' },
   ]
 
   // NEW: Patient Menu

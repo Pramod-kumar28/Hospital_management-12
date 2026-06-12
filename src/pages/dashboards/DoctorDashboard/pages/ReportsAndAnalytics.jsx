@@ -81,7 +81,15 @@ const ReportsAndAnalytics = ({ onPageChange }) => {
         default:
           result = {}
       }
-      setData(result)
+      const cleanData = (obj) => {
+        if (Array.isArray(obj)) return obj.map(cleanData)
+        if (obj !== null && typeof obj === 'object') {
+          return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, cleanData(v)]))
+        }
+        if (obj === 'NaN' || Number.isNaN(obj)) return 0
+        return obj
+      }
+      setData(cleanData(result))
     } catch (err) {
       console.error('Failed to load report data:', err)
       setError(err.message || 'Failed to load report data')
@@ -101,12 +109,13 @@ const ReportsAndAnalytics = ({ onPageChange }) => {
   }
 
   const renderTrendBadge = (trend) => {
-    if (!trend) return null
-    const isPositive = trend >= 0
+    const trendNum = Number(trend)
+    if (!trend || isNaN(trendNum) || trendNum === 0) return null
+    const isPositive = trendNum > 0
     return (
       <span className={`text-xs px-2 py-1 rounded-full ${isPositive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
         <i className={`fas fa-arrow-${isPositive ? 'up' : 'down'} mr-1`}></i>
-        {Math.abs(trend).toFixed(1)}%
+        {Math.abs(trendNum).toFixed(1)}%
       </span>
     )
   }

@@ -2,10 +2,15 @@ import React, { useState, useEffect } from 'react';
 import LoadingSpinner from '../../../../components/common/LoadingSpinner/LoadingSpinner';
 import Modal from '../../../../components/common/Modal/Modal';
 import html2pdf from 'html2pdf.js';
+import { apiFetch } from '../../../../services/apiClient';
+import { NURSE_DISCHARGE_SUMMARY, IPD_PATIENTS } from '../../../../config/api';
 
 const DischargeSummary = () => {
   const [loading, setLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [patients, setPatients] = useState([]);
+  const [stats, setStats] = useState({ ipdPatients: 0, dischargedToday: 0, thisMonth: 0, completionRate: 0 });
   const [formData, setFormData] = useState({ 
     patient_ref: '', 
     patientName: '', 
@@ -30,28 +35,151 @@ const DischargeSummary = () => {
   const [showPreview, setShowPreview] = useState(false);
 
   useEffect(() => {
-    // Load IPD patients
-    setTimeout(() => {
-      setPatients([
-        { id: 'PAT-005',  name: 'Rajesh Verma', admissionId: 'ADM-2023-001', admissionDate: '2023-10-10', ward: 'General Ward A', bed: 'A-12', diagnosis: 'Pneumonia', doctor: 'Dr. Meena Rao' },
-        { id: 'PAT-006', name: 'Meera Desai', admissionId: 'ADM-2023-002', admissionDate: '2023-10-12', ward: 'ICU', bed: 'ICU-03', diagnosis: 'Cardiac Arrest', doctor: 'Dr. Sharma' },
-        { id: 'PAT-007', name: 'Vikram Joshi', admissionId: 'ADM-2023-003', admissionDate: '2023-10-08', ward: 'Orthopedic Ward', bed: 'OW-07', diagnosis: 'Fractured Femur', doctor: 'Dr. Menon' }
-      ]);
-    }, 500);
+    loadPatients();
   }, []);
 
-  const handlePatientSelect = (patientId) => {
+  const loadPatients = async () => {
+    setLoading(true);
+    try {
+      const response = await apiFetch(IPD_PATIENTS);
+      if (response && response.ok) {
+        const data = await response.json();
+        const extracted = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : (Array.isArray(data?.data?.items) ? data.data.items : []));
+        const formatted = extracted.map(p => ({
+          id: p.patientId || p.patient_ref || p.id || p._id,
+          name: p.patientName || `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'Unknown Patient',
+          admissionId: p.admission_number || p.admissionId || p.id || p._id,
+          admissionDate: p.admissionDate || p.created_at ? new Date(p.admissionDate || p.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+          ward: p.ward || 'General',
+          bed: p.bed || p.bed_number || 'Unassigned',
+          diagnosis: p.diagnosis || p.condition || p.chief_complaint || 'Pending',
+          doctor: p.consultant || p.doctor || 'Unassigned',
+          status: p.status || 'Admitted'
+        }));
+        setPatients(formatted);
+        
+        // Update stats
+        setStats({
+          ipdPatients: formatted.length,
+          dischargedToday: 0, 
+          thisMonth: 0,
+          completionRate: 0
+        });
+      } else {
+        console.error("Failed to fetch from RECEPTIONIST_PATIENTS");
+      }
+    } catch (error) {
+      console.error("Failed to load patients for discharge summary:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePatientSelect = async (patientId) => {
     const patient = patients.find(p => p.id === patientId);
-    if (patient) {
-      setFormData({ 
-        ...formData, 
-        patient_ref: patient.id, 
-        patientName: patient.name, 
-        admission_number: patient.admissionId, 
-        admissionDate: patient.admissionDate, 
-        final_diagnosis: patient.diagnosis, 
-        consultantName: patient.doctor 
+    if (!patient) return;
+
+    // Reset first
+    setIsEditing(false);
+    setFormData({ 
+      patient_ref: patient.id, 
+      patientName: patient.name, 
+      admission_number: patient.admissionId, 
+      admissionDate: patient.admissionDate, 
+      dischargeDate: new Date().toISOString().split('T')[0], 
+      final_diagnosis: patient.diagnosis !== 'Pending' ? patient.diagnosis : '', 
+      secondary_diagnoses: '',
+      procedures_performed: '', 
+      hospital_course: '', 
+      medications_on_discharge: '', 
+      follow_up_date: '', 
+      follow_up_doctor: '',
+      follow_up_instructions: '', 
+      diet_instructions: '',
+      activity_restrictions: '',
+      condition_on_discharge: '',
+      discharge_notes: '', 
+      consultantName: patient.doctor !== 'Unassigned' ? patient.doctor : ''
+    });
+
+    // Fetch existing summary
+    try {
+      const admId = patient.admissionId || patient.id;
+      const res = await apiFetch(`${NURSE_DISCHARGE_SUMMARY}?admission_number=${encodeURIComponent(admId)}`);
+      if (res && res.ok) {
+        const result = await res.json();
+        const existingData = result?.data;
+        if (existingData && existingData.length > 0) {
+          const data = existingData[0];
+          setIsEditing(true);
+          setFormData(prev => ({
+            ...prev,
+            final_diagnosis: data.final_diagnosis || prev.final_diagnosis,
+            secondary_diagnoses: data.secondary_diagnoses ? data.secondary_diagnoses.join(', ') : '',
+            procedures_performed: data.procedures_performed ? data.procedures_performed.join(', ') : '',
+            hospital_course: data.hospital_course || '',
+            medications_on_discharge: data.medications_on_discharge ? data.medications_on_discharge.join(', ') : '',
+            follow_up_instructions: data.follow_up_instructions || '',
+            diet_instructions: data.diet_instructions || '',
+            activity_restrictions: data.activity_restrictions || '',
+            follow_up_date: data.follow_up_date || '',
+            follow_up_doctor: data.follow_up_doctor || prev.consultantName,
+            condition_on_discharge: data.condition_on_discharge || '',
+            discharge_notes: data.discharge_notes || '',
+            dischargeDate: data.discharge_date || prev.dischargeDate,
+          }));
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching existing summary:", error);
+    }
+  };
+
+  const handleSaveSummary = async () => {
+    if (!formData.patient_ref) {
+      alert('Please select a patient first');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const payload = {
+        admission_number: formData.admission_number,
+        final_diagnosis: formData.final_diagnosis,
+        secondary_diagnoses: formData.secondary_diagnoses ? formData.secondary_diagnoses.split(',').map(s => s.trim()) : [],
+        procedures_performed: formData.procedures_performed ? formData.procedures_performed.split(',').map(s => s.trim()) : [],
+        hospital_course: formData.hospital_course,
+        follow_up_instructions: formData.follow_up_instructions,
+        diet_instructions: formData.diet_instructions,
+        activity_restrictions: formData.activity_restrictions,
+        follow_up_date: formData.follow_up_date,
+        follow_up_doctor: formData.follow_up_doctor || formData.consultantName,
+        discharge_date: formData.dischargeDate,
+        discharge_notes: formData.discharge_notes,
+        condition_on_discharge: formData.condition_on_discharge,
+        medications_on_discharge: formData.medications_on_discharge ? formData.medications_on_discharge.split(',').map(s => s.trim()) : [],
+      };
+
+      const url = isEditing 
+        ? `${NURSE_DISCHARGE_SUMMARY}?admission_number=${encodeURIComponent(formData.admission_number)}`
+        : NURSE_DISCHARGE_SUMMARY;
+        
+      const response = await apiFetch(url, {
+        method: isEditing ? 'PATCH' : 'POST',
+        body: JSON.stringify(payload)
       });
+
+      if (response && response.ok) {
+        alert(`Discharge summary ${isEditing ? 'updated' : 'saved'} successfully!`);
+        loadPatients();
+      } else {
+        alert('Failed to save discharge summary.');
+      }
+    } catch (error) {
+      console.error('Error saving discharge summary:', error);
+      alert('Error connecting to backend.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -294,99 +422,79 @@ Hospital Administration
     <div className="animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
         <h2 className="text-xl md:text-2xl font-semibold text-gray-700"> Discharge Summary</h2>
-        <div className="flex gap-2">
-          <button 
-            onClick={resetForm}
-            className="btn btn-secondary flex items-center"
-          >
-            <i className="fas fa-redo mr-2"></i> New Summary
-          </button>
-        </div>
       </div>
       {/* Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
 
-  {/* IPD Patients */}
-  <div className="group bg-gradient-to-br from-blue-50 to-white border border-blue-200 rounded-xl p-5 
-                  hover:shadow-lg transition-all duration-300">
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-sm text-gray-600">IPD Patients</p>
-        <p className="text-2xl font-bold text-blue-700 mt-1">
-          {patients.length}
-        </p>
-      </div>
-      <div className="w-11 h-11 rounded-full bg-blue-600 text-white flex items-center justify-center
-                      group-hover:scale-110 transition-transform">
-        <i className="fas fa-procedures"></i>
-      </div>
-    </div>
-    <div className="mt-3 h-1 w-full bg-blue-100 rounded-full">
-      <div className="h-1 w-2/3 bg-blue-500 rounded-full"></div>
-    </div>
-  </div>
+        {/* IPD Patients */}
+        <div className="group bg-gradient-to-br from-blue-50 to-white border border-blue-200 rounded-xl p-5 
+                        hover:shadow-lg transition-all duration-300">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">IPD Patients</p>
+              <p className="text-2xl font-bold text-blue-700 mt-1">
+                {stats.ipdPatients}
+              </p>
+            </div>
+            <div className="w-11 h-11 rounded-full bg-blue-600 text-white flex items-center justify-center
+                            group-hover:scale-110 transition-transform">
+              <i className="fas fa-procedures"></i>
+            </div>
+          </div>
+        </div>
 
-  {/* Discharged Today */}
-  <div className="group bg-gradient-to-br from-green-50 to-white border border-green-200 rounded-xl p-5 
-                  hover:shadow-lg transition-all duration-300">
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-sm text-gray-600">Discharged Today</p>
-        <p className="text-2xl font-bold text-green-700 mt-1">
-          12
-        </p>
-      </div>
-      <div className="w-11 h-11 rounded-full bg-green-600 text-white flex items-center justify-center
-                      group-hover:scale-110 transition-transform">
-        <i className="fas fa-check-circle"></i>
-      </div>
-    </div>
-    <div className="mt-3 h-1 w-full bg-green-100 rounded-full">
-      <div className="h-1 w-1/2 bg-green-500 rounded-full"></div>
-    </div>
-  </div>
+        {/* Discharged Today */}
+        <div className="group bg-gradient-to-br from-green-50 to-white border border-green-200 rounded-xl p-5 
+                        hover:shadow-lg transition-all duration-300">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Discharged Today</p>
+              <p className="text-2xl font-bold text-green-700 mt-1">
+                {stats.dischargedToday}
+              </p>
+            </div>
+            <div className="w-11 h-11 rounded-full bg-green-600 text-white flex items-center justify-center
+                            group-hover:scale-110 transition-transform">
+              <i className="fas fa-check-circle"></i>
+            </div>
+          </div>
+        </div>
 
-  {/* This Month */}
-  <div className="group bg-gradient-to-br from-purple-50 to-white border border-purple-200 rounded-xl p-5 
-                  hover:shadow-lg transition-all duration-300">
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-sm text-gray-600">This Month</p>
-        <p className="text-2xl font-bold text-purple-700 mt-1">
-          24
-        </p>
-      </div>
-      <div className="w-11 h-11 rounded-full bg-purple-600 text-white flex items-center justify-center
-                      group-hover:scale-110 transition-transform">
-        <i className="fas fa-calendar-alt"></i>
-      </div>
-    </div>
-    <div className="mt-3 h-1 w-full bg-purple-100 rounded-full">
-      <div className="h-1 w-3/4 bg-purple-500 rounded-full"></div>
-    </div>
-  </div>
+        {/* This Month */}
+        <div className="group bg-gradient-to-br from-purple-50 to-white border border-purple-200 rounded-xl p-5 
+                        hover:shadow-lg transition-all duration-300">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">This Month</p>
+              <p className="text-2xl font-bold text-purple-700 mt-1">
+                {stats.thisMonth}
+              </p>
+            </div>
+            <div className="w-11 h-11 rounded-full bg-purple-600 text-white flex items-center justify-center
+                            group-hover:scale-110 transition-transform">
+              <i className="fas fa-calendar-alt"></i>
+            </div>
+          </div>
+        </div>
 
-  {/* Completion Rate */}
-  <div className="group bg-gradient-to-br from-orange-50 to-white border border-orange-200 rounded-xl p-5 
-                  hover:shadow-lg transition-all duration-300">
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-sm text-gray-600">Completion Rate</p>
-        <p className="text-2xl font-bold text-orange-700 mt-1">
-          98%
-        </p>
-      </div>
-      <div className="w-11 h-11 rounded-full bg-orange-600 text-white flex items-center justify-center
-                      group-hover:scale-110 transition-transform">
-        <i className="fas fa-chart-line"></i>
-      </div>
-    </div>
-    <div className="mt-3 h-1 w-full bg-orange-100 rounded-full">
-      <div className="h-1 w-[98%] bg-orange-500 rounded-full"></div>
-    </div>
-  </div>
+        {/* Completion Rate */}
+        <div className="group bg-gradient-to-br from-orange-50 to-white border border-orange-200 rounded-xl p-5 
+                        hover:shadow-lg transition-all duration-300">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Completion Rate</p>
+              <p className="text-2xl font-bold text-orange-700 mt-1">
+                {stats.completionRate}%
+              </p>
+            </div>
+            <div className="w-11 h-11 rounded-full bg-orange-600 text-white flex items-center justify-center
+                            group-hover:scale-110 transition-transform">
+              <i className="fas fa-chart-line"></i>
+            </div>
+          </div>
+        </div>
 
-</div>
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
         {/* Left Column - Form */}
         <div className="lg:col-span-2">
@@ -578,15 +686,23 @@ Hospital Administration
               {/* Action Buttons */}
               <div className="flex gap-3 pt-4">
                 <button
+                  onClick={handleSaveSummary}
+                  disabled={!formData.patient_ref || isSaving}
+                  className="btn btn-success flex-1 text-white bg-green-600 hover:bg-green-700 py-2 px-4 rounded font-medium disabled:opacity-50"
+                >
+                  <i className={`fas ${isSaving ? 'fa-spinner fa-spin' : 'fa-save'} mr-2`}></i> 
+                  {isSaving ? 'Saving...' : isEditing ? 'Update Summary' : 'Save Summary'}
+                </button>
+                <button
                   onClick={generatePreview}
-                  className="btn btn-primary flex-1"
+                  className="btn btn-primary flex-1 text-white bg-blue-600 hover:bg-blue-700 py-2 px-4 rounded font-medium disabled:opacity-50"
                   disabled={!formData.patient_ref}
                 >
                   <i className="fas fa-eye mr-2"></i> Preview Summary
                 </button>
                 <button
                   onClick={resetForm}
-                  className="btn btn-secondary"
+                  className="btn btn-secondary border border-gray-300 text-gray-700 hover:bg-gray-100 py-2 px-4 rounded font-medium"
                 >
                   <i className="fas fa-times mr-2"></i> Clear
                 </button>

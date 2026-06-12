@@ -20,14 +20,21 @@ import Modal from "../../../../components/common/Modal/Modal";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import * as XLSX from "xlsx";
+import { apiFetch } from '../../../../services/apiClient';
 import {
   API_BASE_URL,
   SUPER_ADMIN_HOSPITALS,
   SUPER_ADMIN_HOSPITAL_SUBSCRIPTION,
-  ANALYTICS_OVERVIEW,
   SUPER_ADMIN_SUPPORT_TICKETS,
+  SUPER_ADMIN_SUBSCRIPTION_ANALYTICS,
+  SUPER_ADMIN_FINANCIAL_ANALYTICS,
+  SUPER_ADMIN_PERFORMANCE_ANALYTICS,
+  SUPER_ADMIN_DASHBOARD_OVERVIEW_CARDS,
+  SUPER_ADMIN_ANALYTICS_OVERVIEW,
 } from "../../../../config/api";
+
 const ReportsAnalytics = () => {
+  const [loadingAnalytics, setLoadingAnalytics] = useState(false);
   // State Management for Super Admin
   const [reports, setReports] = useState([]);
   const [filteredReports, setFilteredReports] = useState([]);
@@ -181,89 +188,88 @@ const [lastUpdateSource, setLastUpdateSource] = useState(null);
     platformUsage: [],
   });
 
-  // Initialize with super admin data
+  const fetchAnalyticsData = async () => {
+    setLoadingAnalytics(true);
+    try {
+      // 1. Dashboard Overview Cards
+      const overviewRes = await apiFetch(`${SUPER_ADMIN_DASHBOARD_OVERVIEW_CARDS(30, 6)}`);
+      // 2. Performance Analytics (for Uptime and Satisfaction)
+      const performanceRes = await apiFetch(SUPER_ADMIN_PERFORMANCE_ANALYTICS);
+      
+      // Update platformMetrics with overview and performance data
+      if (overviewRes?.data) {
+        setPlatformMetrics(prev => ({
+          ...prev,
+          subscription: {
+            ...prev.subscription,
+            totalHospitals: overviewRes.data.subscription?.total_hospitals || prev.subscription.totalHospitals,
+            activeSubscriptions: overviewRes.data.subscription?.active_subscriptions || prev.subscription.activeSubscriptions,
+            churnRate: overviewRes.data.subscription?.churn_rate || prev.subscription.churnRate,
+            newSubscriptions: overviewRes.data.subscription?.new_subscriptions || prev.subscription.newSubscriptions,
+          },
+          financial: {
+            ...prev.financial,
+            totalRevenue: overviewRes.data.financial?.total_revenue || prev.financial.totalRevenue,
+            monthlyRecurringRevenue: overviewRes.data.financial?.mrr || prev.financial.monthlyRecurringRevenue,
+            annualRecurringRevenue: overviewRes.data.financial?.arr || prev.financial.annualRecurringRevenue,
+          }
+        }));
+      }
+
+      if (performanceRes?.data) {
+        setPlatformMetrics(prev => ({
+          ...prev,
+          performance: {
+            ...prev.performance,
+            platformUptime: performanceRes.data.metrics?.systemUptime || prev.performance.platformUptime,
+            customerSatisfaction: performanceRes.data.metrics?.customerSatisfaction || prev.performance.customerSatisfaction,
+          }
+        }));
+      }
+
+      // Date Range payload
+      const payload = {
+        date_from: dateRange.startDate.toISOString(),
+        date_to: dateRange.endDate.toISOString()
+      };
+
+      // 3. Subscription Analytics (Charts)
+      const subAnalyticsRes = await apiFetch(SUPER_ADMIN_SUBSCRIPTION_ANALYTICS, {
+        method: 'POST',
+        body: payload
+      });
+
+      // 4. Financial Analytics (Charts)
+      const finAnalyticsRes = await apiFetch(SUPER_ADMIN_FINANCIAL_ANALYTICS, {
+        method: 'POST',
+        body: payload
+      });
+
+      setAnalyticsData(prev => ({
+        ...prev,
+        subscriptionGrowth: subAnalyticsRes?.data?.growth_chart || prev.subscriptionGrowth,
+        planDistribution: subAnalyticsRes?.data?.plan_distribution || prev.planDistribution,
+        revenueTrends: finAnalyticsRes?.data?.revenue_trends || prev.revenueTrends,
+      }));
+
+    } catch (error) {
+      console.error('Failed to fetch analytics data:', error);
+    } finally {
+      setLoadingAnalytics(false);
+    }
+  };
+
   useEffect(() => {
-    generateSuperAdminData();
+    fetchAnalyticsData();
     fetchReports();
-  }, []);
+  }, [dateRange.startDate, dateRange.endDate]);
 
   useEffect(() => {
     filterReports();
   }, [filters, reports]);
 
-  useEffect(() => {
-    if (!subscriptionReports.length) return;
-
-    const totalHospitals = subscriptionReports.length;
-
-    const activeSubscriptions = subscriptionReports.filter(
-      (r) => r.status === "active",
-    ).length;
-
-    const totalRevenue = subscriptionReports.reduce(
-      (sum, r) => sum + Number(r.amountPaid || 0),
-      0,
-    );
-
-    const monthlyRecurringRevenue =
-      totalRevenue / (subscriptionReports.length || 1);
-
-    const averageRevenuePerUser =
-      totalRevenue / (subscriptionReports.length || 1);
-
-    const churnRate =
-      ((totalHospitals - activeSubscriptions) / totalHospitals) * 100;
-
-    const newSubscriptions = subscriptionReports.filter((r) => {
-      const created = new Date(r.generatedDate);
-      const now = new Date();
-      return created.getMonth() === now.getMonth();
-    }).length;
-
-    setPlatformMetrics((prev) => ({
-      ...prev,
-      subscription: {
-        ...prev.subscription,
-        totalHospitals,
-        activeSubscriptions,
-        churnRate: churnRate.toFixed(1),
-        newSubscriptions,
-        revenueGrowth: ((totalRevenue / 1000000) * 10).toFixed(1), // dummy logic
-      },
-      financial: {
-        ...prev.financial,
-        totalRevenue,
-        monthlyRecurringRevenue,
-        annualRecurringRevenue: totalRevenue,
-        averageRevenuePerUser,
-        collectionRate: 92 + Math.random() * 5, // dummy realistic variation
-      },
-      usage: {
-        ...prev.usage,
-        activeUsers: totalHospitals * 15,
-        dailyLogins: totalHospitals * 10,
-        apiCalls: totalHospitals * 500,
-        dataStorage: totalHospitals * 2,
-        bandwidthUsage: totalHospitals * 3,
-      },
-    }));
-  }, [subscriptionReports]);
 
 
-  // Add this useEffect near your other useEffects
-useEffect(() => {
-  // Set current year to actual current year
-  const actualCurrentYear = new Date().getFullYear();
-  setCurrentYear(actualCurrentYear);
-  
-  // Generate initial data for current year
-  const initialData = generateDataByPeriod(timePeriod, actualCurrentYear);
-  setAnalyticsData(prev => ({
-    ...prev,
-    revenueTrends: initialData.revenueTrends,
-    subscriptionGrowth: initialData.subscriptionGrowth,
-  }));
-}, []); // Run once on mount
 
   // Add this useEffect to update platform metrics from performance reports
 useEffect(() => {
@@ -343,149 +349,6 @@ useEffect(() => {
 }, [performanceReports]);
 
 
-// Replace the existing generateDataByPeriod function with this enhanced version
-const generateDataByPeriod = (period, year = currentYear, customData = null) => {
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const quarters = ["Q1", "Q2", "Q3", "Q4"];
-  
-  // Get existing data from cache or use custom data
-  const cachedData = yearlyChartData[year] || {};
-  
-  // Generate realistic data based on year with 15% growth per year
-  const getYearFactor = (year) => {
-    const baseYear = 2022;
-    const yearDiff = year - baseYear;
-    return 1 + (yearDiff * 0.15);
-  };
-  
-  const factor = getYearFactor(year);
-
-  switch (period) {
-    case "monthly":
-      return {
-        revenueTrends: months.map((month, index) => {
-          // Use cached data if available, otherwise generate random
-          const cached = cachedData.revenueTrends?.find(item => item.month === month && item.year === year);
-          if (cached) return cached;
-          
-          return {
-            month,
-            year: year,
-            mrr: Math.floor(Math.random() * 40000 * factor) + 180000 * factor,
-            arr: Math.floor(Math.random() * 480000 * factor) + 2160000 * factor,
-            newRevenue: Math.floor(Math.random() * 25000 * factor) + 75000 * factor,
-            churnRevenue: Math.floor(Math.random() * 15000 * factor) + 25000 * factor,
-            netRevenue: 0,
-          };
-        }).map((item) => ({
-          ...item,
-          netRevenue: item.mrr - item.churnRevenue + item.newRevenue,
-        })),
-        subscriptionGrowth: months.map((month, index) => {
-          const cached = cachedData.subscriptionGrowth?.find(item => item.month === month && item.year === year);
-          if (cached) return cached;
-          
-          return {
-            month,
-            year: year,
-            newHospitals: Math.floor(Math.random() * 15 * factor) + 5,
-            churnedHospitals: Math.floor(Math.random() * 5) + 1,
-            upgradedPlans: Math.floor(Math.random() * 8) + 2,
-            downgradedPlans: Math.floor(Math.random() * 4) + 1,
-            netGrowth: 0,
-          };
-        }).map((item) => ({
-          ...item,
-          netGrowth: item.newHospitals - item.churnedHospitals,
-        })),
-      };
-
-    case "quarterly":
-      return {
-        revenueTrends: quarters.map((quarter, idx) => {
-          const cached = cachedData.revenueTrends?.find(item => item.month === quarter && item.year === year);
-          if (cached) return cached;
-          
-          return {
-            month: quarter,
-            year: year,
-            mrr: Math.floor(Math.random() * 150000 * factor) + 600000 * factor,
-            arr: Math.floor(Math.random() * 1800000 * factor) + 7200000 * factor,
-            newRevenue: Math.floor(Math.random() * 75000 * factor) + 200000 * factor,
-            churnRevenue: Math.floor(Math.random() * 50000 * factor) + 80000 * factor,
-            netRevenue: 0,
-          };
-        }).map((item) => ({
-          ...item,
-          netRevenue: item.mrr - item.churnRevenue + item.newRevenue,
-        })),
-        subscriptionGrowth: quarters.map((quarter, idx) => {
-          const cached = cachedData.subscriptionGrowth?.find(item => item.month === quarter && item.year === year);
-          if (cached) return cached;
-          
-          return {
-            month: quarter,
-            year: year,
-            newHospitals: Math.floor(Math.random() * 45 * factor) + 15,
-            churnedHospitals: Math.floor(Math.random() * 15) + 3,
-            upgradedPlans: Math.floor(Math.random() * 24) + 6,
-            downgradedPlans: Math.floor(Math.random() * 12) + 3,
-            netGrowth: 0,
-          };
-        }).map((item) => ({
-          ...item,
-          netGrowth: item.newHospitals - item.churnedHospitals,
-        })),
-      };
-
-    case "yearly":
-      const years = [2022, 2023, 2024, 2025];
-      return {
-        revenueTrends: years.map((yr) => {
-          const cached = cachedData.revenueTrends?.find(item => item.month === yr.toString() && item.year === yr);
-          if (cached) return cached;
-          
-          const yrFactor = getYearFactor(yr);
-          return {
-            month: yr.toString(),
-            year: yr,
-            mrr: Math.floor(Math.random() * 600000 * yrFactor) + 2400000 * yrFactor,
-            arr: Math.floor(Math.random() * 7200000 * yrFactor) + 28800000 * yrFactor,
-            newRevenue: Math.floor(Math.random() * 300000 * yrFactor) + 900000 * yrFactor,
-            churnRevenue: Math.floor(Math.random() * 200000 * yrFactor) + 300000 * yrFactor,
-            netRevenue: 0,
-          };
-        }).map((item) => ({
-          ...item,
-          netRevenue: item.mrr - item.churnRevenue + item.newRevenue,
-        })),
-        subscriptionGrowth: years.map((yr) => {
-          const cached = cachedData.subscriptionGrowth?.find(item => item.month === yr.toString() && item.year === yr);
-          if (cached) return cached;
-          
-          const yrFactor = getYearFactor(yr);
-          return {
-            month: yr.toString(),
-            year: yr,
-            newHospitals: Math.floor(Math.random() * 180 * yrFactor) + 60,
-            churnedHospitals: Math.floor(Math.random() * 60) + 12,
-            upgradedPlans: Math.floor(Math.random() * 96) + 24,
-            downgradedPlans: Math.floor(Math.random() * 48) + 12,
-            netGrowth: 0,
-          };
-        }).map((item) => ({
-          ...item,
-          netGrowth: item.newHospitals - item.churnedHospitals,
-        })),
-      };
-
-    default:
-      return {
-        revenueTrends: [],
-        subscriptionGrowth: [],
-      };
-  }
-};
 
 // Add these helper functions to calculate percentage changes
 const calculateUptimeChange = () => {
@@ -526,213 +389,34 @@ const getChartSourceName = (reportType) => {
   // Add this function to handle time period change
 const handleTimePeriodChange = (period) => {
   setTimePeriod(period);
-  const newData = generateDataByPeriod(period, currentYear);
-  setAnalyticsData((prev) => ({
-    ...prev,
-    revenueTrends: newData.revenueTrends,
-    subscriptionGrowth: newData.subscriptionGrowth,
-  }));
+  const now = new Date();
+  let start = new Date();
+  if (period === 'monthly') {
+    start.setMonth(now.getMonth() - 1);
+  } else if (period === 'quarterly') {
+    start.setMonth(now.getMonth() - 3);
+  } else if (period === 'yearly') {
+    start.setFullYear(now.getFullYear() - 1);
+  }
+  setDateRange({ startDate: start, endDate: now });
 };
 
-  // Update the generateSuperAdminData function to use the current time period
-const generateSuperAdminData = () => {
-  const initialData = generateDataByPeriod(timePeriod, currentYear);
 
-  // Plan Distribution (remains the same but with year context)
-  const planDistribution = [
-    {
-      plan: "Basic",
-      hospitals: 45,
-      revenue: 450000,
-      growth: 12,
-      color: "#3B82F6",
-      yearData: { [currentYear]: { hospitals: 45, revenue: 450000 } }
-    },
-    {
-      plan: "Professional",
-      hospitals: 30,
-      revenue: 900000,
-      growth: 18,
-      color: "#10B981",
-      yearData: { [currentYear]: { hospitals: 30, revenue: 900000 } }
-    },
-    {
-      plan: "Enterprise",
-      hospitals: 20,
-      revenue: 1400000,
-      growth: 25,
-      color: "#8B5CF6",
-      yearData: { [currentYear]: { hospitals: 20, revenue: 1400000 } }
-    },
-    {
-      plan: "Custom",
-      hospitals: 5,
-      revenue: 750000,
-      growth: 8,
-      color: "#F59E0B",
-      yearData: { [currentYear]: { hospitals: 5, revenue: 750000 } }
-    },
-  ];
-
-  // Top Performing Hospitals
-  const hospitalPerformance = [
-    {
-      name: "City General Hospital",
-      revenue: 125000,
-      plan: "Enterprise",
-      growth: 15,
-      usage: 98,
-      year: currentYear
-    },
-    {
-      name: "Unity Medical Center",
-      revenue: 98000,
-      plan: "Professional",
-      growth: 22,
-      usage: 92,
-      year: currentYear
-    },
-    {
-      name: "Metro Health Hospital",
-      revenue: 87000,
-      plan: "Enterprise",
-      growth: 8,
-      usage: 95,
-      year: currentYear
-    },
-    {
-      name: "Central Clinic",
-      revenue: 65000,
-      plan: "Professional",
-      growth: 14,
-      usage: 88,
-      year: currentYear
-    },
-    {
-      name: "Community Hospital",
-      revenue: 52000,
-      plan: "Basic",
-      growth: 5,
-      usage: 85,
-      year: currentYear
-    },
-  ];
-
-  // Platform Usage Metrics
-  const platformUsage = [
-    { metric: "Daily Active Users", value: 1850, change: 8.5, year: currentYear },
-    { metric: "API Requests", value: 125000, change: 12.3, year: currentYear },
-    { metric: "Data Storage (GB)", value: 285, change: 5.2, year: currentYear },
-    { metric: "Bandwidth Usage", value: 450, change: 15.7, year: currentYear },
-    { metric: "Support Tickets", value: 45, change: -3.2, year: currentYear },
-  ];
-
-  setAnalyticsData({
-    revenueTrends: initialData.revenueTrends,
-    subscriptionGrowth: initialData.subscriptionGrowth,
-    planDistribution,
-    hospitalPerformance,
-    platformUsage,
-  });
-};
-
-  const fetchReports = () => {
-    const sampleReports = [
-      {
-        id: "REP-SA-001",
-        title: "Monthly Subscription Analytics Report",
-        type: "subscription",
-        planType: "all",
-        format: "PDF",
-        generatedDate: new Date().toISOString().split("T")[0],
-        status: "completed",
-        size: "2.8 MB",
-        records: 1850,
-        chartsIncluded: [
-          "Subscription Growth",
-          "Plan Distribution",
-          "Churn Analysis",
-        ],
-        scheduled: false,
-        tags: ["monthly", "subscription", "analytics"],
-        description:
-          "Comprehensive analysis of subscription metrics and hospital growth",
-        lastAccessed: new Date().toISOString().split("T")[0],
-        downloadCount: 12,
-      },
-      {
-        id: "REP-SA-002",
-        title: "Financial Performance Dashboard",
-        type: "financial",
-        planType: "all",
-        format: "Excel",
-        generatedDate: new Date(Date.now() - 86400000)
-          .toISOString()
-          .split("T")[0],
-        status: "completed",
-        size: "1.5 MB",
-        records: 2450,
-        chartsIncluded: [
-          "Revenue Trends",
-          "MRR/ARR Analysis",
-          "Collection Rates",
-        ],
-        scheduled: true,
-        frequency: "weekly",
-        tags: ["financial", "performance", "dashboard"],
-        description: "Detailed financial metrics and revenue analysis",
-        lastAccessed: new Date(Date.now() - 86400000)
-          .toISOString()
-          .split("T")[0],
-        downloadCount: 8,
-      },
-      {
-        id: "REP-SA-003",
-        title: "Platform Usage & Performance",
-        type: "performance",
-        planType: "all",
-        format: "PDF",
-        generatedDate: new Date(Date.now() - 172800000)
-          .toISOString()
-          .split("T")[0],
-        status: "processing",
-        size: "0 MB",
-        records: 0,
-        chartsIncluded: ["Platform Uptime", "API Performance", "User Activity"],
-        scheduled: false,
-        tags: ["platform", "performance", "usage"],
-        description: "Platform performance metrics and usage analytics",
-        lastAccessed: null,
-        downloadCount: 0,
-      },
-      {
-        id: "REP-SA-004",
-        title: "Enterprise Plan Analysis",
-        type: "custom",
-        planType: "enterprise",
-        format: "CSV",
-        generatedDate: new Date(Date.now() - 259200000)
-          .toISOString()
-          .split("T")[0],
-        status: "completed",
-        size: "3.2 MB",
-        records: 3200,
-        chartsIncluded: [
-          "Enterprise Usage",
-          "Feature Adoption",
-          "ROI Analysis",
-        ],
-        scheduled: false,
-        tags: ["enterprise", "analysis", "custom"],
-        description: "Deep dive analysis of enterprise plan performance",
-        lastAccessed: new Date(Date.now() - 259200000)
-          .toISOString()
-          .split("T")[0],
-        downloadCount: 5,
-      },
-    ];
-    setReports(sampleReports);
-    setFilteredReports(sampleReports);
+  const fetchReports = async () => {
+    try {
+      const response = await apiFetch(SUPER_ADMIN_ANALYTICS_OVERVIEW);
+      if (response && response.data) {
+        setReports(response.data.reports || []);
+        setFilteredReports(response.data.reports || []);
+      } else {
+        setReports([]);
+        setFilteredReports([]);
+      }
+    } catch (error) {
+      console.error('Failed to fetch reports list:', error);
+      setReports([]);
+      setFilteredReports([]);
+    }
   };
 
   const filterReports = () => {

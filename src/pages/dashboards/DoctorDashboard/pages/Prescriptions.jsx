@@ -10,6 +10,7 @@ import {
   downloadPrescriptionPDF,
   getPrescriptionDetails
 } from '../../../../services/prescriptionService'
+import { searchDoctorPatients } from '../../../../services/doctorApi'
 
 const Prescriptions = () => {
   const [loading, setLoading] = useState(true)
@@ -68,14 +69,20 @@ const Prescriptions = () => {
   }
 
   const loadPatients = async () => {
-    // Mock patients data - in real app, this would come from an API call
-    setPatients([
-      { patient_id: 'P001', name: 'Ravi Kumar' },
-      { patient_id: 'P002', name: 'Anita Sharma' },
-      { patient_id: 'P003', name: 'Suresh Patel' },
-      { patient_id: 'P004', name: 'Priya Singh' },
-      { patient_id: 'P005', name: 'Rajesh Kumar' }
-    ])
+    try {
+      // Fetch real patients for the doctor
+      const response = await searchDoctorPatients({});
+      // map to { patient_id, name } which the component uses
+      const realPatients = (response || []).map(p => ({
+        patient_id: p.patientId || p.patient_ref,
+        name: p.patient || p.patient_name || 'Unknown Patient'
+      }));
+      setPatients(realPatients);
+    } catch (error) {
+      console.error('Error fetching patients:', error);
+      toast.error('Failed to load patients for prescription');
+      setPatients([]);
+    }
   }
 
   const handleCreatePrescription = async () => {

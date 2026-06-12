@@ -9,11 +9,11 @@ const DOCTOR_APPOINTMENT_BASE_CANDIDATES = [
 ]
 
 const DOCTOR_APPOINTMENT_TRACKING_BASE_CANDIDATES = [
+  '/api/v1/doctor-appointment-tracking',
   '/api/v1/doctor-management',
   '/api/v1/doctor-dashboard',
   '/api/v1/doctor',
   '/api/v1/doctors',
-  '/api/v1/doctor-appointment-tracking',
 ]
 
 const DOCTOR_PATIENT_RECORDS_BASE_CANDIDATES = [
@@ -715,11 +715,11 @@ export async function getDischargeStatistics(params = {}) {
 }
 
 // --- REPORTS AND ANALYTICS ---
-const REPORTS_BASE = '/api/v1/doctor-management/reports'
+const REPORTS_BASE = '/api/v1/doctor-reports-analytics'
 
 export async function getPracticeOverview(params = {}) {
   const query = {
-    report_period: params.report_period || 'this_month',
+    report_period: (params.report_period || 'THIS_MONTH').toUpperCase(),
     custom_date_from: params.custom_date_from,
     custom_date_to: params.custom_date_to,
   }
@@ -731,7 +731,7 @@ export async function getPracticeOverview(params = {}) {
 
 export async function getPatientAnalytics(params = {}) {
   const query = {
-    report_period: params.report_period || 'this_month',
+    report_period: (params.report_period || 'THIS_MONTH').toUpperCase(),
     custom_date_from: params.custom_date_from,
     custom_date_to: params.custom_date_to,
   }
@@ -743,7 +743,7 @@ export async function getPatientAnalytics(params = {}) {
 
 export async function getAppointmentAnalytics(params = {}) {
   const query = {
-    report_period: params.report_period || 'this_month',
+    report_period: (params.report_period || 'THIS_MONTH').toUpperCase(),
     custom_date_from: params.custom_date_from,
     custom_date_to: params.custom_date_to,
   }
@@ -755,7 +755,7 @@ export async function getAppointmentAnalytics(params = {}) {
 
 export async function getClinicalOutcomes(params = {}) {
   const query = {
-    report_period: params.report_period || 'this_month',
+    report_period: (params.report_period || 'THIS_MONTH').toUpperCase(),
     custom_date_from: params.custom_date_from,
     custom_date_to: params.custom_date_to,
   }
@@ -767,7 +767,7 @@ export async function getClinicalOutcomes(params = {}) {
 
 export async function getFinancialSummary(params = {}) {
   const query = {
-    report_period: params.report_period || 'this_month',
+    report_period: (params.report_period || 'THIS_MONTH').toUpperCase(),
     custom_date_from: params.custom_date_from,
     custom_date_to: params.custom_date_to,
   }
@@ -779,7 +779,7 @@ export async function getFinancialSummary(params = {}) {
 
 export async function getPerformanceMetrics(params = {}) {
   const query = {
-    report_period: params.report_period || 'this_month',
+    report_period: (params.report_period || 'THIS_MONTH').toUpperCase(),
     custom_date_from: params.custom_date_from,
     custom_date_to: params.custom_date_to,
   }
@@ -791,7 +791,7 @@ export async function getPerformanceMetrics(params = {}) {
 
 export async function getComparativeAnalysis(params = {}) {
   const query = {
-    report_period: params.report_period || 'this_month',
+    report_period: (params.report_period || 'THIS_MONTH').toUpperCase(),
     custom_date_from: params.custom_date_from,
     custom_date_to: params.custom_date_to,
   }

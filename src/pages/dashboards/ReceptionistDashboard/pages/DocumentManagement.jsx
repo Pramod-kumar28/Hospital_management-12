@@ -306,33 +306,38 @@ const DocumentManagement = () => {
     const filteredDocs = getDocumentsByType(patient.documents, activeTab);
 
     return (
-      <div className="bg-white rounded-lg shadow border hover:shadow-md transition-shadow h-full flex flex-col">
+      <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 h-full flex flex-col overflow-hidden group">
         {/* Patient Header */}
-        <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 border-b">
-          <div className="flex justify-between items-start">
+        <div className="relative bg-gradient-to-br from-blue-600 to-indigo-700 p-5 overflow-hidden">
+          {/* Abstract background shapes */}
+          <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white/10 blur-2xl"></div>
+          <div className="absolute bottom-0 left-0 -ml-8 -mb-8 w-24 h-24 rounded-full bg-white/10 blur-xl"></div>
+          
+          <div className="relative z-10 flex justify-between items-start">
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-bold text-lg truncate">{patient.name}</h3>
-                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                  {patient.documents.length} docs
-                </span>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/30 text-white shadow-inner">
+                  <PersonIcon style={{ fontSize: '1.8rem' }} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-xl text-white tracking-wide truncate">{patient.name}</h3>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/20 text-blue-50 border border-white/20 backdrop-blur-sm shadow-sm mt-1">
+                    {patient.documents.length} Documents
+                  </span>
+                </div>
               </div>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                <div className="flex items-center">
-                  <BadgeIcon className="text-gray-500 mr-1" style={{ fontSize: '1rem' }} />
-                  <span className="text-gray-600 truncate">{patient.id}</span>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-4 text-blue-50 text-sm">
+                <div className="flex items-center bg-white/10 px-2 py-1.5 rounded-lg backdrop-blur-sm">
+                  <BadgeIcon className="mr-1.5 opacity-80" style={{ fontSize: '1.1rem' }} />
+                  <span className="font-medium truncate">{patient.id}</span>
                 </div>
-                <div className="flex items-center">
-                  <PersonIcon className="text-gray-500 mr-1" style={{ fontSize: '1rem' }} />
-                  <span className="text-gray-600">{patient.age}y, {patient.gender}</span>
+                <div className="flex items-center bg-white/10 px-2 py-1.5 rounded-lg backdrop-blur-sm">
+                  <CalendarTodayIcon className="mr-1.5 opacity-80" style={{ fontSize: '1.1rem' }} />
+                  <span className="font-medium">{patient.age}y, {patient.gender}</span>
                 </div>
-                <div className="flex items-center">
-                  <PhoneIcon className="text-gray-500 mr-1" style={{ fontSize: '1rem' }} />
-                  <span className="text-gray-600 truncate">{patient.phone}</span>
-                </div>
-                <div className="flex items-center">
-                  <CalendarTodayIcon className="text-gray-500 mr-1" style={{ fontSize: '1rem' }} />
-                  <span className="text-gray-600">Last: {patient.lastVisit}</span>
+                <div className="flex items-center bg-white/10 px-2 py-1.5 rounded-lg backdrop-blur-sm col-span-2">
+                  <PhoneIcon className="mr-1.5 opacity-80" style={{ fontSize: '1.1rem' }} />
+                  <span className="font-medium truncate">{patient.phone}</span>
                 </div>
               </div>
             </div>
@@ -341,27 +346,28 @@ const DocumentManagement = () => {
                 setSelectedPatient(patient);
                 setShowUploadModal(true);
               }}
-              className="ml-3 text-blue-600 hover:text-blue-800 flex-shrink-0"
+              className="ml-3 p-2 bg-white/20 hover:bg-white/30 text-white rounded-xl backdrop-blur-sm transition-all duration-200 border border-white/30 shadow-sm flex-shrink-0 group-hover:scale-105"
               title="Upload documents"
             >
-              <AddCircleIcon className="text-xl" />
+              <AddCircleIcon />
             </button>
           </div>
         </div>
 
         {/* Document Categories Tabs */}
-        <div className="border-b">
-          <div className="flex overflow-x-auto">
+        <div className="bg-gray-50/80 border-b border-gray-100 p-2">
+          <div className="flex gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {['all', 'medical', 'reports', 'other'].map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex-1 px-3 py-2 text-xs font-medium whitespace-nowrap ${activeTab === tab
-                  ? 'border-b-2 border-blue-500 text-blue-600'
-                  : 'text-gray-500 hover:text-gray-700'
-                  }`}
+                className={`flex-1 px-3 py-1.5 text-xs font-semibold rounded-lg whitespace-nowrap transition-all duration-200 ${
+                  activeTab === tab
+                    ? 'bg-white text-blue-600 shadow-sm ring-1 ring-gray-200'
+                    : 'text-gray-500 hover:bg-gray-200/50 hover:text-gray-700'
+                }`}
               >
-                {tab === 'all' && 'All Documents'}
+                {tab === 'all' && 'All Docs'}
                 {tab === 'medical' && 'Medical'}
                 {tab === 'reports' && 'Reports'}
                 {tab === 'other' && 'Other'}
@@ -371,41 +377,44 @@ const DocumentManagement = () => {
         </div>
 
         {/* Documents List */}
-        <div className="p-4 flex-1 overflow-hidden">
+        <div className="p-4 flex-1 overflow-hidden bg-white/50">
           {filteredDocs.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center py-6">
-              <InsertDriveFileIcon className="text-gray-300 mb-2" style={{ fontSize: '3rem' }} />
-              <p className="text-gray-500 text-sm">No documents found</p>
+            <div className="h-full flex flex-col items-center justify-center py-8">
+              <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3 border border-gray-100 shadow-inner">
+                <InsertDriveFileIcon className="text-gray-300" style={{ fontSize: '2rem' }} />
+              </div>
+              <p className="text-gray-500 text-sm font-medium">No documents</p>
             </div>
           ) : (
-            <div className="space-y-3 max-h-48 overflow-y-auto pr-1">
+            <div className="space-y-3 max-h-52 overflow-y-auto pr-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-200 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-300">
               {filteredDocs.map(doc => (
-                <div key={doc.id} className="flex items-center p-2 bg-gray-50 rounded hover:bg-gray-100">
-                  <div className={`p-2 rounded-lg mr-3 ${doc.fileType === 'pdf' ? 'bg-red-50 text-red-600' :
-                    doc.fileType === 'image' ? 'bg-green-50 text-green-600' :
-                      'bg-blue-50 text-blue-600'
-                    }`}>
+                <div key={doc.id} className="group/doc flex items-center p-3 bg-white border border-gray-100 rounded-xl hover:border-blue-200 hover:shadow-md transition-all duration-200">
+                  <div className={`p-2.5 rounded-xl mr-3 shadow-sm ${
+                    doc.fileType === 'pdf' ? 'bg-red-50 text-red-500 ring-1 ring-red-100' :
+                    doc.fileType === 'image' ? 'bg-green-50 text-green-500 ring-1 ring-green-100' :
+                    'bg-blue-50 text-blue-500 ring-1 ring-blue-100'
+                  }`}>
                     {getFileIcon(doc.fileType)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{doc.name}</p>
+                    <p className="font-semibold text-gray-800 text-sm truncate group-hover/doc:text-blue-600 transition-colors">{doc.name}</p>
                     <div className="flex items-center gap-2 mt-1 flex-wrap">
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${getCategoryColor(doc.category)}`}>
+                      <span className={`text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-md ${getCategoryColor(doc.category)}`}>
                         {doc.type || doc.document_type || doc.category || 'Document'}
                       </span>
-                      <span className="text-xs text-gray-500">{doc.size}</span>
+                      <span className="text-xs text-gray-400 font-medium">{doc.size}</span>
                     </div>
                   </div>
-                  <div className="flex gap-1 ml-2">
+                  <div className="flex gap-1.5 ml-2">
                     <button
-                      className="text-blue-600 hover:text-blue-800 p-1"
+                      className="text-blue-600 hover:bg-blue-50 p-1.5 rounded-lg transition-colors"
                       title="View"
                       onClick={() => setDocumentToView(doc)}
                     >
                       <VisibilityIcon style={{ fontSize: '1.25rem' }} />
                     </button>
                     <button
-                      className="text-green-600 hover:text-green-800 p-1"
+                      className="text-green-600 hover:bg-green-50 p-1.5 rounded-lg transition-colors"
                       title="Download"
                       onClick={() => handleDownload(doc)}
                     >
@@ -419,15 +428,15 @@ const DocumentManagement = () => {
         </div>
 
         {patient.documents.length > 3 && (
-          <div className="px-4 py-2 border-t bg-gray-50">
+          <div className="px-4 py-3 border-t border-gray-100 bg-gray-50/50 mt-auto">
             <button
               onClick={() => {
                 setSelectedPatient(patient);
                 setShowViewAllModal(true);
               }}
-              className="w-full text-center text-sm text-blue-600 hover:text-blue-800 font-medium py-1"
+              className="w-full flex items-center justify-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-semibold py-1.5 px-3 rounded-lg hover:bg-blue-50 transition-colors"
             >
-              View all {patient.documents.length} documents →
+              View all {patient.documents.length} docs <ChevronRightIcon style={{ fontSize: '1.25rem' }} />
             </button>
           </div>
         )}

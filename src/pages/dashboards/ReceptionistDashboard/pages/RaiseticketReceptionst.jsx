@@ -355,260 +355,183 @@ const SupportManagement = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-slate-50 p-6 font-sans">
       <ToastContainer position="top-right" autoClose={5000} />
       
-      {/* Header - Changed to "Raise Ticket" */}
-      <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 to-blue-800 bg-clip-text text-transparent">
-          Raise Ticket
-        </h1>
-        <p className="text-gray-600 mt-2">
-          Create and track your support requests
-        </p>
+      {/* Sleek Header */}
+      <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
+            Support Center
+          </h1>
+          <p className="text-slate-500 mt-1 text-sm font-medium">
+            Create, track, and manage your support tickets efficiently.
+          </p>
+        </div>
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="group relative inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-blue-500 hover:shadow-md hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 active:scale-95"
+        >
+          <svg className="h-5 w-5 transition-transform group-hover:rotate-90" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          Raise New Ticket
+        </button>
       </div>
 
-      {/* ONLY 5 Priority Cards - Enhanced Design */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 mb-8">
-        {/* CRITICAL */}
-        <div className="group relative bg-gradient-to-br from-red-50 to-red-100 rounded-2xl p-5 border border-red-200 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 cursor-pointer overflow-hidden">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-red-200 rounded-full -mr-10 -mt-10 opacity-20 group-hover:scale-150 transition-transform duration-500"></div>
-          <div className="relative">
-            <div className="w-12 h-12 flex items-center justify-center rounded-full bg-red-600 mb-3 shadow-md">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-            </div>
-            <p className="text-xs font-semibold text-red-700 uppercase tracking-wider">CRITICAL</p>
-            <p className="text-3xl font-bold text-red-800 mt-1">{stats.critical}</p>
-            <p className="text-xs text-red-600 mt-1">Immediate attention</p>
-          </div>
-        </div>
-
-        {/* URGENT */}
-        <div className="group relative bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-5 border border-orange-200 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 cursor-pointer overflow-hidden">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-orange-200 rounded-full -mr-10 -mt-10 opacity-20 group-hover:scale-150 transition-transform duration-500"></div>
-          <div className="relative">
-            <div className="w-12 h-12 flex items-center justify-center rounded-full bg-orange-500 mb-3 shadow-md">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <p className="text-xs font-semibold text-orange-700 uppercase tracking-wider">URGENT</p>
-            <p className="text-3xl font-bold text-orange-800 mt-1">{stats.urgent}</p>
-            <p className="text-xs text-orange-600 mt-1">Address soon</p>
-          </div>
-        </div>
-
-        {/* HIGH */}
-        <div className="group relative bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-2xl p-5 border border-yellow-200 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 cursor-pointer overflow-hidden">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-yellow-200 rounded-full -mr-10 -mt-10 opacity-20 group-hover:scale-150 transition-transform duration-500"></div>
-          <div className="relative">
-            <div className="w-12 h-12 flex items-center justify-center rounded-full bg-yellow-600 mb-3 shadow-md">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-            <p className="text-xs font-semibold text-yellow-700 uppercase tracking-wider">HIGH</p>
-            <p className="text-3xl font-bold text-yellow-800 mt-1">{stats.high}</p>
-            <p className="text-xs text-yellow-600 mt-1">Needs quick action</p>
-          </div>
-        </div>
-
-        {/* NORMAL */}
-        <div className="group relative bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-5 border border-blue-200 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 cursor-pointer overflow-hidden">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-blue-200 rounded-full -mr-10 -mt-10 opacity-20 group-hover:scale-150 transition-transform duration-500"></div>
-          <div className="relative">
-            <div className="w-12 h-12 flex items-center justify-center rounded-full bg-blue-600 mb-3 shadow-md">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
-            <p className="text-xs font-semibold text-blue-700 uppercase tracking-wider">NORMAL</p>
-            <p className="text-3xl font-bold text-blue-800 mt-1">{stats.normal}</p>
-            <p className="text-xs text-blue-600 mt-1">Standard priority</p>
-          </div>
-        </div>
-
-        {/* LOW */}
-        <div className="group relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 cursor-pointer overflow-hidden">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-gray-200 rounded-full -mr-10 -mt-10 opacity-20 group-hover:scale-150 transition-transform duration-500"></div>
-          <div className="relative">
-            <div className="w-12 h-12 flex items-center justify-center rounded-full bg-gray-500 mb-3 shadow-md">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <p className="text-xs font-semibold text-gray-700 uppercase tracking-wider">LOW</p>
-            <p className="text-3xl font-bold text-gray-800 mt-1">{stats.low}</p>
-            <p className="text-xs text-gray-600 mt-1">Can wait</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Search and Actions Bar */}
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-5 mb-6">
-        <div className="flex flex-col lg:flex-row gap-4 items-center">
-          <div className="flex-1 w-full">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      {/* Glassmorphic Priority Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        {[
+          { label: 'CRITICAL', count: stats.critical, desc: 'Immediate attention', icon: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z', classes: { border: 'border-red-100/50', blurBg: 'bg-red-100/50 group-hover:bg-red-200/50', iconBg: 'bg-red-100', iconText: 'text-red-600', text: 'text-red-600' } },
+          { label: 'URGENT', count: stats.urgent, desc: 'Address soon', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', classes: { border: 'border-orange-100/50', blurBg: 'bg-orange-100/50 group-hover:bg-orange-200/50', iconBg: 'bg-orange-100', iconText: 'text-orange-600', text: 'text-orange-600' } },
+          { label: 'HIGH', count: stats.high, desc: 'Needs quick action', icon: 'M13 10V3L4 14h7v7l9-11h-7z', classes: { border: 'border-yellow-100/50', blurBg: 'bg-yellow-100/50 group-hover:bg-yellow-200/50', iconBg: 'bg-yellow-100', iconText: 'text-yellow-600', text: 'text-yellow-600' } },
+          { label: 'NORMAL', count: stats.normal, desc: 'Standard priority', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', classes: { border: 'border-blue-100/50', blurBg: 'bg-blue-100/50 group-hover:bg-blue-200/50', iconBg: 'bg-blue-100', iconText: 'text-blue-600', text: 'text-blue-600' } },
+          { label: 'LOW', count: stats.low, desc: 'Can wait', icon: 'M5 13l4 4L19 7', classes: { border: 'border-slate-100/50', blurBg: 'bg-slate-100/50 group-hover:bg-slate-200/50', iconBg: 'bg-slate-100', iconText: 'text-slate-600', text: 'text-slate-600' } },
+        ].map((stat, idx) => (
+          <div key={idx} className={`relative overflow-hidden rounded-2xl bg-white/60 p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-md border ${stat.classes.border} hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 group`}>
+            <div className={`absolute -right-6 -top-6 h-24 w-24 rounded-full ${stat.classes.blurBg} blur-2xl transition-colors duration-500`}></div>
+            <div className="relative z-10">
+              <div className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${stat.classes.iconBg} ${stat.classes.iconText} mb-3 shadow-sm group-hover:scale-110 transition-transform duration-300`}>
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d={stat.icon} />
                 </svg>
               </div>
-              <input
-                type="text"
-                placeholder="Search tickets by ID, subject, status, or priority..."
-                className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+              <p className={`text-xs font-bold uppercase tracking-wider ${stat.classes.text}`}>{stat.label}</p>
+              <div className="mt-1 flex items-baseline gap-2">
+                <span className="text-3xl font-extrabold tracking-tight text-slate-900">{stat.count}</span>
+              </div>
+              <p className="mt-1 text-xs text-slate-500">{stat.desc}</p>
             </div>
           </div>
+        ))}
+      </div>
 
-          <div className="flex flex-wrap gap-3">
-            <select
-              className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-              value={filters.status}
-              onChange={(e) => handleFilterChange('status', e.target.value)}
-            >
-              <option value="">All Status</option>
-              <option value="OPEN">Open</option>
-              <option value="IN_PROGRESS">In Progress</option>
-              <option value="RESOLVED">Resolved</option>
-              <option value="CLOSED">Closed</option>
-            </select>
-
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="px-5 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium flex items-center gap-2"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              Create Ticket
-            </button>
+      {/* Floating Search & Filters */}
+      <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-between rounded-2xl bg-white p-4 shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-slate-100">
+        <div className="relative w-full sm:max-w-md group">
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+            <svg className="h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
           </div>
+          <input
+            type="text"
+            className="block w-full rounded-xl border-0 bg-slate-50/50 py-3 pl-11 pr-4 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-200 focus:bg-white focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 transition-all"
+            placeholder="Search tickets..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <div className="w-full sm:w-auto">
+          <select
+            className="block w-full sm:w-48 rounded-xl border-0 bg-slate-50/50 py-3 pl-4 pr-10 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-200 focus:bg-white focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 cursor-pointer transition-all appearance-none"
+            value={filters.status}
+            onChange={(e) => handleFilterChange('status', e.target.value)}
+            style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em' }}
+          >
+            <option value="">All Statuses</option>
+            <option value="OPEN">Open</option>
+            <option value="IN_PROGRESS">In Progress</option>
+            <option value="RESOLVED">Resolved</option>
+            <option value="CLOSED">Closed</option>
+          </select>
         </div>
       </div>
 
-      {/* Tickets Table (unchanged functionality) */}
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+      {/* Premium Data Table */}
+      <div className="overflow-hidden rounded-2xl bg-white shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-slate-100">
         {loading ? (
-          <div className="p-12 text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-            <p className="text-gray-600">Loading tickets...</p>
+          <div className="flex flex-col items-center justify-center p-16">
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600"></div>
+            <p className="mt-4 text-sm font-medium text-slate-500">Loading your tickets...</p>
           </div>
         ) : filteredTickets.length === 0 ? (
-          <div className="p-12 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
-              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          <div className="flex flex-col items-center justify-center p-16 text-center">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-blue-50 text-blue-500 mb-6">
+              <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z" />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">No tickets found</h3>
-            <p className="text-gray-500 mb-6">Create your first support ticket</p>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:shadow-lg transition-all"
-            >
-              Create First Ticket
-            </button>
+            <h3 className="text-lg font-bold text-slate-900">No tickets found</h3>
+            <p className="mt-2 text-sm text-slate-500 max-w-sm">You haven't raised any tickets yet, or none match your search criteria.</p>
           </div>
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
-                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">Ticket ID</th>
-                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">Subject</th>
-                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">Status</th>
-                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">Priority</th>
-                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">Created</th>
-                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">Last Updated</th>
-                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">Actions</th>
+              <table className="min-w-full divide-y divide-slate-100">
+                <thead className="bg-slate-50/50">
+                  <tr>
+                    <th scope="col" className="py-4 pl-6 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Ticket ID</th>
+                    <th scope="col" className="px-3 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Subject</th>
+                    <th scope="col" className="px-3 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
+                    <th scope="col" className="px-3 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Priority</th>
+                    <th scope="col" className="px-3 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Last Updated</th>
+                    <th scope="col" className="py-4 pl-3 pr-6 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">Actions</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-slate-100 bg-white">
                   {filteredTickets.map((ticket) => (
-                    <tr key={ticket.id} className="border-b border-gray-100 hover:bg-blue-50/30 transition-all duration-300">
-                      <td className="py-4 px-6">
-                        <p className="font-mono font-semibold text-blue-600 text-sm">
-                          {formatTicketId(ticket.id)}
-                        </p>
+                    <tr key={ticket.id} className="group hover:bg-slate-50/80 transition-colors duration-200">
+                      <td className="whitespace-nowrap py-4 pl-6 pr-3 text-sm font-medium text-slate-900">
+                        #{formatTicketId(ticket.id)}
                       </td>
-                      <td className="py-4 px-6">
-                        <p className="text-gray-700 max-w-md truncate" title={ticket.subject}>
+                      <td className="py-4 px-3 text-sm text-slate-600">
+                        <div className="max-w-[200px] truncate font-medium text-slate-700" title={ticket.subject}>
                           {ticket.subject}
-                        </p>
+                        </div>
                       </td>
-                      <td className="py-4 px-6">
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeClass(ticket.status)}`}>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm">
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold shadow-sm ${getStatusBadgeClass(ticket.status)}`}>
+                          <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-current opacity-70"></span>
                           {ticket.status}
                         </span>
                       </td>
-                      <td className="py-4 px-6">
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getPriorityBadgeClass(ticket.priority)}`}>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm">
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold shadow-sm ${getPriorityBadgeClass(ticket.priority)}`}>
                           {ticket.priority}
                         </span>
                       </td>
-                      <td className="py-4 px-6 text-sm text-gray-500">
-                        {formatDate(ticket.created_at)}
-                       </td>
-                      <td className="py-4 px-6 text-sm text-gray-500">
-                        {formatDate(ticket.updated_at)}
-                       </td>
-                      <td className="py-4 px-6">
+                      <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
+                        {formatDate(ticket.updated_at || ticket.created_at)}
+                      </td>
+                      <td className="whitespace-nowrap py-4 pl-3 pr-6 text-right text-sm font-medium">
                         <button
                           onClick={() => {
                             setSelectedTicket(ticket);
                             setShowViewModal(true);
                           }}
-                          className="w-8 h-8 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-lg flex items-center justify-center transition-colors"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-white text-slate-400 shadow-sm ring-1 ring-inset ring-slate-200 hover:bg-slate-50 hover:text-blue-600 transition-all focus:outline-none focus:ring-2 focus:ring-blue-600"
                           title="View Details"
                         >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                           </svg>
                         </button>
-                       </td>
-                     </tr>
+                      </td>
+                    </tr>
                   ))}
                 </tbody>
               </table>
             </div>
 
             {/* Pagination */}
-            <div className="px-6 py-4 bg-white border-t border-gray-200 flex items-center justify-between">
-              <div className="text-sm text-gray-700">
-                Showing <span className="font-medium">{pagination.skip + 1}</span> to{' '}
-                <span className="font-medium">
-                  {Math.min(pagination.skip + pagination.limit, pagination.total)}
-                </span>{' '}
-                of <span className="font-medium">{pagination.total}</span> results
-              </div>
-              <div className="flex space-x-2">
+            <div className="flex items-center justify-between border-t border-slate-100 bg-white px-6 py-4">
+              <p className="text-sm text-slate-500">
+                Showing <span className="font-semibold text-slate-900">{pagination.skip + 1}</span> to <span className="font-semibold text-slate-900">{Math.min(pagination.skip + pagination.limit, pagination.total)}</span> of <span className="font-semibold text-slate-900">{pagination.total}</span> tickets
+              </p>
+              <div className="flex gap-2">
                 <button
                   onClick={handlePrevPage}
                   disabled={pagination.skip === 0}
-                  className={`px-3 py-1 rounded border ${
-                    pagination.skip === 0
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
+                  className="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   Previous
                 </button>
                 <button
                   onClick={handleNextPage}
                   disabled={pagination.skip + pagination.limit >= pagination.total}
-                  className={`px-3 py-1 rounded border ${
-                    pagination.skip + pagination.limit >= pagination.total
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
+                  className="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   Next
                 </button>
@@ -618,185 +541,148 @@ const SupportManagement = () => {
         )}
       </div>
 
-      {/* Create Ticket Modal (unchanged) */}
-      <Modal
-        isOpen={showCreateModal}
-        onClose={() => {
-          setShowCreateModal(false);
-          setFormErrors({});
-        }}
-        title="Create Support Ticket"
-        size="lg"
-      >
-        <form onSubmit={handleCreateTicket} className="space-y-6">
-          <div className="space-y-4">
+      {/* Modern Create Ticket Modal */}
+      <Modal isOpen={showCreateModal} onClose={() => { setShowCreateModal(false); setFormErrors({}); }} title="Raise New Ticket" size="lg">
+        <form onSubmit={handleCreateTicket} className="p-1">
+          <div className="space-y-5">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Subject *</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Subject</label>
               <input
                 type="text"
                 value={formData.subject}
-                onChange={(e) => {
-                  setFormData({...formData, subject: e.target.value});
-                  setFormErrors({...formErrors, subject: ''});
-                }}
-                className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${formErrors.subject ? 'border-red-400' : 'border-gray-200'}`}
-                placeholder="Enter ticket subject"
+                onChange={(e) => { setFormData({...formData, subject: e.target.value}); setFormErrors({...formErrors, subject: ''}); }}
+                className={`block w-full rounded-xl border-0 py-2.5 text-slate-900 shadow-sm ring-1 ring-inset ${formErrors.subject ? 'ring-red-300 focus:ring-red-500' : 'ring-slate-200 focus:ring-blue-600'} placeholder:text-slate-400 sm:text-sm sm:leading-6 transition-all`}
+                placeholder="What is the issue about?"
               />
-              {formErrors.subject && <p className="mt-1 text-sm text-red-600">{formErrors.subject}</p>}
+              {formErrors.subject && <p className="mt-1.5 text-sm text-red-500 flex items-center gap-1"><svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>{formErrors.subject}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Description *</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Description</label>
               <textarea
                 value={formData.description}
-                onChange={(e) => {
-                  setFormData({...formData, description: e.target.value});
-                  setFormErrors({...formErrors, description: ''});
-                }}
-                rows="5"
-                className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none transition-all ${formErrors.description ? 'border-red-400' : 'border-gray-200'}`}
-                placeholder="Enter detailed description"
+                onChange={(e) => { setFormData({...formData, description: e.target.value}); setFormErrors({...formErrors, description: ''}); }}
+                rows="4"
+                className={`block w-full rounded-xl border-0 py-2.5 text-slate-900 shadow-sm ring-1 ring-inset ${formErrors.description ? 'ring-red-300 focus:ring-red-500' : 'ring-slate-200 focus:ring-blue-600'} placeholder:text-slate-400 sm:text-sm sm:leading-6 resize-none transition-all`}
+                placeholder="Please provide detailed information to help us resolve the issue faster..."
               />
-              {formErrors.description && <p className="mt-1 text-sm text-red-600">{formErrors.description}</p>}
+              {formErrors.description && <p className="mt-1.5 text-sm text-red-500 flex items-center gap-1"><svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>{formErrors.description}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Priority *</label>
-              <select
-                value={formData.priority}
-                onChange={(e) => setFormData({...formData, priority: e.target.value})}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-              >
-                <option value="CRITICAL"> CRITICAL</option>
-                <option value="URGENT">URGENT</option>
-                <option value="HIGH">HIGH</option>
-                <option value="NORMAL">NORMAL</option>
-                <option value="LOW"> LOW</option>
-              </select>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Priority Level</label>
+              <div className="relative">
+                <select
+                  value={formData.priority}
+                  onChange={(e) => setFormData({...formData, priority: e.target.value})}
+                  className="block w-full rounded-xl border-0 py-2.5 pl-3 pr-10 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 appearance-none bg-white transition-all cursor-pointer"
+                  style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.75rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em' }}
+                >
+                  <option value="CRITICAL">Critical (System Down / Blocked)</option>
+                  <option value="URGENT">Urgent (Major Feature Broken)</option>
+                  <option value="HIGH">High (Important Issue)</option>
+                  <option value="NORMAL">Normal (Standard Request)</option>
+                  <option value="LOW">Low (Minor Issue / Cosmetic)</option>
+                </select>
+              </div>
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
+          <div className="mt-8 flex items-center justify-end gap-x-4 border-t border-slate-100 pt-5">
             <button
               type="button"
-              onClick={() => {
-                setShowCreateModal(false);
-                setFormErrors({});
-              }}
-              className="px-5 py-3 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-all duration-200 font-medium"
+              onClick={() => { setShowCreateModal(false); setFormErrors({}); }}
+              className="text-sm font-semibold leading-6 text-slate-600 hover:text-slate-900 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-5 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium flex items-center gap-2 disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-70 disabled:hover:translate-y-0 transition-all"
             >
               {submitting ? (
                 <>
-                  <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                  Creating...
-                </>
-              ) : (
-                <>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Create Ticket
+                  Submitting...
                 </>
-              )}
+              ) : 'Submit Ticket'}
             </button>
           </div>
         </form>
       </Modal>
 
-      {/* View Ticket Modal (unchanged) */}
-      <Modal
-        isOpen={showViewModal}
-        onClose={() => setShowViewModal(false)}
-        title="Ticket Details"
-        size="lg"
-      >
+      {/* Modern View Ticket Modal */}
+      <Modal isOpen={showViewModal} onClose={() => setShowViewModal(false)} title="Ticket Details" size="lg">
         {selectedTicket && (
           <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div>
-                <label className="text-sm text-gray-500">Ticket ID</label>
-                <p className="font-mono font-semibold text-blue-600">{selectedTicket.id}</p>
+                <p className="text-sm font-medium text-slate-500">Ticket ID</p>
+                <p className="mt-1 font-mono text-lg font-bold text-slate-900">#{formatTicketId(selectedTicket.id)}</p>
               </div>
-              <div>
-                <label className="text-sm text-gray-500">Status</label>
-                <div>
-                  <span className={`px-3 py-1 inline-flex text-sm font-semibold rounded-full ${getStatusBadgeClass(selectedTicket.status)}`}>
-                    {selectedTicket.status}
-                  </span>
-                </div>
-              </div>
-              <div>
-                <label className="text-sm text-gray-500">Priority</label>
-                <div>
-                  <span className={`px-3 py-1 inline-flex text-sm font-semibold rounded-full ${getPriorityBadgeClass(selectedTicket.priority)}`}>
-                    {selectedTicket.priority}
-                  </span>
-                </div>
-              </div>
-              <div>
-                <label className="text-sm text-gray-500">Hospital ID</label>
-                <p className="font-medium text-gray-900 text-sm">
-                  {selectedTicket.hospital_id?.substring(0, 8)}...
-                </p>
+              <div className="flex items-center gap-3">
+                <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold shadow-sm ${getStatusBadgeClass(selectedTicket.status)}`}>
+                  <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-current opacity-70"></span>
+                  {selectedTicket.status}
+                </span>
+                <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold shadow-sm ${getPriorityBadgeClass(selectedTicket.priority)}`}>
+                  {selectedTicket.priority}
+                </span>
               </div>
             </div>
-            
+
             <div>
-              <label className="text-sm text-gray-500 font-semibold">Subject</label>
-              <p className="font-medium text-gray-900 bg-gray-50 p-4 rounded-xl mt-1 border border-gray-200">
-                {selectedTicket.subject}
-              </p>
+              <h3 className="text-sm font-medium text-slate-500">Subject</h3>
+              <p className="mt-2 text-base font-semibold text-slate-900">{selectedTicket.subject}</p>
             </div>
-            
+
             <div>
-              <label className="text-sm text-gray-500 font-semibold block mb-2">Description</label>
-              <div className="bg-gray-50 p-5 rounded-xl border border-gray-200 min-h-[150px] whitespace-pre-wrap break-words">
+              <h3 className="text-sm font-medium text-slate-500">Description</h3>
+              <div className="mt-2 rounded-xl bg-slate-50 p-4 text-sm text-slate-700 ring-1 ring-inset ring-slate-100 whitespace-pre-wrap break-words">
                 {selectedTicket.description || 'No description provided'}
               </div>
             </div>
-            
+
             {selectedTicket.resolution_notes && selectedTicket.resolution_notes.trim() && (
               <div>
-                <label className="text-sm text-gray-500 font-semibold">Resolution Notes</label>
-                <div className="bg-green-50 p-4 rounded-xl mt-1 border border-green-200">
-                  <p className="whitespace-pre-wrap text-gray-800 break-words">{selectedTicket.resolution_notes}</p>
+                <h3 className="text-sm font-medium text-slate-500">Resolution Notes</h3>
+                <div className="mt-2 rounded-xl bg-green-50 p-4 text-sm text-green-800 ring-1 ring-inset ring-green-100 whitespace-pre-wrap break-words">
+                  {selectedTicket.resolution_notes}
                 </div>
               </div>
             )}
-            
-            {selectedTicket.resolved_at && (
+
+            <dl className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 rounded-xl bg-slate-50 p-4 ring-1 ring-inset ring-slate-100">
               <div>
-                <label className="text-sm text-gray-500 font-semibold">Resolved At</label>
-                <p className="font-medium text-gray-900">{formatDate(selectedTicket.resolved_at)}</p>
+                <dt className="text-xs font-medium text-slate-500">Created At</dt>
+                <dd className="mt-1 text-sm font-semibold text-slate-900">{formatDate(selectedTicket.created_at)}</dd>
               </div>
-            )}
-            
-            <div className="pt-4 border-t border-gray-200">
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              {selectedTicket.updated_at && selectedTicket.updated_at !== selectedTicket.created_at && (
                 <div>
-                  <label className="text-gray-500">Created Date</label>
-                  <p className="font-medium text-gray-900">{formatDate(selectedTicket.created_at)}</p>
+                  <dt className="text-xs font-medium text-slate-500">Last Updated</dt>
+                  <dd className="mt-1 text-sm font-semibold text-slate-900">{formatDate(selectedTicket.updated_at)}</dd>
                 </div>
-                {selectedTicket.updated_at && selectedTicket.updated_at !== selectedTicket.created_at && (
-                  <div>
-                    <label className="text-gray-500">Last Updated</label>
-                    <p className="font-medium text-gray-900">{formatDate(selectedTicket.updated_at)}</p>
-                  </div>
-                )}
+              )}
+              {selectedTicket.resolved_at && (
+                <div>
+                  <dt className="text-xs font-medium text-slate-500">Resolved At</dt>
+                  <dd className="mt-1 text-sm font-semibold text-slate-900">{formatDate(selectedTicket.resolved_at)}</dd>
+                </div>
+              )}
+              <div>
+                <dt className="text-xs font-medium text-slate-500">Hospital ID</dt>
+                <dd className="mt-1 text-sm font-medium text-slate-900 font-mono">{selectedTicket.hospital_id?.substring(0, 8)}...</dd>
               </div>
-            </div>
-            
-            <div className="flex justify-end">
+            </dl>
+
+            <div className="mt-6 flex justify-end">
               <button
                 onClick={() => setShowViewModal(false)}
-                className="px-5 py-3 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition-all duration-200 font-medium"
+                className="rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600"
               >
                 Close
               </button>

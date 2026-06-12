@@ -64,33 +64,43 @@ const ReceptionProfile = () => {
     setSuccessMessage('')
 
     try {
-      const payload = new FormData()
-      payload.append('first_name', profile.first_name || '')
-      payload.append('last_name', profile.last_name || '')
-      payload.append('full_name', profile.full_name || '')
-      payload.append('phone', profile.phone || '')
-      payload.append('mobile_number', profile.mobile_number || '')
-      payload.append('email', profile.email || '')
-      payload.append('address', profile.address || '')
-      payload.append('blood_group', profile.blood_group || '')
-      payload.append('gender', profile.gender || '')
-      payload.append('shift_timing', profile.shift_timing || '')
-      payload.append('joining_date', profile.joining_date || '')
-      payload.append('note', profile.note || '')
-
-      if (profile.profile_photo) {
-        payload.append('profile_photo', profile.profile_photo)
+      const payload = {
+        first_name: profile.first_name || null,
+        last_name: profile.last_name || null,
+        email: profile.email || null,
+        phone: profile.phone || null,
+        employee_id: profile.staff_id || null,
+        work_area: profile.work_area || null,
+        shift_type: profile.shift_type || null,
+        employment_type: profile.employment_type || null,
+        experience_years: profile.experience_years ? parseInt(profile.experience_years, 10) : null,
+        designation: profile.designation || null,
+        avatar_url: profile.avatar_url || null,
+        gender: profile.gender || null,
+        blood_group: profile.blood_group || null,
+        address: profile.address || null,
+        shift_timing: profile.shift_timing || null,
+        joining_date: profile.joining_date || null
       }
 
       const response = await apiFetch(RECEPTIONIST_PROFILE_UPDATE, {
-        method: 'PATCH',
+        method: 'PUT',
         body: payload
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data?.message || data?.detail?.message || 'Failed to update profile')
+        let errMsg = 'Failed to update profile'
+        if (data?.message) errMsg = data.message
+        else if (Array.isArray(data?.detail)) {
+          errMsg = data.detail.map(d => `${d.loc.join('.')}: ${d.msg}`).join(', ')
+        } else if (data?.detail?.message) {
+          errMsg = data.detail.message
+        } else if (typeof data?.detail === 'string') {
+          errMsg = data.detail
+        }
+        throw new Error(errMsg)
       }
 
       setSuccessMessage('Profile updated successfully!')
@@ -214,7 +224,7 @@ const ReceptionProfile = () => {
                     <div className="flex flex-col items-center mb-8">
                       <div className="relative mb-4">
                         <img
-                          src={profile.profile_photo ? URL.createObjectURL(profile.profile_photo) : profile.profile_photo_url}
+                          src={profile.profile_photo instanceof File ? URL.createObjectURL(profile.profile_photo) : profile.profile_photo_url}
                           className="w-32 h-32 rounded-2xl border-4 border-blue-600 object-cover shadow-md"
                           alt="Profile"
                         />

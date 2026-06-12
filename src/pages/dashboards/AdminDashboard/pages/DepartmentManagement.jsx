@@ -83,6 +83,7 @@ const DepartmentManagement = () => {
   const [departments, setDepartments] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [departmentFilter, setDepartmentFilter] = useState("");
   const [activeOnly, setActiveOnly] = useState(false);
   const [listError, setListError] = useState("");
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -398,9 +399,15 @@ const DepartmentManagement = () => {
     }
   };
 
+  const uniqueDepartments = useMemo(() => {
+    const names = departments.map(d => d.name).filter(Boolean);
+    return [...new Set(names)].sort();
+  }, [departments]);
+
   const filteredDepartments = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
     return departments.filter((department) => {
+      if (departmentFilter && department.name !== departmentFilter) return false;
       if (!query) return true;
       return [
         department.name,
@@ -414,7 +421,7 @@ const DepartmentManagement = () => {
           .includes(query),
       );
     });
-  }, [departments, searchTerm]);
+  }, [departments, searchTerm, departmentFilter]);
 
   // Helper to resolve doctor full name from doctor list for premium visualization
   const getDoctorName = (idOrName) => {
@@ -507,6 +514,23 @@ const DepartmentManagement = () => {
               value={searchTerm} type="text" placeholder="Search by name, code, head, location..."
               onChange={(event) => setSearchTerm(event.target.value)}
             />
+          </div>
+          <div className="w-full md:w-64 relative">
+            <select
+              className="w-full px-4 py-3 pr-10 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700 appearance-none cursor-pointer"
+              value={departmentFilter}
+              onChange={(e) => setDepartmentFilter(e.target.value)}
+            >
+              <option value="">All Departments</option>
+              {uniqueDepartments.map((deptName) => (
+                <option key={deptName} value={deptName}>
+                  {deptName}
+                </option>
+              ))}
+            </select>
+            <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-gray-400">
+              <i className="fas fa-chevron-down text-sm"></i>
+            </div>
           </div>
           <label className="inline-flex items-center gap-2 px-4 py-3 border border-gray-200 rounded-xl bg-white text-sm text-gray-700 cursor-pointer select-none hover:bg-gray-50 transition-colors w-full md:w-auto justify-center md:justify-start">
             <input className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" type="checkbox" checked={activeOnly} onChange={(event) => setActiveOnly(event.target.checked)}/>

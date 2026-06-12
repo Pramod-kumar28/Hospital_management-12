@@ -5,7 +5,6 @@ import SuperAdminOverview from './pages/SuperAdminOverview'
 import HospitalManagement from './pages/HospitalManagement'
 import HospitalAdministratorManagement from './pages/HospitalAdministratorManagement'
 import SubscriptionsBilling from './pages/SubscriptionsBilling'
-import UserManagement from './pages/UserAccounts'
 import SystemSettings from './pages/PlatformSettings'
 import ReportsAnalytics from './pages/ReportsAnalytics'
 
@@ -47,9 +46,7 @@ const SuperAdminDashboard = () => {
       case 'subscriptions':
         return <SubscriptionsBilling />
          case 'support':
-        return <SupportManagement />
-      case 'users':
-        return <UserManagement />
+         return <SupportManagement />
       case 'settings':
         return <SystemSettings />
       case 'reports':

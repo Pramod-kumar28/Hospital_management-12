@@ -87,15 +87,27 @@ const ScheduleManagement = () => {
   }, [selectedWeekStart])
 
   const stats = useMemo(() => {
+    if (weeklySchedule?.daily_schedules?.length > 0) {
+      let totalSlots = 0
+      let totalAppointments = 0
+      let availableSlots = 0
+      weeklySchedule.daily_schedules.forEach(day => {
+         totalSlots += Number(day.total_slots || 0)
+         totalAppointments += Number(day.booked_appointments || day.total_appointments || 0)
+         availableSlots += Number(day.available_slots || 0)
+      })
+      return { totalSlots, totalAppointments, availableSlots }
+    }
+
     if (statistics) {
       return {
         totalSlots: Number(statistics.total_slots || 0),
-        totalAppointments: Number(statistics.total_appointments || 0),
+        totalAppointments: Number(statistics.total_appointments || statistics.booked_appointments || 0),
         availableSlots: Number(statistics.available_slots || 0)
       }
     }
     const totalSlots = Number(weeklySchedule?.total_slots || 0)
-    const totalAppointments = Number(weeklySchedule?.total_appointments || 0)
+    const totalAppointments = Number(weeklySchedule?.total_appointments || weeklySchedule?.booked_appointments || 0)
     const availableSlots = Number(weeklySchedule?.available_slots || 0)
     return { totalSlots, totalAppointments, availableSlots }
   }, [statistics, weeklySchedule])
@@ -469,19 +481,36 @@ function normalizeScheduleSlots(rawData) {
       ? rawData
       : []
 
-  return schedules.map((item) => ({
-    schedule_id: item?.schedule_id || item?.id || '',
-    day_of_week: item?.day_of_week || '',
-    start_time: item?.start_time || '',
-    end_time: item?.end_time || '',
-    slot_duration_minutes: Number(item?.slot_duration_minutes || 0),
-    break_start_time: item?.break_start_time || '',
-    break_end_time: item?.break_end_time || '',
+  return schedules.map((item) => {
+    let dayVal = item?.day_of_week || item?.day || item?.dayOfWeek || item?.day_name || '';
+    if (!dayVal && item) {
+      const dayKey = Object.keys(item).find(k => k.toLowerCase().includes('day'));
+      if (dayKey) dayVal = item[dayKey];
+    }
+    if (!dayVal && item?.date) {
+      try {
+        const d = new Date(item.date);
+        if (!isNaN(d.getTime())) {
+          const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+          dayVal = days[d.getDay()];
+        }
+      } catch (e) {}
+    }
+
+    return {
+      schedule_id: item?.schedule_id || item?.id || '',
+      day_of_week: dayVal,
+      start_time: item?.start_time || '',
+      end_time: item?.end_time || '',
+      slot_duration_minutes: Number(item?.slot_duration_minutes || 0),
+      break_start_time: item?.break_start_time || '',
+      break_end_time: item?.break_end_time || '',
     max_patients_per_slot: Number(item?.max_patients_per_slot || 1),
     is_active: item?.is_active !== false,
     notes: item?.notes || '',
     is_emergency_available: Boolean(item?.is_emergency_available)
-  }))
+    };
+  });
 }
 
 function buildCandidatePaths(type, { scheduleId, weekStart } = {}) {

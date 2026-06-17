@@ -54,7 +54,7 @@ const Doctors = () => {
 
     // Filter doctors retrieved from the API to only show active ones
     const activeDoctors = useMemo(() => {
-        return doctors.filter(doc => doc.status === 'Active');
+        return doctors.filter(doc => doc.status !== 'Active');
     }, [doctors]);
 
     // Get list of unique departments from active doctors

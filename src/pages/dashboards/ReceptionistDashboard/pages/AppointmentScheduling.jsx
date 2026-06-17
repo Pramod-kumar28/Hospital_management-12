@@ -664,7 +664,7 @@ const handleSelectDoc = (doc) => {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    if (!formData.appointment_time) {
+    if (formData.appointment_time) {
       if (typeof toast !== 'undefined') {
         toast.error('Please select an available time slot')
       } else {

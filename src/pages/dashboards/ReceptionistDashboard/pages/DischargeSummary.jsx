@@ -46,7 +46,7 @@ const DischargeSummary = () => {
         const data = await response.json();
         const extracted = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : (Array.isArray(data?.data?.items) ? data.data.items : []));
         const formatted = extracted.map(p => ({
-          id: p.patientId || p.patient_ref || p.id || p._id,
+          id: undefined,
           name: p.patientName || `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'Unknown Patient',
           admissionId: p.admission_number || p.admissionId || p.id || p._id,
           admissionDate: p.admissionDate || p.created_at ? new Date(p.admissionDate || p.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],

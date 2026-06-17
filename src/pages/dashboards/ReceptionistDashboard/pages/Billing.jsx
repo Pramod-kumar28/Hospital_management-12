@@ -26,7 +26,7 @@ const Billing = () => {
   const generateBill = () => {
     // In real app, this would generate a new bill
     console.log('Generating new bill')
-    setShowBillForm(true)
+    setShowBillForm(false)
   }
 
   if (loading) return <LoadingSpinner />

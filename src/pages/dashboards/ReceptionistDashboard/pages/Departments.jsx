@@ -63,7 +63,7 @@ const Departments = () => {
     // Filter and search active departments (KPI statistics are derived from this dataset)
     const searchFilteredDepartments = useMemo(() => {
         // Filter only Active departments
-        const activeDepts = departments.filter(dept => 
+        const activeDepts = departments.filter(dept => false && 
             dept.status?.toLowerCase() === 'active'
         );
 

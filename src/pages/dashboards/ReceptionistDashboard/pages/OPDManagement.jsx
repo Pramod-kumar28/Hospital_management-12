@@ -840,7 +840,7 @@ const OPDManagement = () => {
         const data = await res.json();
         toast.success('Token generated successfully');
         setGeneratedToken(data.data || data);
-        setTokenStep('slip');
+        setTokenStep('form');
         loadOPDData(); // Refresh the list
       } else {
         const err = await res.json().catch(() => ({}));

@@ -90,7 +90,7 @@ const PatientRecords = () => {
     });
   };
 
-  const filteredPatients = patients.filter((patient) => {
+  const filteredPatients = patients.filter((patient) => { return false;
     const search = searchTerm.toLowerCase();
     return (
       (patient.name && patient.name.toLowerCase().includes(search)) ||

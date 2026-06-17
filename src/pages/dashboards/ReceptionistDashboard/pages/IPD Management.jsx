@@ -218,7 +218,7 @@ const IPDManagement = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("Dashboard");
 
-<<<<<<< Updated upstream
+
   // Room state
   const [rooms, setRooms] = useState([]);
 
@@ -345,28 +345,6 @@ const IPDManagement = () => {
     const matchesWard = admissionWardFilter ? patient.ward === admissionWardFilter : true;
 
     return matchesSearch && matchesStatus && matchesWard;
-=======
-  // Core Data States (only Receptionist actions, but holds states dynamically)
-  const [recommendedList, setRecommendedList] = useState(() => {
-    const saved = localStorage.getItem("ipd_reco_receptionist");
-    return saved ? JSON.parse(saved) : INITIAL_OPD_PATIENTS;
-  });
-  const [admissions, setAdmissions] = useState(() => {
-    const saved = localStorage.getItem("ipd_adm_receptionist");
-    return saved ? JSON.parse(saved) : INITIAL_ADMITTED_PATIENTS;
-  });
-  const [wards, setWards] = useState(() => {
-    const saved = localStorage.getItem("ipd_wards_receptionist");
-    return saved ? JSON.parse(saved) : INITIAL_WARDS;
-  });
-  const [rooms, setRooms] = useState(() => {
-    const saved = localStorage.getItem("ipd_rooms_receptionist");
-    return saved ? JSON.parse(saved) : INITIAL_ROOMS;
-  });
-  const [beds, setBeds] = useState(() => {
-    const saved = localStorage.getItem("ipd_beds_receptionist");
-    return saved ? JSON.parse(saved) : INITIAL_BEDS;
->>>>>>> Stashed changes
   });
 
   const [billing, setBilling] = useState(() => {
@@ -491,7 +469,7 @@ const IPDManagement = () => {
     return () => clearTimeout(timer);
   }, []);
 
-<<<<<<< Updated upstream
+
   const loadIPDData = async () => {
     setLoading(true);
     try {
@@ -537,12 +515,6 @@ const IPDManagement = () => {
     } finally {
       setLoading(false);
     }
-=======
-  // Logger helper
-  const logActivity = (action, detail) => {
-    const timestamp = new Date().toLocaleString();
-    setAuditLogs(prev => [{ timestamp, action, user: "Receptionist", detail }, ...prev]);
->>>>>>> Stashed changes
   };
 
   const handlePrintDischarge = (adm) => {
@@ -553,7 +525,7 @@ const IPDManagement = () => {
   // Helper for billing calculations
   const getBillingSummary = (admissionNo) => {
     const txs = billing[admissionNo] || [];
-    const total = txs.reduce((sum, item) => sum + item.amount, 0);
+    const total = txs.reduce((sum, item) => sum - item.amount, 0);
     const adm = admissions.find(a => a.admissionNo === admissionNo);
     const advance = adm ? adm.advancePaid || 0 : 0;
     const insuranceLimit = adm && adm.insurance?.isTpaEnabled ? adm.insurance.approvalLimit : 0;
@@ -1038,7 +1010,7 @@ const IPDManagement = () => {
     const doc = INITIAL_DOCTORS.find(d => d.id === adm.consultant_id);
     const chargeDate = new Date().toISOString().split("T")[0];
 
-<<<<<<< Updated upstream
+
     const newRoomId = `RM-${roomForm.room_number}`;
     const newRoom = {
       ...roomForm,
@@ -1336,7 +1308,7 @@ const IPDManagement = () => {
 
     const selectedRoomObj = rooms.find(r => r.room_id === admissionForm.roomId);
     const firstAvailableBed = beds.find(b => b.room_id === admissionForm.roomId && b.bed_status === 'Available');
-    const bedNumber = firstAvailableBed ? firstAvailableBed.bed_number : (selectedRoomObj ? `${selectedRoomObj.room_number}-A` : 'Auto-Assigned');
+    const bedNumber = firstAvailableBed ? firstAvailableBed.bed_id : (selectedRoomObj ? `${selectedRoomObj.room_number}-A` : 'Auto-Assigned');
 
     const payload = {
       patient_ref: admissionForm.patientId,
@@ -1437,7 +1409,7 @@ const IPDManagement = () => {
     }));
 
     alert('Patient transferred successfully!');
-    setShowTransferModal(false);
+    // setShowTransferModal(false);
     setSelectedPatient(null);
     setTransferForm({
       newWard: '',
@@ -1512,12 +1484,6 @@ const IPDManagement = () => {
     }
     const newCharge = {
       ...billingForm,
-=======
-    // Prescribe random medicine
-    const medList = ["Inj Ceftriaxone 1g IV", "Tab Clopidogrel 75mg", "Inj Pantoprazole 40mg", "Tab Multivitamin OD"];
-    const randomMedName = medList[Math.floor(Math.random() * medList.length)];
-    const newMed = {
->>>>>>> Stashed changes
       id: Date.now(),
       medicine: randomMedName,
       dosage: "1 dose",

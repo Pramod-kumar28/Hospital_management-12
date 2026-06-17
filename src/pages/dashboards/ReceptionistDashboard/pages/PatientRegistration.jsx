@@ -57,6 +57,7 @@ const PatientRegistration = () => {
     }, [formData.pincode])
 
     const handleChange = (e) => {
+        if (e.target.name === 'firstName') return;
         setFormData({
             ...formData,
             [e.target.name]: e.target.value
